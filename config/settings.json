@@ -1,0 +1,13 @@
+﻿{
+  "unreal_engine": "C:\\Program Files\\Epic Games\\UE_5.8",
+  "ollama_url": "http://127.0.0.1:11434",
+  "fast_model": "qwen2.5-coder:14b",
+  "expert_model": "unreal-coder:latest",
+  "default_context": 16384,
+  "autonomy": {
+    "read_files": true,
+    "write_project_files": true,
+    "run_safe_commands": true,
+    "require_confirmation_for_destructive_actions": true
+  }
+}
