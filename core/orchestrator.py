@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import re
 import sys
@@ -944,8 +944,6 @@ def looks_like_map(value):
     return (
         v.endswith(".umap")
         or "/maps/" in v
-        or base.startswith("lvl_")
-        or base.startswith("level_")
     )
 
 
