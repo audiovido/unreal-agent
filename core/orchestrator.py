@@ -955,8 +955,28 @@ def guard_tool_call(
 
     lower_action = action.lower()
 
-    # HARD READ-ONLY MODE
     task_text = str(task).lower()
+
+    # Respect explicit per-task tool prohibitions.
+    # Example:
+    # "Do NOT call run_powershell"
+    # "Do NOT use visual_review_unreal"
+    forbidden_patterns = (
+        f"do not call {lower_action}",
+        f"do not use {lower_action}",
+        f"never call {lower_action}",
+        f"never use {lower_action}",
+        f"don't call {lower_action}",
+        f"don't use {lower_action}",
+    )
+
+    if any(pattern in task_text for pattern in forbidden_patterns):
+        return (
+            False,
+            f"Task explicitly forbids tool: {action}"
+        )
+
+    # HARD READ-ONLY MODE
 
     readonly_markers = (
         "read only",
