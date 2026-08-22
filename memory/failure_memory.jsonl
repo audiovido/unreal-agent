@@ -1,0 +1,1 @@
+{"tool": "test_tool", "args": {"param1": "value1", "param2": "value2"}, "error_category": "test_category", "error_message": "This is a test error message", "occurrence_count": 3, "timestamp": 1786802514.8370764}

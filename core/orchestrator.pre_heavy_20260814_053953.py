@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import re
 import sys
@@ -9,9 +9,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-# Import MemorySystem
-from core.memory_system import MemorySystem
 
 from tools.unreal.project_manager import (
     discover_projects,
@@ -46,9 +43,6 @@ DEFAULT_MODEL = os.getenv(
 
 SESSION_FILE = ROOT / "memory" / "conversation.json"
 STATE_FILE = ROOT / "memory" / "agent_state.json"
-
-# Create MemorySystem instance
-MEMORY = MemorySystem()
 
 BRIDGE = UnrealBridge()
 
@@ -451,18 +445,6 @@ def call_model(
 # ============================================================
 
 def classify_intent(task):
-    text = str(task).lower()
-
-    execute_terms = (
-        "inspect", "screenshot", "screen shot", "capture", "verify",
-        "open", "run", "build", "create", "modify", "fix", "save",
-        "compile", "project", "unreal", "viewport", "level", "map",
-        "asset", "widget", "blueprint", "all pages"
-    )
-
-    if any(term in text for term in execute_terms):
-        return "execute"
-
 
     prompt = """
 You are the request router for an Unreal engineering agent.
@@ -543,10 +525,10 @@ Return JSON only:
             "plan",
             "roadmap",
             "architecture",
-            "Ù¾Ù„Ù†",
-            "Ø¨Ø±Ù†Ø§Ù…Ù‡ Ø±ÛŒØ²ÛŒ",
-            "Ø¨Ø±Ù†Ø§Ù…Ù‡â€ŒØ±ÛŒØ²ÛŒ",
-            "Ù†Ù‚Ø´Ù‡ Ø±Ø§Ù‡",
+            "پلن",
+            "برنامه ریزی",
+            "برنامه‌ریزی",
+            "نقشه راه",
         )
     ):
         return "plan"
@@ -957,48 +939,6 @@ def guard_tool_call(
 
     lower_action = action.lower()
 
-    # HARD READ-ONLY MODE
-    task_text = str(task).lower()
-
-    readonly_markers = (
-        "read only",
-        "read-only",
-        "no modifications",
-        "no modification",
-        "do not modify",
-        "do not create",
-        "do not delete",
-        "inspection only",
-        "visual inspection only",
-    )
-
-    if any(marker in task_text for marker in readonly_markers):
-
-        readonly_tools = {
-            "discover_projects",
-            "inspect_project",
-            "get_current_level",
-            "get_selected_actors",
-            "get_actor",
-            "get_asset_info",
-            "inspect_blueprint",
-            "graph_list_nodes",
-            "is_level_dirty",
-            "list_assets",
-            "list_level_actors",
-            "read_text_file",
-            "unreal_ping",
-            "unreal_status",
-            "capture_unreal_viewport",
-            "visual_review_unreal",
-        }
-
-        if lower_action not in readonly_tools:
-            return (
-                False,
-                "READ-ONLY MODE: tool blocked: " + action
-            )
-
     # Prevent the exact class of error we saw:
     # trying to compile a Level as a Blueprint.
     if "blueprint" in lower_action:
@@ -1029,8 +969,8 @@ def guard_tool_call(
             for word in (
                 "delete",
                 "remove",
-                "Ø­Ø°Ù",
-                "Ù¾Ø§Ú© Ú©Ù†",
+                "حذف",
+                "پاک کن",
             )
         ):
 
@@ -1354,10 +1294,11 @@ def run_execution(task):
             )
 
         try:
+
             decision = json.loads(raw)
-            
+
         except Exception as exc:
-            # ---------------- JSON ERROR HANDLING ----------------
+
             messages.append(
                 {
                     "role": "assistant",
@@ -1376,19 +1317,6 @@ def run_execution(task):
                 }
             )
 
-            # ---------------- LOOP CONTROL ----------------
-            # Prevent runaway retry loops by limiting attempts
-            if "json_retry_count" not in locals():
-                json_retry_count = 0
-            json_retry_count += 1
-            
-            if json_retry_count >= 3:
-                # If we've tried too many times, stop the loop and return error
-                return (
-                    "Model failed to produce valid JSON after 3 attempts. "
-                    "Task cannot proceed."
-                )
-            
             continue
 
         action = str(
@@ -1863,435 +1791,6 @@ def runtime_info():
         "tool_count": len(REGISTRY),
     }
 
-# >>> HEAVY_SPECIALIST_WRAPPER_V3 >>>
-
-HEAVY_MODEL = os.getenv(
-    "UNREAL_AGENT_HEAVY_MODEL",
-    "unreal-coder:latest",
-)
-
-HEAVY_MODEL_AVAILABLE = HEAVY_MODEL in AVAILABLE_MODELS
-
-_create_execution_plan_v2 = create_execution_plan
-_recovery_review_v2 = recovery_review
-_runtime_info_v2 = runtime_info
-
-
-def should_use_heavy(task):
-    text = str(task).lower()
-
-    strong_terms = (
-        "access violation",
-        "memory corruption",
-        "memory leak",
-        "race condition",
-        "thread safety",
-        "multithread",
-        "engine source",
-        "unrealbuildtool",
-        "build.cs",
-        "target.cs",
-        "linker error",
-        "link error",
-        "shader compiler",
-        "shader",
-        "hlsl",
-        "usf",
-        "ush",
-        "rendering pipeline",
-        "rhi",
-        "plugin architecture",
-        "module architecture",
-        "large refactor",
-        "performance profiling",
-        "replication architecture",
-        "network prediction",
-        "gameplay ability system",
-        "mass entity",
-        "complex c++",
-        "crash debugging",
-        "Ú©Ø±Ø´",
-        "Ù¾Ù„Ø§Ú¯ÛŒÙ†",
-        "Ø´ÛŒØ¯Ø±",
-        "Ù„ÛŒÙ†Ú©Ø±",
-        "Ù…Ù…ÙˆØ±ÛŒ Ù„ÛŒÚ©",
-        "Ø±ÙÚ©ØªÙˆØ± Ø³Ù†Ú¯ÛŒÙ†",
-        "Ø³ÛŒ Ù¾Ù„Ø§Ø³ Ù¾Ù„Ø§Ø³ Ù¾ÛŒÚ†ÛŒØ¯Ù‡",
-    )
-
-    if any(term in text for term in strong_terms):
-        return True
-
-    return False
-
-def create_execution_plan(task):
-    base_plan = _create_execution_plan_v2(task)
-
-    if not isinstance(base_plan, dict):
-        base_plan = {
-            "goal": str(task),
-            "steps": ["Inspect", "Execute", "Verify"],
-            "success_criteria": ["Actual tool evidence confirms completion"],
-            "risks": [],
-        }
-
-    use_heavy = HEAVY_MODEL_AVAILABLE and should_use_heavy(task)
-
-    if not use_heavy:
-        base_plan["_routing"] = {
-            "planner": REASONING_MODEL,
-            "heavy_used": False,
-            "heavy_model": None,
-        }
-        return base_plan
-
-    heavy_prompt = f"""
-You are the senior HEAVY Unreal Engine engineering specialist.
-
-USER TASK:
-{task}
-
-BASE PLAN:
-{json.dumps(base_plan, ensure_ascii=False, indent=2)}
-
-AVAILABLE TOOL NAMES:
-{json.dumps(sorted(REGISTRY.keys()), ensure_ascii=False)}
-
-Act as a senior technical advisor, not the executor.
-Give concise but deep Unreal Engine 5.8 guidance covering:
-- architecture and implementation order
-- C++ / engine constraints
-- likely failure modes
-- build/runtime risks
-- verification strategy
-- recovery alternatives
-
-Never pretend execution occurred.
-Never invent available tools.
-A Level/Map is NOT a Blueprint.
-Keep the advice under 900 words.
-"""
-
-    try:
-        advice = call_model(
-            [{"role": "system", "content": heavy_prompt}],
-            model=HEAVY_MODEL,
-            json_mode=False,
-            temperature=0.05,
-            num_ctx=8192,
-            timeout=900,
-        )
-
-        base_plan["_heavy_advice"] = str(advice)[:12000]
-        base_plan["_routing"] = {
-            "planner": REASONING_MODEL,
-            "heavy_used": True,
-            "heavy_model": HEAVY_MODEL,
-        }
-    except Exception as exc:
-        base_plan["_routing"] = {
-            "planner": REASONING_MODEL,
-            "heavy_used": False,
-            "heavy_model": HEAVY_MODEL,
-            "heavy_fallback": f"{type(exc).__name__}: {exc}",
-        }
-
-    return base_plan
-
-
-def recovery_review(task, plan, trace):
-    recent_failures = sum(
-        1 for item in trace[-6:]
-        if not item.get("ok", False)
-    )
-
-    use_heavy = (
-        HEAVY_MODEL_AVAILABLE
-        and (
-            should_use_heavy(task)
-            or recent_failures >= 2
-        )
-    )
-
-    if not use_heavy:
-        return _recovery_review_v2(task, plan, trace)
-
-    heavy_recovery_prompt = f"""
-You are the senior Unreal Engine recovery specialist.
-
-USER TASK:
-{task}
-
-PLAN:
-{json.dumps(plan, ensure_ascii=False)}
-
-RECENT REAL TOOL TRACE:
-{trace_summary(trace, 10)}
-
-AVAILABLE TOOL NAMES:
-{json.dumps(sorted(REGISTRY.keys()), ensure_ascii=False)}
-
-The agent is stuck or a tool failed.
-Give a concise technical recovery instruction.
-
-Rules:
-- Trust actual tool results.
-- Never claim a failed operation succeeded.
-- Do not repeat the identical failed call.
-- Never invent a tool.
-- Prefer another valid strategy.
-- Inspect state when necessary.
-- A Level/Map is not a Blueprint.
-"""
-
-    try:
-        return call_model(
-            [{"role": "system", "content": heavy_recovery_prompt}],
-            model=HEAVY_MODEL,
-            json_mode=False,
-            temperature=0.05,
-            num_ctx=8192,
-            timeout=900,
-        )
-    except Exception:
-        return _recovery_review_v2(task, plan, trace)
-
-
-def runtime_info():
-    info = _runtime_info_v2()
-    info["version"] = "Adaptive Runtime v3"
-    info["heavy_model"] = HEAVY_MODEL if HEAVY_MODEL_AVAILABLE else None
-    info["heavy_model_available"] = HEAVY_MODEL_AVAILABLE
-    return info
-
-# <<< HEAVY_SPECIALIST_WRAPPER_V3 <<<
-
-# >>> VISUAL_REVIEW_LOOP_V4 >>>
-
-VISION_MODEL = os.getenv(
-    "UNREAL_AGENT_VISION_MODEL",
-    "qwen3-vl:8b-instruct",
-)
-
-VISION_MODEL_AVAILABLE = VISION_MODEL in AVAILABLE_MODELS
-
-_create_execution_plan_v3 = create_execution_plan
-_build_executor_system_v3 = build_executor_system
-_runtime_info_v3 = runtime_info
-
-
-def should_use_vision(task):
-    text = str(task).lower()
-
-    visual_terms = (
-        "ui",
-        "ux",
-        "widget",
-        "hud",
-        "menu",
-        "interface",
-        "room",
-        "environment",
-        "level design",
-        "scene",
-        "lighting",
-        "light",
-        "material",
-        "texture",
-        "visual",
-        "look",
-        "composition",
-        "cinematic",
-        "camera",
-        "beautiful",
-        "aaa",
-        "world",
-        "landscape",
-        "interior",
-        "exterior",
-        "Ø§ØªØ§Ù‚",
-        "Ù…Ø­ÛŒØ·",
-        "Ù„ÙˆÙ„",
-        "ØµØ­Ù†Ù‡",
-        "Ù†ÙˆØ±",
-        "Ù†ÙˆØ±Ù¾Ø±Ø¯Ø§Ø²ÛŒ",
-        "Ù…ØªØ±ÛŒØ§Ù„",
-        "ØªÚ©Ø³Ú†Ø±",
-        "Ø¸Ø§Ù‡Ø±",
-        "ÙˆÛŒÚ˜ÙˆØ§Ù„",
-        "Ø¯ÙˆØ±Ø¨ÛŒÙ†",
-        "Ø³ÛŒÙ†Ù…Ø§ØªÛŒÚ©",
-        "Ø±Ø§Ø¨Ø· Ú©Ø§Ø±Ø¨Ø±ÛŒ",
-        "Ù…Ù†Ùˆ",
-        "ÛŒÙˆ Ø¢ÛŒ",
-        "ÛŒÙˆØ§ÛŒ",
-        "ÛŒÙˆ Ø§ÛŒÚ©Ø³",
-        "Ø²ÛŒØ¨Ø§",
-    )
-
-    return any(term in text for term in visual_terms)
-
-
-def create_execution_plan(task):
-    plan = _create_execution_plan_v3(task)
-
-    if not isinstance(plan, dict):
-        return plan
-
-    vision_required = (
-        VISION_MODEL_AVAILABLE
-        and should_use_vision(task)
-    )
-
-    routing = plan.setdefault("_routing", {})
-    routing["vision_required"] = vision_required
-    routing["vision_model"] = (
-        VISION_MODEL if vision_required else None
-    )
-
-    if vision_required:
-        steps = plan.setdefault("steps", [])
-        visual_step = (
-            "After meaningful visual mutations, run the approved "
-            "Visual Review tool, inspect the screenshot feedback, "
-            "fix visible issues, and repeat until the visual score "
-            "is at least 8/10 or four review passes have been used."
-        )
-        if visual_step not in steps:
-            steps.append(visual_step)
-
-        success = plan.setdefault("success_criteria", [])
-        visual_success = (
-            "Final visible Unreal result is independently reviewed "
-            "by the vision model and has no critical visible issue."
-        )
-        if visual_success not in success:
-            success.append(visual_success)
-
-    return plan
-
-
-def build_executor_system(plan):
-    base = _build_executor_system_v3(plan)
-
-    if not isinstance(plan, dict):
-        return base
-
-    routing = plan.get("_routing", {})
-
-    if not routing.get("vision_required"):
-        return base
-
-    visual_rules = r"""
-
-VISUAL QA LOOP IS REQUIRED FOR THIS TASK.
-
-You have an approved read-only visual review command.
-
-Use the existing run_powershell tool with EXACTLY one of these
-equivalent command strings and do not add any other PowerShell:
-
-& "$env:LOCALAPPDATA\UnrealAgent\vision_review.ps1"
-
-or, if environment variables are not expanded by the tool:
-
-& "C:\Users\Shadow\AppData\Local\UnrealAgent\vision_review.ps1"
-
-The command captures the Unreal Editor window and returns JSON
-from the local vision model.
-
-Rules:
-1. Use visual review only after there is something meaningful to inspect.
-2. Treat capture_quality="bad" or "occluded" as invalid evidence.
-3. Never make destructive changes based on an unusable screenshot.
-4. If pass=false or score<8, apply the concrete visible fixes and review again.
-5. Maximum four visual review passes per task.
-6. Do not declare a visual/UI/environment task complete without
-   at least one usable visual review after the final meaningful mutation.
-7. Visual review does not replace technical verification; compile,
-   read-back, save, and other independent checks are still required.
-8. Never modify the visual_review.ps1 file.
-"""
-
-    return str(base) + visual_rules
-
-
-def runtime_info():
-    info = _runtime_info_v3()
-    info["version"] = "Adaptive Runtime v4"
-    info["vision_model"] = (
-        VISION_MODEL
-        if VISION_MODEL_AVAILABLE
-        else None
-    )
-    info["vision_model_available"] = VISION_MODEL_AVAILABLE
-    return info
-
-# <<< VISUAL_REVIEW_LOOP_V4 <<<
-
-# >>> NATIVE_VISUAL_LOOP_V5 >>>
-
-_native_v5_executor_base = globals().get(
-    "_build_executor_system_v3",
-    build_executor_system,
-)
-
-_native_v5_runtime_base = runtime_info
-
-
-def build_executor_system(plan):
-    base = _native_v5_executor_base(plan)
-
-    if not isinstance(plan, dict):
-        return base
-
-    routing = plan.get("_routing", {})
-
-    if not routing.get("vision_required"):
-        return base
-
-    native_visual_rules = r"""
-
-NATIVE VISUAL QA LOOP IS REQUIRED FOR THIS TASK.
-
-Use ONLY these real visual tools:
-- capture_unreal_viewport
-- visual_review_unreal
-
-Do NOT use run_powershell for screenshots or visual review.
-Do NOT use the old Windows capture script.
-
-Workflow:
-1. Build a meaningful visual iteration.
-2. Perform normal technical read-back verification.
-3. Call visual_review_unreal.
-4. If capture_quality is not "good", do not make destructive
-   visual decisions from that review.
-5. If pass=false or score<8, apply the concrete fixes.
-6. Review again after the fixes.
-7. Use at most four visual-review passes per task.
-8. Do not claim a visual/UI/environment task is complete until
-   a final native visual review has been performed.
-9. Visual QA does not replace save/compile/read-back checks.
-10. Never delete existing actors/assets unless the user asked.
-
-The native visual tools are read-only evidence tools and should
-not require user approval.
-"""
-
-    return str(base) + native_visual_rules
-
-
-def runtime_info():
-    info = _native_v5_runtime_base()
-
-    info["version"] = "Adaptive Runtime v5"
-    info["native_viewport_capture"] = True
-    info["visual_review_tool"] = "visual_review_unreal"
-
-    return info
-
-# <<< NATIVE_VISUAL_LOOP_V5 <<<
 
 if __name__ == "__main__":
 
@@ -2370,6 +1869,3 @@ if __name__ == "__main__":
             save_session(
                 messages
             )
-
-
-

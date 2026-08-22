@@ -1,0 +1,1 @@
+{"score": 85, "pass_fail": "pass", "summary": "Test visual QA summary", "issues": ["Minor UI issue"], "next_action": "Fix UI", "screenshot_path": "test_screenshot.png", "model": "test_model", "timestamp": 1786802514.848442}

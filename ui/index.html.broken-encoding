@@ -1,0 +1,309 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta
+        name="viewport"
+        content="width=device-width,initial-scale=1"
+    />
+
+    <title>Unreal Agent</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/styles.css"
+    />
+</head>
+
+<body>
+
+<div class="ambient ambient-a"></div>
+<div class="ambient ambient-b"></div>
+
+<div class="app-shell">
+
+    <aside class="sidebar glass">
+
+        <div class="brand">
+            <div class="brand-icon">
+                UA
+            </div>
+
+            <div>
+                <div class="brand-title">
+                    Unreal Agent
+                </div>
+
+                <div class="brand-subtitle">
+                    Autonomous Studio
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-label">
+            WORKSPACE
+        </div>
+
+        <button class="nav-item active">
+            <span>⌁</span>
+            Agent
+        </button>
+
+        <button class="nav-item">
+            <span>◫</span>
+            Projects
+        </button>
+
+        <button class="nav-item">
+            <span>◇</span>
+            Assets
+        </button>
+
+        <button class="nav-item">
+            <span>⌘</span>
+            Tools
+        </button>
+
+        <div class="sidebar-spacer"></div>
+
+        <div class="connection-card">
+            <div class="status-row">
+                <span
+                    id="statusDot"
+                    class="status-dot"
+                ></span>
+
+                <span id="statusText">
+                    Checking Unreal...
+                </span>
+            </div>
+
+            <div
+                id="engineText"
+                class="connection-secondary"
+            >
+                —
+            </div>
+        </div>
+
+    </aside>
+
+
+    <main class="workspace">
+
+        <header class="topbar glass">
+
+            <div>
+                <div class="eyebrow">
+                    LIVE WORKSPACE
+                </div>
+
+                <h1>
+                    Build with Unreal Agent
+                </h1>
+            </div>
+
+            <div class="topbar-actions">
+
+                <button
+                    id="resetButton"
+                    class="icon-button"
+                    title="New session"
+                >
+                    ↻
+                </button>
+
+                <div class="live-pill">
+                    <span class="pulse"></span>
+                    Live
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="main-grid">
+
+            <div class="conversation glass">
+
+                <div
+                    id="conversation"
+                    class="conversation-scroll"
+                >
+
+                    <div class="hero-message">
+
+                        <div class="hero-orb">
+                            ✦
+                        </div>
+
+                        <h2>
+                            What should we build?
+                        </h2>
+
+                        <p>
+                            Describe a level, gameplay
+                            system, UI, asset change,
+                            or Unreal task.
+                        </p>
+
+                        <div class="suggestions">
+
+                            <button
+                                class="suggestion"
+                                data-prompt="Inspect the current Unreal level and summarize its actors. Do not modify anything."
+                            >
+                                Inspect current level
+                            </button>
+
+                            <button
+                                class="suggestion"
+                                data-prompt="Create a simple test scene using basic shapes, verify it, and ask before saving."
+                            >
+                                Create test scene
+                            </button>
+
+                            <button
+                                class="suggestion"
+                                data-prompt="Check the live Unreal Editor connection and report the current level."
+                            >
+                                Check Unreal
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="composer-wrap">
+
+                    <div class="composer">
+
+                        <textarea
+                            id="promptInput"
+                            rows="1"
+                            placeholder="Ask Unreal Agent to build something..."
+                        ></textarea>
+
+                        <button
+                            id="sendButton"
+                            class="send-button"
+                        >
+                            <span>↑</span>
+                        </button>
+
+                    </div>
+
+                    <div class="composer-footer">
+                        <span>
+                            Local AI · Unreal Engine
+                        </span>
+
+                        <span>
+                            Enter to send · Shift+Enter newline
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <aside class="activity-panel glass">
+
+                <div class="panel-header">
+
+                    <div>
+                        <div class="eyebrow">
+                            EXECUTION
+                        </div>
+
+                        <h3>
+                            Live tasks
+                        </h3>
+                    </div>
+
+                    <div
+                        id="activityCount"
+                        class="activity-count"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+                <div
+                    id="activity"
+                    class="activity"
+                >
+
+                    <div class="empty-activity">
+                        Agent activity will appear
+                        here in real time.
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<div
+    id="approvalModal"
+    class="modal-backdrop hidden"
+>
+    <div class="approval-modal glass">
+
+        <div class="approval-symbol">
+            !
+        </div>
+
+        <div class="eyebrow">
+            APPROVAL REQUIRED
+        </div>
+
+        <h2 id="approvalTitle">
+            Allow this action?
+        </h2>
+
+        <p id="approvalReason"></p>
+
+        <pre
+            id="approvalArgs"
+            class="approval-code"
+        ></pre>
+
+        <div class="approval-actions">
+
+            <button
+                id="rejectButton"
+                class="secondary-button"
+            >
+                Cancel
+            </button>
+
+            <button
+                id="approveButton"
+                class="primary-button"
+            >
+                Approve
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+
+<script src="/static/app.js"></script>
+
+</body>
+</html>
