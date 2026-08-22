@@ -983,9 +983,6 @@ def guard_tool_call(
         "read-only",
         "no modifications",
         "no modification",
-        "do not modify",
-        "do not create",
-        "do not delete",
         "inspection only",
         "visual inspection only",
     )
