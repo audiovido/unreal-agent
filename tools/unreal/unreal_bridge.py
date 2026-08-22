@@ -24,6 +24,82 @@ class UnrealBridge:
             "code": code
         })
 
+    def start_pie(self):
+        return self.execute_python(r"""
+level_subsystem = unreal.get_editor_subsystem(
+    unreal.LevelEditorSubsystem
+)
+editor_subsystem = unreal.get_editor_subsystem(
+    unreal.UnrealEditorSubsystem
+)
+
+game_world = editor_subsystem.get_game_world()
+
+if game_world is not None:
+    __bridge_result__ = {
+        "ok": True,
+        "requested": False,
+        "already_running": True,
+        "world_name": game_world.get_name(),
+        "world_path": game_world.get_path_name()
+    }
+else:
+    level_subsystem.editor_request_begin_play()
+
+    __bridge_result__ = {
+        "ok": True,
+        "requested": True,
+        "already_running": False,
+        "message": "PIE begin-play requested"
+    }
+""")
+
+    def stop_pie(self):
+        return self.execute_python(r"""
+level_subsystem = unreal.get_editor_subsystem(
+    unreal.LevelEditorSubsystem
+)
+editor_subsystem = unreal.get_editor_subsystem(
+    unreal.UnrealEditorSubsystem
+)
+
+game_world = editor_subsystem.get_game_world()
+
+if game_world is None:
+    __bridge_result__ = {
+        "ok": True,
+        "requested": False,
+        "already_stopped": True
+    }
+else:
+    world_name = game_world.get_name()
+    level_subsystem.editor_request_end_play()
+
+    __bridge_result__ = {
+        "ok": True,
+        "requested": True,
+        "already_stopped": False,
+        "previous_world_name": world_name,
+        "message": "PIE end-play requested"
+    }
+""")
+
+    def get_pie_status(self):
+        return self.execute_python(r"""
+editor_subsystem = unreal.get_editor_subsystem(
+    unreal.UnrealEditorSubsystem
+)
+
+game_world = editor_subsystem.get_game_world()
+
+__bridge_result__ = {
+    "ok": True,
+    "is_playing": game_world is not None,
+    "world_name": game_world.get_name() if game_world else None,
+    "world_path": game_world.get_path_name() if game_world else None
+}
+""")
+
     def capture_unreal_viewport(self):
         return self.execute_python(r"""
 import os

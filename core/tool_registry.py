@@ -127,6 +127,27 @@ def build_registry(
                 func=bridge.get_current_level,
             ),
 
+            "start_pie": ToolSpec(
+                name="start_pie",
+                description="Request Play In Editor for the currently open Unreal level.",
+                args={},
+                func=bridge.start_pie,
+            ),
+
+            "stop_pie": ToolSpec(
+                name="stop_pie",
+                description="Stop the active Play In Editor session.",
+                args={},
+                func=bridge.stop_pie,
+            ),
+
+            "get_pie_status": ToolSpec(
+                name="get_pie_status",
+                description="Check whether Play In Editor is currently running and return the game world.",
+                args={},
+                func=bridge.get_pie_status,
+            ),
+
             "capture_unreal_viewport": ToolSpec(
                 name="capture_unreal_viewport",
                 description=(
