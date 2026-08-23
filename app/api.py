@@ -554,6 +554,16 @@ def run_execution_until_pause():
 
         state["step"] += 1
 
+        emit(
+            "thinking",
+            "Agent deciding next step",
+            {
+                "step": state["step"],
+                "after_tool": state.get("current_action"),
+            },
+            "running",
+        )
+
         try:
             raw = call_model(
                 state["model_messages"],
@@ -561,7 +571,7 @@ def run_execution_until_pause():
                 json_mode=True,
                 temperature=0.08,
                 num_ctx=32768,
-                timeout=600,
+                timeout=90,
             )
 
         except Exception as exc:
@@ -570,6 +580,9 @@ def run_execution_until_pause():
                 f"Model request failed: "
                 f"{type(exc).__name__}: {exc}"
             )
+
+            state["state"] = "FAILED"
+            state["end_ts"] = time.time()
 
             emit(
                 "error",
