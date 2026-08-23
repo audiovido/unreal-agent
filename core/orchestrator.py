@@ -1005,6 +1005,7 @@ def guard_tool_call(
             "unreal_ping",
             "unreal_status",
             "capture_unreal_viewport",
+            "capture_pie_viewport",
             "start_pie",
             "stop_pie",
             "get_pie_status",

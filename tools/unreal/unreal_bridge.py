@@ -100,6 +100,46 @@ __bridge_result__ = {
 }
 """)
 
+    def capture_pie_viewport(self):
+        return self.execute_python(r"""
+import os
+
+editor_subsystem = unreal.get_editor_subsystem(
+    unreal.UnrealEditorSubsystem
+)
+
+game_world = editor_subsystem.get_game_world()
+
+if game_world is None:
+    __bridge_result__ = {
+        "ok": False,
+        "error": "PIE is not running"
+    }
+else:
+    saved_dir = unreal.Paths.convert_relative_path_to_full(
+        unreal.Paths.project_saved_dir()
+    )
+
+    out_dir = os.path.join(saved_dir, "UnrealAgent")
+    os.makedirs(out_dir, exist_ok=True)
+
+    path = os.path.join(out_dir, "pie_viewport_latest.png")
+
+    # Request a runtime screenshot from the active game viewport.
+    unreal.SystemLibrary.execute_console_command(
+        game_world,
+        "HighResShot 1"
+    )
+
+    __bridge_result__ = {
+        "ok": True,
+        "requested": True,
+        "path": path,
+        "world_name": game_world.get_name(),
+        "message": "Runtime screenshot requested via HighResShot"
+    }
+""")
+
     def capture_unreal_viewport(self):
         return self.execute_python(r"""
 import os

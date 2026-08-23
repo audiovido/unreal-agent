@@ -148,6 +148,13 @@ def build_registry(
                 func=bridge.get_pie_status,
             ),
 
+            "capture_pie_viewport": ToolSpec(
+                name="capture_pie_viewport",
+                description="Capture the active PIE/game viewport while runtime is playing.",
+                args={},
+                func=bridge.capture_pie_viewport,
+            ),
+
             "capture_unreal_viewport": ToolSpec(
                 name="capture_unreal_viewport",
                 description=(
