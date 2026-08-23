@@ -48,7 +48,7 @@ function pushChatEvent(ev){
   const status=String(ev?.status||"").toLowerCase();
   const type=String(ev?.type||"").toLowerCase();
   let role="system";
-  if(type==="assistant"||type==="final"||["complete","completed","done","success"].includes(status))role="assistant";
+  if(type==="answer"||type==="assistant"||type==="final")role="assistant";
   STATE.chat.push({role,text,at:new Date().toLocaleTimeString()});
   renderChat();
 }
@@ -72,9 +72,28 @@ function attachTaskStream(taskId){
     $("#lastResult").textContent=eventText(ev)||title;
     log("SSE "+JSON.stringify(ev));
     pushChatEvent(ev);
-    if(["failed","error","blocked","rejected","cancelled","canceled"].includes(status))$("#taskStatus").textContent=status.toUpperCase();
-    else if(["complete","completed","done","success"].includes(status))$("#taskStatus").textContent="COMPLETE";
-    else $("#taskStatus").textContent="RUNNING";
+    const type=String(ev?.type||"").toLowerCase();
+
+    if(["failed","error","blocked","rejected","cancelled","canceled"].includes(status)){
+      $("#taskStatus").textContent=status.toUpperCase();
+    }
+    else if(type==="answer"||type==="final"||["complete","completed","done"].includes(status)){
+      $("#taskStatus").textContent="COMPLETE";
+      $("#liveLine").textContent="? Agent completed";
+    }
+    else{
+      $("#taskStatus").textContent="RUNNING";
+
+      if(type==="tool_result"){
+        $("#liveLine").textContent="? Tool finished ? thinking next step?";
+      }
+      else if(type==="tool"){
+        $("#liveLine").textContent="? "+title;
+      }
+      else{
+        $("#liveLine").textContent="? Agent working?";
+      }
+    }
   };
   es.onerror=()=>log("SSE changed/closed "+taskId);
 }
