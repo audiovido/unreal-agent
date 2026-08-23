@@ -856,6 +856,24 @@ def run_execution_until_pause():
                 "blocked_by_guard": True,
             }
 
+            # Count blocked attempts too, otherwise a model can loop forever
+            # on a tool that the task explicitly forbids.
+            state["tool_call_count"] = state.get("tool_call_count", 0) + 1
+
+            signature = json.dumps(
+                {
+                    "guard_blocked": True,
+                    "action": action,
+                    "args": args,
+                },
+                sort_keys=True,
+                default=str,
+            )
+
+            state["failed_calls"][signature] = (
+                state["failed_calls"].get(signature, 0) + 1
+            )
+
             emit(
                 "guard",
                 f"Blocked invalid action: {action}",
@@ -863,10 +881,49 @@ def run_execution_until_pause():
                 "warning",
             )
 
-            if state.get("tool_call_count",0) >= MAX_TOOL_CALLS:
+            # Feed the guard result back to the model so it can change strategy.
+            state["model_messages"].append(
+                {
+                    "role": "assistant",
+                    "content": raw,
+                }
+            )
+
+            state["model_messages"].append(
+                {
+                    "role": "user",
+                    "content": (
+                        "TOOL CALL BLOCKED BY HARD GUARD.\n"
+                        f"Tool: {action}\n"
+                        f"Reason: {guard_error}\n"
+                        "This tool is unavailable for this task. "
+                        "Do NOT call it again. "
+                        "Immediately choose a different registered tool "
+                        "that complies with the task."
+                    ),
+                }
+            )
+
+            # Stop a pathological identical blocked loop quickly.
+            if state["failed_calls"][signature] >= 3:
                 state["state"] = "FAILED"
                 state["end_ts"] = time.time()
-                return {"state":"failed","message":"Execution stopped: maximum tool call limit reached."}
+
+                return {
+                    "state": "failed",
+                    "message": (
+                        f"Execution stopped: model repeated guard-blocked "
+                        f"tool '{action}' three times."
+                    ),
+                }
+
+            if state.get("tool_call_count", 0) >= MAX_TOOL_CALLS:
+                state["state"] = "FAILED"
+                state["end_ts"] = time.time()
+                return {
+                    "state": "failed",
+                    "message": "Execution stopped: maximum tool call limit reached."
+                }
 
             continue
 
