@@ -103,9 +103,6 @@ __bridge_result__ = {
     def capture_pie_viewport(self):
         return self.execute_python(r"""
 import os
-import time
-import glob
-import shutil
 
 editor_subsystem = unreal.get_editor_subsystem(
     unreal.UnrealEditorSubsystem
@@ -126,89 +123,41 @@ else:
     out_dir = os.path.join(saved_dir, "UnrealAgent")
     os.makedirs(out_dir, exist_ok=True)
 
-    target_path = os.path.join(
+    path = os.path.join(
         out_dir,
         "pie_viewport_latest.png"
     )
 
-    screenshots_root = os.path.join(
-        saved_dir,
-        "Screenshots"
+    diagnostic = (
+        unreal.UnrealAgentBlueprintLibrary
+        .capture_active_viewport_detailed(path)
     )
 
-    pattern = os.path.join(
-        screenshots_root,
-        "**",
-        "*.png"
+    diagnostic = str(diagnostic)
+
+    exists = os.path.isfile(path)
+    size = os.path.getsize(path) if exists else 0
+
+    ok = (
+        diagnostic.startswith("OK|")
+        and "source=GameViewport" in diagnostic
+        and exists
+        and size > 0
     )
 
-    old_files = set(glob.glob(pattern, recursive=True))
-    request_ts = time.time()
-
-    found = None
-    commands = ["HighResShot 1", "Shot"]
-
-    for command in commands:
-        unreal.SystemLibrary.execute_console_command(
-            game_world,
-            command
+    __bridge_result__ = {
+        "ok": bool(ok),
+        "path": path.replace("\\", "/"),
+        "size": size,
+        "world_name": game_world.get_name(),
+        "diagnostic": diagnostic,
+        "source_is_game_viewport": (
+            "source=GameViewport" in diagnostic
+        ),
+        "error": None if ok else (
+            "Native capture did not verify GameViewport output"
         )
-
-        for _ in range(50):
-            time.sleep(0.1)
-
-            candidates = glob.glob(
-                pattern,
-                recursive=True
-            )
-
-            fresh = []
-
-            for candidate in candidates:
-                try:
-                    if (
-                        candidate not in old_files
-                        and os.path.getmtime(candidate) >= request_ts - 1.0
-                        and os.path.getsize(candidate) > 0
-                    ):
-                        fresh.append(candidate)
-                except Exception:
-                    pass
-
-            if fresh:
-                found = max(
-                    fresh,
-                    key=lambda x: os.path.getmtime(x)
-                )
-                break
-
-        if found:
-            break
-
-    if found:
-        shutil.copy2(found, target_path)
-
-        exists = os.path.isfile(target_path)
-        size = os.path.getsize(target_path) if exists else 0
-
-        __bridge_result__ = {
-            "ok": bool(exists and size > 0),
-            "path": target_path.replace("\\", "/"),
-            "source_path": found.replace("\\", "/"),
-            "size": size,
-            "world_name": game_world.get_name(),
-            "message": "PIE screenshot captured and verified"
-        }
-    else:
-        __bridge_result__ = {
-            "ok": False,
-            "path": target_path.replace("\\", "/"),
-            "world_name": game_world.get_name(),
-            "error": (
-                "Neither HighResShot nor Shot produced a new PNG "
-                "anywhere under Saved/Screenshots"
-            )
-        }
+    }
 """)
 
     def capture_unreal_viewport(self):
