@@ -103,6 +103,9 @@ __bridge_result__ = {
     def capture_pie_viewport(self):
         return self.execute_python(r"""
 import os
+import time
+import glob
+import shutil
 
 editor_subsystem = unreal.get_editor_subsystem(
     unreal.UnrealEditorSubsystem
@@ -123,21 +126,97 @@ else:
     out_dir = os.path.join(saved_dir, "UnrealAgent")
     os.makedirs(out_dir, exist_ok=True)
 
-    path = os.path.join(out_dir, "pie_viewport_latest.png")
+    target_path = os.path.join(
+        out_dir,
+        "pie_viewport_latest.png"
+    )
 
-    # Request a runtime screenshot from the active game viewport.
+    screenshot_dir = os.path.join(
+        saved_dir,
+        "Screenshots",
+        "WindowsEditor"
+    )
+
+    try:
+        old_files = set(
+            glob.glob(
+                os.path.join(screenshot_dir, "*.png")
+            )
+        )
+    except Exception:
+        old_files = set()
+
+    request_ts = time.time()
+
     unreal.SystemLibrary.execute_console_command(
         game_world,
         "HighResShot 1"
     )
 
-    __bridge_result__ = {
-        "ok": True,
-        "requested": True,
-        "path": path,
-        "world_name": game_world.get_name(),
-        "message": "Runtime screenshot requested via HighResShot"
-    }
+    found = None
+
+    # HighResShot is asynchronous. Poll for a newly written PNG.
+    for _ in range(50):
+        time.sleep(0.1)
+
+        candidates = glob.glob(
+            os.path.join(screenshot_dir, "*.png")
+        )
+
+        fresh = []
+
+        for candidate in candidates:
+            try:
+                if (
+                    candidate not in old_files
+                    and os.path.getmtime(candidate) >= request_ts - 1.0
+                    and os.path.getsize(candidate) > 0
+                ):
+                    fresh.append(candidate)
+            except Exception:
+                pass
+
+        if fresh:
+            found = max(
+                fresh,
+                key=lambda x: os.path.getmtime(x)
+            )
+            break
+
+    if found:
+        shutil.copy2(found, target_path)
+
+        exists = os.path.isfile(target_path)
+        size = (
+            os.path.getsize(target_path)
+            if exists
+            else 0
+        )
+
+        __bridge_result__ = {
+            "ok": bool(exists and size > 0),
+            "requested": True,
+            "path": target_path.replace("\\", "/"),
+            "source_path": found.replace("\\", "/"),
+            "size": size,
+            "world_name": game_world.get_name(),
+            "message": (
+                "PIE screenshot captured and verified"
+                if exists and size > 0
+                else "Screenshot copy verification failed"
+            )
+        }
+    else:
+        __bridge_result__ = {
+            "ok": False,
+            "requested": True,
+            "path": target_path.replace("\\", "/"),
+            "world_name": game_world.get_name(),
+            "error": (
+                "HighResShot was requested but no new screenshot "
+                "file appeared in Saved/Screenshots/WindowsEditor"
+            )
+        }
 """)
 
     def capture_unreal_viewport(self):
