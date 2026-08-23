@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from typing import Any, Dict
@@ -198,6 +198,28 @@ __bridge_result__ = {{
 ''')
 
 
+    def delete_node(
+        self,
+        asset_path: str,
+        graph_name: str,
+        node_title: str,
+    ) -> Dict[str, Any]:
+
+        return self.bridge.execute_python(f"""
+deleted = unreal.UnrealAgentBlueprintLibrary.delete_node_by_title(
+    {self._q(asset_path)},
+    {self._q(graph_name)},
+    {self._q(node_title)}
+)
+
+__bridge_result__ = {{
+    "ok": bool(deleted),
+    "deleted": bool(deleted),
+    "node_title": {self._q(node_title)}
+}}
+""")
+
+
     def build_beginplay_print(
         self,
         asset_path: str,
@@ -207,7 +229,7 @@ __bridge_result__ = {{
         a = self._q(asset_path)
         m = self._q(message)
 
-        return self.bridge.execute_python(f'''
+        return self.bridge.execute_python(f"""
 asset_path = {a}
 message = {m}
 
@@ -216,102 +238,173 @@ bp = unreal.EditorAssetLibrary.load_asset(asset_path)
 if bp is None:
     __bridge_result__ = {{
         "ok": False,
-        "error": "Blueprint not found"
+        "error": "Blueprint not found",
+        "mutated": False
     }}
 else:
-    begin = unreal.BlueprintEditorLibrary.add_event_override(
-        bp,
-        "ReceiveBeginPlay",
-        unreal.IntPoint(0, 0)
-    )
-
-    call = unreal.UnrealAgentBlueprintLibrary.add_call_function_node(
-        asset_path,
-        "EventGraph",
-        "/Script/Engine.KismetSystemLibrary",
-        "PrintString",
-        350,
-        0
-    )
-
-    if begin is None or call is None:
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Could not create BeginPlay or PrintString"
-        }}
-    else:
-        begin_then = begin.find_then_pin()
-        call_exec = call.find_execute_pin()
-
-        connected = False
-
-        if begin_then is not None and call_exec is not None:
-            existing = begin_then.list_connected_pins()
-
-            if existing:
-                connected = True
-            else:
-                connected = begin_then.try_create_connection(
-                    call_exec
-                )
-
-        string_pin = None
-
-        for pin in call.list_input_pins():
-            pin_name = str(pin.get_pin_name())
-            low = pin_name.lower()
-
-            if low in ("instring", "string"):
-                string_pin = pin_name
-                break
-
-            if "string" in low:
-                string_pin = pin_name
-                break
-
-        default_set = False
-
-        if string_pin:
-            default_set = bool(
-                unreal.UnrealAgentBlueprintLibrary.set_pin_default_value_by_title(
-                    asset_path,
-                    "EventGraph",
-                    call.get_node_title(),
-                    string_pin,
-                    message
-                )
-            )
-
-        saved = bool(
-            unreal.UnrealAgentBlueprintLibrary.compile_and_save_blueprint(
-                asset_path
-            )
-        )
-
-        links = (
-            len(begin_then.list_connected_pins())
-            if begin_then is not None
-            else 0
-        )
-
-        nodes = unreal.UnrealAgentBlueprintLibrary.list_graph_nodes(
+    nodes_before = [
+        str(x)
+        for x in unreal.UnrealAgentBlueprintLibrary.list_graph_nodes(
             asset_path,
             "EventGraph"
         )
+    ]
 
+    def _norm(value):
+        return "".join(
+            ch.lower()
+            for ch in str(value)
+            if ch.isalnum()
+        )
+
+    begin_titles = [
+        x for x in nodes_before
+        if "beginplay" in _norm(x)
+    ]
+
+    print_titles = [
+        x for x in nodes_before
+        if "printstring" in _norm(x)
+    ]
+
+    # Critical safety rule:
+    # never create another BeginPlay when duplicates already exist.
+    if len(begin_titles) > 1:
         __bridge_result__ = {{
-            "ok": bool(
-                connected
-                and links > 0
-                and saved
-            ),
-            "begin_title": begin.get_node_title(),
-            "call_title": call.get_node_title(),
-            "connected": bool(connected),
-            "links": links,
-            "string_pin": string_pin,
-            "default_set": bool(default_set),
-            "saved": bool(saved),
-            "nodes": [str(x) for x in nodes]
+            "ok": False,
+            "error": "duplicate_beginplay_requires_cleanup",
+            "beginplay_count": len(begin_titles),
+            "printstring_count": len(print_titles),
+            "nodes": nodes_before,
+            "mutated": False
         }}
-''')
+
+    # Existing PrintString is ambiguous because title-only graph APIs
+    # cannot prove its message. Refuse instead of overwriting user logic.
+    elif len(print_titles) > 0:
+        __bridge_result__ = {{
+            "ok": False,
+            "error": "existing_printstring_requires_explicit_resolution",
+            "beginplay_count": len(begin_titles),
+            "printstring_count": len(print_titles),
+            "nodes": nodes_before,
+            "mutated": False
+        }}
+
+    else:
+        if len(begin_titles) == 0:
+            begin = unreal.BlueprintEditorLibrary.add_event_override(
+                bp,
+                "ReceiveBeginPlay",
+                unreal.IntPoint(0, 0)
+            )
+
+            if begin is None:
+                __bridge_result__ = {{
+                    "ok": False,
+                    "error": "Could not create BeginPlay",
+                    "mutated": False
+                }}
+            else:
+                begin_title = str(begin.get_node_title())
+        else:
+            begin_title = begin_titles[0]
+
+        if "__bridge_result__" not in globals():
+            call = unreal.UnrealAgentBlueprintLibrary.add_call_function_node(
+                asset_path,
+                "EventGraph",
+                "/Script/Engine.KismetSystemLibrary",
+                "PrintString",
+                350,
+                0
+            )
+
+            if call is None:
+                __bridge_result__ = {{
+                    "ok": False,
+                    "error": "Could not create PrintString",
+                    "mutated": True
+                }}
+
+            else:
+                call_title = str(call.get_node_title())
+
+                connected = bool(
+                    unreal.UnrealAgentBlueprintLibrary.connect_pins_by_title(
+                        asset_path,
+                        "EventGraph",
+                        begin_title,
+                        "then",
+                        call_title,
+                        "execute"
+                    )
+                )
+
+                string_pin = None
+
+                for pin in call.list_input_pins():
+                    pin_name = str(pin.get_pin_name())
+                    low = pin_name.lower()
+
+                    if low in ("instring", "string") or "string" in low:
+                        string_pin = pin_name
+                        break
+
+                default_set = False
+
+                if string_pin:
+                    default_set = bool(
+                        unreal.UnrealAgentBlueprintLibrary.set_pin_default_value_by_title(
+                            asset_path,
+                            "EventGraph",
+                            call_title,
+                            string_pin,
+                            message
+                        )
+                    )
+
+                saved = bool(
+                    unreal.UnrealAgentBlueprintLibrary.compile_and_save_blueprint(
+                        asset_path
+                    )
+                )
+
+                nodes_after = [
+                    str(x)
+                    for x in unreal.UnrealAgentBlueprintLibrary.list_graph_nodes(
+                        asset_path,
+                        "EventGraph"
+                    )
+                ]
+
+                begin_after = [
+                    x for x in nodes_after
+                    if "beginplay" in _norm(x)
+                ]
+
+                print_after = [
+                    x for x in nodes_after
+                    if "printstring" in _norm(x)
+                ]
+
+                __bridge_result__ = {{
+                    "ok": bool(
+                        connected
+                        and default_set
+                        and saved
+                        and len(begin_after) == 1
+                        and len(print_after) == 1
+                    ),
+                    "connected": connected,
+                    "default_set": default_set,
+                    "saved": saved,
+                    "beginplay_count": len(begin_after),
+                    "printstring_count": len(print_after),
+                    "begin_title": begin_title,
+                    "call_title": call_title,
+                    "nodes": nodes_after,
+                    "mutated": True
+                }}
+""")
+

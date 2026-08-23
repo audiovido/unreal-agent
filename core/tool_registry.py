@@ -388,6 +388,21 @@ def build_registry(
                 destructive=True,
             ),
 
+            "graph_delete_node": ToolSpec(
+                name="graph_delete_node",
+                description=(
+                    "Delete one Blueprint graph node by title. "
+                    "Use for explicit graph cleanup and duplicate recovery."
+                ),
+                args={
+                    "asset_path": "Blueprint content path",
+                    "graph_name": "Graph name such as EventGraph",
+                    "node_title": "Exact or uniquely identifying node title",
+                },
+                func=graph_tools.delete_node,
+                destructive=True,
+            ),
+
             "graph_compile_save": ToolSpec(
                 name="graph_compile_save",
                 description="Compile and save a Blueprint asset.",
