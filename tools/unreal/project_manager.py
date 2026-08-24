@@ -1,5 +1,7 @@
-﻿import json
+import json
 import subprocess
+import socket
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,18 +66,99 @@ def inspect_project(uproject_path: str):
     return data
 
 
+def _bridge_socket_ready(host="127.0.0.1", port=6766, timeout=1.0):
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def _wait_for_bridge(host="127.0.0.1", port=6766, timeout_seconds=90):
+    deadline = time.time() + timeout_seconds
+
+    while time.time() < deadline:
+        if _bridge_socket_ready(host, port):
+            try:
+                from tools.unreal.unreal_bridge import UnrealBridge
+
+                result = UnrealBridge(
+                    host=host,
+                    port=port,
+                    timeout=5,
+                ).ping()
+
+                if isinstance(result, dict) and result.get("ok"):
+                    return {
+                        "ok": True,
+                        "bridge_ready": True,
+                        "bridge_ping": result,
+                    }
+
+            except Exception:
+                pass
+
+        time.sleep(2)
+
+    return {
+        "ok": False,
+        "bridge_ready": False,
+        "error": (
+            f"Unreal Editor launched but Unreal Agent bridge "
+            f"did not become ready on {host}:{port} "
+            f"within {timeout_seconds}s"
+        ),
+    }
+
+
 def open_project(uproject_path: str):
     p = Path(uproject_path).resolve()
 
     if not p.exists():
-        return {"ok": False, "error": f"Project not found: {p}"}
+        return {
+            "ok": False,
+            "error": f"Project not found: {p}",
+        }
 
     if not UNREAL_EDITOR.exists():
-        return {"ok": False, "error": f"UnrealEditor.exe not found: {UNREAL_EDITOR}"}
+        return {
+            "ok": False,
+            "error": f"UnrealEditor.exe not found: {UNREAL_EDITOR}",
+        }
 
-    subprocess.Popen([str(UNREAL_EDITOR), str(p)], cwd=str(p.parent))
+    # If bridge is already alive, do not launch a second Editor instance.
+    if _bridge_socket_ready():
+        ready = _wait_for_bridge(timeout_seconds=8)
 
-    return {"ok": True, "opened": str(p)}
+        if ready.get("ok"):
+            return {
+                "ok": True,
+                "opened": str(p),
+                "already_running": True,
+                **ready,
+            }
+
+    proc = subprocess.Popen(
+        [str(UNREAL_EDITOR), str(p)],
+        cwd=str(p.parent),
+    )
+
+    ready = _wait_for_bridge(timeout_seconds=90)
+
+    if not ready.get("ok"):
+        return {
+            "ok": False,
+            "opened": str(p),
+            "editor_pid": proc.pid,
+            **ready,
+        }
+
+    return {
+        "ok": True,
+        "opened": str(p),
+        "editor_pid": proc.pid,
+        **ready,
+    }
 
 
 def create_project(project_name: str, destination: str, template="Blank"):
