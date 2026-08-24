@@ -1509,6 +1509,28 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!box) return;
 
     try {
+      const tick = await fetch(
+        "/api/workboard/autopilot/tick",
+        {
+          method: "POST",
+          cache: "no-store"
+        }
+      ).then(r => r.json());
+
+      if(!tick.ok){
+        const box = document.getElementById("aiWorkStatus");
+        const state = document.getElementById("aiWorkState");
+        const msg = document.getElementById("aiWorkMessage");
+
+        if(box && state && msg){
+          state.textContent = "AUTOPILOT ERROR";
+          state.style.color = "#ff7180";
+          msg.textContent = tick.error || "Autopilot failed";
+        }
+
+        return;
+      }
+
       const [stateRes, runner] = await Promise.all([
         fetch("/api/workboard/state", {cache:"no-store"}).then(r => r.json()),
         fetch("/api/workboard/runner/status", {cache:"no-store"}).then(r => r.json())
@@ -1556,7 +1578,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       } else if (ready || planned) {
         state = "AUTOPILOT";
-        message = "Next task starts automatically";
+        message = tick.started
+          ? "Starting next task now?"
+          : "Preparing next executable task?";
         color = "#72e6ff";
 
       } else if (total && finished + blocked === total) {

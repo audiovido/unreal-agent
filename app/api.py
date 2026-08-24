@@ -3332,3 +3332,53 @@ def start_persistent_workboard_autopilot():
         name="persistent-workboard-autopilot",
         daemon=True,
     ).start()
+
+
+@app.post("/api/workboard/autopilot/tick")
+def workboard_autopilot_tick():
+    """
+    Hard failsafe for Workboard Autopilot.
+
+    Called by the UI heartbeat and safe to call repeatedly.
+    If executable work exists and the queue is idle, start it.
+    """
+    try:
+        testing_task = get_next_testing_task()
+        ready_task = get_next_ready_task()
+
+        candidate = testing_task or ready_task
+
+        if candidate is None:
+            return {
+                "ok": True,
+                "started": False,
+                "reason": "no_executable_work",
+                "runner": serialize(workboard_runner),
+            }
+
+        if workboard_runner.get("running"):
+            return {
+                "ok": True,
+                "started": False,
+                "reason": "already_running",
+                "task_id": candidate.get("id"),
+                "runner": serialize(workboard_runner),
+            }
+
+        result = workboard_runner_start()
+
+        return {
+            "ok": True,
+            "started": True,
+            "task_id": candidate.get("id"),
+            "task_title": candidate.get("title"),
+            "start_result": serialize(result),
+            "runner": serialize(workboard_runner),
+        }
+
+    except BaseException as exc:
+        return {
+            "ok": False,
+            "error": f"{type(exc).__name__}: {exc}",
+            "runner": serialize(workboard_runner),
+        }
