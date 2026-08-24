@@ -424,6 +424,47 @@
       </div>
     </div>
 
+    <div class="ab-panel" style="margin-bottom:12px">
+      <div class="label">AI PLAN COMPOSER</div>
+
+      <div style="display:grid;grid-template-columns:1fr 180px 180px;gap:10px;margin-top:10px">
+        <input id="abPlanTitle" placeholder="Example: Finish AudioVido MVP">
+        <input id="abPlanStart" type="datetime-local">
+        <input id="abPlanEnd" type="datetime-local">
+      </div>
+
+      <textarea
+        id="abPlanDescription"
+        placeholder="Describe the complete goal in normal language. Agent will break it into Sprint tasks."
+        style="width:100%;min-height:90px;margin-top:10px;resize:vertical"
+      ></textarea>
+
+      <div class="actions" style="margin-top:10px">
+        <button class="action primary" id="abGeneratePlan">
+          Generate Plan
+        </button>
+
+        <button class="action good" id="abCommitPlan" disabled>
+          Approve Plan & Start
+        </button>
+
+        <button class="action" id="abClearPlan">
+          Clear
+        </button>
+      </div>
+
+      <div
+        id="abPlanStatus"
+        class="sub"
+        style="margin-top:10px"
+      >No generated plan yet.</div>
+
+      <div
+        id="abPlanPreview"
+        style="display:none;margin-top:12px"
+      ></div>
+    </div>
+
     <div class="ab-stats">
       <div class="ab-stat"><div class="label">SPRINTS</div><strong id="abStatSprints">0</strong></div>
       <div class="ab-stat"><div class="label">TASKS</div><strong id="abStatTasks">0</strong></div>
@@ -813,6 +854,10 @@ function card(task){
         : ""}
     </div>
 
+    ${task.depends_on?.length
+      ? `<div class="sub" style="margin-top:6px">Depends on ${task.depends_on.length} task(s)</div>`
+      : ""}
+
     ${scheduled}
 
     <div class="ab-actions">
@@ -986,6 +1031,148 @@ async function refresh(){
   AB = result.data || {sprints:[],tasks:[],activity:[]};
   render();
 }
+
+
+let GENERATED_PLAN = null;
+
+function renderPlanPreview(plan){
+  const box = byId("abPlanPreview");
+  const tasks = plan.tasks || [];
+
+  box.style.display = "block";
+
+  box.innerHTML = `
+    <div class="ab-card" style="margin-bottom:10px">
+      <div class="ab-card-title">${esc(plan.title)}</div>
+      <div class="sub">${esc(plan.description || "")}</div>
+      <div class="ab-meta" style="margin-top:8px">
+        <span class="ab-chip">${tasks.length} tasks</span>
+        <span class="ab-chip">
+          ${tasks.reduce((n,t)=>n+Number(t.estimate_minutes||0),0)} min
+        </span>
+        <span class="ab-chip">
+          ${tasks.filter(t=>t.requires_approval).length} approvals
+        </span>
+      </div>
+    </div>
+
+    ${tasks.map((t,i)=>`
+      <div class="ab-card" style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;gap:10px">
+          <div class="ab-card-title">
+            ${esc(t.key)} ? ${esc(t.title)}
+          </div>
+          <div class="ab-meta">
+            <span class="ab-chip">P${Number(t.priority||0)}</span>
+            <span class="ab-chip">${Number(t.estimate_minutes||0)}m</span>
+          </div>
+        </div>
+
+        <div class="ab-card-desc">${esc(t.description || "")}</div>
+
+        <div class="ab-meta" style="margin-top:8px">
+          ${t.depends_on?.length
+            ? `<span class="ab-chip">After ${esc(t.depends_on.join(", "))}</span>`
+            : `<span class="ab-chip">No dependency</span>`}
+
+          ${t.requires_approval
+            ? `<span class="ab-chip ab-approval">Needs Approval</span>`
+            : ""}
+
+          ${t.scheduled_at
+            ? `<span class="ab-chip">${esc(t.scheduled_at)}</span>`
+            : ""}
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+
+byId("abGeneratePlan").onclick = async ()=>{
+  const title = byId("abPlanTitle").value.trim();
+  const description = byId("abPlanDescription").value.trim();
+
+  if(!title){
+    showError(new Error("Plan title is required"));
+    return;
+  }
+
+  byId("abGeneratePlan").disabled = true;
+  byId("abCommitPlan").disabled = true;
+  byId("abPlanStatus").textContent =
+    "AI Project Manager is decomposing the plan...";
+
+  try{
+    const result = await api("plan/preview","POST",{
+      title,
+      description,
+      start_at: byId("abPlanStart").value || null,
+      end_at: byId("abPlanEnd").value || null
+    });
+
+    GENERATED_PLAN = result.plan;
+
+    renderPlanPreview(GENERATED_PLAN);
+
+    byId("abPlanStatus").textContent =
+      `Plan ready ? ${GENERATED_PLAN.tasks.length} executable tasks`;
+
+    byId("abCommitPlan").disabled = false;
+
+  }catch(e){
+    GENERATED_PLAN = null;
+    showError(e);
+    byId("abPlanStatus").textContent =
+      "Plan generation failed.";
+  }finally{
+    byId("abGeneratePlan").disabled = false;
+  }
+};
+
+
+byId("abCommitPlan").onclick = async ()=>{
+  if(!GENERATED_PLAN) return;
+
+  byId("abCommitPlan").disabled = true;
+  byId("abPlanStatus").textContent =
+    "Creating Sprint and task graph...";
+
+  try{
+    const result = await api("plan/commit","POST",{
+      plan: GENERATED_PLAN,
+      start_queue: true
+    });
+
+    byId("abPlanStatus").textContent =
+      `Sprint created ? ${result.tasks.length} tasks ? Queue started`;
+
+    GENERATED_PLAN = null;
+
+    await refresh();
+
+  }catch(e){
+    showError(e);
+    byId("abCommitPlan").disabled = false;
+  }
+};
+
+
+byId("abClearPlan").onclick = ()=>{
+  GENERATED_PLAN = null;
+
+  byId("abPlanTitle").value = "";
+  byId("abPlanDescription").value = "";
+  byId("abPlanStart").value = "";
+  byId("abPlanEnd").value = "";
+
+  byId("abPlanPreview").style.display = "none";
+  byId("abPlanPreview").innerHTML = "";
+  byId("abPlanStatus").textContent = "No generated plan yet.";
+  byId("abCommitPlan").disabled = true;
+};
+
+
 
 byId("abRefresh").onclick = ()=>refresh().catch(showError);
 

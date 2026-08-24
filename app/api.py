@@ -66,6 +66,7 @@ from app.workboard_api import (
     touch_runtime_task,
     get_task,
     recover_orphaned_progress_tasks,
+    commit_generated_plan,
 )
 
 
@@ -101,6 +102,19 @@ class ChatRequest(BaseModel):
 class ApprovalRequest(BaseModel):
     approval_id: str
     approved: bool
+
+
+class WorkboardPlanPreviewRequest(BaseModel):
+    title: str
+    description: str = ""
+    start_at: str | None = None
+    end_at: str | None = None
+
+
+class WorkboardPlanCommitRequest(BaseModel):
+    plan: dict[str, Any]
+    start_queue: bool = False
+
 
 
 lock = threading.Lock()
@@ -1297,6 +1311,257 @@ def route_request(message: str):
     )
 
     return run_execution_until_pause()
+
+
+
+
+# ============================================================
+# WORKBOARD AI PLANNER
+# ============================================================
+
+def _extract_json_object(raw: str):
+    text = str(raw or "").strip()
+
+    try:
+        value = json.loads(text)
+        if isinstance(value, dict):
+            return value
+    except Exception:
+        pass
+
+    start = text.find("{")
+    end = text.rfind("}")
+
+    if start == -1 or end == -1 or end <= start:
+        raise ValueError("Planner did not return a JSON object")
+
+    value = json.loads(text[start:end + 1])
+
+    if not isinstance(value, dict):
+        raise ValueError("Planner JSON root must be an object")
+
+    return value
+
+
+def _planner_prompt(req: WorkboardPlanPreviewRequest):
+    return f"""
+You are the technical project manager for an autonomous Unreal Engine team.
+
+USER PLAN:
+Title: {req.title}
+Description:
+{req.description}
+
+Sprint start: {req.start_at or "not specified"}
+Sprint end: {req.end_at or "not specified"}
+
+Break the plan into SMALL, independently executable engineering tasks.
+
+Return ONLY one valid JSON object.
+
+Schema:
+{{
+  "title": "Sprint title",
+  "description": "Short sprint goal",
+  "start_at": null,
+  "end_at": null,
+  "tasks": [
+    {{
+      "key": "T01",
+      "order": 1,
+      "title": "Small executable task",
+      "description": "Concrete completion criteria",
+      "priority": 80,
+      "estimate_minutes": 30,
+      "requires_approval": false,
+      "depends_on": [],
+      "schedule_offset_minutes": 0
+    }}
+  ]
+}}
+
+RULES:
+- Prefer 5-15 tasks unless the plan genuinely needs more.
+- Every task must be executable by Unreal Agent.
+- Do not create vague tasks like "finish project".
+- Dependencies must reference task keys only.
+- A dependency must always point to an earlier task.
+- Priority is 1-100.
+- estimate_minutes must be realistic.
+- schedule_offset_minutes is relative to sprint start.
+- Use requires_approval=true only when user approval is genuinely needed.
+- Inspection / analysis should come before mutation.
+- Build / validation / visual review should come after implementation.
+- Separate unrelated work so one failure does not block the entire Sprint.
+""".strip()
+
+
+def _normalize_generated_plan(
+    raw_plan: dict,
+    req: WorkboardPlanPreviewRequest,
+):
+    from datetime import datetime, timedelta
+
+    tasks = list(raw_plan.get("tasks") or [])
+
+    if not tasks:
+        raise ValueError("Planner returned no tasks")
+
+    if len(tasks) > 30:
+        tasks = tasks[:30]
+
+    seen = set()
+    cleaned = []
+
+    base_dt = None
+
+    if req.start_at:
+        try:
+            base_dt = datetime.fromisoformat(req.start_at)
+        except Exception:
+            base_dt = None
+
+    for index, item in enumerate(tasks):
+        key = str(
+            item.get("key")
+            or f"T{index + 1:02d}"
+        ).strip()
+
+        if key in seen:
+            key = f"T{index + 1:02d}"
+
+        seen.add(key)
+
+        deps = [
+            str(x)
+            for x in (item.get("depends_on") or [])
+            if str(x) in seen and str(x) != key
+        ]
+
+        offset = max(
+            0,
+            int(item.get("schedule_offset_minutes") or 0),
+        )
+
+        scheduled_at = None
+
+        if base_dt is not None:
+            scheduled_at = (
+                base_dt + timedelta(minutes=offset)
+            ).isoformat(timespec="minutes")
+
+        cleaned.append({
+            "key": key,
+            "order": index + 1,
+            "title": str(
+                item.get("title")
+                or f"Task {index + 1}"
+            ).strip(),
+            "description": str(
+                item.get("description") or ""
+            ).strip(),
+            "priority": max(
+                1,
+                min(100, int(item.get("priority") or 50)),
+            ),
+            "estimate_minutes": max(
+                1,
+                int(item.get("estimate_minutes") or 30),
+            ),
+            "requires_approval": bool(
+                item.get("requires_approval", False)
+            ),
+            "depends_on": deps,
+            "schedule_offset_minutes": offset,
+            "scheduled_at": scheduled_at,
+        })
+
+    return {
+        "title": str(
+            raw_plan.get("title")
+            or req.title
+            or "Generated Sprint"
+        ).strip(),
+        "description": str(
+            raw_plan.get("description")
+            or req.description
+            or ""
+        ).strip(),
+        "start_at": req.start_at,
+        "end_at": req.end_at,
+        "tasks": cleaned,
+    }
+
+
+@app.post("/api/workboard/plan/preview")
+def workboard_plan_preview(
+    req: WorkboardPlanPreviewRequest,
+):
+    if not req.title.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Plan title is required",
+        )
+
+    prompt = _planner_prompt(req)
+
+    raw = call_model_hard_timeout(
+        [
+            {
+                "role": "system",
+                "content": (
+                    "Return strict JSON only. "
+                    "You are a senior Unreal technical project manager."
+                ),
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        timeout_seconds=120,
+    )
+
+    try:
+        parsed = _extract_json_object(raw)
+        plan = _normalize_generated_plan(
+            parsed,
+            req,
+        )
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Planner output invalid: {exc}",
+        )
+
+    return {
+        "ok": True,
+        "plan": plan,
+    }
+
+
+@app.post("/api/workboard/plan/commit")
+def workboard_plan_commit(
+    req: WorkboardPlanCommitRequest,
+):
+    plan = dict(req.plan or {})
+
+    if not plan.get("tasks"):
+        raise HTTPException(
+            status_code=400,
+            detail="Generated plan has no tasks",
+        )
+
+    result = commit_generated_plan(plan)
+
+    if req.start_queue:
+        try:
+            workboard_runner_start()
+        except Exception:
+            pass
+
+    return result
 
 
 

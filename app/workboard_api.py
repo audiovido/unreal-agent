@@ -52,6 +52,7 @@ class TaskRequest(BaseModel):
     requires_approval: bool = False
     scheduled_at: str | None = None
     estimate_minutes: int | None = None
+    depends_on: list[str] = []
 
 
 class MoveRequest(BaseModel):
@@ -125,25 +126,61 @@ def _iso_due(value):
         return True
 
 
-def _normalize_task(task):
+def _dependencies_finished(task, data):
+    deps = task.get("depends_on") or []
+
+    if not deps:
+        return True
+
+    by_id = {
+        t.get("id"): t
+        for t in data.get("tasks", [])
+    }
+
+    return all(
+        by_id.get(dep, {}).get("status") == "finished"
+        for dep in deps
+    )
+
+
+def _normalize_task(task, data=None):
     status = task.get("status", "planned")
+
+    deps_ready = (
+        True
+        if data is None
+        else _dependencies_finished(task, data)
+    )
 
     if status == "planned":
         if task.get("requires_approval") and not task.get("approved"):
             task["status"] = "approval"
-        elif _iso_due(task.get("scheduled_at")):
+
+        elif (
+            deps_ready
+            and _iso_due(task.get("scheduled_at"))
+        ):
             task["status"] = "ready"
 
-    if status == "approval" and task.get("approved"):
-        if _iso_due(task.get("scheduled_at")):
+    elif status == "approval" and task.get("approved"):
+        if (
+            deps_ready
+            and _iso_due(task.get("scheduled_at"))
+        ):
             task["status"] = "ready"
+        else:
+            task["status"] = "planned"
 
     return task
 
 
 def _normalize(data):
-    for task in data.get("tasks", []):
-        _normalize_task(task)
+    # Re-run a few times so a newly finished dependency can unlock
+    # the next item in the same scheduler cycle.
+    for _ in range(3):
+        for task in data.get("tasks", []):
+            _normalize_task(task, data)
+
     return data
 
 
@@ -193,6 +230,7 @@ def create_task(req: TaskRequest):
         "approved": not req.requires_approval,
         "scheduled_at": req.scheduled_at,
         "estimate_minutes": req.estimate_minutes,
+        "depends_on": list(req.depends_on or []),
         "status": (
             "approval"
             if req.requires_approval
@@ -330,7 +368,7 @@ def schedule_task(task_id: str, req: ScheduleRequest):
             if req.priority is not None:
                 task["priority"] = req.priority
 
-            _normalize_task(task)
+            _normalize_task(task, data)
 
             _activity(
                 data,
@@ -409,6 +447,7 @@ def get_next_ready_task():
             not t.get("requires_approval")
             or t.get("approved")
         )
+        and _dependencies_finished(t, data)
     ]
 
     if not ready:
@@ -581,3 +620,114 @@ def touch_runtime_task(task_id: str, note: str | None = None):
             return task
 
     return None
+
+
+def commit_generated_plan(plan: dict):
+    """
+    Atomically create one Sprint and its AI-generated task graph.
+    Dependency references use temporary task keys in the preview
+    and are resolved to real task IDs during commit.
+    """
+    with WORKBOARD_LOCK:
+        data = _load()
+
+        now = time.time()
+
+        sprint = {
+            "id": str(uuid.uuid4()),
+            "title": str(plan.get("title") or "Generated Sprint").strip(),
+            "description": str(plan.get("description") or "").strip(),
+            "start_at": plan.get("start_at"),
+            "end_at": plan.get("end_at"),
+            "status": "active",
+            "generated": True,
+            "created_at": now,
+        }
+
+        data["sprints"].append(sprint)
+
+        raw_tasks = list(plan.get("tasks") or [])
+        key_to_id = {}
+
+        # Pass 1: allocate stable IDs.
+        for index, item in enumerate(raw_tasks):
+            key = str(
+                item.get("key")
+                or f"task_{index + 1}"
+            )
+
+            key_to_id[key] = str(uuid.uuid4())
+
+        # Pass 2: build cards and resolve dependency keys.
+        created = []
+
+        for index, item in enumerate(raw_tasks):
+            key = str(
+                item.get("key")
+                or f"task_{index + 1}"
+            )
+
+            depends_keys = list(item.get("depends_on") or [])
+
+            depends_ids = [
+                key_to_id[x]
+                for x in depends_keys
+                if x in key_to_id
+            ]
+
+            requires_approval = bool(
+                item.get("requires_approval", False)
+            )
+
+            task = {
+                "id": key_to_id[key],
+                "sprint_id": sprint["id"],
+                "generated_key": key,
+                "order": int(item.get("order") or index + 1),
+                "title": str(item.get("title") or "Untitled Task").strip(),
+                "description": str(item.get("description") or "").strip(),
+                "priority": max(
+                    1,
+                    min(100, int(item.get("priority") or 50)),
+                ),
+                "requires_approval": requires_approval,
+                "approved": not requires_approval,
+                "scheduled_at": item.get("scheduled_at"),
+                "estimate_minutes": (
+                    int(item["estimate_minutes"])
+                    if item.get("estimate_minutes") is not None
+                    else None
+                ),
+                "depends_on": depends_ids,
+                "depends_on_keys": depends_keys,
+                "status": (
+                    "approval"
+                    if requires_approval
+                    else "planned"
+                ),
+                "created_at": now + (index * 0.001),
+                "started_at": None,
+                "finished_at": None,
+                "evidence": [],
+                "generated": True,
+            }
+
+            data["tasks"].append(task)
+            created.append(task)
+
+        _normalize(data)
+
+        _activity(
+            data,
+            "plan_generated",
+            f"AI plan committed: {sprint['title']} ({len(created)} tasks)",
+        )
+
+        _save(data)
+
+        return {
+            "ok": True,
+            "sprint": sprint,
+            "tasks": created,
+            "data": data,
+        }
