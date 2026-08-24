@@ -60,6 +60,14 @@ IMPORTANT:
 - Preserve existing working systems.
 - Do not spend the task repeatedly inspecting the same state.
 - Prefer implementation over commentary.
+- SOURCE TYPE SAFETY:
+  * Files/classes under Source/AudioVidoLivingCity are native C++.
+  * Inspect native .cpp/.h files with read_text_file.
+  * NEVER call inspect_blueprint on AVGameMode, AVCityBlock,
+    AVPlayerController, AVCameraPawn, AVHUD, or AVVenueData.
+  * inspect_blueprint is ONLY for actual Blueprint assets under /Game.
+  * A failed inspection tool is not a reason to abandon the milestone;
+    recover with the correct registered tool and continue.
 - Do not modify /Game/AgentTests unless explicitly required for diagnostics.
 - Do not claim PASS without actual verification.
 - Finish the requested milestone and return final.
@@ -358,7 +366,7 @@ def launch_agent_task(prompt):
                 "language": "en",
             },
         },
-        timeout=30,
+        timeout=120,
     )
 
     return result.get("task_id") or (
@@ -407,7 +415,11 @@ def wait_for_task(task_id, timeout_minutes):
             ):
                 return True, detail or title
 
-            if status in (
+            # Individual tool errors are NOT terminal.
+            # The Agent must be allowed to inspect the failure and recover.
+            terminal_title = title.lower()
+
+            if etype in ("answer", "final") and status in (
                 "failed",
                 "error",
                 "cancelled",
@@ -415,9 +427,14 @@ def wait_for_task(task_id, timeout_minutes):
             ):
                 return False, detail or title
 
-            if (
-                etype == "error"
-                and "terminated" in title.lower()
+            if etype == "error" and any(
+                marker in terminal_title
+                for marker in (
+                    "background execution terminated",
+                    "background execution crashed",
+                    "background execution failed",
+                    "background execution ended unexpectedly",
+                )
             ):
                 return False, detail or title
 
