@@ -362,7 +362,7 @@
         <button class="action primary" id="abScheduler">Run Scheduler</button>
         <button class="action good" id="abRunnerStart">Start Queue</button>
         <button class="action danger" id="abRunnerStop">Stop Queue</button>
-        <button class="action" id="abSelfTest">Self-Test</button>
+        <button class="action" id="abSelfTest">Run Diagnostics</button>
         <span class="task-chip" id="abRunnerState">Queue Idle</span>
       </div>
     </div>
@@ -474,11 +474,18 @@
       <div class="ab-stat"><div class="label">FINISHED</div><strong id="abStatFinished">0</strong></div>
     </div>
 
-    <div class="ab-panel" id="abSelfTestPanel" style="display:none">
-      <div class="label">SYSTEM SELF-TEST</div>
-      <div id="abSelfTestStatus" style="font-size:18px;font-weight:700;margin-top:7px">IDLE</div>
-      <div id="abSelfTestDetail" class="sub" style="margin-top:8px;line-height:1.7"></div>
-    </div>
+    <details class="ab-panel" id="abSelfTestPanel" style="display:none">
+      <summary style="cursor:pointer;user-select:none">
+        <span class="label">SYSTEM DIAGNOSTICS</span>
+        <strong id="abSelfTestStatus" style="margin-left:8px">IDLE</strong>
+      </summary>
+
+      <div
+        id="abSelfTestDetail"
+        class="sub"
+        style="margin-top:10px;line-height:1.7;max-height:260px;overflow:auto"
+      ></div>
+    </details>
 
     <div class="ab-board-scroll">
       <div class="ab-board" id="abBoard">
@@ -1181,6 +1188,7 @@ byId("abRefresh").onclick = ()=>refresh().catch(showError);
 byId("abSelfTest").onclick = async ()=>{
   const panel = byId("abSelfTestPanel");
   panel.style.display = "block";
+  panel.open = true;
 
   byId("abSelfTestStatus").textContent = "RUNNING";
   byId("abSelfTestDetail").textContent =
@@ -1209,17 +1217,20 @@ async function refreshSelfTest(){
     const panel = byId("abSelfTestPanel");
     if(!panel) return;
 
-    if(st.status !== "idle" || st.results?.length){
+    // Diagnostics stay out of the product workflow unless they are
+    // currently running or the user explicitly opened them.
+    if(st.running){
       panel.style.display = "block";
+      panel.open = true;
     }
 
     const status = byId("abSelfTestStatus");
     const detail = byId("abSelfTestDetail");
 
     status.textContent =
-      st.status === "pass" ? "PASS ?" :
-      st.status === "fail" ? "FAIL ?" :
-      st.running ? "RUNNING?" :
+      st.status === "pass" ? "PASS" :
+      st.status === "fail" ? "FAIL" :
+      st.running ? "RUNNING" :
       "IDLE";
 
     const rows = (st.results || []).map(x =>

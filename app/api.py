@@ -1187,30 +1187,16 @@ def run_execution_until_pause():
 
 
 @app.on_event("startup")
-def workboard_startup_recovery_and_selftest():
-    # A backend restart must never leave cards permanently In Progress.
-    recover_orphaned_progress_tasks(active_execution_id=None)
+def workboard_startup_recovery():
+    """
+    Production startup behavior.
 
-    # Development health-check: run the existing autonomous
-    # Workboard self-test automatically after the API is ready.
-    def delayed_selftest():
-        time.sleep(3)
-
-        try:
-            start_selftest()
-        except BaseException as exc:
-            emit(
-                "error",
-                "Automatic Workboard self-test failed to start",
-                f"{type(exc).__name__}: {exc}",
-                "error",
-            )
-
-    threading.Thread(
-        target=delayed_selftest,
-        name="workboard-auto-selftest",
-        daemon=True,
-    ).start()
+    Recover interrupted Workboard tasks, but NEVER launch diagnostic
+    self-tests automatically. Self-Test is an explicit user action only.
+    """
+    recover_orphaned_progress_tasks(
+        active_execution_id=None,
+    )
 
 
 # ============================================================
