@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import threading
+import time
+import uuid
 from app import api
 
 # ============================================================
@@ -73,7 +75,7 @@ def hardened_save(data):
     if _has_product(saved):
         wb.DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-        tmp = BACKUP_FILE.with_suffix(".json.tmp")
+        tmp = wb.DATA_DIR / f"workboard.last_good.{uuid.uuid4().hex}.tmp"
         tmp.write_text(
             json.dumps(
                 saved,
@@ -82,12 +84,139 @@ def hardened_save(data):
             ),
             encoding="utf-8",
         )
-        tmp.replace(BACKUP_FILE)
+
+        for attempt in range(8):
+            try:
+                tmp.replace(BACKUP_FILE)
+                break
+            except PermissionError:
+                if attempt == 7:
+                    raise
+                time.sleep(0.05 * (attempt + 1))
 
     return saved
 
 wb._load = hardened_load
 wb._save = hardened_save
+
+
+
+def _call_model_once(messages, model, timeout_seconds):
+    box = {}
+
+    def worker():
+        try:
+            box["result"] = api.call_model(
+                messages,
+                model=model,
+                json_mode=True,
+                temperature=0.08,
+                num_ctx=32768,
+                timeout=timeout_seconds,
+            )
+        except BaseException as exc:
+            box["error"] = exc
+
+    t = threading.Thread(target=worker, daemon=True)
+    t.start()
+    t.join(timeout_seconds)
+
+    if t.is_alive():
+        raise TimeoutError(
+            f"{model} exceeded {timeout_seconds}s"
+        )
+
+    if "error" in box:
+        raise box["error"]
+
+    return box["result"]
+
+
+def resilient_model(messages, timeout_seconds=90):
+    # Unreal Coder stays the preferred/default model.
+    models = [
+        (api.HEAVY_MODEL, 90),
+        (api.CODER_MODEL, 60),
+        (api.REASONING_MODEL, 60),
+        (api.FAST_MODEL, 45),
+    ]
+
+    seen = set()
+    errors = []
+
+    for model, limit in models:
+        if not model or model in seen:
+            continue
+
+        seen.add(model)
+
+        try:
+            api.emit(
+                "thinking",
+                f"Trying {model}",
+                {"model": model},
+                "running",
+            )
+            return _call_model_once(
+                messages,
+                model,
+                min(timeout_seconds, limit),
+            )
+        except Exception as exc:
+            errors.append(
+                f"{model}: {type(exc).__name__}: {exc}"
+            )
+
+    raise TimeoutError(
+        "All model fallbacks failed: " + " | ".join(errors)
+    )
+
+
+api.call_model_hard_timeout = resilient_model
+
+
+def _recover_transient_blocked():
+    data = wb._load()
+    changed = False
+
+    markers = (
+        "timeout",
+        "timed out",
+        "permissionerror",
+        "permission denied",
+        "model request failed",
+    )
+
+    for task in data.get("tasks", []):
+        if task.get("status") != "blocked":
+            continue
+
+        text = (
+            str(task.get("blocked_reason") or "")
+            + " "
+            + str(task.get("last_note") or "")
+        ).lower()
+
+        if not any(x in text for x in markers):
+            continue
+
+        retries = int(task.get("retry_count") or 0)
+
+        if retries >= 3:
+            continue
+
+        task["retry_count"] = retries + 1
+        task["status"] = "ready"
+        task["blocked_reason"] = None
+        task["last_note"] = (
+            f"Automatic recovery retry {retries + 1}/3"
+        )
+        task["updated_at"] = time.time()
+        changed = True
+
+    if changed:
+        wb._save(data)
+
 
 
 def _clear_stale():
@@ -168,6 +297,7 @@ def _worker(task_id, phase):
 
 def deterministic_start():
     _clear_stale()
+    _recover_transient_blocked()
 
     active_id = (
         api.execution_state.get("id")
