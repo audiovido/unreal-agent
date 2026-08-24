@@ -22,7 +22,7 @@ BUILD_BAT = Path(
 )
 
 RUN_HOURS = 8.0
-TASK_TIMEOUT_MIN = 18
+TASK_TIMEOUT_MIN = 12
 POLL_SECONDS = 3
 MAX_RETRIES_PER_TASK = 2
 
@@ -76,221 +76,176 @@ IMPORTANT:
 TASKS = [
 
 COMMON_RULES + r"""
-MILESTONE 1 ? COMPLETE PRODUCT/PROJECT AUDIT
+MILESTONE 01 ? STARTUP + ARCHITECTURE
 
-Inspect the current project implementation and runtime architecture.
+Inspect AVGameMode, AVCityBlock, AVPlayerController, AVCameraPawn, AVHUD,
+AVVenueData and startup config using read_text_file for native C++.
 
-Inspect relevant:
-- AVGameMode
-- AVCityBlock
-- AVPlayerController
-- AVCameraPawn
-- AVHUD
-- AVVenueData
-- project config/startup settings
-- current map/runtime state
-
-Determine what is already complete versus missing for a coherent playable
-AudioVido Living City vertical slice.
-
-Do not polish tiny visual details.
-
-Fix only critical architecture/startup problems discovered during the audit.
-
-Verify the project still opens and the intended GameMode/runtime systems are active.
+Confirm AVLC_Main launches with the intended GameMode, controller, pawn,
+HUD and CityBlock. Fix concrete startup/initialization defects only.
 
 RETURN:
-work completed, files changed, blockers, verification, PASS/PARTIAL/FAIL.
+FINAL STATUS: PASS or FAIL
 """,
 
 COMMON_RULES + r"""
-MILESTONE 2 ? PLAYER MOVEMENT + CAMERA SYSTEM
+MILESTONE 02 ? PLAYER MOVEMENT
 
-Make the city reliably explorable.
-
-Requirements:
-- WASD movement works predictably.
-- Mouse look works.
-- camera movement is smooth enough for a product prototype.
-- venue selection camera framing never places the camera inside geometry.
-- all four venues can be framed.
-- Back/Escape restores a safe overview/home camera.
-- selecting venues repeatedly does not accumulate camera drift.
-- preserve existing venue interaction behavior.
-
-Inspect existing AVCameraPawn and AVPlayerController first, then implement.
-
-Verify behavior using PIE/runtime evidence where possible.
+Work only on AVCameraPawn movement/input.
+Make WASD deterministic and usable.
+Verify the implementation and PIE behavior where possible.
 
 RETURN:
-files changed, movement behavior, camera behavior, verification,
-remaining blockers, PASS/PARTIAL/FAIL.
+FINAL STATUS: PASS or FAIL
 """,
 
 COMMON_RULES + r"""
-MILESTONE 3 ? INTERACTION + ALL FOUR VENUES
+MILESTONE 03 ? CAMERA LOOK + HOME RESET
 
-Complete the core interaction loop for:
-- LUMIERE CINEMA
-- VELVET ROOM
-- THE FORUM
-- COMMON GROUND
-
-Requirements:
-- each venue can be selected reliably.
-- each venue produces its own correct data/details.
-- selection state is deterministic.
-- Back clears selection and restores camera.
-- repeated selection/back cycles remain stable.
-- no venue should depend on accidental actor ordering.
-- venue IDs/data should remain the source of truth.
-
-Do not merely change text.
-
-Verify all four venue flows.
+Work only on mouse look and ResetView/Home.
+Prevent camera drift and invalid reset transforms.
 
 RETURN:
-files changed, interaction changes, four venue verification results,
-remaining blockers, PASS/PARTIAL/FAIL.
+FINAL STATUS: PASS or FAIL
 """,
 
 COMMON_RULES + r"""
-MILESTONE 4 ? HUD / MENUS / BUTTONS / NAVIGATION
+MILESTONE 04 ? VENUE CAMERA FRAMING
 
-Turn the existing AVHUD into a coherent usable product UI.
-
-Functional requirements:
-- Welcome state works.
-- Continue dismisses Welcome.
-- Privacy control has a defined safe behavior.
-- SPACES navigation visibly indicates selection/hover where practical.
-- all four space entries are usable.
-- venue detail panel displays the selected venue.
-- Back works.
-- Escape works.
-- controls do not overlap at the target runtime viewport.
-- buttons have clear hit regions and predictable input behavior.
-- UI remains readable over the world.
-- maintain AudioVido visual identity.
-
-Focus on functionality and hierarchy, not endless pixel polish.
-
-Verify Welcome, Main HUD, each venue detail, Back/Escape.
+Verify and fix framing for all four venues.
+Camera must remain outside geometry.
+Repeated select/back cycles must remain stable.
 
 RETURN:
-files changed, controls implemented, states verified,
-remaining blockers, PASS/PARTIAL/FAIL.
+FINAL STATUS: PASS or FAIL
 """,
 
 COMMON_RULES + r"""
-MILESTONE 5 ? CITY STRUCTURE + VENUE READABILITY
+MILESTONE 05 ? VENUE DATA + SELECTION
 
-Improve the actual procedural city so it reads as a small creative district,
-not four anonymous cubes.
+Make selection deterministic for:
+lumiere_cinema
+velvet_room
+the_forum
+common_ground
 
-Preserve the existing runtime procedural architecture.
-
-Requirements:
-- distinguish the four venue silhouettes.
-- make entrances/facades clearly identifiable.
-- preserve venue accent identities.
-- improve street/public-realm readability.
-- ensure roads, cross street, lights and crowd elements are coherent.
-- eliminate obvious geometry/camera collisions that damage venue framing.
-- keep performance appropriate for a prototype.
-- do not replace everything with an unrelated architecture.
-
-Verify in PIE.
+Correct venue data must be shown.
+Back clears selection.
+Do not rely on actor ordering.
 
 RETURN:
-files changed, geometry changes, venue identity changes,
-runtime verification, PASS/PARTIAL/FAIL.
+FINAL STATUS: PASS or FAIL
 """,
 
 COMMON_RULES + r"""
-MILESTONE 6 ? PRODUCT FLOW + EDGE CASES
+MILESTONE 06 ? WELCOME + MAIN HUD
 
-Test and fix the complete user journey:
+Focus only on:
+Welcome
+Continue
+SPACES navigation
+button hit regions
+main HUD state
 
-launch
-? Welcome
-? Continue
-? explore city
-? select venue
-? read details
-? Back
-? select another venue
-? repeat for all four
-? Escape/home recovery
-
-Fix:
-- stale UI state
-- duplicate actions
-- broken clicks
-- invalid selected venue states
-- camera recovery issues
-- unsafe null assumptions
-- obvious runtime errors
-
-Do not redesign systems that already work.
+Verify actual interaction.
 
 RETURN:
-issues found, issues fixed, files changed,
-journey verification, remaining blockers, PASS/PARTIAL/FAIL.
+FINAL STATUS: PASS or FAIL
 """,
 
 COMMON_RULES + r"""
-MILESTONE 7 ? FINAL ENGINEERING HARDENING
+MILESTONE 07 ? VENUE DETAIL UI + BACK
 
-Perform an engineering pass over the completed vertical slice.
-
-Look for:
-- compile risks
-- duplicated logic
-- dangerous null access
-- unstable initialization
-- runtime actor duplication
-- incorrect GameMode/startup assumptions
-- interaction/camera state inconsistencies
-- obviously dead prototype paths that interfere with the main experience
-
-Make conservative fixes only.
-
-Do not perform cosmetic churn.
+Verify selected venue detail data, Back and Escape for all four venues.
 
 RETURN:
-files changed, engineering fixes, verification,
-remaining blockers, PASS/PARTIAL/FAIL.
+FINAL STATUS: PASS or FAIL
 """,
 
 COMMON_RULES + r"""
-MILESTONE 8 ? FINAL RUNTIME VALIDATION
+MILESTONE 08 ? PRIVACY + UI EDGE CASES
 
-Do not add new features unless required to fix a validation failure.
+Give Privacy a defined safe behavior.
+Fix stale UI state, duplicate clicks and invalid selection state only.
+
+RETURN:
+FINAL STATUS: PASS or FAIL
+""",
+
+COMMON_RULES + r"""
+MILESTONE 09 ? CITY VENUE SILHOUETTES
+
+Improve AVCityBlock so all four venues have distinct silhouettes,
+entrances and identities without breaking the procedural architecture.
+
+Do not modify camera or HUD systems.
+
+RETURN:
+FINAL STATUS: PASS or FAIL
+""",
+
+COMMON_RULES + r"""
+MILESTONE 10 ? STREET + LIGHTS + PUBLIC REALM
+
+Improve roads, cross street, lights, signage, crowd and public realm.
+Keep prototype performance reasonable.
+
+RETURN:
+FINAL STATUS: PASS or FAIL
+""",
+
+COMMON_RULES + r"""
+MILESTONE 11 ? COMPLETE PRODUCT FLOW
+
+Verify and fix:
+Welcome -> Continue -> movement -> venue -> details -> Back
+
+Repeat for all four venues, then verify Escape/Home recovery.
+
+RETURN:
+FINAL STATUS: PASS or FAIL
+""",
+
+COMMON_RULES + r"""
+MILESTONE 12 ? ENGINEERING HARDENING
+
+Fix concrete:
+null-safety issues
+duplicate initialization
+runtime actor duplication
+state inconsistencies
+compile risks
+
+No cosmetic churn.
+
+RETURN:
+FINAL STATUS: PASS or FAIL
+""",
+
+COMMON_RULES + r"""
+MILESTONE 13 ? FINAL RUNTIME VALIDATION
 
 Validate:
-- Unreal bridge
-- AVLC_Main
-- PIE starts
-- intended GameMode/player/HUD
-- Welcome
-- main HUD
-- movement/camera
-- four venue selection flows
-- Back/Escape
-- runtime city
-- final screenshot evidence
+bridge
+AVLC_Main
+PIE
+movement
+camera
+Welcome
+HUD
+all four venue flows
+Back/Escape
+runtime city
 
-Fix only blocking defects found during validation.
+Use capture_pie_viewport for evidence.
+Do not use visual_review_unreal.
 
-RETURN a final release-style report:
-DONE
-BLOCKED
-KNOWN ISSUES
-FILES CHANGED
-RUNTIME EVIDENCE
-FINAL STATUS
+RETURN:
+FINAL STATUS: PASS or FAIL
+RUNTIME EVIDENCE:
+...
 """,
+
 ]
 
 
@@ -381,6 +336,40 @@ def events():
         return []
 
 
+
+def final_result_is_real_success(value):
+    text = str(value or "").lower()
+
+    bad = (
+        "cannot be completed",
+        "could not be completed",
+        "could not complete",
+        "unable to proceed",
+        "unable to complete",
+        "could not proceed",
+        "further investigation is required",
+        "blocked",
+        "final status: fail",
+        "final status: partial",
+        "status: fail",
+        "status: partial",
+        "not completed",
+        "not complete",
+        "verification failed",
+        "could not verify",
+        "unable to verify",
+        "no venue-related actors found",
+    )
+
+    if any(x in text for x in bad):
+        return False
+
+    return (
+        "final status: pass" in text
+        or "status: pass" in text
+    )
+
+
 def wait_for_task(task_id, timeout_minutes):
     deadline = time.time() + timeout_minutes * 60
     seen = set()
@@ -413,7 +402,15 @@ def wait_for_task(task_id, timeout_minutes):
             if etype in ("answer", "final") and status in (
                 "success", "complete", "completed"
             ):
-                return True, detail or title
+                final_value = detail or title
+
+                if final_result_is_real_success(final_value):
+                    return True, final_value
+
+                return False, (
+                    "Terminal response did not prove completion: "
+                    + str(final_value)
+                )
 
             # Individual tool errors are NOT terminal.
             # The Agent must be allowed to inspect the failure and recover.
@@ -507,7 +504,17 @@ def git_checkpoint(index, title):
         log("No project changes to checkpoint")
         return True, "clean"
 
-    run(["git", "add", "-A"], cwd=PROJECT, timeout=60)
+    run(
+        [
+            "git", "add", "-A",
+            "--",
+            ".",
+            ":(exclude)Content/AgentTests/**",
+            ":(exclude)Content/AAA_Workroom/**",
+        ],
+        cwd=PROJECT,
+        timeout=60,
+    )
 
     msg = f"Overnight {index:02d}: {title}"
 
