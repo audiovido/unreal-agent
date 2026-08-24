@@ -77,6 +77,13 @@ app.mount(
     name="static",
 )
 
+# Workboard router hard-registration
+if not any(
+    "workboard" in getattr(route, "path", "")
+    for route in app.routes
+):
+    app.include_router(workboard_router)
+
 # Create MemorySystem instance for API
 MEMORY = MemorySystem()
 
