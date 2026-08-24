@@ -440,3 +440,40 @@ def get_task(task_id: str):
             return task
 
     return None
+
+
+def recover_orphaned_progress_tasks(active_execution_id=None):
+    """
+    Any Workboard task left In Progress without the matching live
+    Agent execution is stale and must be safely returned to Ready.
+    """
+    data = _load()
+    recovered = []
+
+    for task in data.get("tasks", []):
+        if task.get("status") != "progress":
+            continue
+
+        execution_id = task.get("execution_id")
+
+        if active_execution_id and execution_id == active_execution_id:
+            continue
+
+        task["status"] = "ready"
+        task["execution_id"] = None
+        task["last_note"] = "Recovered after interrupted Agent execution"
+        task["updated_at"] = time.time()
+
+        recovered.append(task["id"])
+
+        _activity(
+            data,
+            "recovery",
+            f"Recovered interrupted task: {task.get('title')} -> ready",
+            task["id"],
+        )
+
+    if recovered:
+        _save(data)
+
+    return recovered

@@ -54,12 +54,16 @@ from core.orchestrator import (
 
 from core.tool_registry import validate_args
 from app.overnight_api import router as overnight_router
-from app.workboard_selftest import router as workboard_selftest_router
+from app.workboard_selftest import (
+    router as workboard_selftest_router,
+    start_selftest,
+)
 from app.workboard_api import (
     router as workboard_router,
     get_next_ready_task,
     update_runtime_task,
     get_task,
+    recover_orphaned_progress_tasks,
 )
 
 
@@ -823,11 +827,33 @@ def run_execution_until_pause():
                 "success",
             )
 
+            # IMPORTANT:
+            # Workboard transition happens INSIDE the exact Agent
+            # completion branch. It no longer depends on the Queue
+            # runner observing a return value later.
+            workboard_task_id = state.get("workboard_task_id")
+
+            if workboard_task_id:
+                update_runtime_task(
+                    workboard_task_id,
+                    "testing",
+                    note="Agent execution completed; ready for validation",
+                    evidence={
+                        "type": "agent_completion",
+                        "execution_id": state.get("id"),
+                        "final": proposed,
+                        "successful_calls": state.get("successful_calls", 0),
+                        "tool_call_count": state.get("tool_call_count", 0),
+                        "at": time.time(),
+                    },
+                )
+
             execution_state = None
 
             return {
                 "state": "complete",
                 "message": proposed,
+                "workboard_task_id": workboard_task_id,
             }
 
         # ----------------------------------------------------
@@ -1130,6 +1156,34 @@ def run_execution_until_pause():
     }
 
 
+
+@app.on_event("startup")
+def workboard_startup_recovery_and_selftest():
+    # A backend restart must never leave cards permanently In Progress.
+    recover_orphaned_progress_tasks(active_execution_id=None)
+
+    # Development health-check: run the existing autonomous
+    # Workboard self-test automatically after the API is ready.
+    def delayed_selftest():
+        time.sleep(3)
+
+        try:
+            start_selftest()
+        except BaseException as exc:
+            emit(
+                "error",
+                "Automatic Workboard self-test failed to start",
+                f"{type(exc).__name__}: {exc}",
+                "error",
+            )
+
+    threading.Thread(
+        target=delayed_selftest,
+        name="workboard-auto-selftest",
+        daemon=True,
+    ).start()
+
+
 # ============================================================
 # ROUTER
 # ============================================================
@@ -1297,6 +1351,11 @@ def _run_workboard_task(task):
 
     execution_state = new_execution(prompt)
 
+    # Bind this Agent execution to its Workboard card.
+    # Terminal transitions can now be committed exactly where
+    # the Agent itself reaches completion.
+    execution_state["workboard_task_id"] = task_id
+
     execution_id = execution_state["id"]
 
     update_runtime_task(
@@ -1354,17 +1413,22 @@ def _run_workboard_task(task):
     )
 
     if is_complete:
-        update_runtime_task(
-            task_id,
-            "testing",
-            note="Execution complete; waiting for validation",
-            evidence={
-                "type": "agent_execution",
-                "execution_id": execution_id,
-                "result": serialize(result),
-                "at": time.time(),
-            },
-        )
+        # Normally the exact Agent-final branch already moved the
+        # card to Testing. This is only a defensive fallback.
+        current_task = get_task(task_id)
+
+        if current_task and current_task.get("status") == "progress":
+            update_runtime_task(
+                task_id,
+                "testing",
+                note="Execution complete; runner fallback transition",
+                evidence={
+                    "type": "agent_execution_fallback",
+                    "execution_id": execution_id,
+                    "result": serialize(result),
+                    "at": time.time(),
+                },
+            )
 
         return {
             "ok": True,
@@ -1437,6 +1501,16 @@ def _workboard_runner_loop():
 
 @app.post("/api/workboard/runner/start")
 def workboard_runner_start():
+    active_execution_id = (
+        execution_state.get("id")
+        if execution_state is not None
+        else None
+    )
+
+    recovered = recover_orphaned_progress_tasks(
+        active_execution_id=active_execution_id,
+    )
+
     if workboard_runner["running"]:
         return {
             "ok": True,
@@ -1456,6 +1530,7 @@ def workboard_runner_start():
     return {
         "ok": True,
         "started": True,
+        "recovered_tasks": recovered,
     }
 
 
