@@ -251,14 +251,35 @@ def _run():
 
         task, seen = _wait_for(
             execute_id,
-            {"testing", "tested", "finished", "blocked"},
-            timeout=180,
+            {"finished", "blocked"},
+            timeout=240,
         )
 
         final_status = task.get("status") if task else "timeout"
 
         saw_progress = "progress" in seen
-        reached_testing = final_status in ("testing", "tested", "finished")
+        reached_testing = any(
+            x in seen
+            for x in ("testing", "tested", "finished")
+        )
+
+        finished = final_status == "finished"
+
+        evidence = (
+            task.get("evidence", [])
+            if task
+            else []
+        )
+
+        qa_evidence = [
+            x for x in evidence
+            if x.get("type") == "qa_validation"
+        ]
+
+        qa_passed = bool(
+            qa_evidence
+            and qa_evidence[-1].get("passed") is True
+        )
 
         _record(
             "Queue moved task to In Progress",
@@ -269,6 +290,21 @@ def _run():
         _record(
             "Agent completion moved task to Testing",
             reached_testing,
+            {
+                "seen": seen,
+                "final": final_status,
+            },
+        )
+
+        _record(
+            "Independent QA produced evidence",
+            qa_passed,
+            qa_evidence[-1] if qa_evidence else "missing",
+        )
+
+        _record(
+            "Verified task reached Finished",
+            finished and qa_passed,
             {
                 "seen": seen,
                 "final": final_status,

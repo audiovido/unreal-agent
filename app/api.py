@@ -1469,6 +1469,227 @@ def _run_workboard_task(task):
     }
 
 
+
+def _workboard_validation_prompt(task):
+    title = task.get("title") or "Untitled task"
+    description = task.get("description") or ""
+
+    text = (title + " " + description).lower()
+
+    visual = any(
+        x in text
+        for x in (
+            "ui", "hud", "menu", "button", "camera",
+            "visual", "viewport", "layout", "screen"
+        )
+    )
+
+    code_related = any(
+        x in text
+        for x in (
+            "code", "cpp", "c++", "blueprint",
+            "compile", "build", "class", "function"
+        )
+    )
+
+    extra = []
+
+    if visual:
+        extra.append(
+            "- This is visual/UI/camera related. "
+            "Capture or inspect the Unreal viewport when a registered "
+            "capture/visual tool is available."
+        )
+
+    if code_related:
+        extra.append(
+            "- This is code/Blueprint/build related. "
+            "Use an available compile/build/inspection verifier when possible."
+        )
+
+    return f"""
+WORKBOARD QA VALIDATION
+
+Task:
+{title}
+
+Original description:
+{description}
+
+You are the independent QA verifier for this completed Workboard task.
+
+STRICT RULES:
+- READ ONLY. Do not modify, create, delete, move, rename or save project content.
+- Use real registered tools and collect independent evidence.
+- Verify the actual result, not the previous Agent's claim.
+- If the task is not actually complete, clearly report failure.
+- Do not use run_powershell.
+- Do not use open_project unless absolutely required to restore a broken Unreal bridge.
+- You must perform at least one real verification tool call before final.
+{chr(10).join(extra)}
+
+Return a concise final verdict with:
+STATUS: PASS
+or
+STATUS: FAIL
+
+Then list the concrete evidence.
+""".strip()
+
+
+def _validation_requires_visual(task):
+    text = (
+        str(task.get("title") or "")
+        + " "
+        + str(task.get("description") or "")
+    ).lower()
+
+    return any(
+        x in text
+        for x in (
+            "ui", "hud", "menu", "button", "camera",
+            "visual", "viewport", "layout", "screen"
+        )
+    )
+
+
+def _validate_workboard_task(task):
+    global execution_state
+
+    task_id = task["id"]
+
+    # Validation may only begin after execution is fully released.
+    if execution_state is not None:
+        return {
+            "ok": False,
+            "error": "Agent execution still active before validation",
+        }
+
+    prompt = _workboard_validation_prompt(task)
+
+    validation_state = new_execution(prompt)
+    validation_state["workboard_validation_for"] = task_id
+
+    # Do NOT set workboard_task_id here:
+    # validation final must not trigger the execution -> testing transition.
+    execution_state = validation_state
+
+    try:
+        result = run_execution_until_pause()
+
+    except BaseException as exc:
+        execution_state = None
+
+        update_runtime_task(
+            task_id,
+            "blocked",
+            note=f"Validation crashed: {type(exc).__name__}: {exc}",
+            evidence={
+                "type": "validation_error",
+                "message": str(exc),
+                "at": time.time(),
+            },
+        )
+
+        return {
+            "ok": False,
+            "error": str(exc),
+        }
+
+    result_state = str(result.get("state") or "").lower()
+    final_text = str(result.get("message") or "")
+
+    successful_trace = [
+        item
+        for item in validation_state.get("trace", [])
+        if item.get("ok")
+    ]
+
+    actions = [
+        str(item.get("action") or "")
+        for item in successful_trace
+    ]
+
+    has_real_evidence = bool(successful_trace)
+
+    visual_required = _validation_requires_visual(task)
+
+    visual_evidence = any(
+        (
+            "screenshot" in action.lower()
+            or "capture" in action.lower()
+            or "visual" in action.lower()
+        )
+        for action in actions
+    )
+
+    explicit_pass = "status: pass" in final_text.lower()
+    explicit_fail = "status: fail" in final_text.lower()
+
+    passed = (
+        result_state == "complete"
+        and has_real_evidence
+        and explicit_pass
+        and not explicit_fail
+        and (
+            not visual_required
+            or visual_evidence
+        )
+    )
+
+    evidence = {
+        "type": "qa_validation",
+        "validation_execution_id": validation_state.get("id"),
+        "passed": passed,
+        "final": final_text,
+        "successful_tools": actions,
+        "successful_tool_count": len(successful_trace),
+        "visual_required": visual_required,
+        "visual_evidence": visual_evidence,
+        "at": time.time(),
+    }
+
+    if not passed:
+        update_runtime_task(
+            task_id,
+            "blocked",
+            note="Independent QA validation failed",
+            evidence=evidence,
+        )
+
+        return {
+            "ok": False,
+            "task_id": task_id,
+            "evidence": evidence,
+        }
+
+    update_runtime_task(
+        task_id,
+        "tested",
+        note="Independent QA validation passed",
+        evidence=evidence,
+    )
+
+    # Tested is a real recorded state first, then delivery completes.
+    update_runtime_task(
+        task_id,
+        "finished",
+        note="Task delivered after verified QA pass",
+        evidence={
+            "type": "delivery",
+            "validated": True,
+            "at": time.time(),
+        },
+    )
+
+    return {
+        "ok": True,
+        "task_id": task_id,
+        "status": "finished",
+        "evidence": evidence,
+    }
+
+
 def _workboard_runner_loop():
     workboard_runner["running"] = True
     workboard_runner["stop_requested"] = False
@@ -1491,6 +1712,22 @@ def _workboard_runner_loop():
             # Do not start another task while Agent itself is paused.
             if result.get("paused"):
                 break
+
+            # Successful execution should have atomically moved the card
+            # to Testing. Now independent QA takes ownership.
+            current_task = get_task(task["id"])
+
+            if (
+                result.get("ok")
+                and current_task
+                and current_task.get("status") == "testing"
+            ):
+                qa_result = _validate_workboard_task(current_task)
+
+                workboard_runner["last_result"] = {
+                    "execution": serialize(result),
+                    "validation": serialize(qa_result),
+                }
 
             time.sleep(1)
 
