@@ -2124,7 +2124,49 @@ def _workboard_runner_loop():
 
             workboard_runner["current_task_id"] = task["id"]
 
+            # A previous failed/blocked/approval execution must NEVER
+            # deadlock the autonomous queue.
+            global execution_state
+
+            if execution_state is not None:
+                active_wb_id = execution_state.get("workboard_task_id")
+                active_wb_task = (
+                    get_task(active_wb_id)
+                    if active_wb_id
+                    else None
+                )
+
+                active_status = (
+                    (active_wb_task or {}).get("status")
+                )
+
+                # Only preserve an execution that genuinely belongs
+                # to a currently running/testing card.
+                if active_status not in ("progress", "testing"):
+                    stale_id = execution_state.get("id")
+
+                    for approval_id, approval in list(
+                        pending_approvals.items()
+                    ):
+                        if approval.get("execution_id") == stale_id:
+                            pending_approvals.pop(
+                                approval_id,
+                                None,
+                            )
+
+                    execution_state = None
+
             result = _run_workboard_task(task)
+
+            if (
+                not result.get("ok")
+                and "active execution" in str(
+                    result.get("error", "")
+                ).lower()
+            ):
+                execution_state = None
+
+                result = _run_workboard_task(task)
 
             workboard_runner["last_result"] = {
                 "phase": "execution",
@@ -2139,9 +2181,24 @@ def _workboard_runner_loop():
             # and process it through Phase 1.
             time.sleep(1)
 
+    except BaseException as exc:
+        workboard_runner["last_result"] = {
+            "phase": "runner_crash",
+            "ok": False,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+
+        emit(
+            "workboard",
+            "Queue runner recovered from crash",
+            workboard_runner["last_result"],
+            "error",
+        )
+
     finally:
         workboard_runner["running"] = False
         workboard_runner["current_task_id"] = None
+        workboard_runner["thread"] = None
 
 
 @app.post("/api/workboard/runner/start")
@@ -2162,6 +2219,9 @@ def workboard_runner_start():
             "already_running": True,
             "runner": serialize(workboard_runner),
         }
+
+    workboard_runner["running"] = True
+    workboard_runner["stop_requested"] = False
 
     t = threading.Thread(
         target=_workboard_runner_loop,
