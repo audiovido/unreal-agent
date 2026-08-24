@@ -1054,6 +1054,39 @@ def run_execution_until_pause():
             state["last_tool_signature"] = tool_signature
             state["repeated_tool_count"] = 1
 
+        # Successful read/inspection calls must not become a silent loop.
+        # After the second identical call, explicitly force the model to use
+        # the evidence it already has and advance to a different action.
+        if (
+            state.get("repeated_tool_count", 0) == 2
+            and result_ok(result)
+        ):
+            state["model_messages"].append(
+                {
+                    "role": "user",
+                    "content": (
+                        "ANTI-LOOP DIRECTIVE. "
+                        f"You have just executed the exact same successful tool call twice: {action}. "
+                        "The result is already available and must be treated as sufficient evidence. "
+                        "DO NOT call this exact tool with these exact arguments again. "
+                        "Advance the task now: choose the next different registered tool required "
+                        "to satisfy the user's requested workflow, or return final only if all "
+                        "requirements are genuinely verified."
+                    ),
+                }
+            )
+
+            emit(
+                "review",
+                "Repeated successful call detected ? forcing progress",
+                {
+                    "tool": action,
+                    "args": args,
+                    "repeat_count": state["repeated_tool_count"],
+                },
+                "warning",
+            )
+
         if state.get("repeated_tool_count", 0) >= 3:
             state["state"] = "FAILED"
             state["end_ts"] = time.time()
