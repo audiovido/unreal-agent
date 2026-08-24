@@ -186,6 +186,13 @@ def requires_approval(
 
     a = action.lower()
 
+    # Workboard is autonomous by default.
+    # Only genuinely destructive operations interrupt the user.
+    if execution_state is not None and execution_state.get("workboard_task_id"):
+        if any(word in a for word in ("delete", "remove", "destroy")):
+            return True
+        return False
+
     # Deletion should always ask.
     if any(
         word in a
@@ -1750,7 +1757,7 @@ def _run_workboard_task(task):
             "result": serialize(result),
         }
 
-    if state_name == "paused":
+    if state_name in ("paused", "approval_required"):
         update_runtime_task(
             task_id,
             "progress",
@@ -1760,6 +1767,7 @@ def _run_workboard_task(task):
         return {
             "ok": False,
             "paused": True,
+            "approval_required": state_name == "approval_required",
             "result": serialize(result),
         }
 
@@ -3342,7 +3350,26 @@ def workboard_autopilot_tick():
     Called by the UI heartbeat and safe to call repeatedly.
     If executable work exists and the queue is idle, start it.
     """
+    global execution_state
+
     try:
+        # Clear stale execution left behind by an old blocked/finished card.
+        if execution_state is not None:
+            wb_id = execution_state.get("workboard_task_id")
+
+            if wb_id:
+                wb_task = get_task(wb_id)
+                wb_status = (wb_task or {}).get("status")
+
+                if wb_status not in ("progress", "testing"):
+                    stale_execution_id = execution_state.get("id")
+
+                    for approval_id, item in list(pending_approvals.items()):
+                        if item.get("execution_id") == stale_execution_id:
+                            pending_approvals.pop(approval_id, None)
+
+                    execution_state = None
+
         testing_task = get_next_testing_task()
         ready_task = get_next_ready_task()
 
