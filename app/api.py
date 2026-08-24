@@ -390,6 +390,49 @@ def process_tool_result(
     return result, ok
 
 
+def call_model_hard_timeout(messages, timeout_seconds=90):
+    """
+    Hard wall-clock timeout around the model call.
+    Do not rely only on requests/socket timeout because a local
+    Ollama request can occasionally remain blocked longer.
+    """
+    box = {}
+
+    def worker():
+        try:
+            box["result"] = call_model(
+                messages,
+                model=CODER_MODEL,
+                json_mode=True,
+                temperature=0.08,
+                num_ctx=32768,
+                timeout=timeout_seconds,
+            )
+        except BaseException as exc:
+            box["error"] = exc
+
+    t = threading.Thread(
+        target=worker,
+        name="unreal-agent-model-step",
+        daemon=True,
+    )
+    t.start()
+    t.join(timeout_seconds)
+
+    if t.is_alive():
+        raise TimeoutError(
+            f"Model step exceeded hard timeout of {timeout_seconds}s"
+        )
+
+    if "error" in box:
+        raise box["error"]
+
+    if "result" not in box:
+        raise RuntimeError("Model step ended without a result")
+
+    return box["result"]
+
+
 # ============================================================
 # EXECUTION LOOP
 # ============================================================
@@ -565,13 +608,9 @@ def run_execution_until_pause():
         )
 
         try:
-            raw = call_model(
+            raw = call_model_hard_timeout(
                 state["model_messages"],
-                model=CODER_MODEL,
-                json_mode=True,
-                temperature=0.08,
-                num_ctx=32768,
-                timeout=90,
+                timeout_seconds=90,
             )
 
         except Exception as exc:
