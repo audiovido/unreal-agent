@@ -54,6 +54,7 @@ from core.orchestrator import (
 
 from core.tool_registry import validate_args
 from app.overnight_api import router as overnight_router
+from app.workboard_selftest import router as workboard_selftest_router
 from app.workboard_api import (
     router as workboard_router,
     get_next_ready_task,
@@ -73,6 +74,7 @@ app = FastAPI(
 
 app.include_router(overnight_router)
 app.include_router(workboard_router)
+app.include_router(workboard_selftest_router)
 
 UI_DIR = ROOT / "ui"
 

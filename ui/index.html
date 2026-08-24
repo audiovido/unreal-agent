@@ -362,6 +362,7 @@
         <button class="action primary" id="abScheduler">Run Scheduler</button>
         <button class="action good" id="abRunnerStart">Start Queue</button>
         <button class="action danger" id="abRunnerStop">Stop Queue</button>
+        <button class="action" id="abSelfTest">Self-Test</button>
         <span class="task-chip" id="abRunnerState">Queue Idle</span>
       </div>
     </div>
@@ -430,6 +431,12 @@
       <div class="ab-stat"><div class="label">READY</div><strong id="abStatReady">0</strong></div>
       <div class="ab-stat"><div class="label">IN PROGRESS</div><strong id="abStatProgress">0</strong></div>
       <div class="ab-stat"><div class="label">FINISHED</div><strong id="abStatFinished">0</strong></div>
+    </div>
+
+    <div class="ab-panel" id="abSelfTestPanel" style="display:none">
+      <div class="label">SYSTEM SELF-TEST</div>
+      <div id="abSelfTestStatus" style="font-size:18px;font-weight:700;margin-top:7px">IDLE</div>
+      <div id="abSelfTestDetail" class="sub" style="margin-top:8px;line-height:1.7"></div>
     </div>
 
     <div class="ab-board-scroll">
@@ -982,6 +989,75 @@ async function refresh(){
 
 byId("abRefresh").onclick = ()=>refresh().catch(showError);
 
+
+
+byId("abSelfTest").onclick = async ()=>{
+  const panel = byId("abSelfTestPanel");
+  panel.style.display = "block";
+
+  byId("abSelfTestStatus").textContent = "RUNNING";
+  byId("abSelfTestDetail").textContent =
+    "Agent is testing Sprint, Approval, Queue and real execution...";
+
+  try{
+    const r = await fetch("/api/workboard/selftest/start", {
+      method:"POST"
+    });
+
+    if(!r.ok) throw new Error("Could not start self-test");
+
+  }catch(e){
+    showError(e);
+  }
+};
+
+async function refreshSelfTest(){
+  try{
+    const r = await fetch("/api/workboard/selftest/status");
+    if(!r.ok) return;
+
+    const j = await r.json();
+    const st = j.state || {};
+
+    const panel = byId("abSelfTestPanel");
+    if(!panel) return;
+
+    if(st.status !== "idle" || st.results?.length){
+      panel.style.display = "block";
+    }
+
+    const status = byId("abSelfTestStatus");
+    const detail = byId("abSelfTestDetail");
+
+    status.textContent =
+      st.status === "pass" ? "PASS ?" :
+      st.status === "fail" ? "FAIL ?" :
+      st.running ? "RUNNING?" :
+      "IDLE";
+
+    const rows = (st.results || []).map(x =>
+      `${x.ok ? "?" : "?"} ${x.name}: ${
+        typeof x.detail === "string"
+          ? x.detail
+          : JSON.stringify(x.detail)
+      }`
+    );
+
+    if(st.current_test){
+      rows.unshift("Running: " + st.current_test);
+    }
+
+    if(st.error){
+      rows.push("ERROR: " + st.error);
+    }
+
+    detail.innerHTML = rows.map(esc).join("<br>");
+
+  }catch(e){}
+}
+
+setInterval(refreshSelfTest, 2000);
+refreshSelfTest();
 
 byId("abRunnerStart").onclick = async ()=>{
   try{
