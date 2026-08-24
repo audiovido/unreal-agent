@@ -1461,4 +1461,163 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+
+<script>
+(function () {
+  const UNREAL_CODER = "unreal-coder:latest";
+
+  function installAgentStatus() {
+    const board = document.getElementById("view-workboard");
+    if (!board) return;
+
+    if (!document.getElementById("aiWorkStatus")) {
+      const bar = document.createElement("div");
+      bar.id = "aiWorkStatus";
+      bar.innerHTML = `
+        <span id="aiWorkDot">?</span>
+        <strong id="aiWorkState">IDLE</strong>
+        <span id="aiWorkMessage">Ready for a plan</span>
+        <span id="aiWorkProgress"></span>
+      `;
+
+      Object.assign(bar.style, {
+        position: "sticky",
+        top: "0",
+        zIndex: "999",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "13px 16px",
+        marginBottom: "12px",
+        border: "1px solid #30405a",
+        borderRadius: "12px",
+        background: "#0b111bf5",
+        color: "#eef4ff",
+        fontSize: "12px",
+        fontWeight: "600"
+      });
+
+      const shell = board.querySelector(".workboard-shell") || board;
+      shell.insertBefore(bar, shell.firstChild);
+    }
+  }
+
+  async function updateAgentStatus() {
+    installAgentStatus();
+
+    const box = document.getElementById("aiWorkStatus");
+    if (!box) return;
+
+    try {
+      const [stateRes, runner] = await Promise.all([
+        fetch("/api/workboard/state", {cache:"no-store"}).then(r => r.json()),
+        fetch("/api/workboard/runner/status", {cache:"no-store"}).then(r => r.json())
+      ]);
+
+      const data = stateRes.data || stateRes || {};
+      const tasks = data.tasks || [];
+
+      const n = status => tasks.filter(t => t.status === status).length;
+
+      const finished = n("finished");
+      const approval = n("approval");
+      const progress = n("progress");
+      const testing = n("testing");
+      const ready = n("ready");
+      const planned = n("planned");
+      const blocked = n("blocked");
+
+      const total =
+        finished + approval + progress +
+        testing + ready + planned + blocked;
+
+      let state = "IDLE";
+      let message = "Ready for a plan";
+      let color = "#8995a8";
+
+      if (approval) {
+        state = "WAITING FOR YOU";
+        message = `${approval} sensitive action needs approval`;
+        color = "#ffc56e";
+
+      } else if (runner.running || progress || testing) {
+        state = "WORKING";
+        color = "#72e6ff";
+
+        const current = tasks.find(
+          t => t.id === runner.current_task_id
+        );
+
+        message = current
+          ? `${current.title} ? ${current.status}`
+          : testing
+            ? "Validating completed work?"
+            : "Agent team is executing the Sprint?";
+
+      } else if (ready || planned) {
+        state = "AUTOPILOT";
+        message = "Next task starts automatically";
+        color = "#72e6ff";
+
+      } else if (total && finished + blocked === total) {
+        if (blocked) {
+          state = "NEEDS ATTENTION";
+          message = `${blocked} task(s) blocked`;
+          color = "#ff7180";
+        } else {
+          state = "DONE";
+          message = "Sprint completed and validated";
+          color = "#56e39d";
+        }
+      }
+
+      document.getElementById("aiWorkDot").style.color = color;
+      document.getElementById("aiWorkState").style.color = color;
+      document.getElementById("aiWorkState").textContent = state;
+      document.getElementById("aiWorkMessage").textContent = message;
+
+      const prog = document.getElementById("aiWorkProgress");
+      prog.textContent = total ? `${finished}/${total} finished` : "";
+      prog.style.marginLeft = "auto";
+      prog.style.color = "#8995a8";
+
+    } catch (_) {}
+  }
+
+  function forceUnrealCoder() {
+    document.querySelectorAll("select").forEach(sel => {
+      const options = [...sel.options];
+
+      const target = options.find(o =>
+        o.value === UNREAL_CODER ||
+        o.textContent.includes(UNREAL_CODER)
+      );
+
+      if (target) {
+        sel.value = target.value;
+        sel.dispatchEvent(new Event("change", {bubbles:true}));
+      }
+    });
+
+    document.querySelectorAll("*").forEach(el => {
+      if (
+        el.children.length === 0 &&
+        el.textContent.trim() === "Ollama ? qwen3:8b"
+      ) {
+        el.textContent = "Ollama ? unreal-coder:latest";
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    installAgentStatus();
+    forceUnrealCoder();
+    updateAgentStatus();
+
+    setInterval(updateAgentStatus, 2000);
+    setInterval(forceUnrealCoder, 5000);
+  });
+})();
+</script>
+
 </body></html>
