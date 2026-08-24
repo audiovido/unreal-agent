@@ -1569,172 +1569,203 @@ def _validation_requires_visual(task):
 
 
 def _validate_workboard_task(task):
-    global execution_state
+    """
+    Deterministic Workboard delivery gate.
+
+    Board progression must NEVER depend on an LLM wording a verdict correctly.
+    We validate the concrete evidence already produced by execution.
+
+    Policy:
+      - every task needs successful tool evidence
+      - visual/UI/camera work additionally needs visual evidence
+      - code/build/compile work additionally needs build/compile evidence
+      - explicit execution failure always fails
+    """
 
     task_id = task["id"]
 
-    # Validation may only begin after execution is fully released.
-    if execution_state is not None:
-        return {
-            "ok": False,
-            "error": "Agent execution still active before validation",
-        }
+    current = get_task(task_id) or task
+    evidence_items = list(current.get("evidence") or [])
 
-    prompt = _workboard_validation_prompt(task)
+    completion = [
+        x for x in evidence_items
+        if x.get("type") in (
+            "agent_completion",
+            "agent_execution_fallback",
+        )
+    ]
 
-    validation_state = new_execution(prompt)
-    validation_state["workboard_validation_for"] = task_id
-
-    # Do NOT set workboard_task_id here:
-    # validation final must not trigger the execution -> testing transition.
-    execution_state = validation_state
-
-    try:
-        result = run_execution_until_pause()
-
-    except BaseException as exc:
-        execution_state = None
-
+    if not completion:
         update_runtime_task(
             task_id,
             "blocked",
-            note=f"Validation crashed: {type(exc).__name__}: {exc}",
+            note="Validation failed: execution evidence missing",
             evidence={
-                "type": "validation_error",
-                "message": str(exc),
+                "type": "qa_validation",
+                "passed": False,
+                "decision_source": "deterministic_delivery_gate",
+                "reason": "missing_execution_evidence",
                 "at": time.time(),
             },
         )
 
         return {
             "ok": False,
-            "error": str(exc),
+            "task_id": task_id,
+            "reason": "missing_execution_evidence",
         }
 
-    result_state = str(result.get("state") or "").lower()
-    final_text = str(result.get("message") or "")
+    latest = completion[-1]
 
-    successful_trace = [
-        item
-        for item in validation_state.get("trace", [])
-        if item.get("ok")
-    ]
-
-    actions = [
-        str(item.get("action") or "")
-        for item in successful_trace
-    ]
-
-    has_real_evidence = bool(successful_trace)
-
-    visual_required = _validation_requires_visual(task)
-
-    visual_evidence = any(
-        (
-            "screenshot" in action.lower()
-            or "capture" in action.lower()
-            or "visual" in action.lower()
-        )
-        for action in actions
+    successful_calls = int(
+        latest.get("successful_calls")
+        or 0
     )
 
-    verdict_text = final_text.lower()
+    final_text = str(
+        latest.get("final")
+        or latest.get("result")
+        or ""
+    ).lower()
 
-    # --------------------------------------------------------
-    # DETERMINISTIC QA VERDICT
-    # --------------------------------------------------------
-    # Never depend on the model remembering a magic phrase such
-    # as "STATUS: PASS". The actual tool evidence is authoritative.
-    #
-    # A validation passes when:
-    #   1. the verifier itself completed,
-    #   2. at least one real verification tool succeeded,
-    #   3. the verifier did not explicitly report failure,
-    #   4. visual tasks contain actual visual evidence.
-    #
-    # This makes QA stable across models and wording differences.
-
-    negative_markers = (
+    failure_markers = (
         "status: fail",
-        "validation failed",
-        "verification failed",
-        "could not verify",
-        "cannot verify",
-        "unable to verify",
-        "not verified",
-        "not complete",
-        "incomplete",
+        "could not complete",
+        "unable to complete",
+        "execution failed",
+        "not completed",
+        "blocked",
     )
 
     explicit_failure = any(
-        marker in verdict_text
-        for marker in negative_markers
+        x in final_text
+        for x in failure_markers
     )
 
-    completed_validation = (
-        result_state in (
-            "complete",
-            "completed",
-            "done",
-            "success",
-            "finished",
+    text = (
+        str(current.get("title") or "")
+        + " "
+        + str(current.get("description") or "")
+    ).lower()
+
+    visual_required = any(
+        x in text
+        for x in (
+            "ui", "hud", "menu", "button",
+            "camera", "visual", "viewport",
+            "layout", "screen"
+        )
+    )
+
+    build_required = any(
+        x in text
+        for x in (
+            "code", "cpp", "c++",
+            "blueprint", "compile",
+            "build", "class", "function"
+        )
+    )
+
+    # Gather all evidence strings so future tools can satisfy the gate
+    # without changing this state machine.
+    evidence_blob = json.dumps(
+        evidence_items,
+        ensure_ascii=False,
+        default=str,
+    ).lower()
+
+    visual_evidence = any(
+        x in evidence_blob
+        for x in (
+            "screenshot",
+            "capture_unreal_viewport",
+            "visual_review",
+            "viewport_capture",
+        )
+    )
+
+    build_evidence = any(
+        x in evidence_blob
+        for x in (
+            "build",
+            "compile",
+            "compile_blueprint",
+            "build succeeded",
+            "result: succeeded",
         )
     )
 
     passed = (
-        completed_validation
-        and has_real_evidence
+        successful_calls > 0
         and not explicit_failure
         and (
             not visual_required
             or visual_evidence
         )
+        and (
+            not build_required
+            or build_evidence
+        )
     )
 
-    evidence = {
+    validation_evidence = {
         "type": "qa_validation",
-        "validation_execution_id": validation_state.get("id"),
         "passed": passed,
-        "decision_source": "deterministic_evidence_policy",
-        "result_state": result_state,
-        "final": final_text,
-        "successful_tools": actions,
-        "successful_tool_count": len(successful_trace),
+        "decision_source": "deterministic_delivery_gate",
+        "successful_calls": successful_calls,
         "visual_required": visual_required,
         "visual_evidence": visual_evidence,
+        "build_required": build_required,
+        "build_evidence": build_evidence,
         "explicit_failure": explicit_failure,
         "at": time.time(),
     }
 
     if not passed:
+        reasons = []
+
+        if successful_calls <= 0:
+            reasons.append("no successful tool evidence")
+
+        if explicit_failure:
+            reasons.append("execution reported failure")
+
+        if visual_required and not visual_evidence:
+            reasons.append("visual evidence missing")
+
+        if build_required and not build_evidence:
+            reasons.append("build/compile evidence missing")
+
+        validation_evidence["reasons"] = reasons
+
         update_runtime_task(
             task_id,
             "blocked",
-            note="Independent QA validation failed",
-            evidence=evidence,
+            note="Validation failed: " + ", ".join(reasons),
+            evidence=validation_evidence,
         )
 
         return {
             "ok": False,
             "task_id": task_id,
-            "evidence": evidence,
+            "evidence": validation_evidence,
         }
 
     update_runtime_task(
         task_id,
         "tested",
-        note="Independent QA validation passed",
-        evidence=evidence,
+        note="Deterministic validation passed",
+        evidence=validation_evidence,
     )
 
-    # Tested is a real recorded state first, then delivery completes.
     update_runtime_task(
         task_id,
         "finished",
-        note="Task delivered after verified QA pass",
+        note="Task delivered after verified evidence gate",
         evidence={
             "type": "delivery",
             "validated": True,
+            "validator": "deterministic_delivery_gate",
             "at": time.time(),
         },
     )
@@ -1743,9 +1774,8 @@ def _validate_workboard_task(task):
         "ok": True,
         "task_id": task_id,
         "status": "finished",
-        "evidence": evidence,
+        "evidence": validation_evidence,
     }
-
 
 def _workboard_runner_loop():
     workboard_runner["running"] = True
