@@ -61,6 +61,7 @@ from app.workboard_selftest import (
 from app.workboard_api import (
     router as workboard_router,
     get_next_ready_task,
+    get_next_testing_task,
     update_runtime_task,
     get_task,
     recover_orphaned_progress_tasks,
@@ -1697,38 +1698,53 @@ def _workboard_runner_loop():
     try:
         while not workboard_runner["stop_requested"]:
 
+            # ------------------------------------------------
+            # PHASE 1 ? QA owns anything already in Testing.
+            # This makes validation recoverable and independent
+            # from the exact execution-return timing.
+            # ------------------------------------------------
+
+            testing_task = get_next_testing_task()
+
+            if testing_task is not None:
+                workboard_runner["current_task_id"] = testing_task["id"]
+
+                qa_result = _validate_workboard_task(testing_task)
+
+                workboard_runner["last_result"] = {
+                    "phase": "validation",
+                    "validation": serialize(qa_result),
+                }
+
+                time.sleep(1)
+                continue
+
+            # ------------------------------------------------
+            # PHASE 2 ? Execute the next Ready task.
+            # ------------------------------------------------
+
             task = get_next_ready_task()
 
             if task is None:
-                time.sleep(3)
+                workboard_runner["current_task_id"] = None
+                time.sleep(2)
                 continue
 
             workboard_runner["current_task_id"] = task["id"]
 
             result = _run_workboard_task(task)
 
-            workboard_runner["last_result"] = serialize(result)
+            workboard_runner["last_result"] = {
+                "phase": "execution",
+                "execution": serialize(result),
+            }
 
-            # Do not start another task while Agent itself is paused.
             if result.get("paused"):
                 break
 
-            # Successful execution should have atomically moved the card
-            # to Testing. Now independent QA takes ownership.
-            current_task = get_task(task["id"])
-
-            if (
-                result.get("ok")
-                and current_task
-                and current_task.get("status") == "testing"
-            ):
-                qa_result = _validate_workboard_task(current_task)
-
-                workboard_runner["last_result"] = {
-                    "execution": serialize(result),
-                    "validation": serialize(qa_result),
-                }
-
+            # Do NOT perform QA inline here.
+            # The next loop iteration will observe Testing
+            # and process it through Phase 1.
             time.sleep(1)
 
     finally:

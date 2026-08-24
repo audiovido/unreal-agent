@@ -378,6 +378,27 @@ def scheduler_tick():
 # WORKBOARD EXECUTION HELPERS
 # ============================================================
 
+
+def get_next_testing_task():
+    data = _save(_normalize(_load()))
+
+    testing = [
+        t for t in data.get("tasks", [])
+        if t.get("status") == "testing"
+    ]
+
+    if not testing:
+        return None
+
+    testing.sort(
+        key=lambda t: (
+            -int(t.get("priority") or 0),
+            float(t.get("updated_at") or t.get("created_at") or 0),
+        )
+    )
+
+    return testing[0]
+
 def get_next_ready_task():
     data = _save(_normalize(_load()))
 
