@@ -360,6 +360,9 @@
       <div class="actions">
         <button class="action" id="abRefresh">Refresh</button>
         <button class="action primary" id="abScheduler">Run Scheduler</button>
+        <button class="action good" id="abRunnerStart">Start Queue</button>
+        <button class="action danger" id="abRunnerStop">Stop Queue</button>
+        <span class="task-chip" id="abRunnerState">Queue Idle</span>
       </div>
     </div>
 
@@ -978,6 +981,47 @@ async function refresh(){
 }
 
 byId("abRefresh").onclick = ()=>refresh().catch(showError);
+
+
+byId("abRunnerStart").onclick = async ()=>{
+  try{
+    await fetch("/api/workboard/runner/start", {
+      method:"POST"
+    });
+
+    await refresh();
+  }catch(e){
+    showError(e);
+  }
+};
+
+byId("abRunnerStop").onclick = async ()=>{
+  try{
+    await fetch("/api/workboard/runner/stop", {
+      method:"POST"
+    });
+  }catch(e){
+    showError(e);
+  }
+};
+
+async function refreshRunner(){
+  try{
+    const r = await fetch("/api/workboard/runner/status");
+    const j = await r.json();
+
+    const state = byId("abRunnerState");
+
+    if(state){
+      state.textContent = j.running
+        ? "Queue Running"
+        : "Queue Idle";
+    }
+  }catch(e){}
+}
+
+setInterval(refreshRunner,3000);
+refreshRunner();
 
 byId("abScheduler").onclick = async ()=>{
   try{

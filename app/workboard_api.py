@@ -355,3 +355,88 @@ def scheduler_tick():
         "ok": True,
         "data": _save(data),
     }
+
+
+# ============================================================
+# WORKBOARD EXECUTION HELPERS
+# ============================================================
+
+def get_next_ready_task():
+    data = _save(_normalize(_load()))
+
+    ready = [
+        t for t in data.get("tasks", [])
+        if t.get("status") == "ready"
+        and (
+            not t.get("requires_approval")
+            or t.get("approved")
+        )
+    ]
+
+    if not ready:
+        return None
+
+    ready.sort(
+        key=lambda t: (
+            -int(t.get("priority") or 0),
+            float(t.get("created_at") or 0),
+        )
+    )
+
+    return ready[0]
+
+
+def update_runtime_task(
+    task_id: str,
+    status: str,
+    *,
+    note: str | None = None,
+    evidence=None,
+    execution_id: str | None = None,
+):
+    data = _load()
+
+    for task in data.get("tasks", []):
+        if task.get("id") != task_id:
+            continue
+
+        task["status"] = status
+        task["updated_at"] = time.time()
+
+        if status == "progress" and not task.get("started_at"):
+            task["started_at"] = time.time()
+
+        if status == "finished":
+            task["finished_at"] = time.time()
+
+        if execution_id is not None:
+            task["execution_id"] = execution_id
+
+        if note:
+            task["last_note"] = note
+
+        if evidence is not None:
+            task.setdefault("evidence", []).append(evidence)
+
+        _activity(
+            data,
+            "runner",
+            f"{task.get('title')} ? {status}"
+            + (f" | {note}" if note else ""),
+            task_id,
+        )
+
+        _save(data)
+        return task
+
+    return None
+
+
+def get_task(task_id: str):
+    data = _load()
+
+    for task in data.get("tasks", []):
+        if task.get("id") == task_id:
+            return task
+
+    return None

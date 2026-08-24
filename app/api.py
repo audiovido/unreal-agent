@@ -54,7 +54,12 @@ from core.orchestrator import (
 
 from core.tool_registry import validate_args
 from app.overnight_api import router as overnight_router
-from app.workboard_api import router as workboard_router
+from app.workboard_api import (
+    router as workboard_router,
+    get_next_ready_task,
+    update_runtime_task,
+    get_task,
+)
 
 
 # ============================================================
@@ -76,13 +81,6 @@ app.mount(
     StaticFiles(directory=str(UI_DIR)),
     name="static",
 )
-
-# Workboard router hard-registration
-if not any(
-    "workboard" in getattr(route, "path", "")
-    for route in app.routes
-):
-    app.include_router(workboard_router)
 
 # Create MemorySystem instance for API
 MEMORY = MemorySystem()
@@ -1229,6 +1227,288 @@ def route_request(message: str):
 
     return run_execution_until_pause()
 
+
+
+# ============================================================
+# WORKBOARD QUEUE RUNNER
+# ============================================================
+
+workboard_runner = {
+    "running": False,
+    "stop_requested": False,
+    "thread": None,
+    "current_task_id": None,
+    "last_result": None,
+}
+
+
+def _workboard_task_prompt(task):
+    title = task.get("title") or "Untitled task"
+    description = task.get("description") or ""
+
+    return f"""
+WORKBOARD TASK
+
+Title:
+{title}
+
+Description:
+{description}
+
+You are executing one small task from Agent Board.
+
+Rules:
+- Work only on this task.
+- Use Unreal Agent tools for actual Unreal project work.
+- Do not claim completion without real evidence.
+- Build/verify when relevant.
+- If a tool fails, recover using another valid strategy.
+- Return final only when the task itself is genuinely complete.
+""".strip()
+
+
+def _run_workboard_task(task):
+    global execution_state
+
+    task_id = task["id"]
+
+    if execution_state is not None:
+        state_name = execution_state.get("state")
+
+        if state_name not in (
+            "COMPLETE",
+            "FAILED",
+            "CANCELLED",
+        ):
+            return {
+                "ok": False,
+                "error": "Agent already has an active execution",
+            }
+
+    prompt = _workboard_task_prompt(task)
+
+    update_runtime_task(
+        task_id,
+        "progress",
+        note="Agent execution started",
+    )
+
+    execution_state = new_execution(prompt)
+
+    execution_id = execution_state["id"]
+
+    update_runtime_task(
+        task_id,
+        "progress",
+        execution_id=execution_id,
+    )
+
+    try:
+        result = run_execution_until_pause()
+
+    except BaseException as exc:
+        update_runtime_task(
+            task_id,
+            "blocked",
+            note=f"{type(exc).__name__}: {exc}",
+            evidence={
+                "type": "execution_error",
+                "message": str(exc),
+                "at": time.time(),
+            },
+        )
+
+        return {
+            "ok": False,
+            "error": str(exc),
+        }
+
+    state_name = str(
+        result.get("state")
+        or ""
+    ).lower()
+
+    if state_name in (
+        "complete",
+        "completed",
+        "done",
+        "success",
+    ):
+        update_runtime_task(
+            task_id,
+            "testing",
+            note="Execution complete; waiting for validation",
+            evidence={
+                "type": "agent_execution",
+                "execution_id": execution_id,
+                "result": serialize(result),
+                "at": time.time(),
+            },
+        )
+
+        return {
+            "ok": True,
+            "task_id": task_id,
+            "execution_id": execution_id,
+            "result": serialize(result),
+        }
+
+    if state_name == "paused":
+        update_runtime_task(
+            task_id,
+            "progress",
+            note="Execution paused / approval required",
+        )
+
+        return {
+            "ok": False,
+            "paused": True,
+            "result": serialize(result),
+        }
+
+    update_runtime_task(
+        task_id,
+        "blocked",
+        note=result.get("message") or f"Execution ended: {state_name}",
+        evidence={
+            "type": "agent_execution_failure",
+            "execution_id": execution_id,
+            "result": serialize(result),
+            "at": time.time(),
+        },
+    )
+
+    return {
+        "ok": False,
+        "task_id": task_id,
+        "result": serialize(result),
+    }
+
+
+def _workboard_runner_loop():
+    workboard_runner["running"] = True
+    workboard_runner["stop_requested"] = False
+
+    try:
+        while not workboard_runner["stop_requested"]:
+
+            task = get_next_ready_task()
+
+            if task is None:
+                time.sleep(3)
+                continue
+
+            workboard_runner["current_task_id"] = task["id"]
+
+            result = _run_workboard_task(task)
+
+            workboard_runner["last_result"] = serialize(result)
+
+            # Do not start another task while Agent itself is paused.
+            if result.get("paused"):
+                break
+
+            time.sleep(1)
+
+    finally:
+        workboard_runner["running"] = False
+        workboard_runner["current_task_id"] = None
+
+
+@app.post("/api/workboard/runner/start")
+def workboard_runner_start():
+    if workboard_runner["running"]:
+        return {
+            "ok": True,
+            "already_running": True,
+            "runner": serialize(workboard_runner),
+        }
+
+    t = threading.Thread(
+        target=_workboard_runner_loop,
+        name="workboard-runner",
+        daemon=True,
+    )
+
+    workboard_runner["thread"] = t
+    t.start()
+
+    return {
+        "ok": True,
+        "started": True,
+    }
+
+
+@app.post("/api/workboard/runner/stop")
+def workboard_runner_stop():
+    workboard_runner["stop_requested"] = True
+
+    return {
+        "ok": True,
+        "stop_requested": True,
+    }
+
+
+@app.get("/api/workboard/runner/status")
+def workboard_runner_status():
+    return {
+        "ok": True,
+        "running": workboard_runner["running"],
+        "current_task_id": workboard_runner["current_task_id"],
+        "last_result": workboard_runner["last_result"],
+    }
+
+
+@app.post("/api/workboard/tasks/{task_id}/execute")
+def workboard_execute_task(task_id: str):
+    task = get_task(task_id)
+
+    if not task:
+        raise HTTPException(
+            status_code=404,
+            detail="Workboard task not found",
+        )
+
+    if task.get("requires_approval") and not task.get("approved"):
+        raise HTTPException(
+            status_code=409,
+            detail="Task requires approval",
+        )
+
+    if task.get("status") not in ("ready", "planned"):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Task is not executable from status {task.get('status')}",
+        )
+
+    if workboard_runner["running"]:
+        raise HTTPException(
+            status_code=409,
+            detail="Queue runner is already active",
+        )
+
+    def worker():
+        workboard_runner["current_task_id"] = task_id
+
+        try:
+            workboard_runner["last_result"] = serialize(
+                _run_workboard_task(task)
+            )
+
+        finally:
+            workboard_runner["current_task_id"] = None
+
+    threading.Thread(
+        target=worker,
+        name=f"workboard-task-{task_id[:8]}",
+        daemon=True,
+    ).start()
+
+    return {
+        "ok": True,
+        "started": True,
+        "task_id": task_id,
+    }
 
 # ============================================================
 # ROUTES
