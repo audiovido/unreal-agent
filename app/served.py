@@ -3,6 +3,93 @@ from __future__ import annotations
 import threading
 from app import api
 
+# ============================================================
+# WORKBOARD PERSISTENCE HARDENING
+# ============================================================
+
+import json
+from app import workboard_api as wb
+
+BACKUP_FILE = wb.DATA_DIR / "workboard.last_good.json"
+_original_load = wb._load
+_original_save = wb._save
+
+def _product_ids(data):
+    return {
+        x.get("id")
+        for x in data.get("sprints", [])
+        if x.get("id")
+        and not str(x.get("title") or "").startswith("__SELFTEST__")
+    }
+
+def _has_product(data):
+    return bool(_product_ids(data))
+
+def _read_backup():
+    try:
+        return json.loads(
+            BACKUP_FILE.read_text(encoding="utf-8")
+        )
+    except Exception:
+        return None
+
+def _merge_product(current, backup):
+    if not backup or not _has_product(backup):
+        return current
+
+    current = dict(current or {})
+    current.setdefault("sprints", [])
+    current.setdefault("tasks", [])
+    current.setdefault("activity", [])
+
+    sprint_ids = {x.get("id") for x in current["sprints"]}
+    task_ids = {x.get("id") for x in current["tasks"]}
+    product_ids = _product_ids(backup)
+
+    for sprint in backup.get("sprints", []):
+        if (
+            sprint.get("id") in product_ids
+            and sprint.get("id") not in sprint_ids
+        ):
+            current["sprints"].append(sprint)
+
+    for task in backup.get("tasks", []):
+        if (
+            task.get("sprint_id") in product_ids
+            and task.get("id") not in task_ids
+        ):
+            current["tasks"].append(task)
+
+    return current
+
+def hardened_load():
+    data = _original_load()
+    return _merge_product(data, _read_backup())
+
+def hardened_save(data):
+    data = _merge_product(data, _read_backup())
+    saved = _original_save(data)
+
+    if _has_product(saved):
+        wb.DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+        tmp = BACKUP_FILE.with_suffix(".json.tmp")
+        tmp.write_text(
+            json.dumps(
+                saved,
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        tmp.replace(BACKUP_FILE)
+
+    return saved
+
+wb._load = hardened_load
+wb._save = hardened_save
+
+
 def _clear_stale():
     state = api.execution_state
     if state is None:
