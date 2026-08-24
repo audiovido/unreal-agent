@@ -1724,16 +1724,71 @@ def screenshot_project():
 # >>> ASYNC_UI_EXECUTION_V1 >>>
 
 def _run_ui_execution_background(task_id: str):
+    global execution_state
+
     try:
-        run_execution_until_pause()
-    except Exception as exc:
+        result = run_execution_until_pause()
+
+        state_name = ""
+        message = ""
+
+        if isinstance(result, dict):
+            state_name = str(result.get("state") or "").lower()
+            message = str(result.get("message") or "")
+
+        # Approval/pause are intentionally non-terminal.
+        if state_name in ("approval_required", "paused"):
+            return
+
+        if state_name in ("complete", "completed", "success"):
+            emit(
+                "final",
+                "Background execution completed",
+                message or result,
+                "complete",
+                task_id=task_id,
+            )
+
+        elif state_name in ("failed", "error", "cancelled", "canceled"):
+            emit(
+                "error",
+                "Background execution terminated",
+                message or result,
+                "failed",
+                task_id=task_id,
+            )
+
+        else:
+            emit(
+                "error",
+                "Background execution ended unexpectedly",
+                result,
+                "failed",
+                task_id=task_id,
+            )
+
+    except BaseException as exc:
         emit(
             "error",
-            "Background execution failed",
+            "Background execution crashed",
             f"{type(exc).__name__}: {exc}",
             "failed",
             task_id=task_id,
         )
+
+    finally:
+        # Never leave a dead async task occupying the global execution slot.
+        if (
+            execution_state is not None
+            and execution_state.get("id") == task_id
+            and str(execution_state.get("state") or "").upper()
+                not in ("PAUSED",)
+            and not any(
+                p.get("execution_id") == task_id
+                for p in pending_approvals.values()
+            )
+        ):
+            execution_state = None
 
 
 def _start_async_ui_execution(message: str, source: str = "ui"):
