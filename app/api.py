@@ -1186,6 +1186,26 @@ def run_execution_until_pause():
 
 
 
+
+def _workboard_autopilot_watchdog():
+    """
+    Keep approved/ready work moving without user babysitting.
+    If the queue stops while executable work exists, restart it.
+    """
+    while True:
+        try:
+            if not workboard_runner.get("running"):
+                task = get_next_ready_task()
+
+                if task is not None:
+                    workboard_runner_start()
+
+            time.sleep(3)
+
+        except Exception:
+            time.sleep(5)
+
+
 @app.on_event("startup")
 def workboard_startup_recovery():
     """
@@ -1197,6 +1217,26 @@ def workboard_startup_recovery():
     recover_orphaned_progress_tasks(
         active_execution_id=None,
     )
+
+    if not getattr(app.state, "workboard_autopilot_started", False):
+        app.state.workboard_autopilot_started = True
+
+        threading.Thread(
+            target=_workboard_autopilot_watchdog,
+            name="workboard-autopilot",
+            daemon=True,
+        ).start()
+
+
+    # One persistent autopilot for the entire Agent session.
+    if not getattr(app.state, "workboard_autopilot_started", False):
+        app.state.workboard_autopilot_started = True
+
+        threading.Thread(
+            target=_workboard_autopilot_watchdog,
+            name="workboard-autopilot",
+            daemon=True,
+        ).start()
 
 
 # ============================================================
@@ -1375,7 +1415,14 @@ RULES:
 - Priority is 1-100.
 - estimate_minutes must be realistic.
 - schedule_offset_minutes is relative to sprint start.
-- Use requires_approval=true only when user approval is genuinely needed.
+- Default requires_approval=false.
+- requires_approval=true ONLY for genuinely risky or irreversible actions:
+  deleting important assets/data, publishing/deploying externally, spending money,
+  overwriting user-owned external data, destructive migrations, or actions with
+  meaningful irreversible consequences.
+- NEVER require approval for planning, defining scope, inspection, code edits,
+  Blueprint edits, builds, tests, validation, screenshots, UI work, camera work,
+  normal project saves, or routine implementation.
 - Inspection / analysis should come before mutation.
 - Build / validation / visual review should come after implementation.
 - Separate unrelated work so one failure does not block the entire Sprint.
@@ -3229,3 +3276,59 @@ if __name__ == "__main__":
     )
 
 
+
+
+# ============================================================
+# PERSISTENT WORKBOARD AUTOPILOT
+# ============================================================
+
+def _persistent_workboard_autopilot():
+    """
+    Keep the Workboard queue alive without user babysitting.
+    Starts/restarts the queue whenever executable or testing work exists.
+    """
+    while True:
+        try:
+            runner_alive = bool(workboard_runner.get("running"))
+
+            ready_task = get_next_ready_task()
+            testing_task = get_next_testing_task()
+
+            if not runner_alive and (
+                ready_task is not None
+                or testing_task is not None
+            ):
+                workboard_runner_start()
+
+            time.sleep(2)
+
+        except BaseException as exc:
+            emit(
+                "workboard",
+                "Autopilot recovery",
+                f"{type(exc).__name__}: {exc}",
+                "warning",
+            )
+            time.sleep(3)
+
+
+@app.on_event("startup")
+def start_persistent_workboard_autopilot():
+    """
+    Production Workboard startup.
+    Exactly one daemon watchdog per API process.
+    """
+    if getattr(
+        app.state,
+        "persistent_workboard_autopilot_started",
+        False,
+    ):
+        return
+
+    app.state.persistent_workboard_autopilot_started = True
+
+    threading.Thread(
+        target=_persistent_workboard_autopilot,
+        name="persistent-workboard-autopilot",
+        daemon=True,
+    ).start()
