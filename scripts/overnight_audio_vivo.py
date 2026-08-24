@@ -53,8 +53,15 @@ IMPORTANT:
 - Source files may be read and edited when required.
 - Do not use visual_review_unreal.
 - Do not call discover_projects.
-- Do not call open_project unless the Unreal bridge is genuinely disconnected
-  and opening the known project is the only recovery.
+- open_project is permitted ONLY as a recovery action when unreal_ping fails
+  and the Unreal bridge is genuinely disconnected.
+- When unreal_ping fails:
+  1. check unreal_status once
+  2. use open_project with the known AudioVidoLivingCity.uproject
+  3. wait for the bridge
+  4. retry unreal_ping
+  5. continue the milestone after connection returns
+- Never retry start_pie while unreal_ping is failing.
 - Never repeat an identical failed tool call.
 - If one approach fails, inspect the evidence and use a different valid approach.
 - Preserve existing working systems.
