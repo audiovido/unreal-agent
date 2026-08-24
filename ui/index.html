@@ -1,12 +1,38 @@
 <!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unreal Agent Complete Frontend</title>
 <style>
 :root{--bg:#07090d;--panel:#0e1219;--line:#202632;--text:#f5f7fb;--muted:#7f8997;--cyan:#72e6ff;--green:#56e39d;--amber:#ffc56e;--red:#ff7180}*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,Segoe UI,sans-serif;background:radial-gradient(circle at 50% -10%,#18223b 0,#07090d 34%);color:var(--text)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}.glass{background:linear-gradient(145deg,#111722ee,#0a0e14ee);border:1px solid var(--line);box-shadow:0 22px 60px #0008}.shell{height:100%;display:grid;grid-template-columns:88px 1fr;gap:10px;padding:10px}.rail{border-radius:22px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:7px}.brand{width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#7de8ff,#8172ff);display:grid;place-items:center;color:#071018;font-weight:900;margin-bottom:8px}.nav{width:60px;height:52px;border:1px solid transparent;border-radius:14px;background:transparent;color:var(--muted);font-size:9px}.nav b{display:block;font-size:16px}.nav.active,.nav:hover{background:#7fa8ff12;border-color:#7fa8ff28;color:#eaf1ff}.spacer{flex:1}.app{min-width:0;min-height:0;display:grid;grid-template-rows:66px 1fr;gap:10px}.top{border-radius:20px;padding:0 15px;display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px;align-items:center}.kicker{font-size:9px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}.title{font-weight:700;margin-top:3px}.command{height:40px;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;padding:0 10px}.command input{width:100%;background:transparent;border:0;outline:0}.topactions{display:flex;gap:6px}.btn,.select,.action{border:1px solid var(--line);background:#ffffff08;border-radius:10px;height:34px;padding:0 10px}.main{min-height:0;display:grid;grid-template-columns:1fr 340px;gap:10px}.center{min-height:0;display:grid;grid-template-rows:auto 1fr auto;gap:10px}.taskbar,.execution,.inspector,.workspace{border-radius:20px}.taskbar{padding:13px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px}.taskbar small{display:block;color:var(--muted);margin-top:4px}.controls{display:flex;gap:5px;flex-wrap:wrap}.workspace{overflow:hidden;display:grid;grid-template-rows:43px 1fr}.tabs{display:flex;align-items:center;gap:5px;padding:0 10px;border-bottom:1px solid var(--line)}.tab{border:0;background:transparent;color:var(--muted);height:29px;border-radius:9px;padding:0 9px}.tab.active{background:#7fa8ff12;color:#e6edff}.stage{overflow:auto;padding:16px}.view{display:none}.view.active{display:block}.hero{display:grid;grid-template-columns:1fr 240px;gap:15px}.hero h1{font-size:42px;line-height:1.02;letter-spacing:-.04em;margin:8px 0 11px}.hero p{color:#929baa;line-height:1.7;font-size:12px}.orb{height:190px;border:1px solid var(--line);border-radius:19px;display:grid;place-items:center;background:radial-gradient(circle,#72e6ff18,transparent 40%)}.core{width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,#7de8ff,#8172ff);color:#071018;display:grid;place-items:center;font-weight:900}.grid4,.cards{display:grid;gap:8px}.grid4{grid-template-columns:repeat(4,1fr);margin-top:15px}.cards{grid-template-columns:repeat(3,1fr)}.card,.quick,.block{border:1px solid var(--line);background:#ffffff05;border-radius:13px;padding:11px}.quick{text-align:start;min-height:70px}.quick small,.sub{display:block;color:var(--muted);font-size:9px;margin-top:5px}.label{color:var(--muted);font-size:8px;letter-spacing:.1em;text-transform:uppercase}.value{font-size:12px;margin-top:6px}.section{margin-top:15px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.actions{display:flex;gap:6px;flex-wrap:wrap}.good{color:#a8edc8}.danger{color:#ffbcc4}.primary{color:#dffaff}.inspector{overflow:hidden;display:grid;grid-template-rows:45px 1fr}.sidehead{padding:0 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.sidebody{overflow:auto;padding:9px}.block h4{margin:0 0 7px;color:var(--muted);font-size:9px;text-transform:uppercase}.execution{padding:10px 12px}.steps{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px}.step{height:29px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:8px;display:grid;place-items:center}.step.active{border-color:#72e6ff55;color:#dffaff;background:#72e6ff0d}.modalbg{position:fixed;inset:0;background:#020407c8;display:grid;place-items:center;z-index:20;padding:16px}.modal{width:min(760px,95vw);max-height:88vh;overflow:auto;border-radius:20px;padding:16px}.hidden{display:none!important}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}.field label{font-size:8px;color:var(--muted);text-transform:uppercase}.field input,.field select,.field textarea{background:#0003;border:1px solid var(--line);border-radius:10px;padding:9px;outline:0}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;right:16px;bottom:16px;z-index:30;background:#111722;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:240px}.toast span{display:block;color:var(--muted);font-size:9px;margin-top:3px}pre{white-space:pre-wrap}#SELF_TEST_RESULT{display:none}@media(max-width:1000px){.main{grid-template-columns:1fr}.inspector{display:none}.grid4{grid-template-columns:repeat(2,1fr)}}
-.chat-wrap{height:100%;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px}.chat-list{min-height:320px;max-height:56vh;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}.msg{max-width:78%;padding:10px 12px;border-radius:14px;border:1px solid var(--line);font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-word}.msg.user{align-self:flex-end;background:rgba(114,230,255,.07);border-color:rgba(114,230,255,.18)}.msg.assistant{align-self:flex-start;background:rgba(255,255,255,.025)}.msg.system{align-self:center;color:var(--muted);background:transparent}.msgmeta{display:block;margin-top:6px;font-size:8px;color:var(--muted)}.chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.chat-compose textarea{min-height:62px;max-height:120px;resize:vertical;border:1px solid var(--line);background:rgba(0,0,0,.22);border-radius:12px;padding:10px;outline:0}.chat-buttons{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}.chat-empty{color:var(--muted);font-size:10px;text-align:center;padding:32px}</style></head><body>
+.chat-wrap{height:100%;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px}.chat-list{min-height:320px;max-height:56vh;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}.msg{max-width:78%;padding:10px 12px;border-radius:14px;border:1px solid var(--line);font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-word}.msg.user{align-self:flex-end;background:rgba(114,230,255,.07);border-color:rgba(114,230,255,.18)}.msg.assistant{align-self:flex-start;background:rgba(255,255,255,.025)}.msg.system{align-self:center;color:var(--muted);background:transparent}.msgmeta{display:block;margin-top:6px;font-size:8px;color:var(--muted)}.chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.chat-compose textarea{min-height:62px;max-height:120px;resize:vertical;border:1px solid var(--line);background:rgba(0,0,0,.22);border-radius:12px;padding:10px;outline:0}.chat-buttons{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}.chat-empty{color:var(--muted);font-size:10px;text-align:center;padding:32px}
+.workboard-shell{display:grid;grid-template-rows:auto auto 1fr;gap:12px;min-height:580px}
+.workboard-top{display:grid;grid-template-columns:1fr auto;gap:10px}
+.workboard-plan{display:grid;grid-template-columns:1fr 160px 160px auto;gap:8px}
+.workboard-plan input{background:#0003;border:1px solid var(--line);border-radius:10px;padding:9px}
+.board-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.board-metric{border:1px solid var(--line);background:#ffffff04;border-radius:12px;padding:10px}
+.board-metric strong{font-size:18px;display:block;margin-top:4px}
+.kanban{display:grid;grid-template-columns:repeat(7,minmax(190px,1fr));gap:9px;overflow-x:auto;padding-bottom:8px}
+.kanban-col{border:1px solid var(--line);background:#06080d80;border-radius:14px;min-height:420px;padding:8px}
+.kanban-head{display:flex;justify-content:space-between;align-items:center;padding:4px 3px 9px;font-size:10px;color:#bbc4d2}
+.kanban-count{font-size:9px;color:var(--muted)}
+.task-card{border:1px solid var(--line);background:linear-gradient(145deg,#121824,#0b0f16);border-radius:12px;padding:10px;margin-bottom:7px}
+.task-card:hover{border-color:#72e6ff45}
+.task-title{font-size:11px;font-weight:700;line-height:1.4}
+.task-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.task-chip{font-size:8px;padding:3px 6px;border:1px solid var(--line);border-radius:20px;color:var(--muted)}
+.task-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.task-actions button{height:26px;font-size:8px}
+.approval-chip{color:#ffc56e;border-color:#ffc56e45}
+.sprint-chip{color:#8edbff}
+.workboard-footer{display:grid;grid-template-columns:1fr 340px;gap:10px}
+.activity-feed{max-height:180px;overflow:auto}
+.activity-item{font-size:9px;padding:7px 2px;border-bottom:1px solid #ffffff08;color:#aeb7c4}
+@media(max-width:1300px){.kanban{grid-template-columns:repeat(7,220px)}}
+
+</style></head><body>
 <div class="shell"><aside class="rail glass"><div class="brand">U</div>
 <button class="nav active" data-panel="mission"><b>✦</b><span data-i18n="mission">ماموریت</span></button><button class="nav" data-panel="chat"><b>◉</b><span data-i18n="chat">چت</span></button><button class="nav" data-panel="tasks"><b>≡</b><span data-i18n="tasks">تسک‌ها</span></button><button class="nav" data-panel="projects"><b>▣</b><span data-i18n="projects">پروژه‌ها</span></button><button class="nav" data-panel="git"><b>⑂</b><span>Git</span></button><button class="nav" data-panel="providers"><b>AI</b><span data-i18n="models">مدل‌ها</span></button><button class="nav" data-panel="memory"><b>◫</b><span data-i18n="memory">حافظه</span></button><button class="nav" data-panel="tools"><b>⌘</b><span data-i18n="tools">ابزارها</span></button><div class="spacer"></div></aside>
 <div class="app"><header class="top glass"><div><div class="kicker" data-i18n="workspace">فضای کاری</div><div class="title" id="projectName">AudioVidoLivingCity</div></div><div class="command"><input id="prompt" data-i18n-placeholder="prompt" placeholder="به Unreal Agent بگو چه کاری انجام دهد…"></div><div class="topactions"><select class="select" id="language"><option value="fa">فارسی</option><option value="en">English</option></select><button class="btn" id="modelButton">Ollama · qwen3:8b</button><button class="btn" id="settingsButton">⚙</button></div></header>
 <div class="main"><main class="center"><section class="taskbar glass"><div><div class="kicker"><span data-i18n="currentTask">تسک فعلی</span> · <span id="taskStatus">IDLE</span></div><strong id="taskTitle" data-i18n="ready">آماده برای تسک جدید</strong><small id="taskDescription" data-i18n="demo">Frontend Mock آماده تست کامل است.</small></div><div class="controls"><button class="action" data-action="pause">Pause</button><button class="action good" data-action="resume">Resume</button><button class="action danger" data-action="stop">Stop</button><button class="action" data-action="retry">Retry</button><button class="action" data-action="self_fix">Self-Fix</button></div></section>
-<section class="workspace glass"><div class="tabs"><button class="tab active" data-view="overview" data-i18n="overview">نمای کلی</button><button class="tab" data-view="patch">Patch / Diff</button><button class="tab" data-view="validate">Build & Validate</button><button class="tab" data-view="logs">Logs</button><button class="tab" data-view="shots">Screenshots</button><button class="tab" data-view="overnight">Overnight</button></div><div class="stage">
+<section class="workspace glass"><div class="tabs"><button class="tab active" data-view="overview" data-i18n="overview">نمای کلی</button><button class="tab" data-view="patch">Patch / Diff</button><button class="tab" data-view="validate">Build & Validate</button><button class="tab" data-view="logs">Logs</button><button class="tab" data-view="shots">Screenshots</button><button class="tab" data-view="workboard">Agent Board</button></div><div class="stage">
 <div class="view active" id="view-overview"><div class="hero"><div><div class="kicker">Orbital Mission Control</div><h1 data-i18n="hero">یک مرکز کنترل برای کل Unreal Agent.</h1><p data-i18n="heroSub">همه کارهای محصول از یک BASE_URL و یک /api/action عبور می‌کنند. در Mock کل UI بدون backend قابل تست است.</p><div class="grid4"><button class="quick" data-action="inspect_project"><strong>Inspect Project</strong><small>Read-only inspection</small></button><button class="quick" data-action="plan"><strong>Plan</strong><small>Execution plan</small></button><button class="quick" data-action="build"><strong>Build</strong><small>Build project</small></button><button class="quick" data-action="validate"><strong>Validate</strong><small>Validate result</small></button></div></div><div class="orb"><div class="core">U</div></div></div><div class="section"><div class="cards"><div class="card"><div class="label">Project</div><div class="value" id="ctxProject">AudioVidoLivingCity</div><div class="sub" id="ctxPath">C:\Users\Shadow\Desktop\app\AudioVidoLivingCity</div></div><div class="card"><div class="label">Model</div><div class="value" id="ctxModel">qwen3:8b</div><div class="sub" id="ctxProvider">Ollama</div></div><div class="card"><div class="label">Transport</div><div class="value" id="ctxMode">mock</div><div class="sub">/api/action</div></div></div></div></div>
 <div class="view" id="view-patch"><div class="sectionhead"><strong>Patch Review</strong><div class="actions"><button class="action good" data-action="patch_apply">Apply</button><button class="action danger" data-action="patch_reject">Reject</button><button class="action" data-action="patch_revert">Revert</button></div></div><div class="card"><div class="label">Changed Files</div><div class="value">ui/index.html<br>ui/app.js<br>ui/styles.css</div></div><pre class="card">diff --git a/ui/index.html b/ui/index.html
 + unified action transport
@@ -16,7 +42,76 @@
 <div class="view" id="view-logs"><div class="sectionhead"><strong>Event Log</strong><button class="action" id="clearLogs">Clear</button></div><pre class="card" id="logs">Frontend ready.</pre></div>
 <div class="view" id="view-shots"><div class="sectionhead"><strong>Screenshots</strong><button class="action primary" data-action="screenshot">Capture</button></div><div class="orb" id="shotPreview" style="height:330px"><div class="core">UI</div></div></div></div></section>
 
-<div class="view" id="view-overnight">
+
+<div class="view" id="view-workboard">
+  <div class="workboard-shell">
+
+    <div class="workboard-top">
+      <div>
+        <div class="kicker">AUTONOMOUS DELIVERY SYSTEM</div>
+        <strong style="font-size:20px">Agent Board</strong>
+        <div class="sub">
+          Sprint planning ? approvals ? scheduling ? execution ? testing ? evidence
+        </div>
+      </div>
+      <div class="actions">
+        <button class="action" id="boardRefresh">Refresh</button>
+        <button class="action primary" id="boardTick">Run Scheduler</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">NEW SPRINT</div>
+      <div class="workboard-plan" style="margin-top:8px">
+        <input id="sprintTitle" placeholder="Sprint title / user plan">
+        <input id="sprintStart" type="datetime-local">
+        <input id="sprintEnd" type="datetime-local">
+        <button class="action good" id="createSprint">Create Sprint</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:180px 1fr 110px 145px 120px 120px auto;gap:7px;margin-top:10px">
+        <select class="select" id="taskSprint"></select>
+        <input class="select" id="taskTitleInput" placeholder="New task">
+        <input class="select" id="taskPriority" type="number" value="50" min="1" max="100">
+        <input class="select" id="taskSchedule" type="datetime-local">
+        <input class="select" id="taskEstimate" type="number" placeholder="Minutes">
+        <label class="select" style="display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="taskApproval">
+          Approval
+        </label>
+        <button class="action primary" id="createTask">Add Task</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="board-summary">
+        <div class="board-metric"><div class="label">SPRINTS</div><strong id="metricSprints">0</strong></div>
+        <div class="board-metric"><div class="label">TASKS</div><strong id="metricTasks">0</strong></div>
+        <div class="board-metric"><div class="label">NEEDS APPROVAL</div><strong id="metricApproval">0</strong></div>
+        <div class="board-metric"><div class="label">IN PROGRESS</div><strong id="metricProgress">0</strong></div>
+        <div class="board-metric"><div class="label">FINISHED</div><strong id="metricFinished">0</strong></div>
+      </div>
+
+      <div class="kanban" id="kanbanBoard" style="margin-top:10px"></div>
+
+      <div class="workboard-footer section">
+        <div class="card">
+          <div class="label">AGENT ACTIVITY</div>
+          <div class="activity-feed" id="boardActivity"></div>
+        </div>
+        <div class="card">
+          <div class="label">SCHEDULE REVIEW</div>
+          <div id="scheduleReview" class="sub" style="margin-top:10px;line-height:1.8">
+            Scheduler has not reviewed tasks yet.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="view hidden" id="view-overnight">
 
   <div class="sectionhead">
     <div>
@@ -271,6 +366,228 @@ async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode
   );
 
   window.refreshOvernightStatus();
+})();
+</script>
+
+
+<script>
+(function(){
+  const columns = [
+    ["planned","Planned"],
+    ["approval","Needs Approval"],
+    ["ready","Ready"],
+    ["progress","In Progress"],
+    ["testing","Testing"],
+    ["tested","Tested"],
+    ["finished","Finished"]
+  ];
+
+  let BOARD = {sprints:[],tasks:[],activity:[]};
+
+  async function req(path, method="GET", body=null){
+    const opt = {method, headers:{"Content-Type":"application/json"}};
+    if(body) opt.body = JSON.stringify(body);
+    const r = await fetch("/api/workboard/"+path,opt);
+    const j = await r.json();
+    if(!r.ok || j.ok === false) throw new Error(j.error || "Request failed");
+    return j;
+  }
+
+  function escBoard(v){
+    return String(v ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+
+  function sprintName(id){
+    return BOARD.sprints.find(s=>s.id===id)?.title || "No Sprint";
+  }
+
+  function render(){
+    const tasks = BOARD.tasks || [];
+
+    document.getElementById("metricSprints").textContent = BOARD.sprints.length;
+    document.getElementById("metricTasks").textContent = tasks.length;
+    document.getElementById("metricApproval").textContent =
+      tasks.filter(t=>t.status==="approval").length;
+    document.getElementById("metricProgress").textContent =
+      tasks.filter(t=>t.status==="progress").length;
+    document.getElementById("metricFinished").textContent =
+      tasks.filter(t=>t.status==="finished").length;
+
+    const sprintSelect = document.getElementById("taskSprint");
+    sprintSelect.innerHTML = BOARD.sprints.map(s =>
+      `<option value="${s.id}">${escBoard(s.title)}</option>`
+    ).join("");
+
+    const board = document.getElementById("kanbanBoard");
+
+    board.innerHTML = columns.map(([status,label])=>{
+      const list = tasks
+        .filter(t=>t.status===status)
+        .sort((a,b)=>(b.priority||0)-(a.priority||0));
+
+      return `
+      <div class="kanban-col">
+        <div class="kanban-head">
+          <strong>${label}</strong>
+          <span class="kanban-count">${list.length}</span>
+        </div>
+        ${list.map(card).join("")}
+      </div>`;
+    }).join("");
+
+    document.querySelectorAll("[data-board-move]").forEach(btn=>{
+      btn.onclick = async ()=>{
+        await req(
+          `tasks/${btn.dataset.id}/move`,
+          "POST",
+          {status:btn.dataset.boardMove}
+        );
+        await refresh();
+      };
+    });
+
+    document.querySelectorAll("[data-board-approve]").forEach(btn=>{
+      btn.onclick = async ()=>{
+        await req(`tasks/${btn.dataset.id}/approve`,"POST");
+        await refresh();
+      };
+    });
+
+    document.querySelectorAll("[data-board-reject]").forEach(btn=>{
+      btn.onclick = async ()=>{
+        await req(`tasks/${btn.dataset.id}/reject`,"POST");
+        await refresh();
+      };
+    });
+
+    const activity = [...(BOARD.activity||[])].reverse().slice(0,30);
+
+    document.getElementById("boardActivity").innerHTML =
+      activity.length
+      ? activity.map(a =>
+          `<div class="activity-item">${escBoard(a.text)}</div>`
+        ).join("")
+      : `<div class="sub">No activity yet.</div>`;
+
+    const approval = tasks.filter(t=>t.status==="approval");
+    const blocked = tasks.filter(t=>t.status==="blocked");
+    const ready = tasks.filter(t=>t.status==="ready");
+
+    document.getElementById("scheduleReview").innerHTML = `
+      Ready now: <strong>${ready.length}</strong><br>
+      Waiting approval: <strong>${approval.length}</strong><br>
+      Blocked: <strong>${blocked.length}</strong><br>
+      Queue is ordered by priority inside each column.
+    `;
+  }
+
+  function card(t){
+    const actions = [];
+
+    if(t.status==="approval"){
+      actions.push(
+        `<button class="action good" data-board-approve data-id="${t.id}">Approve</button>`,
+        `<button class="action danger" data-board-reject data-id="${t.id}">Reject</button>`
+      );
+    }
+
+    if(t.status==="ready")
+      actions.push(`<button class="action primary" data-board-move="progress" data-id="${t.id}">Start</button>`);
+
+    if(t.status==="progress")
+      actions.push(`<button class="action" data-board-move="testing" data-id="${t.id}">Send to Test</button>`);
+
+    if(t.status==="testing")
+      actions.push(`<button class="action good" data-board-move="tested" data-id="${t.id}">Test Passed</button>`);
+
+    if(t.status==="tested")
+      actions.push(`<button class="action good" data-board-move="finished" data-id="${t.id}">Finish</button>`);
+
+    return `
+    <div class="task-card">
+      <div class="task-title">${escBoard(t.title)}</div>
+
+      <div class="task-meta">
+        <span class="task-chip sprint-chip">${escBoard(sprintName(t.sprint_id))}</span>
+        <span class="task-chip">P${t.priority || 0}</span>
+        ${t.estimate_minutes ? `<span class="task-chip">${t.estimate_minutes}m</span>` : ""}
+        ${t.requires_approval ? `<span class="task-chip approval-chip">Approval</span>` : ""}
+      </div>
+
+      ${t.scheduled_at
+        ? `<div class="sub" style="margin-top:7px">Scheduled: ${escBoard(t.scheduled_at)}</div>`
+        : ""}
+
+      <div class="task-actions">${actions.join("")}</div>
+    </div>`;
+  }
+
+  async function refresh(){
+    try{
+      const j = await req("state");
+      BOARD = j.data;
+      render();
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  document.getElementById("boardRefresh").onclick = refresh;
+
+  document.getElementById("boardTick").onclick = async ()=>{
+    const j = await req("tick","POST");
+    BOARD = j.data;
+    render();
+  };
+
+  document.getElementById("createSprint").onclick = async ()=>{
+    const title = document.getElementById("sprintTitle").value.trim();
+    if(!title) return;
+
+    await req("sprints","POST",{
+      title,
+      start_at: document.getElementById("sprintStart").value || null,
+      end_at: document.getElementById("sprintEnd").value || null
+    });
+
+    document.getElementById("sprintTitle").value = "";
+    await refresh();
+  };
+
+  document.getElementById("createTask").onclick = async ()=>{
+    const sprint_id = document.getElementById("taskSprint").value;
+    const title = document.getElementById("taskTitleInput").value.trim();
+
+    if(!sprint_id || !title) return;
+
+    await req("tasks","POST",{
+      sprint_id,
+      title,
+      priority: Number(document.getElementById("taskPriority").value || 50),
+      requires_approval: document.getElementById("taskApproval").checked,
+      scheduled_at: document.getElementById("taskSchedule").value || null,
+      estimate_minutes: Number(document.getElementById("taskEstimate").value || 0) || null
+    });
+
+    document.getElementById("taskTitleInput").value = "";
+    await refresh();
+  };
+
+  setInterval(async ()=>{
+    const view = document.getElementById("view-workboard");
+    if(view && view.classList.contains("active")){
+      try{
+        const j = await req("tick","POST");
+        BOARD = j.data;
+        render();
+      }catch(e){}
+    }
+  },15000);
+
+  refresh();
 })();
 </script>
 
