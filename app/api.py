@@ -472,6 +472,41 @@ def call_model_hard_timeout(messages, timeout_seconds=90):
     return box["result"]
 
 
+
+def call_tool_hard_timeout(spec, args, timeout_seconds=60):
+    """
+    No registered tool may freeze the whole Agent forever.
+    The worker is daemonized; the execution loop regains control
+    after the wall-clock timeout.
+    """
+    box = {}
+
+    def worker():
+        try:
+            box["result"] = spec.func(**args)
+        except BaseException as exc:
+            box["error"] = exc
+
+    t = threading.Thread(
+        target=worker,
+        name="unreal-agent-tool-step",
+        daemon=True,
+    )
+    t.start()
+    t.join(timeout_seconds)
+
+    if t.is_alive():
+        raise TimeoutError(
+            f"Tool '{getattr(spec, 'name', 'unknown')}' exceeded "
+            f"{timeout_seconds}s hard timeout"
+        )
+
+    if "error" in box:
+        raise box["error"]
+
+    return box.get("result")
+
+
 # ============================================================
 # EXECUTION LOOP
 # ============================================================
@@ -618,6 +653,18 @@ def run_execution_until_pause():
             }
 
     for _ in range(80):
+
+        # /api/reset may replace or clear the global execution_state.
+        # The old worker must notice and exit instead of continuing
+        # forever with its private local reference.
+        if execution_state is not state:
+            state["state"] = "CANCELLED"
+            state["end_ts"] = time.time()
+
+            return {
+                "state": "interrupted",
+                "message": "Execution was reset; Workboard may retry safely.",
+            }
 
         if state.get("start_ts") and (time.time() - state["start_ts"]) >= MAX_RUNTIME_SECONDS:
             state["state"] = "FAILED"
@@ -1105,13 +1152,18 @@ def run_execution_until_pause():
         )
 
         try:
-            result = spec.func(**args)
+            result = call_tool_hard_timeout(
+                spec,
+                args,
+                timeout_seconds=60,
+            )
 
         except Exception as exc:
             result = {
                 "ok": False,
                 "error":
                     f"{type(exc).__name__}: {exc}",
+                "transient": isinstance(exc, TimeoutError),
             }
 
         process_tool_result(
@@ -1756,6 +1808,46 @@ def _run_workboard_task(task):
             "execution_id": execution_id,
             "result": serialize(result),
         }
+
+    if state_name in ("interrupted", "cancelled", "error", "failed"):
+        message = str(result.get("message") or "")
+        transient = (
+            state_name in ("interrupted", "cancelled")
+            or "timeout" in message.lower()
+            or "timed out" in message.lower()
+            or "model request failed" in message.lower()
+        )
+
+        if transient:
+            current = get_task(task_id) or {}
+            retry_count = int(current.get("retry_count") or 0) + 1
+
+            # Persist retry count directly through the task object path.
+            current["retry_count"] = retry_count
+
+            if retry_count <= 3:
+                update_runtime_task(
+                    task_id,
+                    "ready",
+                    note=f"Automatic recovery retry {retry_count}/3: {message}",
+                    evidence={
+                        "type": "automatic_recovery",
+                        "execution_id": execution_id,
+                        "retry_count": retry_count,
+                        "message": message,
+                        "at": time.time(),
+                    },
+                )
+
+                execution_state = None
+
+                return {
+                    "ok": False,
+                    "retryable": True,
+                    "task_id": task_id,
+                    "retry_count": retry_count,
+                    "result": serialize(result),
+                }
 
     if state_name in ("paused", "approval_required"):
         update_runtime_task(
