@@ -326,6 +326,50 @@
   .ab-bottom{grid-template-columns:1fr}
 }
 
+
+/* ===== FINAL DARK FORM OVERRIDE ===== */
+#view-workboard input,
+#view-workboard textarea,
+#view-workboard select,
+#abPlanTitle,
+#abPlanDescription,
+#abPlanStart,
+#abPlanEnd {
+  background: #0b1018 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1px solid #394457 !important;
+}
+
+#view-workboard input::placeholder,
+#view-workboard textarea::placeholder,
+#abPlanTitle::placeholder,
+#abPlanDescription::placeholder {
+  color: #9da9ba !important;
+  -webkit-text-fill-color: #9da9ba !important;
+  opacity: 1 !important;
+}
+
+#view-workboard input:focus,
+#view-workboard textarea:focus,
+#view-workboard select:focus {
+  background: #0d1420 !important;
+  color: #ffffff !important;
+  border-color: #72e6ff !important;
+  box-shadow: 0 0 0 2px rgba(114,230,255,.12);
+}
+
+#view-workboard input:-webkit-autofill,
+#view-workboard textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #0b1018 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+#abPlanDescription {
+  line-height: 1.55;
+  font-size: 13px;
+}
+
 </style></head><body>
 <div class="shell"><aside class="rail glass"><div class="brand">U</div>
 <button class="nav active" data-panel="mission"><b>✦</b><span data-i18n="mission">ماموریت</span></button><button class="nav" data-panel="chat"><b>◉</b><span data-i18n="chat">چت</span></button><button class="nav" data-panel="tasks"><b>≡</b><span data-i18n="tasks">تسک‌ها</span></button><button class="nav" data-panel="projects"><b>▣</b><span data-i18n="projects">پروژه‌ها</span></button><button class="nav" data-panel="git"><b>⑂</b><span>Git</span></button><button class="nav" data-panel="providers"><b>AI</b><span data-i18n="models">مدل‌ها</span></button><button class="nav" data-panel="memory"><b>◫</b><span data-i18n="memory">حافظه</span></button><button class="nav" data-panel="tools"><b>⌘</b><span data-i18n="tools">ابزارها</span></button><div class="spacer"></div></aside>
@@ -1365,6 +1409,56 @@ setInterval(()=>{
 refresh().catch(showError);
 
 })();
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    if (typeof CONFIG !== "undefined") {
+      CONFIG.provider = "Ollama";
+      CONFIG.model = "unreal-coder:latest";
+    }
+
+    const model = document.getElementById("modelSelect");
+    if (model) {
+      const exists = [...model.options].some(
+        o => o.value === "unreal-coder:latest" ||
+             o.textContent === "unreal-coder:latest"
+      );
+
+      if (!exists) {
+        const opt = document.createElement("option");
+        opt.value = "unreal-coder:latest";
+        opt.textContent = "unreal-coder:latest";
+        model.appendChild(opt);
+      }
+
+      model.value = "unreal-coder:latest";
+    }
+
+    const topModel = document.querySelector(
+      ".topactions select:last-of-type"
+    );
+
+    if (topModel && [...topModel.options].some(
+      o => o.value === "unreal-coder:latest" ||
+           o.textContent === "unreal-coder:latest"
+    )) {
+      topModel.value = "unreal-coder:latest";
+    }
+
+    const providerSummary =
+      document.getElementById("providerSummary");
+
+    if (providerSummary) {
+      providerSummary.textContent =
+        "Ollama ? unreal-coder:latest";
+    }
+  } catch (e) {
+    console.warn("Default model UI init failed", e);
+  }
+});
 </script>
 
 </body></html>
