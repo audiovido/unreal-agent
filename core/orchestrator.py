@@ -41,7 +41,7 @@ OLLAMA_URL = os.getenv(
 
 DEFAULT_MODEL = os.getenv(
     "UNREAL_AGENT_DEFAULT_MODEL",
-    "qwen2.5-coder:14b",
+    "unreal-coder:latest",
 )
 
 SESSION_FILE = ROOT / "memory" / "conversation.json"
