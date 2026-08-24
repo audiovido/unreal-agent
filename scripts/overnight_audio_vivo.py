@@ -32,6 +32,7 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 RUN_ID = datetime.now().strftime("%Y%m%d_%H%M%S")
 LOG_FILE = LOG_DIR / f"overnight_{RUN_ID}.log"
 STATE_FILE = LOG_DIR / "overnight_state.json"
+CONTROL_FILE = LOG_DIR / "overnight_control.json"
 
 # ============================================================
 # MISSION
@@ -382,6 +383,12 @@ def wait_for_task(task_id, timeout_minutes):
     seen = set()
 
     while time.time() < deadline:
+        control_action = mission_control_gate()
+
+        if control_action == "stop":
+            reset_agent()
+            return False, "Mission stopped from Unreal Agent UI"
+
         rows = [
             e for e in events()
             if e.get("task_id") == task_id
@@ -554,6 +561,41 @@ def save_state(state):
     )
 
 
+
+def read_mission_control():
+    try:
+        return json.loads(
+            CONTROL_FILE.read_text(encoding="utf-8")
+        )
+    except Exception:
+        return {
+            "pause": False,
+            "stop": False,
+        }
+
+
+def mission_control_gate():
+    announced_pause = False
+
+    while True:
+        control = read_mission_control()
+
+        if control.get("stop"):
+            log("STOP requested from Unreal Agent UI")
+            return "stop"
+
+        if not control.get("pause"):
+            if announced_pause:
+                log("RESUME received from Unreal Agent UI")
+            return "continue"
+
+        if not announced_pause:
+            log("PAUSED from Unreal Agent UI")
+            announced_pause = True
+
+        time.sleep(2)
+
+
 # ============================================================
 # MAIN
 # ============================================================
@@ -578,6 +620,12 @@ def main():
         return 2
 
     for index, task in enumerate(TASKS, 1):
+        control_action = mission_control_gate()
+
+        if control_action == "stop":
+            log("Mission stopped by user.")
+            break
+
         if time.time() >= absolute_deadline:
             log("Mission deadline reached.")
             break

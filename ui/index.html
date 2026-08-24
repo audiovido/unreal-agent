@@ -6,7 +6,7 @@
 <button class="nav active" data-panel="mission"><b>✦</b><span data-i18n="mission">ماموریت</span></button><button class="nav" data-panel="chat"><b>◉</b><span data-i18n="chat">چت</span></button><button class="nav" data-panel="tasks"><b>≡</b><span data-i18n="tasks">تسک‌ها</span></button><button class="nav" data-panel="projects"><b>▣</b><span data-i18n="projects">پروژه‌ها</span></button><button class="nav" data-panel="git"><b>⑂</b><span>Git</span></button><button class="nav" data-panel="providers"><b>AI</b><span data-i18n="models">مدل‌ها</span></button><button class="nav" data-panel="memory"><b>◫</b><span data-i18n="memory">حافظه</span></button><button class="nav" data-panel="tools"><b>⌘</b><span data-i18n="tools">ابزارها</span></button><div class="spacer"></div></aside>
 <div class="app"><header class="top glass"><div><div class="kicker" data-i18n="workspace">فضای کاری</div><div class="title" id="projectName">AudioVidoLivingCity</div></div><div class="command"><input id="prompt" data-i18n-placeholder="prompt" placeholder="به Unreal Agent بگو چه کاری انجام دهد…"></div><div class="topactions"><select class="select" id="language"><option value="fa">فارسی</option><option value="en">English</option></select><button class="btn" id="modelButton">Ollama · qwen3:8b</button><button class="btn" id="settingsButton">⚙</button></div></header>
 <div class="main"><main class="center"><section class="taskbar glass"><div><div class="kicker"><span data-i18n="currentTask">تسک فعلی</span> · <span id="taskStatus">IDLE</span></div><strong id="taskTitle" data-i18n="ready">آماده برای تسک جدید</strong><small id="taskDescription" data-i18n="demo">Frontend Mock آماده تست کامل است.</small></div><div class="controls"><button class="action" data-action="pause">Pause</button><button class="action good" data-action="resume">Resume</button><button class="action danger" data-action="stop">Stop</button><button class="action" data-action="retry">Retry</button><button class="action" data-action="self_fix">Self-Fix</button></div></section>
-<section class="workspace glass"><div class="tabs"><button class="tab active" data-view="overview" data-i18n="overview">نمای کلی</button><button class="tab" data-view="patch">Patch / Diff</button><button class="tab" data-view="validate">Build & Validate</button><button class="tab" data-view="logs">Logs</button><button class="tab" data-view="shots">Screenshots</button></div><div class="stage">
+<section class="workspace glass"><div class="tabs"><button class="tab active" data-view="overview" data-i18n="overview">نمای کلی</button><button class="tab" data-view="patch">Patch / Diff</button><button class="tab" data-view="validate">Build & Validate</button><button class="tab" data-view="logs">Logs</button><button class="tab" data-view="shots">Screenshots</button><button class="tab" data-view="overnight">Overnight</button></div><div class="stage">
 <div class="view active" id="view-overview"><div class="hero"><div><div class="kicker">Orbital Mission Control</div><h1 data-i18n="hero">یک مرکز کنترل برای کل Unreal Agent.</h1><p data-i18n="heroSub">همه کارهای محصول از یک BASE_URL و یک /api/action عبور می‌کنند. در Mock کل UI بدون backend قابل تست است.</p><div class="grid4"><button class="quick" data-action="inspect_project"><strong>Inspect Project</strong><small>Read-only inspection</small></button><button class="quick" data-action="plan"><strong>Plan</strong><small>Execution plan</small></button><button class="quick" data-action="build"><strong>Build</strong><small>Build project</small></button><button class="quick" data-action="validate"><strong>Validate</strong><small>Validate result</small></button></div></div><div class="orb"><div class="core">U</div></div></div><div class="section"><div class="cards"><div class="card"><div class="label">Project</div><div class="value" id="ctxProject">AudioVidoLivingCity</div><div class="sub" id="ctxPath">C:\Users\Shadow\Desktop\app\AudioVidoLivingCity</div></div><div class="card"><div class="label">Model</div><div class="value" id="ctxModel">qwen3:8b</div><div class="sub" id="ctxProvider">Ollama</div></div><div class="card"><div class="label">Transport</div><div class="value" id="ctxMode">mock</div><div class="sub">/api/action</div></div></div></div></div>
 <div class="view" id="view-patch"><div class="sectionhead"><strong>Patch Review</strong><div class="actions"><button class="action good" data-action="patch_apply">Apply</button><button class="action danger" data-action="patch_reject">Reject</button><button class="action" data-action="patch_revert">Revert</button></div></div><div class="card"><div class="label">Changed Files</div><div class="value">ui/index.html<br>ui/app.js<br>ui/styles.css</div></div><pre class="card">diff --git a/ui/index.html b/ui/index.html
 + unified action transport
@@ -15,6 +15,69 @@
 <div class="view" id="view-validate"><div class="cards"><div class="card"><div class="label">Frontend</div><div class="value">Ready</div></div><div class="card"><div class="label">Build</div><div class="value" id="buildState">Not started</div></div><div class="card"><div class="label">Validation</div><div class="value" id="validateState">Not started</div></div></div><div class="section actions"><button class="action primary" data-action="build">Build</button><button class="action good" data-action="validate">Validate</button><button class="action" data-action="run">Run / PIE</button><button class="action" data-action="screenshot">Screenshot</button></div></div>
 <div class="view" id="view-logs"><div class="sectionhead"><strong>Event Log</strong><button class="action" id="clearLogs">Clear</button></div><pre class="card" id="logs">Frontend ready.</pre></div>
 <div class="view" id="view-shots"><div class="sectionhead"><strong>Screenshots</strong><button class="action primary" data-action="screenshot">Capture</button></div><div class="orb" id="shotPreview" style="height:330px"><div class="core">UI</div></div></div></div></section>
+
+<div class="view" id="view-overnight">
+
+  <div class="sectionhead">
+    <div>
+      <strong>Overnight Mission Control</strong>
+      <div class="sub">
+        Autonomous AudioVido development supervisor
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="action good" id="overnightStart">
+        Start
+      </button>
+
+      <button class="action" id="overnightPause">
+        Pause
+      </button>
+
+      <button class="action primary" id="overnightResume">
+        Resume
+      </button>
+
+      <button class="action danger" id="overnightStop">
+        Stop
+      </button>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="label">Mission</div>
+      <div class="value" id="overnightRunning">Idle</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Current Milestone</div>
+      <div class="value" id="overnightCurrent">?</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Progress</div>
+      <div class="value" id="overnightProgress">0 / 13</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="card">
+      <div class="label">Milestones</div>
+      <pre id="overnightTasks">No mission state yet.</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="card">
+      <div class="label">Live Overnight Log</div>
+      <pre id="overnightLog">Waiting?</pre>
+    </div>
+  </div>
+
+</div>
+
 <section class="execution glass"><div class="sectionhead"><div><div class="kicker">Task Timeline</div><div id="liveLine">Idle</div></div><div id="taskCounter">0 / 7</div></div><div class="steps"><div class="step">PLAN</div><div class="step">INSPECT</div><div class="step">READ</div><div class="step">EDIT</div><div class="step">BUILD</div><div class="step">VERIFY</div><div class="step">REVIEW</div></div></section></main>
 <aside class="inspector glass"><div class="sidehead"><strong>Mission Inspector</strong><span id="connectionBadge" style="color:var(--amber)">● MOCK</span></div><div class="sidebody"><div class="block"><h4>Current Action</h4><div id="currentAction">Idle</div></div><div class="block"><h4>Provider</h4><div id="providerSummary">Ollama · qwen3:8b</div></div><div class="block"><h4>Git</h4><div id="gitSummary">main · clean</div></div><div class="block"><h4>Approval</h4><div id="approvalSummary">No approval pending</div><div class="actions" style="margin-top:7px"><button class="action good" data-action="approval_approve">Approve</button><button class="action danger" data-action="approval_reject">Reject</button></div></div><div class="block"><h4>Last Result</h4><div id="lastResult">Idle</div></div></div></aside></div></div></div>
 <div class="modalbg hidden" id="panelModal"><div class="modal glass"><div class="sectionhead"><div><h2 id="panelTitle">Panel</h2><div class="sub">Unified action panel</div></div><button class="btn" data-close="panelModal">×</button></div><div id="panelContent"></div></div></div>
@@ -104,4 +167,111 @@ function wirePanel(){if($('#chatSend')){$('#chatSend').onclick=async()=>{const v
 $$('[data-action]').forEach(b=>b.onclick=()=>runAction(b.dataset.action));$$('.tab').forEach(t=>t.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');$$('.view').forEach(v=>v.classList.remove('active'));$('#view-'+t.dataset.view).classList.add('active')});$$('.nav').forEach(n=>n.onclick=()=>{$$('.nav').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.panel==='mission'){ $('#panelModal').classList.add('hidden');return}$('#panelTitle').textContent=n.querySelector('span').textContent;$('#panelContent').innerHTML=panelHtml(n.dataset.panel);$('#panelModal').classList.remove('hidden');wirePanel()});
 function populateModels(){const p=$('#providerSelect').value,l=STATE.models[p]||[];$('#modelSelect').innerHTML=l.map(x=>`<option>${esc(x)}</option>`).join('');if(l.includes(CONFIG.model))$('#modelSelect').value=CONFIG.model}$('#providerSelect').onchange=populateModels;populateModels();$('#settingsButton').onclick=$('#modelButton').onclick=()=>{$('#modeSelect').value=CONFIG.mode;$('#baseUrlInput').value=CONFIG.baseUrl;$('#endpointInput').value=CONFIG.actionEndpoint;$('#providerSelect').value=CONFIG.provider;populateModels();$('#modelSelect').value=CONFIG.model;$('#settingsModal').classList.remove('hidden')};$('#saveSettings').onclick=()=>{CONFIG.mode=$('#modeSelect').value;CONFIG.baseUrl=$('#baseUrlInput').value.replace(/\/$/,'');CONFIG.actionEndpoint=$('#endpointInput').value.startsWith('/')?$('#endpointInput').value:'/'+$('#endpointInput').value;CONFIG.provider=$('#providerSelect').value;CONFIG.model=$('#modelSelect').value;CONFIG.token=$('#tokenInput').value;$('#tokenInput').value='';$('#modelButton').textContent=CONFIG.provider+' · '+CONFIG.model;$('#ctxProvider').textContent=CONFIG.provider;$('#ctxModel').textContent=CONFIG.model;$('#providerSummary').textContent=CONFIG.provider+' · '+CONFIG.model;transportUI();$('#settingsModal').classList.add('hidden');toast('Settings saved','Unified transport updated')};$('#pingAction').onclick=()=>runAction('ping',{source:'frontend'});$('#language').onchange=e=>language(e.target.value);$$('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).classList.add('hidden'));$$('.modalbg').forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.add('hidden')});$('#clearLogs').onclick=()=>$('#logs').textContent='';$('#prompt').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim()){sendChat(e.target.value.trim());e.target.value=''}};
 async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode='mock';transportUI();$('#language').value='en';$('#language').dispatchEvent(new Event('change'));ok('language-en',document.documentElement.dir==='ltr'&&document.querySelector('[data-i18n="tasks"]').textContent==='Tasks');$('#language').value='fa';$('#language').dispatchEvent(new Event('change'));ok('language-fa',document.documentElement.dir==='rtl'&&document.querySelector('[data-i18n="tasks"]').textContent==='تسک‌ها');for(const t of $$('.tab')){t.click();ok('tab-'+t.dataset.view,$('#view-'+t.dataset.view).classList.contains('active'))}for(const a of ['pause','resume','stop','retry','self_fix','inspect_project','plan','build','validate','run','screenshot','patch_apply','patch_reject','patch_revert'])ok('action-'+a,(await runAction(a,{test:true}))?.ok);document.querySelector('[data-panel="projects"]').click();const pr=await runAction('project_select',{path:'C:\\Demo\\MyProject'});ok('project',pr?.data?.project?.name==='MyProject'&&$('#ctxProject').textContent==='MyProject');$('#panelModal').classList.add('hidden');ok('models',(await runAction('provider_models',{provider:'Ollama'}))?.data?.models?.length>0);ok('git',(await runAction('git_status',{branch:'main'}))?.data?.git?.branch==='main');const before=STATE.memory.length;await runAction('memory_add',{content:'selftest memory'});ok('memory-add',STATE.memory.length===before+1);ok('memory-search',(await runAction('memory_search',{query:'selftest'}))?.data?.memory?.length>0);await runAction('approval_request',{reason:'test'});ok('approval-pending',!!STATE.approval);await runAction('approval_approve',{});ok('approval-clear',!STATE.approval);document.querySelector('[data-panel="chat"]').click();ok('chat-open',!!$('#chatInput'));const cb=STATE.chat.length;await sendChat('self test chat');ok('chat-message',STATE.chat.length>=cb+2);$('#panelModal').classList.add('hidden');$('#settingsButton').click();ok('settings-open',!$('#settingsModal').classList.contains('hidden'));$('#settingsModal').classList.add('hidden');$('#prompt').value='self test prompt';$('#prompt').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));await new Promise(r=>setTimeout(r,60));ok('prompt',STATE.tasks.some(t=>t.action==='prompt'))}catch(e){f.push('exception:'+e.message)}const r=$('#SELF_TEST_RESULT');r.style.display='block';r.textContent=f.length?'FAIL '+f.join(','):'PASS 0 failures';document.title=f.length?'SELFTEST_FAIL':'SELFTEST_PASS'}language('fa');transportUI();if(new URLSearchParams(location.search).get('selftest')==='1')setTimeout(selfTest,80);
-</script></body></html>
+</script>
+<script>
+(function () {
+  async function overnightRequest(path, method = "GET") {
+    const response = await fetch("/api/overnight/" + path, {
+      method,
+      headers: {"Content-Type": "application/json"}
+    });
+
+    return await response.json();
+  }
+
+  function renderOvernight(data) {
+    const state = data.state || {};
+    const tasks = state.tasks || [];
+
+    const running = document.getElementById("overnightRunning");
+    const current = document.getElementById("overnightCurrent");
+    const progress = document.getElementById("overnightProgress");
+    const taskBox = document.getElementById("overnightTasks");
+    const logBox = document.getElementById("overnightLog");
+
+    if (!running) return;
+
+    if (data.paused) {
+      running.textContent = "PAUSED";
+    } else if (data.running) {
+      running.textContent = "RUNNING";
+    } else if (state.finished) {
+      running.textContent = "FINISHED";
+    } else {
+      running.textContent = "IDLE";
+    }
+
+    const active = data.current || {};
+    current.textContent = active.title || "?";
+
+    const done = tasks.filter(
+      t => t.status === "DONE"
+    ).length;
+
+    progress.textContent =
+      done + " / " + (tasks.length || 13);
+
+    taskBox.textContent = tasks.length
+      ? tasks.map(t =>
+          String(t.index).padStart(2, "0")
+          + "  "
+          + (t.status || "PENDING")
+          + "  "
+          + (t.title || "")
+        ).join("\n")
+      : "No mission state yet.";
+
+    logBox.textContent =
+      (data.log_tail || []).join("\n")
+      || "Waiting for mission log?";
+  }
+
+  window.refreshOvernightStatus = async function () {
+    try {
+      renderOvernight(
+        await overnightRequest("status")
+      );
+    } catch (error) {
+      const log = document.getElementById("overnightLog");
+      if (log) {
+        log.textContent =
+          "Overnight API error: " + error;
+      }
+    }
+  };
+
+  async function command(name) {
+    try {
+      const data = await overnightRequest(
+        name,
+        "POST"
+      );
+
+      renderOvernight(data);
+    } catch (error) {
+      alert(
+        "Overnight command failed: "
+        + error
+      );
+    }
+  }
+
+  document.addEventListener("click", function (event) {
+    const id = event.target && event.target.id;
+
+    if (id === "overnightStart") command("start");
+    if (id === "overnightPause") command("pause");
+    if (id === "overnightResume") command("resume");
+    if (id === "overnightStop") command("stop");
+  });
+
+  setInterval(
+    window.refreshOvernightStatus,
+    3000
+  );
+
+  window.refreshOvernightStatus();
+})();
+</script>
+
+</body></html>

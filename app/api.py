@@ -53,6 +53,7 @@ from core.orchestrator import (
 )
 
 from core.tool_registry import validate_args
+from app.overnight_api import router as overnight_router
 
 
 # ============================================================
@@ -63,6 +64,8 @@ app = FastAPI(
     title="Unreal Agent",
     version="5.2.0",
 )
+
+app.include_router(overnight_router)
 
 UI_DIR = ROOT / "ui"
 
