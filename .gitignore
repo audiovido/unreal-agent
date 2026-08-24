@@ -20,3 +20,7 @@ backups/
 *.before-*
 .DS_Store
 Thumbs.db
+__pycache__/
+*.pyc
+memory/conversation.json
+ui/*.agentboard_backup
