@@ -1328,12 +1328,30 @@ def _run_workboard_task(task):
         or ""
     ).lower()
 
-    if state_name in (
-        "complete",
-        "completed",
-        "done",
-        "success",
-    ):
+    execution_state_name = str(
+        (execution_state or {}).get("state")
+        or ""
+    ).lower()
+
+    is_complete = (
+        state_name in (
+            "complete",
+            "completed",
+            "done",
+            "success",
+            "finished",
+            "final",
+        )
+        or execution_state_name in (
+            "complete",
+            "completed",
+            "done",
+            "success",
+            "finished",
+        )
+    )
+
+    if is_complete:
         update_runtime_task(
             task_id,
             "testing",
