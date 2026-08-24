@@ -2201,8 +2201,122 @@ def _workboard_runner_loop():
         workboard_runner["thread"] = None
 
 
+
+def _workboard_one_shot_worker(task_id: str, phase: str):
+    global execution_state
+
+    try:
+        task = get_task(task_id)
+
+        if not task:
+            workboard_runner["last_result"] = {
+                "phase": "worker_error",
+                "ok": False,
+                "error": "Task disappeared before execution",
+                "task_id": task_id,
+            }
+            return
+
+        # ----------------------------------------------------
+        # QA-only card
+        # ----------------------------------------------------
+        if phase == "validation":
+            qa = _validate_workboard_task(task)
+
+            workboard_runner["last_result"] = {
+                "phase": "validation",
+                "validation": serialize(qa),
+            }
+            return
+
+        # ----------------------------------------------------
+        # Remove stale global execution before a new Board card.
+        # Never steal a genuinely active manual Agent execution.
+        # ----------------------------------------------------
+        if execution_state is not None:
+            wb_id = execution_state.get("workboard_task_id")
+            state_name = str(
+                execution_state.get("state") or ""
+            ).upper()
+
+            if wb_id:
+                old_task = get_task(wb_id)
+                old_status = (old_task or {}).get("status")
+
+                if old_status not in ("progress", "testing"):
+                    stale_id = execution_state.get("id")
+
+                    for approval_id, item in list(
+                        pending_approvals.items()
+                    ):
+                        if item.get("execution_id") == stale_id:
+                            pending_approvals.pop(
+                                approval_id,
+                                None,
+                            )
+
+                    execution_state = None
+
+            elif state_name not in ("PLANNING", "RUNNING", "PAUSED"):
+                execution_state = None
+
+        # ----------------------------------------------------
+        # Execute card
+        # ----------------------------------------------------
+        result = _run_workboard_task(task)
+
+        final_result = {
+            "phase": "execution",
+            "execution": serialize(result),
+        }
+
+        # ----------------------------------------------------
+        # Immediately perform deterministic QA when execution
+        # successfully moved the card to Testing.
+        # ----------------------------------------------------
+        current = get_task(task_id)
+
+        if (
+            result.get("ok")
+            and current
+            and current.get("status") == "testing"
+        ):
+            qa = _validate_workboard_task(current)
+
+            final_result = {
+                "phase": "complete_pipeline",
+                "execution": serialize(result),
+                "validation": serialize(qa),
+            }
+
+        workboard_runner["last_result"] = final_result
+
+    except BaseException as exc:
+        workboard_runner["last_result"] = {
+            "phase": "worker_crash",
+            "ok": False,
+            "task_id": task_id,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+
+        emit(
+            "workboard",
+            "Autopilot worker crashed",
+            workboard_runner["last_result"],
+            "error",
+        )
+
+    finally:
+        workboard_runner["running"] = False
+        workboard_runner["current_task_id"] = None
+        workboard_runner["thread"] = None
+
+
 @app.post("/api/workboard/runner/start")
 def workboard_runner_start():
+    global execution_state
+
+    # Recover only genuinely abandoned Progress cards.
     active_execution_id = (
         execution_state.get("id")
         if execution_state is not None
@@ -2213,30 +2327,57 @@ def workboard_runner_start():
         active_execution_id=active_execution_id,
     )
 
-    if workboard_runner["running"]:
-        return {
-            "ok": True,
-            "already_running": True,
-            "runner": serialize(workboard_runner),
-        }
+    with lock:
+        if workboard_runner.get("running"):
+            return {
+                "ok": True,
+                "already_running": True,
+                "runner": serialize(workboard_runner),
+            }
 
-    workboard_runner["running"] = True
-    workboard_runner["stop_requested"] = False
+        # QA has priority.
+        testing_task = get_next_testing_task()
+        ready_task = get_next_ready_task()
 
-    t = threading.Thread(
-        target=_workboard_runner_loop,
-        name="workboard-runner",
-        daemon=True,
-    )
+        candidate = testing_task or ready_task
 
-    workboard_runner["thread"] = t
-    t.start()
+        if candidate is None:
+            return {
+                "ok": True,
+                "started": False,
+                "reason": "no_executable_work",
+                "recovered_tasks": recovered,
+            }
+
+        phase = (
+            "validation"
+            if testing_task is not None
+            else "execution"
+        )
+
+        workboard_runner["running"] = True
+        workboard_runner["stop_requested"] = False
+        workboard_runner["current_task_id"] = candidate["id"]
+
+        t = threading.Thread(
+            target=_workboard_one_shot_worker,
+            args=(candidate["id"], phase),
+            name=f"workboard-one-shot-{candidate['id'][:8]}",
+            daemon=True,
+        )
+
+        workboard_runner["thread"] = t
+        t.start()
 
     return {
         "ok": True,
         "started": True,
+        "task_id": candidate["id"],
+        "task_title": candidate.get("title"),
+        "phase": phase,
         "recovered_tasks": recovered,
     }
+
 
 
 @app.post("/api/workboard/runner/stop")
