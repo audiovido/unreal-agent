@@ -118,6 +118,8 @@ def _wait_for(
             fingerprint = (
                 status,
                 task.get("updated_at"),
+                task.get("heartbeat_at"),
+                task.get("heartbeat_note"),
                 task.get("last_note"),
                 len(task.get("evidence") or []),
                 task.get("execution_id"),
@@ -268,13 +270,25 @@ def _run():
         if not execute_id:
             raise RuntimeError("Could not create executable self-test task")
 
-        _request("/api/workboard/runner/start", "POST")
+        # Isolated pipeline execution.
+        # Do NOT start the global queue: existing user Ready tasks must
+        # never interfere with autonomous self-test.
+        execute_start = _request(
+            f"/api/workboard/tasks/{execute_id}/execute",
+            "POST",
+        )
+
+        _record(
+            "Isolated task pipeline started",
+            execute_start.get("ok") is True,
+            execute_start,
+        )
 
         task, seen = _wait_for(
             execute_id,
             {"finished", "blocked"},
-            timeout=600,
-            idle_timeout=150,
+            timeout=900,
+            idle_timeout=120,
         )
 
         final_status = task.get("status") if task else "timeout"
@@ -361,13 +375,9 @@ def _run():
     finally:
         STATE["current_test"] = "cleanup"
 
-        try:
-            _request("/api/workboard/runner/stop", "POST", timeout=5)
-        except Exception:
-            pass
-
-        # Give cooperative runner a moment to leave its loop.
-        time.sleep(2)
+        # Self-test uses isolated direct execution and therefore
+        # must never stop the user's global Queue.
+        time.sleep(1)
 
         try:
             if sprint_id:

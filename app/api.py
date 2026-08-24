@@ -63,6 +63,7 @@ from app.workboard_api import (
     get_next_ready_task,
     get_next_testing_task,
     update_runtime_task,
+    touch_runtime_task,
     get_task,
     recover_orphaned_progress_tasks,
 )
@@ -613,6 +614,19 @@ def run_execution_until_pause():
             return {"state":"cancelled","message":"Execution cancelled."}
 
         state["step"] += 1
+
+        # Workboard liveness heartbeat.
+        # Both execution and independent QA keep their card alive.
+        heartbeat_task_id = (
+            state.get("workboard_task_id")
+            or state.get("workboard_validation_for")
+        )
+
+        if heartbeat_task_id:
+            touch_runtime_task(
+                heartbeat_task_id,
+                note=f"Agent active ? step {state['step']}",
+            )
 
         emit(
             "thinking",
@@ -1839,9 +1853,29 @@ def workboard_execute_task(task_id: str):
         workboard_runner["current_task_id"] = task_id
 
         try:
-            workboard_runner["last_result"] = serialize(
-                _run_workboard_task(task)
-            )
+            execution_result = _run_workboard_task(task)
+
+            final_result = {
+                "phase": "execution",
+                "execution": serialize(execution_result),
+            }
+
+            current_task = get_task(task_id)
+
+            if (
+                execution_result.get("ok")
+                and current_task
+                and current_task.get("status") == "testing"
+            ):
+                qa_result = _validate_workboard_task(current_task)
+
+                final_result = {
+                    "phase": "complete_pipeline",
+                    "execution": serialize(execution_result),
+                    "validation": serialize(qa_result),
+                }
+
+            workboard_runner["last_result"] = final_result
 
         finally:
             workboard_runner["current_task_id"] = None

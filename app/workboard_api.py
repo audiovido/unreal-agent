@@ -557,3 +557,27 @@ def cleanup_sprint(sprint_id: str):
             "sprint_id": sprint_id,
             "removed_tasks": len(task_ids),
         }
+
+
+def touch_runtime_task(task_id: str, note: str | None = None):
+    """
+    Lightweight execution heartbeat.
+    Updates liveness without creating noisy activity entries.
+    """
+    with WORKBOARD_LOCK:
+        data = _load()
+
+        for task in data.get("tasks", []):
+            if task.get("id") != task_id:
+                continue
+
+            task["updated_at"] = time.time()
+            task["heartbeat_at"] = time.time()
+
+            if note:
+                task["heartbeat_note"] = note
+
+            _save(data)
+            return task
+
+    return None
