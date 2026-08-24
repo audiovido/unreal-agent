@@ -88,7 +88,7 @@ def _request(path, method="GET", body=None, timeout=15):
 
 
 def _find_task(task_id):
-    data = _request("/api/workboard/state")
+    data = _request("/api/workboard/state?include_internal=true")
     board = data.get("data") or {}
 
     for task in board.get("tasks", []):

@@ -225,11 +225,46 @@ def _normalize(data):
     return data
 
 
+
+def _internal_sprint_ids(data):
+    return {
+        sprint.get("id")
+        for sprint in data.get("sprints", [])
+        if str(sprint.get("title") or "").startswith("__SELFTEST__")
+    }
+
+
+def _is_internal_task(task, data):
+    return task.get("sprint_id") in _internal_sprint_ids(data)
+
+
+def _public_state(data):
+    internal_ids = _internal_sprint_ids(data)
+
+    return {
+        **data,
+        "sprints": [
+            sprint for sprint in data.get("sprints", [])
+            if sprint.get("id") not in internal_ids
+        ],
+        "tasks": [
+            task for task in data.get("tasks", [])
+            if task.get("sprint_id") not in internal_ids
+        ],
+        "activity": [
+            item for item in data.get("activity", [])
+            if not str(item.get("text") or "").startswith("__SELFTEST__")
+        ],
+    }
+
+
 @router.get("/state")
-def state():
+def state(include_internal: bool = False):
+    data = _save(_normalize(_load()))
+
     return {
         "ok": True,
-        "data": _save(_normalize(_load())),
+        "data": data if include_internal else _public_state(data),
     }
 
 
@@ -464,6 +499,7 @@ def get_next_testing_task():
     testing = [
         t for t in data.get("tasks", [])
         if t.get("status") == "testing"
+        and not _is_internal_task(t, data)
     ]
 
     if not testing:
@@ -484,6 +520,7 @@ def get_next_ready_task():
     ready = [
         t for t in data.get("tasks", [])
         if t.get("status") == "ready"
+        and not _is_internal_task(t, data)
         and (
             not t.get("requires_approval")
             or t.get("approved")
