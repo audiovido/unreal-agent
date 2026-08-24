@@ -143,8 +143,49 @@ def _dependencies_finished(task, data):
     )
 
 
+def _needs_real_human_approval(task):
+    """
+    Human approval is reserved for genuinely sensitive / irreversible work.
+    Routine Unreal planning, coding, builds and validation are autonomous.
+    """
+    text = (
+        str(task.get("title") or "")
+        + " "
+        + str(task.get("description") or "")
+    ).lower()
+
+    sensitive = (
+        "delete important",
+        "delete production",
+        "publish externally",
+        "deploy production",
+        "spend money",
+        "purchase",
+        "billing",
+        "overwrite external",
+        "destructive migration",
+        "irreversible",
+    )
+
+    return any(x in text for x in sensitive)
+
+
 def _normalize_task(task, data=None):
     status = task.get("status", "planned")
+
+    # Migrate old generated tasks created under the previous
+    # over-cautious approval policy.
+    if (
+        task.get("requires_approval")
+        and not _needs_real_human_approval(task)
+    ):
+        task["requires_approval"] = False
+        task["approved"] = True
+        task["approval_migrated"] = True
+
+        if status == "approval":
+            status = "planned"
+            task["status"] = "planned"
 
     deps_ready = (
         True
