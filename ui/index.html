@@ -27,6 +27,141 @@
 .activity-item{font-size:9px;padding:7px 2px;border-bottom:1px solid #ffffff08;color:#aeb7c4}
 @media(max-width:1300px){.kanban{grid-template-columns:repeat(7,220px)}}
 
+
+/* ===== Agent Board UX V2 ===== */
+#view-workboard{height:100%}
+#view-workboard.active{display:block}
+#view-workboard .workboard-shell{min-width:0;min-height:100%;display:flex;flex-direction:column;gap:12px}
+
+.wb-toolbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.wb-toolbar .actions{flex-shrink:0}
+
+.wb-create{padding:14px}
+.wb-sprint-form{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) 190px 190px 130px;
+  gap:8px;
+  align-items:end
+}
+.wb-task-form{
+  display:grid;
+  grid-template-columns:190px minmax(260px,1fr) 80px 190px 105px 110px 110px;
+  gap:8px;
+  align-items:end;
+  margin-top:10px
+}
+.wb-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.wb-field>span{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.wb-field input,.wb-field select{
+  width:100%;
+  height:38px;
+  background:#070a10;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:0 10px;
+  outline:none
+}
+.wb-field input:focus,.wb-field select:focus{border-color:#72e6ff66}
+.wb-check{
+  height:38px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  background:#ffffff05;
+  font-size:10px
+}
+.wb-create .action{height:38px;white-space:nowrap}
+
+.board-summary{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(110px,1fr));
+  gap:8px
+}
+
+.kanban-wrap{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding-bottom:8px;
+  scrollbar-width:thin
+}
+.kanban{
+  display:grid;
+  grid-template-columns:repeat(8,235px);
+  gap:9px;
+  width:max-content;
+  min-width:100%;
+  overflow:visible
+}
+.kanban-col{
+  min-height:430px;
+  max-height:62vh;
+  overflow-y:auto;
+  border:1px solid var(--line);
+  background:#06080d80;
+  border-radius:14px;
+  padding:8px;
+  transition:.15s ease
+}
+.kanban-col.drag-over{
+  border-color:#72e6ff99;
+  background:#72e6ff0b
+}
+.kanban-head{
+  position:sticky;
+  top:-8px;
+  z-index:2;
+  background:#0a0e15f2;
+  backdrop-filter:blur(8px);
+  margin:-8px -8px 8px;
+  padding:11px;
+  border-bottom:1px solid var(--line)
+}
+.task-card{
+  cursor:grab;
+  user-select:none;
+  transition:transform .12s ease,border-color .12s ease,opacity .12s ease
+}
+.task-card:active{cursor:grabbing}
+.task-card.dragging{opacity:.45;transform:scale(.98)}
+.task-title{font-size:11px;font-weight:700;line-height:1.45}
+.task-desc{font-size:9px;color:var(--muted);line-height:1.5;margin-top:5px}
+.task-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.task-actions .action{height:27px;padding:0 7px;font-size:8px}
+
+.wb-priority-controls{display:flex;gap:4px;margin-left:auto}
+.wb-priority-controls button{min-width:27px}
+
+.workboard-footer{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 320px 320px;
+  gap:10px
+}
+.approval-queue{max-height:190px;overflow:auto}
+.approval-row{
+  border-bottom:1px solid #ffffff0a;
+  padding:8px 0;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:center
+}
+.approval-row:last-child{border-bottom:0}
+
+@media(max-width:1450px){
+  .wb-task-form{grid-template-columns:170px minmax(220px,1fr) 75px 175px 95px 105px}
+  .wb-task-form .wb-add-task{grid-column:1/-1}
+}
+@media(max-width:1050px){
+  .wb-sprint-form{grid-template-columns:1fr 1fr}
+  .wb-task-form{grid-template-columns:1fr 1fr}
+  .board-summary{grid-template-columns:repeat(2,1fr)}
+  .workboard-footer{grid-template-columns:1fr}
+}
+
 </style></head><body>
 <div class="shell"><aside class="rail glass"><div class="brand">U</div>
 <button class="nav active" data-panel="mission"><b>✦</b><span data-i18n="mission">ماموریت</span></button><button class="nav" data-panel="chat"><b>◉</b><span data-i18n="chat">چت</span></button><button class="nav" data-panel="tasks"><b>≡</b><span data-i18n="tasks">تسک‌ها</span></button><button class="nav" data-panel="projects"><b>▣</b><span data-i18n="projects">پروژه‌ها</span></button><button class="nav" data-panel="git"><b>⑂</b><span>Git</span></button><button class="nav" data-panel="providers"><b>AI</b><span data-i18n="models">مدل‌ها</span></button><button class="nav" data-panel="memory"><b>◫</b><span data-i18n="memory">حافظه</span></button><button class="nav" data-panel="tools"><b>⌘</b><span data-i18n="tools">ابزارها</span></button><div class="spacer"></div></aside>
@@ -43,67 +178,108 @@
 <div class="view" id="view-shots"><div class="sectionhead"><strong>Screenshots</strong><button class="action primary" data-action="screenshot">Capture</button></div><div class="orb" id="shotPreview" style="height:330px"><div class="core">UI</div></div></div></div></section>
 
 
+
+
 <div class="view" id="view-workboard">
   <div class="workboard-shell">
 
-    <div class="workboard-top">
+    <div class="wb-toolbar">
       <div>
         <div class="kicker">AUTONOMOUS DELIVERY SYSTEM</div>
-        <strong style="font-size:20px">Agent Board</strong>
-        <div class="sub">
-          Sprint planning ? approvals ? scheduling ? execution ? testing ? evidence
-        </div>
+        <strong style="font-size:22px">Agent Board</strong>
+        <div class="sub">Plan ? Approve ? Schedule ? Execute ? Test ? Finish</div>
       </div>
+
       <div class="actions">
         <button class="action" id="boardRefresh">Refresh</button>
         <button class="action primary" id="boardTick">Run Scheduler</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="label">NEW SPRINT</div>
-      <div class="workboard-plan" style="margin-top:8px">
-        <input id="sprintTitle" placeholder="Sprint title / user plan">
-        <input id="sprintStart" type="datetime-local">
-        <input id="sprintEnd" type="datetime-local">
+    <div class="card wb-create">
+      <div class="label">SPRINT / USER PLAN</div>
+
+      <div class="wb-sprint-form">
+        <label class="wb-field">
+          <span>Sprint title / plan</span>
+          <input id="sprintTitle" placeholder="Example: Finish AudioVido MVP">
+        </label>
+
+        <label class="wb-field">
+          <span>Start</span>
+          <input id="sprintStart" type="datetime-local">
+        </label>
+
+        <label class="wb-field">
+          <span>End</span>
+          <input id="sprintEnd" type="datetime-local">
+        </label>
+
         <button class="action good" id="createSprint">Create Sprint</button>
       </div>
 
-      <div style="display:grid;grid-template-columns:180px 1fr 110px 145px 120px 120px auto;gap:7px;margin-top:10px">
-        <select class="select" id="taskSprint"></select>
-        <input class="select" id="taskTitleInput" placeholder="New task">
-        <input class="select" id="taskPriority" type="number" value="50" min="1" max="100">
-        <input class="select" id="taskSchedule" type="datetime-local">
-        <input class="select" id="taskEstimate" type="number" placeholder="Minutes">
-        <label class="select" style="display:flex;align-items:center;gap:6px">
-          <input type="checkbox" id="taskApproval">
-          Approval
+      <div class="wb-task-form">
+        <label class="wb-field">
+          <span>Sprint</span>
+          <select id="taskSprint"></select>
         </label>
-        <button class="action primary" id="createTask">Add Task</button>
+
+        <label class="wb-field">
+          <span>Task</span>
+          <input id="taskTitleInput" placeholder="Small executable task">
+        </label>
+
+        <label class="wb-field">
+          <span>Priority</span>
+          <input id="taskPriority" type="number" value="50" min="1" max="100">
+        </label>
+
+        <label class="wb-field">
+          <span>Scheduled time</span>
+          <input id="taskSchedule" type="datetime-local">
+        </label>
+
+        <label class="wb-field">
+          <span>Estimate</span>
+          <input id="taskEstimate" type="number" placeholder="min">
+        </label>
+
+        <label class="wb-check">
+          <input type="checkbox" id="taskApproval">
+          Needs Approval
+        </label>
+
+        <button class="action primary wb-add-task" id="createTask">Add Task</button>
       </div>
     </div>
 
-    <div>
-      <div class="board-summary">
-        <div class="board-metric"><div class="label">SPRINTS</div><strong id="metricSprints">0</strong></div>
-        <div class="board-metric"><div class="label">TASKS</div><strong id="metricTasks">0</strong></div>
-        <div class="board-metric"><div class="label">NEEDS APPROVAL</div><strong id="metricApproval">0</strong></div>
-        <div class="board-metric"><div class="label">IN PROGRESS</div><strong id="metricProgress">0</strong></div>
-        <div class="board-metric"><div class="label">FINISHED</div><strong id="metricFinished">0</strong></div>
+    <div class="board-summary">
+      <div class="board-metric"><div class="label">SPRINTS</div><strong id="metricSprints">0</strong></div>
+      <div class="board-metric"><div class="label">TASKS</div><strong id="metricTasks">0</strong></div>
+      <div class="board-metric"><div class="label">NEEDS APPROVAL</div><strong id="metricApproval">0</strong></div>
+      <div class="board-metric"><div class="label">IN PROGRESS</div><strong id="metricProgress">0</strong></div>
+      <div class="board-metric"><div class="label">FINISHED</div><strong id="metricFinished">0</strong></div>
+    </div>
+
+    <div class="kanban-wrap">
+      <div class="kanban" id="kanbanBoard"></div>
+    </div>
+
+    <div class="workboard-footer">
+      <div class="card">
+        <div class="label">AGENT ACTIVITY</div>
+        <div class="activity-feed" id="boardActivity"></div>
       </div>
 
-      <div class="kanban" id="kanbanBoard" style="margin-top:10px"></div>
+      <div class="card">
+        <div class="label">APPROVAL QUEUE</div>
+        <div class="approval-queue" id="approvalQueue"></div>
+      </div>
 
-      <div class="workboard-footer section">
-        <div class="card">
-          <div class="label">AGENT ACTIVITY</div>
-          <div class="activity-feed" id="boardActivity"></div>
-        </div>
-        <div class="card">
-          <div class="label">SCHEDULE REVIEW</div>
-          <div id="scheduleReview" class="sub" style="margin-top:10px;line-height:1.8">
-            Scheduler has not reviewed tasks yet.
-          </div>
+      <div class="card">
+        <div class="label">SCHEDULE REVIEW</div>
+        <div id="scheduleReview" class="sub" style="margin-top:10px;line-height:1.9">
+          Scheduler has not reviewed tasks yet.
         </div>
       </div>
     </div>
@@ -379,7 +555,8 @@ async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode
     ["progress","In Progress"],
     ["testing","Testing"],
     ["tested","Tested"],
-    ["finished","Finished"]
+    ["finished","Finished"],
+    ["blocked","Blocked"]
   ];
 
   let BOARD = {sprints:[],tasks:[],activity:[]};
@@ -429,7 +606,7 @@ async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode
         .sort((a,b)=>(b.priority||0)-(a.priority||0));
 
       return `
-      <div class="kanban-col">
+      <div class="kanban-col" data-drop-status="${status}">
         <div class="kanban-head">
           <strong>${label}</strong>
           <span class="kanban-count">${list.length}</span>
@@ -476,6 +653,37 @@ async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode
     const blocked = tasks.filter(t=>t.status==="blocked");
     const ready = tasks.filter(t=>t.status==="ready");
 
+    const approvalBox = document.getElementById("approvalQueue");
+    approvalBox.innerHTML = approval.length
+      ? approval.map(t=>`
+        <div class="approval-row">
+          <div>
+            <div class="task-title">${escBoard(t.title)}</div>
+            <div class="sub">${escBoard(sprintName(t.sprint_id))}</div>
+          </div>
+          <div class="actions">
+            <button class="action good" data-queue-approve="${t.id}">Approve</button>
+            <button class="action danger" data-queue-reject="${t.id}">Reject</button>
+          </div>
+        </div>
+      `).join("")
+      : `<div class="sub" style="padding-top:10px">No approvals waiting.</div>`;
+
+    document.querySelectorAll("[data-queue-approve]").forEach(btn=>{
+      btn.onclick = async ()=>{
+        await req(`tasks/${btn.dataset.queueApprove}/approve`,"POST");
+        await refresh();
+      };
+    });
+
+    document.querySelectorAll("[data-queue-reject]").forEach(btn=>{
+      btn.onclick = async ()=>{
+        await req(`tasks/${btn.dataset.queueReject}/reject`,"POST");
+        await refresh();
+      };
+    });
+
+
     document.getElementById("scheduleReview").innerHTML = `
       Ready now: <strong>${ready.length}</strong><br>
       Waiting approval: <strong>${approval.length}</strong><br>
@@ -507,8 +715,9 @@ async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode
       actions.push(`<button class="action good" data-board-move="finished" data-id="${t.id}">Finish</button>`);
 
     return `
-    <div class="task-card">
+    <div class="task-card" draggable="true" data-task-card="${t.id}" data-task-status="${t.status}">
       <div class="task-title">${escBoard(t.title)}</div>
+      ${t.description ? `<div class="task-desc">${escBoard(t.description)}</div>` : ""}
 
       <div class="task-meta">
         <span class="task-chip sprint-chip">${escBoard(sprintName(t.sprint_id))}</span>
@@ -521,7 +730,13 @@ async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode
         ? `<div class="sub" style="margin-top:7px">Scheduled: ${escBoard(t.scheduled_at)}</div>`
         : ""}
 
-      <div class="task-actions">${actions.join("")}</div>
+      <div class="task-actions">
+        ${actions.join("")}
+        <span class="wb-priority-controls">
+          <button class="action" data-priority-up data-id="${t.id}" data-priority="${t.priority || 50}" title="Higher priority">?</button>
+          <button class="action" data-priority-down data-id="${t.id}" data-priority="${t.priority || 50}" title="Lower priority">?</button>
+        </span>
+      </div>
     </div>`;
   }
 
