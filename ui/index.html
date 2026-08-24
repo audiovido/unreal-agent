@@ -162,6 +162,170 @@
   .workboard-footer{grid-template-columns:1fr}
 }
 
+
+/* ===== AGENT BOARD V3 ROBUST ===== */
+#view-workboard{min-width:0}
+#view-workboard.active{display:block}
+
+.ab-shell{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ab-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+
+.ab-form{
+  border:1px solid var(--line);
+  background:#ffffff04;
+  border-radius:14px;
+  padding:12px
+}
+.ab-form-row{
+  display:grid;
+  gap:8px;
+  align-items:end;
+  margin-top:8px
+}
+.ab-sprint-row{grid-template-columns:minmax(250px,1fr) 185px 185px 130px}
+.ab-task-row{grid-template-columns:180px minmax(240px,1fr) 80px 185px 100px 120px 105px}
+
+.ab-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ab-field span{font-size:8px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.ab-field input,.ab-field select{
+  width:100%;
+  min-width:0;
+  height:38px;
+  border:1px solid var(--line);
+  background:#070a10;
+  border-radius:10px;
+  padding:0 9px
+}
+.ab-check{
+  height:38px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  font-size:10px;
+  white-space:nowrap
+}
+.ab-btn{height:38px!important}
+
+.ab-stats{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(110px,1fr));
+  gap:8px
+}
+.ab-stat{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  background:#ffffff04
+}
+.ab-stat strong{display:block;font-size:18px;margin-top:4px}
+
+.ab-board-scroll{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding-bottom:10px
+}
+.ab-board{
+  display:grid;
+  grid-template-columns:repeat(8,240px);
+  gap:9px;
+  width:max-content;
+  min-width:100%
+}
+.ab-col{
+  min-height:420px;
+  max-height:58vh;
+  overflow-y:auto;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#070a0f;
+  padding:8px;
+  transition:.15s
+}
+.ab-col.drag-over{
+  border-color:#72e6ff99;
+  background:#72e6ff0d
+}
+.ab-col-head{
+  position:sticky;
+  top:-8px;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:11px;
+  margin:-8px -8px 8px;
+  background:#0d121bf2;
+  border-bottom:1px solid var(--line)
+}
+.ab-col-title{font-size:10px;font-weight:700}
+.ab-count{font-size:9px;color:var(--muted)}
+
+.ab-card{
+  border:1px solid var(--line);
+  background:linear-gradient(145deg,#121824,#0b0f16);
+  border-radius:11px;
+  padding:10px;
+  margin-bottom:7px;
+  cursor:grab
+}
+.ab-card.dragging{opacity:.45}
+.ab-card-title{font-size:11px;font-weight:700;line-height:1.4}
+.ab-card-desc{font-size:9px;color:var(--muted);line-height:1.5;margin-top:5px}
+.ab-meta{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.ab-chip{
+  font-size:8px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:3px 6px;
+  color:var(--muted)
+}
+.ab-approval{color:#ffc56e;border-color:#ffc56e55}
+.ab-actions{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.ab-actions button{height:27px;font-size:8px;padding:0 7px}
+
+.ab-bottom{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 320px 320px;
+  gap:10px
+}
+.ab-panel{
+  border:1px solid var(--line);
+  border-radius:13px;
+  padding:11px;
+  background:#ffffff04
+}
+.ab-scroll{max-height:180px;overflow:auto}
+.ab-row{padding:7px 0;border-bottom:1px solid #ffffff09;font-size:9px}
+.ab-approval-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:7px;
+  padding:8px 0;
+  border-bottom:1px solid #ffffff09
+}
+
+.ab-empty{
+  color:var(--muted);
+  font-size:9px;
+  text-align:center;
+  padding:24px 8px
+}
+
+@media(max-width:1450px){
+  .ab-task-row{grid-template-columns:160px minmax(210px,1fr) 75px 165px 90px 110px}
+  .ab-task-row .ab-add-task{grid-column:1/-1}
+}
+@media(max-width:1100px){
+  .ab-sprint-row,.ab-task-row{grid-template-columns:1fr 1fr}
+  .ab-stats{grid-template-columns:repeat(2,1fr)}
+  .ab-bottom{grid-template-columns:1fr}
+}
+
 </style></head><body>
 <div class="shell"><aside class="rail glass"><div class="brand">U</div>
 <button class="nav active" data-panel="mission"><b>✦</b><span data-i18n="mission">ماموریت</span></button><button class="nav" data-panel="chat"><b>◉</b><span data-i18n="chat">چت</span></button><button class="nav" data-panel="tasks"><b>≡</b><span data-i18n="tasks">تسک‌ها</span></button><button class="nav" data-panel="projects"><b>▣</b><span data-i18n="projects">پروژه‌ها</span></button><button class="nav" data-panel="git"><b>⑂</b><span>Git</span></button><button class="nav" data-panel="providers"><b>AI</b><span data-i18n="models">مدل‌ها</span></button><button class="nav" data-panel="memory"><b>◫</b><span data-i18n="memory">حافظه</span></button><button class="nav" data-panel="tools"><b>⌘</b><span data-i18n="tools">ابزارها</span></button><div class="spacer"></div></aside>
@@ -180,106 +344,119 @@
 
 
 
-<div class="view" id="view-workboard">
-  <div class="workboard-shell">
 
-    <div class="wb-toolbar">
+<div class="view" id="view-workboard">
+  <div class="ab-shell">
+
+    <div class="ab-head">
       <div>
         <div class="kicker">AUTONOMOUS DELIVERY SYSTEM</div>
         <strong style="font-size:22px">Agent Board</strong>
-        <div class="sub">Plan ? Approve ? Schedule ? Execute ? Test ? Finish</div>
+        <div class="sub">
+          Sprint ? Approval ? Schedule ? Execution ? Testing ? Delivery
+        </div>
       </div>
 
       <div class="actions">
-        <button class="action" id="boardRefresh">Refresh</button>
-        <button class="action primary" id="boardTick">Run Scheduler</button>
+        <button class="action" id="abRefresh">Refresh</button>
+        <button class="action primary" id="abScheduler">Run Scheduler</button>
       </div>
     </div>
 
-    <div class="card wb-create">
-      <div class="label">SPRINT / USER PLAN</div>
+    <div class="ab-form">
+      <div class="label">CREATE SPRINT / USER PLAN</div>
 
-      <div class="wb-sprint-form">
-        <label class="wb-field">
-          <span>Sprint title / plan</span>
-          <input id="sprintTitle" placeholder="Example: Finish AudioVido MVP">
+      <div class="ab-form-row ab-sprint-row">
+        <label class="ab-field">
+          <span>Plan / Sprint title</span>
+          <input id="abSprintTitle" placeholder="Finish AudioVido MVP">
         </label>
 
-        <label class="wb-field">
+        <label class="ab-field">
           <span>Start</span>
-          <input id="sprintStart" type="datetime-local">
+          <input id="abSprintStart" type="datetime-local">
         </label>
 
-        <label class="wb-field">
+        <label class="ab-field">
           <span>End</span>
-          <input id="sprintEnd" type="datetime-local">
+          <input id="abSprintEnd" type="datetime-local">
         </label>
 
-        <button class="action good" id="createSprint">Create Sprint</button>
+        <button class="action good ab-btn" id="abCreateSprint">Create Sprint</button>
       </div>
 
-      <div class="wb-task-form">
-        <label class="wb-field">
+      <div class="ab-form-row ab-task-row">
+        <label class="ab-field">
           <span>Sprint</span>
-          <select id="taskSprint"></select>
+          <select id="abTaskSprint"></select>
         </label>
 
-        <label class="wb-field">
+        <label class="ab-field">
           <span>Task</span>
-          <input id="taskTitleInput" placeholder="Small executable task">
+          <input id="abTaskTitle" placeholder="Small executable task">
         </label>
 
-        <label class="wb-field">
+        <label class="ab-field">
           <span>Priority</span>
-          <input id="taskPriority" type="number" value="50" min="1" max="100">
+          <input id="abTaskPriority" type="number" min="1" max="100" value="50">
         </label>
 
-        <label class="wb-field">
-          <span>Scheduled time</span>
-          <input id="taskSchedule" type="datetime-local">
+        <label class="ab-field">
+          <span>Schedule</span>
+          <input id="abTaskSchedule" type="datetime-local">
         </label>
 
-        <label class="wb-field">
+        <label class="ab-field">
           <span>Estimate</span>
-          <input id="taskEstimate" type="number" placeholder="min">
+          <input id="abTaskEstimate" type="number" min="1" placeholder="min">
         </label>
 
-        <label class="wb-check">
-          <input type="checkbox" id="taskApproval">
-          Needs Approval
+        <label class="ab-check">
+          <input id="abTaskApproval" type="checkbox">
+          Approval
         </label>
 
-        <button class="action primary wb-add-task" id="createTask">Add Task</button>
+        <button class="action primary ab-btn ab-add-task" id="abCreateTask">Add Task</button>
       </div>
     </div>
 
-    <div class="board-summary">
-      <div class="board-metric"><div class="label">SPRINTS</div><strong id="metricSprints">0</strong></div>
-      <div class="board-metric"><div class="label">TASKS</div><strong id="metricTasks">0</strong></div>
-      <div class="board-metric"><div class="label">NEEDS APPROVAL</div><strong id="metricApproval">0</strong></div>
-      <div class="board-metric"><div class="label">IN PROGRESS</div><strong id="metricProgress">0</strong></div>
-      <div class="board-metric"><div class="label">FINISHED</div><strong id="metricFinished">0</strong></div>
+    <div class="ab-stats">
+      <div class="ab-stat"><div class="label">SPRINTS</div><strong id="abStatSprints">0</strong></div>
+      <div class="ab-stat"><div class="label">TASKS</div><strong id="abStatTasks">0</strong></div>
+      <div class="ab-stat"><div class="label">APPROVAL</div><strong id="abStatApproval">0</strong></div>
+      <div class="ab-stat"><div class="label">READY</div><strong id="abStatReady">0</strong></div>
+      <div class="ab-stat"><div class="label">IN PROGRESS</div><strong id="abStatProgress">0</strong></div>
+      <div class="ab-stat"><div class="label">FINISHED</div><strong id="abStatFinished">0</strong></div>
     </div>
 
-    <div class="kanban-wrap">
-      <div class="kanban" id="kanbanBoard"></div>
+    <div class="ab-board-scroll">
+      <div class="ab-board" id="abBoard">
+        <div class="ab-col" data-status="planned"><div class="ab-col-head"><span class="ab-col-title">Planned</span><span class="ab-count" id="abCount-planned">0</span></div><div id="abCol-planned"></div></div>
+        <div class="ab-col" data-status="approval"><div class="ab-col-head"><span class="ab-col-title">Needs Approval</span><span class="ab-count" id="abCount-approval">0</span></div><div id="abCol-approval"></div></div>
+        <div class="ab-col" data-status="ready"><div class="ab-col-head"><span class="ab-col-title">Ready</span><span class="ab-count" id="abCount-ready">0</span></div><div id="abCol-ready"></div></div>
+        <div class="ab-col" data-status="progress"><div class="ab-col-head"><span class="ab-col-title">In Progress</span><span class="ab-count" id="abCount-progress">0</span></div><div id="abCol-progress"></div></div>
+        <div class="ab-col" data-status="testing"><div class="ab-col-head"><span class="ab-col-title">Testing</span><span class="ab-count" id="abCount-testing">0</span></div><div id="abCol-testing"></div></div>
+        <div class="ab-col" data-status="tested"><div class="ab-col-head"><span class="ab-col-title">Tested</span><span class="ab-count" id="abCount-tested">0</span></div><div id="abCol-tested"></div></div>
+        <div class="ab-col" data-status="finished"><div class="ab-col-head"><span class="ab-col-title">Finished</span><span class="ab-count" id="abCount-finished">0</span></div><div id="abCol-finished"></div></div>
+        <div class="ab-col" data-status="blocked"><div class="ab-col-head"><span class="ab-col-title">Blocked</span><span class="ab-count" id="abCount-blocked">0</span></div><div id="abCol-blocked"></div></div>
+      </div>
     </div>
 
-    <div class="workboard-footer">
-      <div class="card">
+    <div class="ab-bottom">
+      <div class="ab-panel">
         <div class="label">AGENT ACTIVITY</div>
-        <div class="activity-feed" id="boardActivity"></div>
+        <div class="ab-scroll" id="abActivity"></div>
       </div>
 
-      <div class="card">
+      <div class="ab-panel">
         <div class="label">APPROVAL QUEUE</div>
-        <div class="approval-queue" id="approvalQueue"></div>
+        <div class="ab-scroll" id="abApprovalQueue"></div>
       </div>
 
-      <div class="card">
+      <div class="ab-panel">
         <div class="label">SCHEDULE REVIEW</div>
-        <div id="scheduleReview" class="sub" style="margin-top:10px;line-height:1.9">
-          Scheduler has not reviewed tasks yet.
+        <div class="sub" id="abScheduleReview" style="line-height:1.9;margin-top:8px">
+          No schedule data yet.
         </div>
       </div>
     </div>
@@ -546,263 +723,329 @@ async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode
 </script>
 
 
+
+
+
 <script>
 (function(){
-  const columns = [
-    ["planned","Planned"],
-    ["approval","Needs Approval"],
-    ["ready","Ready"],
-    ["progress","In Progress"],
-    ["testing","Testing"],
-    ["tested","Tested"],
-    ["finished","Finished"],
-    ["blocked","Blocked"]
-  ];
+"use strict";
 
-  let BOARD = {sprints:[],tasks:[],activity:[]};
+const STATUSES = [
+  "planned","approval","ready","progress",
+  "testing","tested","finished","blocked"
+];
 
-  async function req(path, method="GET", body=null){
-    const opt = {method, headers:{"Content-Type":"application/json"}};
-    if(body) opt.body = JSON.stringify(body);
-    const r = await fetch("/api/workboard/"+path,opt);
-    const j = await r.json();
-    if(!r.ok || j.ok === false) throw new Error(j.error || "Request failed");
-    return j;
+let AB = {sprints:[],tasks:[],activity:[]};
+
+const byId = id => document.getElementById(id);
+
+async function api(path, method="GET", body=null){
+  const options = {
+    method,
+    headers: {"Content-Type":"application/json"}
+  };
+  if(body !== null) options.body = JSON.stringify(body);
+
+  const response = await fetch("/api/workboard/" + path, options);
+
+  let data;
+  try{
+    data = await response.json();
+  }catch(e){
+    throw new Error("Invalid backend response");
   }
 
-  function escBoard(v){
-    return String(v ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;");
+  if(!response.ok || data.ok === false){
+    throw new Error(data.error || data.message || ("HTTP " + response.status));
   }
 
-  function sprintName(id){
-    return BOARD.sprints.find(s=>s.id===id)?.title || "No Sprint";
-  }
+  return data;
+}
 
-  function render(){
-    const tasks = BOARD.tasks || [];
+function esc(v){
+  return String(v ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
 
-    document.getElementById("metricSprints").textContent = BOARD.sprints.length;
-    document.getElementById("metricTasks").textContent = tasks.length;
-    document.getElementById("metricApproval").textContent =
-      tasks.filter(t=>t.status==="approval").length;
-    document.getElementById("metricProgress").textContent =
-      tasks.filter(t=>t.status==="progress").length;
-    document.getElementById("metricFinished").textContent =
-      tasks.filter(t=>t.status==="finished").length;
+function sprintName(id){
+  const s = AB.sprints.find(x=>x.id===id);
+  return s ? s.title : "No Sprint";
+}
 
-    const sprintSelect = document.getElementById("taskSprint");
-    sprintSelect.innerHTML = BOARD.sprints.map(s =>
-      `<option value="${s.id}">${escBoard(s.title)}</option>`
-    ).join("");
+function card(task){
+  const scheduled = task.scheduled_at
+    ? `<div class="sub" style="margin-top:6px">? ${esc(task.scheduled_at)}</div>`
+    : "";
 
-    const board = document.getElementById("kanbanBoard");
+  return `
+  <div class="ab-card"
+       draggable="true"
+       data-card-id="${esc(task.id)}"
+       data-card-status="${esc(task.status)}">
 
-    board.innerHTML = columns.map(([status,label])=>{
-      const list = tasks
-        .filter(t=>t.status===status)
-        .sort((a,b)=>(b.priority||0)-(a.priority||0));
+    <div class="ab-card-title">${esc(task.title)}</div>
 
-      return `
-      <div class="kanban-col" data-drop-status="${status}">
-        <div class="kanban-head">
-          <strong>${label}</strong>
-          <span class="kanban-count">${list.length}</span>
-        </div>
-        ${list.map(card).join("")}
-      </div>`;
-    }).join("");
+    ${task.description
+      ? `<div class="ab-card-desc">${esc(task.description)}</div>`
+      : ""}
 
-    document.querySelectorAll("[data-board-move]").forEach(btn=>{
-      btn.onclick = async ()=>{
-        await req(
-          `tasks/${btn.dataset.id}/move`,
-          "POST",
-          {status:btn.dataset.boardMove}
-        );
-        await refresh();
-      };
-    });
+    <div class="ab-meta">
+      <span class="ab-chip">${esc(sprintName(task.sprint_id))}</span>
+      <span class="ab-chip">P${Number(task.priority || 0)}</span>
+      ${task.estimate_minutes
+        ? `<span class="ab-chip">${Number(task.estimate_minutes)}m</span>`
+        : ""}
+      ${task.requires_approval
+        ? `<span class="ab-chip ab-approval">Approval</span>`
+        : ""}
+    </div>
 
-    document.querySelectorAll("[data-board-approve]").forEach(btn=>{
-      btn.onclick = async ()=>{
-        await req(`tasks/${btn.dataset.id}/approve`,"POST");
-        await refresh();
-      };
-    });
+    ${scheduled}
 
-    document.querySelectorAll("[data-board-reject]").forEach(btn=>{
-      btn.onclick = async ()=>{
-        await req(`tasks/${btn.dataset.id}/reject`,"POST");
-        await refresh();
-      };
-    });
-
-    const activity = [...(BOARD.activity||[])].reverse().slice(0,30);
-
-    document.getElementById("boardActivity").innerHTML =
-      activity.length
-      ? activity.map(a =>
-          `<div class="activity-item">${escBoard(a.text)}</div>`
-        ).join("")
-      : `<div class="sub">No activity yet.</div>`;
-
-    const approval = tasks.filter(t=>t.status==="approval");
-    const blocked = tasks.filter(t=>t.status==="blocked");
-    const ready = tasks.filter(t=>t.status==="ready");
-
-    const approvalBox = document.getElementById("approvalQueue");
-    approvalBox.innerHTML = approval.length
-      ? approval.map(t=>`
-        <div class="approval-row">
-          <div>
-            <div class="task-title">${escBoard(t.title)}</div>
-            <div class="sub">${escBoard(sprintName(t.sprint_id))}</div>
-          </div>
-          <div class="actions">
-            <button class="action good" data-queue-approve="${t.id}">Approve</button>
-            <button class="action danger" data-queue-reject="${t.id}">Reject</button>
-          </div>
-        </div>
-      `).join("")
-      : `<div class="sub" style="padding-top:10px">No approvals waiting.</div>`;
-
-    document.querySelectorAll("[data-queue-approve]").forEach(btn=>{
-      btn.onclick = async ()=>{
-        await req(`tasks/${btn.dataset.queueApprove}/approve`,"POST");
-        await refresh();
-      };
-    });
-
-    document.querySelectorAll("[data-queue-reject]").forEach(btn=>{
-      btn.onclick = async ()=>{
-        await req(`tasks/${btn.dataset.queueReject}/reject`,"POST");
-        await refresh();
-      };
-    });
-
-
-    document.getElementById("scheduleReview").innerHTML = `
-      Ready now: <strong>${ready.length}</strong><br>
-      Waiting approval: <strong>${approval.length}</strong><br>
-      Blocked: <strong>${blocked.length}</strong><br>
-      Queue is ordered by priority inside each column.
-    `;
-  }
-
-  function card(t){
-    const actions = [];
-
-    if(t.status==="approval"){
-      actions.push(
-        `<button class="action good" data-board-approve data-id="${t.id}">Approve</button>`,
-        `<button class="action danger" data-board-reject data-id="${t.id}">Reject</button>`
-      );
-    }
-
-    if(t.status==="ready")
-      actions.push(`<button class="action primary" data-board-move="progress" data-id="${t.id}">Start</button>`);
-
-    if(t.status==="progress")
-      actions.push(`<button class="action" data-board-move="testing" data-id="${t.id}">Send to Test</button>`);
-
-    if(t.status==="testing")
-      actions.push(`<button class="action good" data-board-move="tested" data-id="${t.id}">Test Passed</button>`);
-
-    if(t.status==="tested")
-      actions.push(`<button class="action good" data-board-move="finished" data-id="${t.id}">Finish</button>`);
-
-    return `
-    <div class="task-card" draggable="true" data-task-card="${t.id}" data-task-status="${t.status}">
-      <div class="task-title">${escBoard(t.title)}</div>
-      ${t.description ? `<div class="task-desc">${escBoard(t.description)}</div>` : ""}
-
-      <div class="task-meta">
-        <span class="task-chip sprint-chip">${escBoard(sprintName(t.sprint_id))}</span>
-        <span class="task-chip">P${t.priority || 0}</span>
-        ${t.estimate_minutes ? `<span class="task-chip">${t.estimate_minutes}m</span>` : ""}
-        ${t.requires_approval ? `<span class="task-chip approval-chip">Approval</span>` : ""}
-      </div>
-
-      ${t.scheduled_at
-        ? `<div class="sub" style="margin-top:7px">Scheduled: ${escBoard(t.scheduled_at)}</div>`
+    <div class="ab-actions">
+      ${task.status === "approval"
+        ? `
+          <button class="action good" data-approve="${esc(task.id)}">Approve</button>
+          <button class="action danger" data-reject="${esc(task.id)}">Reject</button>
+        `
         : ""}
 
-      <div class="task-actions">
-        ${actions.join("")}
-        <span class="wb-priority-controls">
-          <button class="action" data-priority-up data-id="${t.id}" data-priority="${t.priority || 50}" title="Higher priority">?</button>
-          <button class="action" data-priority-down data-id="${t.id}" data-priority="${t.priority || 50}" title="Lower priority">?</button>
-        </span>
-      </div>
-    </div>`;
+      <button class="action"
+              data-priority="${esc(task.id)}"
+              data-value="${Number(task.priority || 50) + 10}">?</button>
+
+      <button class="action"
+              data-priority="${esc(task.id)}"
+              data-value="${Math.max(1, Number(task.priority || 50) - 10)}">?</button>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const tasks = Array.isArray(AB.tasks) ? AB.tasks : [];
+  const sprints = Array.isArray(AB.sprints) ? AB.sprints : [];
+
+  byId("abStatSprints").textContent = sprints.length;
+  byId("abStatTasks").textContent = tasks.length;
+  byId("abStatApproval").textContent = tasks.filter(t=>t.status==="approval").length;
+  byId("abStatReady").textContent = tasks.filter(t=>t.status==="ready").length;
+  byId("abStatProgress").textContent = tasks.filter(t=>t.status==="progress").length;
+  byId("abStatFinished").textContent = tasks.filter(t=>t.status==="finished").length;
+
+  byId("abTaskSprint").innerHTML =
+    sprints.length
+      ? sprints.map(s=>`<option value="${esc(s.id)}">${esc(s.title)}</option>`).join("")
+      : `<option value="">Create a Sprint first</option>`;
+
+  for(const status of STATUSES){
+    const list = tasks
+      .filter(t=>t.status===status)
+      .sort((a,b)=>(Number(b.priority||0)-Number(a.priority||0)));
+
+    byId("abCount-"+status).textContent = list.length;
+    byId("abCol-"+status).innerHTML =
+      list.length
+        ? list.map(card).join("")
+        : `<div class="ab-empty">No tasks</div>`;
   }
 
-  async function refresh(){
-    try{
-      const j = await req("state");
-      BOARD = j.data;
-      render();
-    }catch(e){
-      console.error(e);
-    }
-  }
+  const activity = [...(AB.activity || [])].reverse().slice(0,40);
+  byId("abActivity").innerHTML =
+    activity.length
+      ? activity.map(a=>`<div class="ab-row">${esc(a.text)}</div>`).join("")
+      : `<div class="ab-empty">No activity yet</div>`;
 
-  document.getElementById("boardRefresh").onclick = refresh;
+  const approvals = tasks.filter(t=>t.status==="approval");
+  byId("abApprovalQueue").innerHTML =
+    approvals.length
+      ? approvals.map(t=>`
+          <div class="ab-approval-row">
+            <div>
+              <div class="ab-card-title">${esc(t.title)}</div>
+              <div class="sub">${esc(sprintName(t.sprint_id))}</div>
+            </div>
+            <div class="actions">
+              <button class="action good" data-approve="${esc(t.id)}">?</button>
+              <button class="action danger" data-reject="${esc(t.id)}">?</button>
+            </div>
+          </div>
+        `).join("")
+      : `<div class="ab-empty">Nothing waiting for approval</div>`;
 
-  document.getElementById("boardTick").onclick = async ()=>{
-    const j = await req("tick","POST");
-    BOARD = j.data;
-    render();
-  };
+  const ready = tasks.filter(t=>t.status==="ready").length;
+  const blocked = tasks.filter(t=>t.status==="blocked").length;
+  const planned = tasks.filter(t=>t.status==="planned").length;
 
-  document.getElementById("createSprint").onclick = async ()=>{
-    const title = document.getElementById("sprintTitle").value.trim();
-    if(!title) return;
+  byId("abScheduleReview").innerHTML =
+    `Ready now: <strong>${ready}</strong><br>` +
+    `Scheduled / planned: <strong>${planned}</strong><br>` +
+    `Waiting approval: <strong>${approvals.length}</strong><br>` +
+    `Blocked: <strong>${blocked}</strong>`;
 
-    await req("sprints","POST",{
-      title,
-      start_at: document.getElementById("sprintStart").value || null,
-      end_at: document.getElementById("sprintEnd").value || null
-    });
+  bindDynamic();
+}
 
-    document.getElementById("sprintTitle").value = "";
-    await refresh();
-  };
-
-  document.getElementById("createTask").onclick = async ()=>{
-    const sprint_id = document.getElementById("taskSprint").value;
-    const title = document.getElementById("taskTitleInput").value.trim();
-
-    if(!sprint_id || !title) return;
-
-    await req("tasks","POST",{
-      sprint_id,
-      title,
-      priority: Number(document.getElementById("taskPriority").value || 50),
-      requires_approval: document.getElementById("taskApproval").checked,
-      scheduled_at: document.getElementById("taskSchedule").value || null,
-      estimate_minutes: Number(document.getElementById("taskEstimate").value || 0) || null
-    });
-
-    document.getElementById("taskTitleInput").value = "";
-    await refresh();
-  };
-
-  setInterval(async ()=>{
-    const view = document.getElementById("view-workboard");
-    if(view && view.classList.contains("active")){
+function bindDynamic(){
+  document.querySelectorAll("[data-approve]").forEach(btn=>{
+    btn.onclick = async ()=>{
       try{
-        const j = await req("tick","POST");
-        BOARD = j.data;
-        render();
-      }catch(e){}
-    }
-  },15000);
+        await api(`tasks/${btn.dataset.approve}/approve`,"POST");
+        await refresh();
+      }catch(e){ showError(e); }
+    };
+  });
 
-  refresh();
+  document.querySelectorAll("[data-reject]").forEach(btn=>{
+    btn.onclick = async ()=>{
+      try{
+        await api(`tasks/${btn.dataset.reject}/reject`,"POST");
+        await refresh();
+      }catch(e){ showError(e); }
+    };
+  });
+
+  document.querySelectorAll("[data-priority]").forEach(btn=>{
+    btn.onclick = async ()=>{
+      try{
+        await api(`tasks/${btn.dataset.priority}/schedule`,"POST",{
+          priority: Math.max(1, Math.min(100, Number(btn.dataset.value)))
+        });
+        await refresh();
+      }catch(e){ showError(e); }
+    };
+  });
+
+  document.querySelectorAll("[data-card-id]").forEach(cardEl=>{
+    cardEl.addEventListener("dragstart", e=>{
+      cardEl.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", cardEl.dataset.cardId);
+      e.dataTransfer.setData("application/x-agent-status", cardEl.dataset.cardStatus);
+    });
+
+    cardEl.addEventListener("dragend", ()=>{
+      cardEl.classList.remove("dragging");
+      document.querySelectorAll(".ab-col").forEach(c=>c.classList.remove("drag-over"));
+    });
+  });
+}
+
+document.querySelectorAll(".ab-col").forEach(col=>{
+  col.addEventListener("dragover", e=>{
+    e.preventDefault();
+    col.classList.add("drag-over");
+  });
+
+  col.addEventListener("dragleave", ()=>{
+    col.classList.remove("drag-over");
+  });
+
+  col.addEventListener("drop", async e=>{
+    e.preventDefault();
+    col.classList.remove("drag-over");
+
+    const id = e.dataTransfer.getData("text/plain");
+    const oldStatus = e.dataTransfer.getData("application/x-agent-status");
+    const newStatus = col.dataset.status;
+
+    if(!id || !newStatus || oldStatus === newStatus) return;
+
+    try{
+      await api(`tasks/${id}/move`,"POST",{status:newStatus});
+      await refresh();
+    }catch(err){
+      showError(err);
+    }
+  });
+});
+
+function showError(error){
+  console.error(error);
+  if(typeof toast === "function"){
+    toast("Agent Board", error.message || String(error));
+  }else{
+    alert(error.message || String(error));
+  }
+}
+
+async function refresh(){
+  const result = await api("state");
+  AB = result.data || {sprints:[],tasks:[],activity:[]};
+  render();
+}
+
+byId("abRefresh").onclick = ()=>refresh().catch(showError);
+
+byId("abScheduler").onclick = async ()=>{
+  try{
+    const result = await api("tick","POST");
+    AB = result.data;
+    render();
+  }catch(e){ showError(e); }
+};
+
+byId("abCreateSprint").onclick = async ()=>{
+  const title = byId("abSprintTitle").value.trim();
+  if(!title){
+    return showError(new Error("Sprint title is required"));
+  }
+
+  try{
+    await api("sprints","POST",{
+      title,
+      start_at: byId("abSprintStart").value || null,
+      end_at: byId("abSprintEnd").value || null
+    });
+
+    byId("abSprintTitle").value = "";
+    await refresh();
+  }catch(e){ showError(e); }
+};
+
+byId("abCreateTask").onclick = async ()=>{
+  const sprintId = byId("abTaskSprint").value;
+  const title = byId("abTaskTitle").value.trim();
+
+  if(!sprintId){
+    return showError(new Error("Create or select a Sprint first"));
+  }
+
+  if(!title){
+    return showError(new Error("Task title is required"));
+  }
+
+  try{
+    await api("tasks","POST",{
+      sprint_id: sprintId,
+      title,
+      priority: Number(byId("abTaskPriority").value || 50),
+      requires_approval: byId("abTaskApproval").checked,
+      scheduled_at: byId("abTaskSchedule").value || null,
+      estimate_minutes: Number(byId("abTaskEstimate").value || 0) || null
+    });
+
+    byId("abTaskTitle").value = "";
+    await refresh();
+  }catch(e){ showError(e); }
+};
+
+setInterval(()=>{
+  const view = byId("view-workboard");
+  if(view && view.classList.contains("active")){
+    api("tick","POST")
+      .then(r=>{
+        AB = r.data;
+        render();
+      })
+      .catch(console.error);
+  }
+},15000);
+
+refresh().catch(showError);
+
 })();
 </script>
 
