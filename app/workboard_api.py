@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import time
 import uuid
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,8 @@ DATA_DIR = PROJECT / "Saved" / "UnrealAgent" / "Workboard"
 DATA_FILE = DATA_DIR / "workboard.json"
 
 router = APIRouter(prefix="/api/workboard")
+
+WORKBOARD_LOCK = threading.RLock()
 
 
 STATUSES = [
@@ -71,20 +74,34 @@ def _default_state():
 
 
 def _load():
-    try:
-        return json.loads(DATA_FILE.read_text(encoding="utf-8"))
-    except Exception:
-        return _default_state()
+    with WORKBOARD_LOCK:
+        try:
+            return json.loads(
+                DATA_FILE.read_text(encoding="utf-8")
+            )
+        except Exception:
+            return _default_state()
 
 
 def _save(data):
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    data["updated_at"] = time.time()
-    DATA_FILE.write_text(
-        json.dumps(data, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-    return data
+    with WORKBOARD_LOCK:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        data["updated_at"] = time.time()
+
+        tmp = DATA_FILE.with_suffix(".json.tmp")
+
+        tmp.write_text(
+            json.dumps(
+                data,
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        tmp.replace(DATA_FILE)
+
+        return data
 
 
 def _activity(data, kind, text, task_id=None):
@@ -477,3 +494,45 @@ def recover_orphaned_progress_tasks(active_execution_id=None):
         _save(data)
 
     return recovered
+
+
+def cleanup_sprint(sprint_id: str):
+    """
+    Remove only one Sprint and its Tasks.
+    Used by autonomous self-test so real user board data is never restored
+    from an old snapshot or overwritten.
+    """
+    with WORKBOARD_LOCK:
+        data = _load()
+
+        task_ids = {
+            task.get("id")
+            for task in data.get("tasks", [])
+            if task.get("sprint_id") == sprint_id
+        }
+
+        data["tasks"] = [
+            task
+            for task in data.get("tasks", [])
+            if task.get("sprint_id") != sprint_id
+        ]
+
+        data["sprints"] = [
+            sprint
+            for sprint in data.get("sprints", [])
+            if sprint.get("id") != sprint_id
+        ]
+
+        data["activity"] = [
+            item
+            for item in data.get("activity", [])
+            if item.get("task_id") not in task_ids
+        ]
+
+        _save(data)
+
+        return {
+            "ok": True,
+            "sprint_id": sprint_id,
+            "removed_tasks": len(task_ids),
+        }

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from app.workboard_api import DATA_FILE
+from app.workboard_api import cleanup_sprint
 
 router = APIRouter(prefix="/api/workboard/selftest")
 
@@ -98,15 +98,34 @@ def _find_task(task_id):
     return None
 
 
-def _wait_for(task_id, wanted, timeout=180):
-    deadline = time.time() + timeout
+def _wait_for(
+    task_id,
+    wanted,
+    timeout=600,
+    idle_timeout=150,
+):
+    started = time.time()
+    last_activity = started
     seen = []
+    last_fingerprint = None
 
-    while time.time() < deadline:
+    while time.time() - started < timeout:
         task = _find_task(task_id)
 
         if task:
             status = task.get("status")
+
+            fingerprint = (
+                status,
+                task.get("updated_at"),
+                task.get("last_note"),
+                len(task.get("evidence") or []),
+                task.get("execution_id"),
+            )
+
+            if fingerprint != last_fingerprint:
+                last_fingerprint = fingerprint
+                last_activity = time.time()
 
             if not seen or seen[-1] != status:
                 seen.append(status)
@@ -114,7 +133,10 @@ def _wait_for(task_id, wanted, timeout=180):
             if status in wanted:
                 return task, seen
 
-        time.sleep(2)
+        if time.time() - last_activity > idle_timeout:
+            return None, seen
+
+        time.sleep(1)
 
     return None, seen
 
@@ -122,8 +144,7 @@ def _wait_for(task_id, wanted, timeout=180):
 def _run():
     _reset_state()
 
-    had_file = DATA_FILE.exists()
-    original = DATA_FILE.read_bytes() if had_file else None
+    sprint_id = None
 
     try:
         # ----------------------------------------------------
@@ -252,7 +273,8 @@ def _run():
         task, seen = _wait_for(
             execute_id,
             {"finished", "blocked"},
-            timeout=240,
+            timeout=600,
+            idle_timeout=150,
         )
 
         final_status = task.get("status") if task else "timeout"
@@ -348,16 +370,18 @@ def _run():
         time.sleep(2)
 
         try:
-            if had_file and original is not None:
-                DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-                DATA_FILE.write_bytes(original)
+            if sprint_id:
+                cleanup = cleanup_sprint(sprint_id)
 
-            elif DATA_FILE.exists():
-                DATA_FILE.unlink()
+                _record(
+                    "Self-test cleanup",
+                    cleanup.get("ok") is True,
+                    cleanup,
+                )
 
         except Exception as exc:
             _record(
-                "Restore board state",
+                "Self-test cleanup",
                 False,
                 f"{type(exc).__name__}: {exc}",
             )
