@@ -89,7 +89,12 @@ def _save(data):
         DATA_DIR.mkdir(parents=True, exist_ok=True)
         data["updated_at"] = time.time()
 
-        tmp = DATA_FILE.with_suffix(".json.tmp")
+        # Every writer gets its own temp file.
+        # A shared workboard.json.tmp caused Windows PermissionError
+        # when reload/autopilot threads saved concurrently.
+        tmp = DATA_DIR / (
+            f"workboard.{uuid.uuid4().hex}.tmp"
+        )
 
         tmp.write_text(
             json.dumps(
@@ -100,7 +105,23 @@ def _save(data):
             encoding="utf-8",
         )
 
-        tmp.replace(DATA_FILE)
+        last_error = None
+
+        for attempt in range(8):
+            try:
+                tmp.replace(DATA_FILE)
+                last_error = None
+                break
+            except PermissionError as exc:
+                last_error = exc
+                time.sleep(0.05 * (attempt + 1))
+
+        if last_error is not None:
+            try:
+                tmp.unlink(missing_ok=True)
+            except Exception:
+                pass
+            raise last_error
 
         return data
 
