@@ -1638,14 +1638,53 @@ def _validate_workboard_task(task):
         for action in actions
     )
 
-    explicit_pass = "status: pass" in final_text.lower()
-    explicit_fail = "status: fail" in final_text.lower()
+    verdict_text = final_text.lower()
+
+    # --------------------------------------------------------
+    # DETERMINISTIC QA VERDICT
+    # --------------------------------------------------------
+    # Never depend on the model remembering a magic phrase such
+    # as "STATUS: PASS". The actual tool evidence is authoritative.
+    #
+    # A validation passes when:
+    #   1. the verifier itself completed,
+    #   2. at least one real verification tool succeeded,
+    #   3. the verifier did not explicitly report failure,
+    #   4. visual tasks contain actual visual evidence.
+    #
+    # This makes QA stable across models and wording differences.
+
+    negative_markers = (
+        "status: fail",
+        "validation failed",
+        "verification failed",
+        "could not verify",
+        "cannot verify",
+        "unable to verify",
+        "not verified",
+        "not complete",
+        "incomplete",
+    )
+
+    explicit_failure = any(
+        marker in verdict_text
+        for marker in negative_markers
+    )
+
+    completed_validation = (
+        result_state in (
+            "complete",
+            "completed",
+            "done",
+            "success",
+            "finished",
+        )
+    )
 
     passed = (
-        result_state == "complete"
+        completed_validation
         and has_real_evidence
-        and explicit_pass
-        and not explicit_fail
+        and not explicit_failure
         and (
             not visual_required
             or visual_evidence
@@ -1656,11 +1695,14 @@ def _validate_workboard_task(task):
         "type": "qa_validation",
         "validation_execution_id": validation_state.get("id"),
         "passed": passed,
+        "decision_source": "deterministic_evidence_policy",
+        "result_state": result_state,
         "final": final_text,
         "successful_tools": actions,
         "successful_tool_count": len(successful_trace),
         "visual_required": visual_required,
         "visual_evidence": visual_evidence,
+        "explicit_failure": explicit_failure,
         "at": time.time(),
     }
 
