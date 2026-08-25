@@ -102,81 +102,63 @@ wb._save = hardened_save
 
 
 def _call_model_once(messages, model, timeout_seconds):
-    box = {}
-
-    def worker():
-        try:
-            box["result"] = api.call_model(
-                messages,
-                model=model,
-                json_mode=True,
-                temperature=0.08,
-                num_ctx=32768,
-                timeout=timeout_seconds,
-            )
-        except BaseException as exc:
-            box["error"] = exc
-
-    t = threading.Thread(target=worker, daemon=True)
-    t.start()
-    t.join(timeout_seconds)
-
-    if t.is_alive():
-        raise TimeoutError(
-            f"{model} exceeded {timeout_seconds}s"
-        )
-
-    if "error" in box:
-        raise box["error"]
-
-    return box["result"]
+    # Do NOT wrap requests in a daemon thread.
+    # Timed-out model threads used to overlap and overload Ollama.
+    return api.call_model(
+        messages,
+        model=model,
+        json_mode=True,
+        temperature=0.08,
+        num_ctx=8192,
+        timeout=timeout_seconds,
+    )
 
 
 def resilient_model(messages, timeout_seconds=90):
-    # Keep Unreal Coder as the primary/default model.
-    # Use only one lightweight fallback to avoid costly model swapping.
-    models = [
-        (api.HEAVY_MODEL, 120),
-        (api.FAST_MODEL, 45),
-    ]
-
-    seen = set()
     errors = []
 
-    for model, limit in models:
-        if not model or model in seen:
-            continue
+    # Unreal Coder remains the normal/default execution model.
+    try:
+        api.emit(
+            "thinking",
+            "Using unreal-coder:latest",
+            {"model": api.HEAVY_MODEL},
+            "running",
+        )
 
-        seen.add(model)
+        return _call_model_once(
+            messages,
+            api.HEAVY_MODEL,
+            180,
+        )
 
-        try:
-            api.emit(
-                "thinking",
-                f"Trying {model}",
-                {"model": model},
-                "running",
-            )
+    except Exception as exc:
+        errors.append(
+            f"{api.HEAVY_MODEL}: {type(exc).__name__}: {exc}"
+        )
 
-            return _call_model_once(
-                messages,
-                model,
-                min(timeout_seconds if model != api.HEAVY_MODEL else 120, limit),
-            )
+    # One lightweight emergency fallback only.
+    try:
+        api.emit(
+            "thinking",
+            "Primary model failed - using fast fallback",
+            {"model": api.FAST_MODEL},
+            "warning",
+        )
 
-        except Exception as exc:
-            errors.append(
-                f"{model}: {type(exc).__name__}: {exc}"
-            )
+        return _call_model_once(
+            messages,
+            api.FAST_MODEL,
+            90,
+        )
 
-            api.emit(
-                "warning",
-                f"Model failed: {model}",
-                {"error": str(exc)},
-                "warning",
-            )
+    except Exception as exc:
+        errors.append(
+            f"{api.FAST_MODEL}: {type(exc).__name__}: {exc}"
+        )
 
     raise TimeoutError(
-        "Primary + fallback failed: " + " | ".join(errors)
+        "Model execution failed: " + " | ".join(errors)
     )
 
 
