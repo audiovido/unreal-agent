@@ -1,4 +1,4 @@
-
+﻿
 from __future__ import annotations
 
 import threading
@@ -150,7 +150,7 @@ def _recoverable(task):
         "guard blocked",
         "repeated guard",
         "graph_delete_node",
-        "execution stopped",
+        "execution stopped",`r`n        "safety limit",`r`n        "80-step safety limit",`r`n        "maximum steps",`r`n        "step limit",
         "tool failed",
     )
 
@@ -302,3 +302,4 @@ threading.Thread(
     daemon=True,
     name="unreal-agent-recovery-v3",
 ).start()
+
