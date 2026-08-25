@@ -133,11 +133,10 @@ def _call_model_once(messages, model, timeout_seconds):
 
 
 def resilient_model(messages, timeout_seconds=90):
-    # Unreal Coder stays the preferred/default model.
+    # Keep Unreal Coder as the primary/default model.
+    # Use only one lightweight fallback to avoid costly model swapping.
     models = [
-        (api.HEAVY_MODEL, 90),
-        (api.CODER_MODEL, 60),
-        (api.REASONING_MODEL, 60),
+        (api.HEAVY_MODEL, 120),
         (api.FAST_MODEL, 45),
     ]
 
@@ -157,18 +156,27 @@ def resilient_model(messages, timeout_seconds=90):
                 {"model": model},
                 "running",
             )
+
             return _call_model_once(
                 messages,
                 model,
-                min(timeout_seconds, limit),
+                min(timeout_seconds if model != api.HEAVY_MODEL else 120, limit),
             )
+
         except Exception as exc:
             errors.append(
                 f"{model}: {type(exc).__name__}: {exc}"
             )
 
+            api.emit(
+                "warning",
+                f"Model failed: {model}",
+                {"error": str(exc)},
+                "warning",
+            )
+
     raise TimeoutError(
-        "All model fallbacks failed: " + " | ".join(errors)
+        "Primary + fallback failed: " + " | ".join(errors)
     )
 
 
