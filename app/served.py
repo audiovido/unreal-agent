@@ -1108,3 +1108,6 @@ threading.Thread(
     name="final-autonomy-watchdog-v2",
 ).start()
 
+
+
+from app import final_recovery  # FINAL RECOVERY V3
