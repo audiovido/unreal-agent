@@ -1644,4 +1644,164 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 </script>
 
+
+<script>
+/* UNREAL_AGENT_AUTO_RECONNECT_V1 */
+(() => {
+  let backendOnline = true;
+  let failures = 0;
+  let recovering = false;
+
+  function statusBar(state, message, color) {
+    const st = document.getElementById("aiWorkState");
+    const msg = document.getElementById("aiWorkMessage");
+    const dot = document.getElementById("aiWorkDot");
+
+    if (st) {
+      st.textContent = state;
+      st.style.color = color;
+    }
+    if (msg) msg.textContent = message;
+    if (dot) dot.style.color = color;
+  }
+
+  async function health(timeout = 2500) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const r = await fetch("/api/status", {
+        cache: "no-store",
+        signal: controller.signal
+      });
+      return r.ok;
+    } catch (_) {
+      return false;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function recoverUI() {
+    if (recovering) return;
+    recovering = true;
+
+    try {
+      statusBar(
+        "RECONNECTED",
+        "Backend restored - resuming autonomous queue",
+        "#56e39d"
+      );
+
+      // Make scheduler normalize dependencies/statuses.
+      try {
+        await fetch("/api/workboard/tick", {
+          method: "POST",
+          cache: "no-store"
+        });
+      } catch (_) {}
+
+      // Kick autonomous recovery / runner.
+      try {
+        await fetch("/api/workboard/autopilot/tick", {
+          method: "POST",
+          cache: "no-store"
+        });
+      } catch (_) {}
+
+      try {
+        await fetch("/api/workboard/runner/start", {
+          method: "POST",
+          cache: "no-store"
+        });
+      } catch (_) {}
+
+      // Refresh existing UI functions without reloading the page.
+      try {
+        if (typeof refresh === "function") await refresh();
+      } catch (_) {}
+
+      try {
+        if (typeof refreshRunner === "function") await refreshRunner();
+      } catch (_) {}
+
+      try {
+        if (typeof updateAgentStatus === "function") {
+          await updateAgentStatus();
+        }
+      } catch (_) {}
+
+    } finally {
+      setTimeout(() => {
+        recovering = false;
+      }, 1500);
+    }
+  }
+
+  async function connectionLoop() {
+    const ok = await health();
+
+    if (!ok) {
+      failures += 1;
+
+      if (failures >= 2) {
+        backendOnline = false;
+
+        statusBar(
+          "RECONNECTING",
+          "Backend unavailable - retrying automatically...",
+          "#ffc56e"
+        );
+      }
+
+      return;
+    }
+
+    failures = 0;
+
+    if (!backendOnline) {
+      backendOnline = true;
+      await recoverUI();
+    }
+  }
+
+  // Keep Workboard visibly fresh even without F5.
+  async function boardLoop() {
+    if (!backendOnline) return;
+
+    try {
+      const r = await fetch("/api/workboard/state", {
+        cache: "no-store"
+      });
+
+      if (!r.ok) return;
+
+      const j = await r.json();
+
+      if (
+        typeof AB !== "undefined" &&
+        j &&
+        j.data
+      ) {
+        AB = j.data;
+
+        if (typeof render === "function") {
+          render();
+        }
+      }
+    } catch (_) {}
+  }
+
+  window.addEventListener("online", () => {
+    failures = 0;
+    connectionLoop();
+  });
+
+  setInterval(connectionLoop, 2000);
+  setInterval(boardLoop, 3000);
+
+  connectionLoop();
+})();
+</script>
+
 </body></html>
