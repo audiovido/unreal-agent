@@ -150,7 +150,11 @@ def _recoverable(task):
         "guard blocked",
         "repeated guard",
         "graph_delete_node",
-        "execution stopped",`r`n        "safety limit",`r`n        "80-step safety limit",`r`n        "maximum steps",`r`n        "step limit",`r`n        "safety limit",`r`n        "80-step safety limit",`r`n        "maximum steps",`r`n        "step limit",
+        "execution stopped",
+        "safety limit",
+        "80-step safety limit",
+        "maximum steps",
+        "step limit",
         "tool failed",
     )
 
