@@ -219,6 +219,19 @@ def _recover_transient_blocked():
 
 
 
+# Make the EXISTING api.py autopilot watchdog recovery-aware.
+# It calls api.get_next_ready_task() every few seconds, so wrapping that
+# function guarantees transient blocked tasks are recovered BEFORE the
+# watchdog decides there is no executable work.
+_original_get_next_ready_task = api.get_next_ready_task
+
+def recovering_get_next_ready_task():
+    _recover_transient_blocked()
+    return _original_get_next_ready_task()
+
+api.get_next_ready_task = recovering_get_next_ready_task
+
+
 def _clear_stale():
     state = api.execution_state
     if state is None:
