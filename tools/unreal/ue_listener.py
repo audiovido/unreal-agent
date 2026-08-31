@@ -9,6 +9,7 @@ import contextlib
 
 HOST = "127.0.0.1"
 PORT = 6766
+REQUEST_TIMEOUT_SECONDS = 180
 
 request_queue = queue.Queue()
 _running = True
@@ -115,7 +116,7 @@ def handle_client(conn):
         request = BridgeRequest(payload)
         request_queue.put(request)
 
-        if not request.done.wait(timeout=30):
+        if not request.done.wait(timeout=REQUEST_TIMEOUT_SECONDS):
             response = {
                 "ok": False,
                 "error": "Unreal main-thread request timed out"

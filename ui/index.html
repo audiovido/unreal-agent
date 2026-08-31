@@ -1,1807 +1,506 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unreal Agent Complete Frontend</title>
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unreal Agent</title>
 <style>
-:root{--bg:#07090d;--panel:#0e1219;--line:#202632;--text:#f5f7fb;--muted:#7f8997;--cyan:#72e6ff;--green:#56e39d;--amber:#ffc56e;--red:#ff7180}*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,Segoe UI,sans-serif;background:radial-gradient(circle at 50% -10%,#18223b 0,#07090d 34%);color:var(--text)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}.glass{background:linear-gradient(145deg,#111722ee,#0a0e14ee);border:1px solid var(--line);box-shadow:0 22px 60px #0008}.shell{height:100%;display:grid;grid-template-columns:88px 1fr;gap:10px;padding:10px}.rail{border-radius:22px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:7px}.brand{width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#7de8ff,#8172ff);display:grid;place-items:center;color:#071018;font-weight:900;margin-bottom:8px}.nav{width:60px;height:52px;border:1px solid transparent;border-radius:14px;background:transparent;color:var(--muted);font-size:9px}.nav b{display:block;font-size:16px}.nav.active,.nav:hover{background:#7fa8ff12;border-color:#7fa8ff28;color:#eaf1ff}.spacer{flex:1}.app{min-width:0;min-height:0;display:grid;grid-template-rows:66px 1fr;gap:10px}.top{border-radius:20px;padding:0 15px;display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px;align-items:center}.kicker{font-size:9px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}.title{font-weight:700;margin-top:3px}.command{height:40px;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;padding:0 10px}.command input{width:100%;background:transparent;border:0;outline:0}.topactions{display:flex;gap:6px}.btn,.select,.action{border:1px solid var(--line);background:#ffffff08;border-radius:10px;height:34px;padding:0 10px}.main{min-height:0;display:grid;grid-template-columns:1fr 340px;gap:10px}.center{min-height:0;display:grid;grid-template-rows:auto 1fr auto;gap:10px}.taskbar,.execution,.inspector,.workspace{border-radius:20px}.taskbar{padding:13px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px}.taskbar small{display:block;color:var(--muted);margin-top:4px}.controls{display:flex;gap:5px;flex-wrap:wrap}.workspace{overflow:hidden;display:grid;grid-template-rows:43px 1fr}.tabs{display:flex;align-items:center;gap:5px;padding:0 10px;border-bottom:1px solid var(--line)}.tab{border:0;background:transparent;color:var(--muted);height:29px;border-radius:9px;padding:0 9px}.tab.active{background:#7fa8ff12;color:#e6edff}.stage{overflow:auto;padding:16px}.view{display:none}.view.active{display:block}.hero{display:grid;grid-template-columns:1fr 240px;gap:15px}.hero h1{font-size:42px;line-height:1.02;letter-spacing:-.04em;margin:8px 0 11px}.hero p{color:#929baa;line-height:1.7;font-size:12px}.orb{height:190px;border:1px solid var(--line);border-radius:19px;display:grid;place-items:center;background:radial-gradient(circle,#72e6ff18,transparent 40%)}.core{width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,#7de8ff,#8172ff);color:#071018;display:grid;place-items:center;font-weight:900}.grid4,.cards{display:grid;gap:8px}.grid4{grid-template-columns:repeat(4,1fr);margin-top:15px}.cards{grid-template-columns:repeat(3,1fr)}.card,.quick,.block{border:1px solid var(--line);background:#ffffff05;border-radius:13px;padding:11px}.quick{text-align:start;min-height:70px}.quick small,.sub{display:block;color:var(--muted);font-size:9px;margin-top:5px}.label{color:var(--muted);font-size:8px;letter-spacing:.1em;text-transform:uppercase}.value{font-size:12px;margin-top:6px}.section{margin-top:15px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.actions{display:flex;gap:6px;flex-wrap:wrap}.good{color:#a8edc8}.danger{color:#ffbcc4}.primary{color:#dffaff}.inspector{overflow:hidden;display:grid;grid-template-rows:45px 1fr}.sidehead{padding:0 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.sidebody{overflow:auto;padding:9px}.block h4{margin:0 0 7px;color:var(--muted);font-size:9px;text-transform:uppercase}.execution{padding:10px 12px}.steps{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px}.step{height:29px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:8px;display:grid;place-items:center}.step.active{border-color:#72e6ff55;color:#dffaff;background:#72e6ff0d}.modalbg{position:fixed;inset:0;background:#020407c8;display:grid;place-items:center;z-index:20;padding:16px}.modal{width:min(760px,95vw);max-height:88vh;overflow:auto;border-radius:20px;padding:16px}.hidden{display:none!important}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}.field label{font-size:8px;color:var(--muted);text-transform:uppercase}.field input,.field select,.field textarea{background:#0003;border:1px solid var(--line);border-radius:10px;padding:9px;outline:0}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;right:16px;bottom:16px;z-index:30;background:#111722;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:240px}.toast span{display:block;color:var(--muted);font-size:9px;margin-top:3px}pre{white-space:pre-wrap}#SELF_TEST_RESULT{display:none}@media(max-width:1000px){.main{grid-template-columns:1fr}.inspector{display:none}.grid4{grid-template-columns:repeat(2,1fr)}}
-.chat-wrap{height:100%;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px}.chat-list{min-height:320px;max-height:56vh;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}.msg{max-width:78%;padding:10px 12px;border-radius:14px;border:1px solid var(--line);font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-word}.msg.user{align-self:flex-end;background:rgba(114,230,255,.07);border-color:rgba(114,230,255,.18)}.msg.assistant{align-self:flex-start;background:rgba(255,255,255,.025)}.msg.system{align-self:center;color:var(--muted);background:transparent}.msgmeta{display:block;margin-top:6px;font-size:8px;color:var(--muted)}.chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.chat-compose textarea{min-height:62px;max-height:120px;resize:vertical;border:1px solid var(--line);background:rgba(0,0,0,.22);border-radius:12px;padding:10px;outline:0}.chat-buttons{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}.chat-empty{color:var(--muted);font-size:10px;text-align:center;padding:32px}
-.workboard-shell{display:grid;grid-template-rows:auto auto 1fr;gap:12px;min-height:580px}
-.workboard-top{display:grid;grid-template-columns:1fr auto;gap:10px}
-.workboard-plan{display:grid;grid-template-columns:1fr 160px 160px auto;gap:8px}
-.workboard-plan input{background:#0003;border:1px solid var(--line);border-radius:10px;padding:9px}
-.board-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.board-metric{border:1px solid var(--line);background:#ffffff04;border-radius:12px;padding:10px}
-.board-metric strong{font-size:18px;display:block;margin-top:4px}
-.kanban{display:grid;grid-template-columns:repeat(7,minmax(190px,1fr));gap:9px;overflow-x:auto;padding-bottom:8px}
-.kanban-col{border:1px solid var(--line);background:#06080d80;border-radius:14px;min-height:420px;padding:8px}
-.kanban-head{display:flex;justify-content:space-between;align-items:center;padding:4px 3px 9px;font-size:10px;color:#bbc4d2}
-.kanban-count{font-size:9px;color:var(--muted)}
-.task-card{border:1px solid var(--line);background:linear-gradient(145deg,#121824,#0b0f16);border-radius:12px;padding:10px;margin-bottom:7px}
-.task-card:hover{border-color:#72e6ff45}
-.task-title{font-size:11px;font-weight:700;line-height:1.4}
-.task-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
-.task-chip{font-size:8px;padding:3px 6px;border:1px solid var(--line);border-radius:20px;color:var(--muted)}
-.task-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
-.task-actions button{height:26px;font-size:8px}
-.approval-chip{color:#ffc56e;border-color:#ffc56e45}
-.sprint-chip{color:#8edbff}
-.workboard-footer{display:grid;grid-template-columns:1fr 340px;gap:10px}
-.activity-feed{max-height:180px;overflow:auto}
-.activity-item{font-size:9px;padding:7px 2px;border-bottom:1px solid #ffffff08;color:#aeb7c4}
-@media(max-width:1300px){.kanban{grid-template-columns:repeat(7,220px)}}
-
-
-/* ===== Agent Board UX V2 ===== */
-#view-workboard{height:100%}
-#view-workboard.active{display:block}
-#view-workboard .workboard-shell{min-width:0;min-height:100%;display:flex;flex-direction:column;gap:12px}
-
-.wb-toolbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-.wb-toolbar .actions{flex-shrink:0}
-
-.wb-create{padding:14px}
-.wb-sprint-form{
-  display:grid;
-  grid-template-columns:minmax(260px,1fr) 190px 190px 130px;
-  gap:8px;
-  align-items:end
+:root{
+  --bg:#07090d;--panel:#0e1219;--panel2:#111722;--line:#202632;
+  --text:#f5f7fb;--muted:#7f8997;--cyan:#72e6ff;--green:#56e39d;
+  --amber:#ffc56e;--red:#ff7180;--purple:#a78bfa;
 }
-.wb-task-form{
-  display:grid;
-  grid-template-columns:190px minmax(260px,1fr) 80px 190px 105px 110px 110px;
-  gap:8px;
-  align-items:end;
-  margin-top:10px
-}
-.wb-field{display:flex;flex-direction:column;gap:5px;min-width:0}
-.wb-field>span{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.wb-field input,.wb-field select{
-  width:100%;
-  height:38px;
-  background:#070a10;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:0 10px;
-  outline:none
-}
-.wb-field input:focus,.wb-field select:focus{border-color:#72e6ff66}
-.wb-check{
-  height:38px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
-  background:#ffffff05;
-  font-size:10px
-}
-.wb-create .action{height:38px;white-space:nowrap}
-
-.board-summary{
-  display:grid;
-  grid-template-columns:repeat(5,minmax(110px,1fr));
-  gap:8px
-}
-
-.kanban-wrap{
-  width:100%;
-  overflow-x:auto;
-  overflow-y:hidden;
-  padding-bottom:8px;
-  scrollbar-width:thin
-}
-.kanban{
-  display:grid;
-  grid-template-columns:repeat(8,235px);
-  gap:9px;
-  width:max-content;
-  min-width:100%;
-  overflow:visible
-}
-.kanban-col{
-  min-height:430px;
-  max-height:62vh;
-  overflow-y:auto;
-  border:1px solid var(--line);
-  background:#06080d80;
-  border-radius:14px;
-  padding:8px;
-  transition:.15s ease
-}
-.kanban-col.drag-over{
-  border-color:#72e6ff99;
-  background:#72e6ff0b
-}
-.kanban-head{
-  position:sticky;
-  top:-8px;
-  z-index:2;
-  background:#0a0e15f2;
-  backdrop-filter:blur(8px);
-  margin:-8px -8px 8px;
-  padding:11px;
-  border-bottom:1px solid var(--line)
-}
-.task-card{
-  cursor:grab;
-  user-select:none;
-  transition:transform .12s ease,border-color .12s ease,opacity .12s ease
-}
-.task-card:active{cursor:grabbing}
-.task-card.dragging{opacity:.45;transform:scale(.98)}
-.task-title{font-size:11px;font-weight:700;line-height:1.45}
-.task-desc{font-size:9px;color:var(--muted);line-height:1.5;margin-top:5px}
-.task-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
-.task-actions .action{height:27px;padding:0 7px;font-size:8px}
-
-.wb-priority-controls{display:flex;gap:4px;margin-left:auto}
-.wb-priority-controls button{min-width:27px}
-
-.workboard-footer{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 320px 320px;
-  gap:10px
-}
-.approval-queue{max-height:190px;overflow:auto}
-.approval-row{
-  border-bottom:1px solid #ffffff0a;
-  padding:8px 0;
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:8px;
-  align-items:center
-}
-.approval-row:last-child{border-bottom:0}
-
-@media(max-width:1450px){
-  .wb-task-form{grid-template-columns:170px minmax(220px,1fr) 75px 175px 95px 105px}
-  .wb-task-form .wb-add-task{grid-column:1/-1}
-}
-@media(max-width:1050px){
-  .wb-sprint-form{grid-template-columns:1fr 1fr}
-  .wb-task-form{grid-template-columns:1fr 1fr}
-  .board-summary{grid-template-columns:repeat(2,1fr)}
-  .workboard-footer{grid-template-columns:1fr}
-}
-
-
-/* ===== AGENT BOARD V3 ROBUST ===== */
-#view-workboard{min-width:0}
-#view-workboard.active{display:block}
-
-.ab-shell{display:flex;flex-direction:column;gap:12px;min-width:0}
-.ab-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
-
-.ab-form{
-  border:1px solid var(--line);
-  background:#ffffff04;
-  border-radius:14px;
-  padding:12px
-}
-.ab-form-row{
-  display:grid;
-  gap:8px;
-  align-items:end;
-  margin-top:8px
-}
-.ab-sprint-row{grid-template-columns:minmax(250px,1fr) 185px 185px 130px}
-.ab-task-row{grid-template-columns:180px minmax(240px,1fr) 80px 185px 100px 120px 105px}
-
-.ab-field{display:flex;flex-direction:column;gap:5px;min-width:0}
-.ab-field span{font-size:8px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
-.ab-field input,.ab-field select{
-  width:100%;
-  min-width:0;
-  height:38px;
-  border:1px solid var(--line);
-  background:#070a10;
-  border-radius:10px;
-  padding:0 9px
-}
-.ab-check{
-  height:38px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  font-size:10px;
-  white-space:nowrap
-}
-.ab-btn{height:38px!important}
-
-.ab-stats{
-  display:grid;
-  grid-template-columns:repeat(6,minmax(110px,1fr));
-  gap:8px
-}
-.ab-stat{
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px;
-  background:#ffffff04
-}
-.ab-stat strong{display:block;font-size:18px;margin-top:4px}
-
-.ab-board-scroll{
-  width:100%;
-  overflow-x:auto;
-  overflow-y:hidden;
-  padding-bottom:10px
-}
-.ab-board{
-  display:grid;
-  grid-template-columns:repeat(8,240px);
-  gap:9px;
-  width:max-content;
-  min-width:100%
-}
-.ab-col{
-  min-height:420px;
-  max-height:58vh;
-  overflow-y:auto;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:#070a0f;
-  padding:8px;
-  transition:.15s
-}
-.ab-col.drag-over{
-  border-color:#72e6ff99;
-  background:#72e6ff0d
-}
-.ab-col-head{
-  position:sticky;
-  top:-8px;
-  z-index:3;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:11px;
-  margin:-8px -8px 8px;
-  background:#0d121bf2;
-  border-bottom:1px solid var(--line)
-}
-.ab-col-title{font-size:10px;font-weight:700}
-.ab-count{font-size:9px;color:var(--muted)}
-
-.ab-card{
-  border:1px solid var(--line);
-  background:linear-gradient(145deg,#121824,#0b0f16);
-  border-radius:11px;
-  padding:10px;
-  margin-bottom:7px;
-  cursor:grab
-}
-.ab-card.dragging{opacity:.45}
-.ab-card-title{font-size:11px;font-weight:700;line-height:1.4}
-.ab-card-desc{font-size:9px;color:var(--muted);line-height:1.5;margin-top:5px}
-.ab-meta{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
-.ab-chip{
-  font-size:8px;
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:3px 6px;
-  color:var(--muted)
-}
-.ab-approval{color:#ffc56e;border-color:#ffc56e55}
-.ab-actions{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
-.ab-actions button{height:27px;font-size:8px;padding:0 7px}
-
-.ab-bottom{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 320px 320px;
-  gap:10px
-}
-.ab-panel{
-  border:1px solid var(--line);
-  border-radius:13px;
-  padding:11px;
-  background:#ffffff04
-}
-.ab-scroll{max-height:180px;overflow:auto}
-.ab-row{padding:7px 0;border-bottom:1px solid #ffffff09;font-size:9px}
-.ab-approval-row{
-  display:grid;
-  grid-template-columns:1fr auto;
-  align-items:center;
-  gap:7px;
-  padding:8px 0;
-  border-bottom:1px solid #ffffff09
-}
-
-.ab-empty{
-  color:var(--muted);
-  font-size:9px;
-  text-align:center;
-  padding:24px 8px
-}
-
-@media(max-width:1450px){
-  .ab-task-row{grid-template-columns:160px minmax(210px,1fr) 75px 165px 90px 110px}
-  .ab-task-row .ab-add-task{grid-column:1/-1}
-}
-@media(max-width:1100px){
-  .ab-sprint-row,.ab-task-row{grid-template-columns:1fr 1fr}
-  .ab-stats{grid-template-columns:repeat(2,1fr)}
-  .ab-bottom{grid-template-columns:1fr}
-}
-
-
-/* ===== FINAL DARK FORM OVERRIDE ===== */
-#view-workboard input,
-#view-workboard textarea,
-#view-workboard select,
-#abPlanTitle,
-#abPlanDescription,
-#abPlanStart,
-#abPlanEnd {
-  background: #0b1018 !important;
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  border: 1px solid #394457 !important;
-}
-
-#view-workboard input::placeholder,
-#view-workboard textarea::placeholder,
-#abPlanTitle::placeholder,
-#abPlanDescription::placeholder {
-  color: #9da9ba !important;
-  -webkit-text-fill-color: #9da9ba !important;
-  opacity: 1 !important;
-}
-
-#view-workboard input:focus,
-#view-workboard textarea:focus,
-#view-workboard select:focus {
-  background: #0d1420 !important;
-  color: #ffffff !important;
-  border-color: #72e6ff !important;
-  box-shadow: 0 0 0 2px rgba(114,230,255,.12);
-}
-
-#view-workboard input:-webkit-autofill,
-#view-workboard textarea:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0 1000px #0b1018 inset !important;
-  -webkit-text-fill-color: #ffffff !important;
-}
-
-#abPlanDescription {
-  line-height: 1.55;
-  font-size: 13px;
-}
-
-</style></head><body>
-<div class="shell"><aside class="rail glass"><div class="brand">U</div>
-<button class="nav active" data-panel="mission"><b>✦</b><span data-i18n="mission">ماموریت</span></button><button class="nav" data-panel="chat"><b>◉</b><span data-i18n="chat">چت</span></button><button class="nav" data-panel="tasks"><b>≡</b><span data-i18n="tasks">تسک‌ها</span></button><button class="nav" data-panel="projects"><b>▣</b><span data-i18n="projects">پروژه‌ها</span></button><button class="nav" data-panel="git"><b>⑂</b><span>Git</span></button><button class="nav" data-panel="providers"><b>AI</b><span data-i18n="models">مدل‌ها</span></button><button class="nav" data-panel="memory"><b>◫</b><span data-i18n="memory">حافظه</span></button><button class="nav" data-panel="tools"><b>⌘</b><span data-i18n="tools">ابزارها</span></button><div class="spacer"></div></aside>
-<div class="app"><header class="top glass"><div><div class="kicker" data-i18n="workspace">فضای کاری</div><div class="title" id="projectName">AudioVidoLivingCity</div></div><div class="command"><input id="prompt" data-i18n-placeholder="prompt" placeholder="به Unreal Agent بگو چه کاری انجام دهد…"></div><div class="topactions"><select class="select" id="language"><option value="fa">فارسی</option><option value="en">English</option></select><button class="btn" id="modelButton">Ollama · qwen3:8b</button><button class="btn" id="settingsButton">⚙</button></div></header>
-<div class="main"><main class="center"><section class="taskbar glass"><div><div class="kicker"><span data-i18n="currentTask">تسک فعلی</span> · <span id="taskStatus">IDLE</span></div><strong id="taskTitle" data-i18n="ready">آماده برای تسک جدید</strong><small id="taskDescription" data-i18n="demo">Frontend Mock آماده تست کامل است.</small></div><div class="controls"><button class="action" data-action="pause">Pause</button><button class="action good" data-action="resume">Resume</button><button class="action danger" data-action="stop">Stop</button><button class="action" data-action="retry">Retry</button><button class="action" data-action="self_fix">Self-Fix</button></div></section>
-<section class="workspace glass"><div class="tabs"><button class="tab active" data-view="overview" data-i18n="overview">نمای کلی</button><button class="tab" data-view="patch">Patch / Diff</button><button class="tab" data-view="validate">Build & Validate</button><button class="tab" data-view="logs">Logs</button><button class="tab" data-view="shots">Screenshots</button><button class="tab" data-view="workboard">Agent Board</button></div><div class="stage">
-<div class="view active" id="view-overview"><div class="hero"><div><div class="kicker">Orbital Mission Control</div><h1 data-i18n="hero">یک مرکز کنترل برای کل Unreal Agent.</h1><p data-i18n="heroSub">همه کارهای محصول از یک BASE_URL و یک /api/action عبور می‌کنند. در Mock کل UI بدون backend قابل تست است.</p><div class="grid4"><button class="quick" data-action="inspect_project"><strong>Inspect Project</strong><small>Read-only inspection</small></button><button class="quick" data-action="plan"><strong>Plan</strong><small>Execution plan</small></button><button class="quick" data-action="build"><strong>Build</strong><small>Build project</small></button><button class="quick" data-action="validate"><strong>Validate</strong><small>Validate result</small></button></div></div><div class="orb"><div class="core">U</div></div></div><div class="section"><div class="cards"><div class="card"><div class="label">Project</div><div class="value" id="ctxProject">AudioVidoLivingCity</div><div class="sub" id="ctxPath">C:\Users\Shadow\Desktop\app\AudioVidoLivingCity</div></div><div class="card"><div class="label">Model</div><div class="value" id="ctxModel">qwen3:8b</div><div class="sub" id="ctxProvider">Ollama</div></div><div class="card"><div class="label">Transport</div><div class="value" id="ctxMode">mock</div><div class="sub">/api/action</div></div></div></div></div>
-<div class="view" id="view-patch"><div class="sectionhead"><strong>Patch Review</strong><div class="actions"><button class="action good" data-action="patch_apply">Apply</button><button class="action danger" data-action="patch_reject">Reject</button><button class="action" data-action="patch_revert">Revert</button></div></div><div class="card"><div class="label">Changed Files</div><div class="value">ui/index.html<br>ui/app.js<br>ui/styles.css</div></div><pre class="card">diff --git a/ui/index.html b/ui/index.html
-+ unified action transport
-+ complete frontend state
-+ mock/API switching</pre></div>
-<div class="view" id="view-validate"><div class="cards"><div class="card"><div class="label">Frontend</div><div class="value">Ready</div></div><div class="card"><div class="label">Build</div><div class="value" id="buildState">Not started</div></div><div class="card"><div class="label">Validation</div><div class="value" id="validateState">Not started</div></div></div><div class="section actions"><button class="action primary" data-action="build">Build</button><button class="action good" data-action="validate">Validate</button><button class="action" data-action="run">Run / PIE</button><button class="action" data-action="screenshot">Screenshot</button></div></div>
-<div class="view" id="view-logs"><div class="sectionhead"><strong>Event Log</strong><button class="action" id="clearLogs">Clear</button></div><pre class="card" id="logs">Frontend ready.</pre></div>
-<div class="view" id="view-shots"><div class="sectionhead"><strong>Screenshots</strong><button class="action primary" data-action="screenshot">Capture</button></div><div class="orb" id="shotPreview" style="height:330px"><div class="core">UI</div></div></div></div></section>
-
-
-
-
-
-<div class="view" id="view-workboard">
-  <div class="ab-shell">
-
-    <div class="ab-head">
-      <div>
-        <div class="kicker">AUTONOMOUS DELIVERY SYSTEM</div>
-        <strong style="font-size:22px">Agent Board</strong>
-        <div class="sub">
-          Sprint ? Approval ? Schedule ? Execution ? Testing ? Delivery
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="action" id="abRefresh">Refresh</button>
-        <button class="action primary" id="abScheduler">Run Scheduler</button>
-        <button class="action good" id="abRunnerStart">Start Queue</button>
-        <button class="action danger" id="abRunnerStop">Stop Queue</button>
-        <button class="action" id="abSelfTest">Run Diagnostics</button>
-        <span class="task-chip" id="abRunnerState">Queue Idle</span>
-      </div>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,sans-serif;
+  background:radial-gradient(circle at 50% -10%,#18223b 0,#07090d 34%);color:var(--text)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.brand{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,#7de8ff,#8172ff);
+  display:grid;place-items:center;color:#071018;font-weight:900;font-size:20px;flex:none}
+h1{font-size:18px;margin:0;font-weight:700}
+h1 small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}
+.headright{margin-left:auto;display:flex;gap:8px;align-items:center}
+.linkbtn{background:transparent;border:1px solid var(--line);color:var(--muted);
+  border-radius:10px;padding:7px 12px;font-size:12px}
+.linkbtn:hover{color:var(--text);border-color:#33405a}
+.card{background:linear-gradient(145deg,#111722ee,#0a0e14ee);border:1px solid var(--line);
+  border-radius:16px;padding:16px;margin-bottom:14px}
+.composer{display:flex;gap:10px}
+.composer textarea{flex:1;background:#0a0e14;border:1px solid var(--line);border-radius:12px;
+  padding:12px 14px;resize:vertical;min-height:56px;max-height:160px;line-height:1.5;font-size:14px}
+.composer textarea:focus{outline:none;border-color:#3d8fd1}
+#sendBtn{flex:none;background:linear-gradient(145deg,#7de8ff,#8172ff);color:#071018;
+  border:none;border-radius:12px;padding:0 26px;font-weight:700;font-size:14px;align-self:stretch}
+#sendBtn:disabled{opacity:.45;cursor:not-allowed}
+#sendBtn.running{background:linear-gradient(145deg,#ffc56e,#ff7180)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.taskmeta{font-size:12px;color:var(--muted)}
+.taskmeta b{color:var(--text);font-weight:600}
+.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px}
+.stage{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;
+  color:var(--muted);background:#0a0e14;position:relative}
+.stage .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2a3140;margin-right:6px;vertical-align:middle}
+.stage.active{border-color:#3d8fd1;color:var(--text)}
+.stage.active .dot{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.stage.done{border-color:#1f6b45;color:#9fe8c4}
+.stage.done .dot{background:var(--green)}
+.stage.fail{border-color:#8f2f3a;color:var(--red)}
+.stage.fail .dot{background:var(--red)}
+.hidden{display:none!important}
+#statusLine{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}
+#statusLine b{color:var(--text)}
+#progressBar{height:4px;background:#1a2130;border-radius:2px;margin-top:10px;overflow:hidden}
+#progressFill{height:100%;width:0;background:linear-gradient(90deg,#7de8ff,#8172ff);transition:width .4s}
+.result{border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.55;margin-top:10px;white-space:pre-wrap;word-break:break-word}
+.result.ok{background:#0d241a;border:1px solid #1f6b45;color:#9fe8c4}
+.result.err{background:#2a0f14;border:1px solid #8f2f3a;color:var(--red)}
+.result .tag{font-weight:700}
+.sectitle{font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+#proofArea img{max-width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px;display:block}
+#proofArea .meta{font-size:12px;color:var(--muted);margin-top:6px;word-break:break-all}
+#logs{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;line-height:1.6;color:#b6c2d4;
+  max-height:220px;overflow:auto;background:#070a0f;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+#logs div{padding:2px 0;border-bottom:1px dashed #131a26}
+#logs div:last-child{border-bottom:none}
+#logs .err{color:var(--red)}
+#logs .warn{color:var(--amber)}
+#logs .ok{color:var(--green)}
+footer{text-align:center;color:#3d4656;font-size:11px;margin-top:26px}
+.fade{animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">UA</div>
+    <h1>Unreal Agent<small>Tell it what to build in AudioVidoLivingCity</small></h1>
+    <div class="headright">
+      <button class="linkbtn" id="statusBtn" title="Check agent + editor status">Status</button>
+      <button class="linkbtn" id="devBtn" title="Open the full developer dashboard in a new tab">Developer mode</button>
     </div>
+  </header>
 
-    <div class="ab-form">
-      <div class="label">CREATE SPRINT / USER PLAN</div>
-
-      <div class="ab-form-row ab-sprint-row">
-        <label class="ab-field">
-          <span>Plan / Sprint title</span>
-          <input id="abSprintTitle" placeholder="Finish AudioVido MVP">
-        </label>
-
-        <label class="ab-field">
-          <span>Start</span>
-          <input id="abSprintStart" type="datetime-local">
-        </label>
-
-        <label class="ab-field">
-          <span>End</span>
-          <input id="abSprintEnd" type="datetime-local">
-        </label>
-
-        <button class="action good ab-btn" id="abCreateSprint">Create Sprint</button>
-      </div>
-
-      <div class="ab-form-row ab-task-row">
-        <label class="ab-field">
-          <span>Sprint</span>
-          <select id="abTaskSprint"></select>
-        </label>
-
-        <label class="ab-field">
-          <span>Task</span>
-          <input id="abTaskTitle" placeholder="Small executable task">
-        </label>
-
-        <label class="ab-field">
-          <span>Priority</span>
-          <input id="abTaskPriority" type="number" min="1" max="100" value="50">
-        </label>
-
-        <label class="ab-field">
-          <span>Schedule</span>
-          <input id="abTaskSchedule" type="datetime-local">
-        </label>
-
-        <label class="ab-field">
-          <span>Estimate</span>
-          <input id="abTaskEstimate" type="number" min="1" placeholder="min">
-        </label>
-
-        <label class="ab-check">
-          <input id="abTaskApproval" type="checkbox">
-          Approval
-        </label>
-
-        <button class="action primary ab-btn ab-add-task" id="abCreateTask">Add Task</button>
-      </div>
+  <div class="card">
+    <div class="composer">
+      <textarea id="taskInput" placeholder="Describe a task for Unreal, e.g.&#10;&quot;Create a simple test actor in the current level, place it visibly, save the project, and verify it exists.&quot;&#10;&#10;Enter to send &middot; Shift+Enter for a new line"></textarea>
+      <button id="sendBtn">Run</button>
     </div>
-
-    <div class="ab-panel" style="margin-bottom:12px">
-      <div class="label">AI PLAN COMPOSER</div>
-
-      <div style="display:grid;grid-template-columns:1fr 180px 180px;gap:10px;margin-top:10px">
-        <input id="abPlanTitle" placeholder="Example: Finish AudioVido MVP">
-        <input id="abPlanStart" type="datetime-local">
-        <input id="abPlanEnd" type="datetime-local">
-      </div>
-
-      <textarea
-        id="abPlanDescription"
-        placeholder="Describe the complete goal in normal language. Agent will break it into Sprint tasks."
-        style="width:100%;min-height:90px;margin-top:10px;resize:vertical"
-      ></textarea>
-
-      <div class="actions" style="margin-top:10px">
-        <button class="action primary" id="abGeneratePlan">
-          Generate Plan
-        </button>
-
-        <button class="action good" id="abCommitPlan" disabled>
-          Approve Plan & Start
-        </button>
-
-        <button class="action" id="abClearPlan">
-          Clear
-        </button>
-      </div>
-
-      <div
-        id="abPlanStatus"
-        class="sub"
-        style="margin-top:10px"
-      >No generated plan yet.</div>
-
-      <div
-        id="abPlanPreview"
-        style="display:none;margin-top:12px"
-      ></div>
+    <div id="statusLine"></div>
+    <div id="progressBar"><div id="progressFill"></div></div>
+    <div class="stages" id="stages">
+      <div class="stage" data-stage="understand"><span class="dot"></span>Understanding</div>
+      <div class="stage" data-stage="plan"><span class="dot"></span>Planning</div>
+      <div class="stage" data-stage="edit"><span class="dot"></span>Editing</div>
+      <div class="stage" data-stage="build"><span class="dot"></span>Building</div>
+      <div class="stage" data-stage="validate"><span class="dot"></span>Validating</div>
+      <div class="stage" data-stage="fix"><span class="dot"></span>Fixing</div>
+      <div class="stage" data-stage="complete"><span class="dot"></span>Complete</div>
     </div>
-
-    <div class="ab-stats">
-      <div class="ab-stat"><div class="label">SPRINTS</div><strong id="abStatSprints">0</strong></div>
-      <div class="ab-stat"><div class="label">TASKS</div><strong id="abStatTasks">0</strong></div>
-      <div class="ab-stat"><div class="label">APPROVAL</div><strong id="abStatApproval">0</strong></div>
-      <div class="ab-stat"><div class="label">READY</div><strong id="abStatReady">0</strong></div>
-      <div class="ab-stat"><div class="label">IN PROGRESS</div><strong id="abStatProgress">0</strong></div>
-      <div class="ab-stat"><div class="label">FINISHED</div><strong id="abStatFinished">0</strong></div>
-    </div>
-
-    <details class="ab-panel" id="abSelfTestPanel" style="display:none">
-      <summary style="cursor:pointer;user-select:none">
-        <span class="label">SYSTEM DIAGNOSTICS</span>
-        <strong id="abSelfTestStatus" style="margin-left:8px">IDLE</strong>
-      </summary>
-
-      <div
-        id="abSelfTestDetail"
-        class="sub"
-        style="margin-top:10px;line-height:1.7;max-height:260px;overflow:auto"
-      ></div>
-    </details>
-
-    <div class="ab-board-scroll">
-      <div class="ab-board" id="abBoard">
-        <div class="ab-col" data-status="planned"><div class="ab-col-head"><span class="ab-col-title">Planned</span><span class="ab-count" id="abCount-planned">0</span></div><div id="abCol-planned"></div></div>
-        <div class="ab-col" data-status="approval"><div class="ab-col-head"><span class="ab-col-title">Needs Approval</span><span class="ab-count" id="abCount-approval">0</span></div><div id="abCol-approval"></div></div>
-        <div class="ab-col" data-status="ready"><div class="ab-col-head"><span class="ab-col-title">Ready</span><span class="ab-count" id="abCount-ready">0</span></div><div id="abCol-ready"></div></div>
-        <div class="ab-col" data-status="progress"><div class="ab-col-head"><span class="ab-col-title">In Progress</span><span class="ab-count" id="abCount-progress">0</span></div><div id="abCol-progress"></div></div>
-        <div class="ab-col" data-status="testing"><div class="ab-col-head"><span class="ab-col-title">Testing</span><span class="ab-count" id="abCount-testing">0</span></div><div id="abCol-testing"></div></div>
-        <div class="ab-col" data-status="tested"><div class="ab-col-head"><span class="ab-col-title">Tested</span><span class="ab-count" id="abCount-tested">0</span></div><div id="abCol-tested"></div></div>
-        <div class="ab-col" data-status="finished"><div class="ab-col-head"><span class="ab-col-title">Finished</span><span class="ab-count" id="abCount-finished">0</span></div><div id="abCol-finished"></div></div>
-        <div class="ab-col" data-status="blocked"><div class="ab-col-head"><span class="ab-col-title">Blocked</span><span class="ab-count" id="abCount-blocked">0</span></div><div id="abCol-blocked"></div></div>
-      </div>
-    </div>
-
-    <div class="ab-bottom">
-      <div class="ab-panel">
-        <div class="label">AGENT ACTIVITY</div>
-        <div class="ab-scroll" id="abActivity"></div>
-      </div>
-
-      <div class="ab-panel">
-        <div class="label">APPROVAL QUEUE</div>
-        <div class="ab-scroll" id="abApprovalQueue"></div>
-      </div>
-
-      <div class="ab-panel">
-        <div class="label">SCHEDULE REVIEW</div>
-        <div class="sub" id="abScheduleReview" style="line-height:1.9;margin-top:8px">
-          No schedule data yet.
-        </div>
-      </div>
-    </div>
-
   </div>
+
+  <div class="card hidden" id="taskCard">
+    <div class="sectitle">Current task</div>
+    <div class="row">
+      <div class="taskmeta" id="taskMeta"></div>
+    </div>
+    <div class="result hidden" id="result"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="linkbtn hidden" id="retryBtn">Retry</button>
+      <button class="linkbtn hidden" id="newTaskBtn">Start another task</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="proofCard">
+    <div class="sectitle">Proof</div>
+    <div id="proofArea"></div>
+  </div>
+
+  <div class="card hidden" id="logCard">
+    <div class="sectitle">Live log</div>
+    <div id="logs"></div>
+  </div>
+
+  <footer>Unreal Agent &middot; powered by Ollama + Unreal Editor bridge</footer>
 </div>
-
-<div class="view hidden" id="view-overnight">
-
-  <div class="sectionhead">
-    <div>
-      <strong>Overnight Mission Control</strong>
-      <div class="sub">
-        Autonomous AudioVido development supervisor
-      </div>
-    </div>
-
-    <div class="actions">
-      <button class="action good" id="overnightStart">
-        Start
-      </button>
-
-      <button class="action" id="overnightPause">
-        Pause
-      </button>
-
-      <button class="action primary" id="overnightResume">
-        Resume
-      </button>
-
-      <button class="action danger" id="overnightStop">
-        Stop
-      </button>
-    </div>
-  </div>
-
-  <div class="cards">
-    <div class="card">
-      <div class="label">Mission</div>
-      <div class="value" id="overnightRunning">Idle</div>
-    </div>
-
-    <div class="card">
-      <div class="label">Current Milestone</div>
-      <div class="value" id="overnightCurrent">?</div>
-    </div>
-
-    <div class="card">
-      <div class="label">Progress</div>
-      <div class="value" id="overnightProgress">0 / 13</div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="card">
-      <div class="label">Milestones</div>
-      <pre id="overnightTasks">No mission state yet.</pre>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="card">
-      <div class="label">Live Overnight Log</div>
-      <pre id="overnightLog">Waiting?</pre>
-    </div>
-  </div>
-
-</div>
-
-<section class="execution glass"><div class="sectionhead"><div><div class="kicker">Task Timeline</div><div id="liveLine">Idle</div></div><div id="taskCounter">0 / 7</div></div><div class="steps"><div class="step">PLAN</div><div class="step">INSPECT</div><div class="step">READ</div><div class="step">EDIT</div><div class="step">BUILD</div><div class="step">VERIFY</div><div class="step">REVIEW</div></div></section></main>
-<aside class="inspector glass"><div class="sidehead"><strong>Mission Inspector</strong><span id="connectionBadge" style="color:var(--amber)">● MOCK</span></div><div class="sidebody"><div class="block"><h4>Current Action</h4><div id="currentAction">Idle</div></div><div class="block"><h4>Provider</h4><div id="providerSummary">Ollama · qwen3:8b</div></div><div class="block"><h4>Git</h4><div id="gitSummary">main · clean</div></div><div class="block"><h4>Approval</h4><div id="approvalSummary">No approval pending</div><div class="actions" style="margin-top:7px"><button class="action good" data-action="approval_approve">Approve</button><button class="action danger" data-action="approval_reject">Reject</button></div></div><div class="block"><h4>Last Result</h4><div id="lastResult">Idle</div></div></div></aside></div></div></div>
-<div class="modalbg hidden" id="panelModal"><div class="modal glass"><div class="sectionhead"><div><h2 id="panelTitle">Panel</h2><div class="sub">Unified action panel</div></div><button class="btn" data-close="panelModal">×</button></div><div id="panelContent"></div></div></div>
-<div class="modalbg hidden" id="settingsModal"><div class="modal glass"><div class="sectionhead"><div><h2>Settings</h2><div class="sub">One transport for every action</div></div><button class="btn" data-close="settingsModal">×</button></div><div class="formrow"><div class="field"><label>Mode</label><select id="modeSelect"><option value="api" selected>Real API</option></select></div><div class="field"><label>Base URL</label><input id="baseUrlInput" value=""></div></div><div class="field"><label>Action Endpoint</label><input id="endpointInput" value="/api/action"></div><div class="formrow"><div class="field"><label>Provider</label><select id="providerSelect"><option>Ollama</option><option>OpenRouter</option><option>OpenAI</option><option>Anthropic</option><option>Gemini</option></select></div><div class="field"><label>Model</label><select id="modelSelect"></select></div></div><div class="field"><label>API Token</label><input id="tokenInput" type="password" placeholder="Never returned to UI logs"></div><div class="actions"><button class="action primary" id="saveSettings">Save</button><button class="action" id="pingAction">Test Unified API</button></div></div></div>
-<div class="toast hidden" id="toast"><strong id="toastTitle"></strong><span id="toastText"></span></div><div id="SELF_TEST_RESULT"></div>
-<script>
-const CONFIG={mode:'api',baseUrl:'',actionEndpoint:'/api/action',provider:'Ollama',model:'unreal-coder:latest',token:''};
-const MODELS={Ollama:['qwen3:8b','qwen3:14b','qwen2.5-coder:14b','qwen3-vl:8b-instruct','unreal-coder:latest'],OpenRouter:['Auto Router','DeepSeek V3','Qwen Coder','Claude Sonnet'],OpenAI:['GPT-5','GPT-5 mini','GPT-4.1'],Anthropic:['Claude Sonnet 4','Claude Opus 4'],Gemini:['Gemini 2.5 Pro','Gemini 2.5 Flash']};
-const T={fa:{mission:'ماموریت',chat:'چت',tasks:'تسک‌ها',projects:'پروژه‌ها',models:'مدل‌ها',memory:'حافظه',tools:'ابزارها',workspace:'فضای کاری',prompt:'به Unreal Agent بگو چه کاری انجام دهد…',currentTask:'تسک فعلی',ready:'آماده برای تسک جدید',demo:'Frontend Mock آماده تست کامل است.',overview:'نمای کلی',hero:'یک مرکز کنترل برای کل Unreal Agent.',heroSub:'همه کارهای محصول از یک BASE_URL و یک /api/action عبور می‌کنند. در Mock کل UI بدون backend قابل تست است.'},en:{mission:'Mission',chat:'Chat',tasks:'Tasks',projects:'Projects',models:'Models',memory:'Memory',tools:'Tools',workspace:'Active Workspace',prompt:'Ask Unreal Agent what to do…',currentTask:'Current Task',ready:'Ready for a new task',demo:'Frontend Mock is ready for full testing.',overview:'Overview',hero:'One mission center for the entire Unreal Agent.',heroSub:'Every product action goes through one BASE_URL and one /api/action. Mock mode tests the whole UI without a backend.'}};
-const STATE={tasks:[],chat:[{role:'assistant',text:'Unreal Agent آماده است. پیام خودت را بنویس.',at:new Date().toLocaleTimeString()}],memory:[{type:'Project',text:'Inspect before modifying.'},{type:'Decision',text:'Use one unified /api/action transport.'},{type:'Constraint',text:'Mock mode must work without backend.'}],git:{branch:'main',status:'clean',changed:['ui/index.html','ui/app.js','ui/styles.css']},project:{name:'AudioVidoLivingCity',path:'C:\\Users\\Shadow\\Desktop\\app\\AudioVidoLivingCity'},approval:null,models:{...MODELS},last:null};
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];let step=-1,toastTimer;
-const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
-function toast(a,b=''){clearTimeout(toastTimer);$('#toastTitle').textContent=a;$('#toastText').textContent=b;$('#toast').classList.remove('hidden');toastTimer=setTimeout(()=>$('#toast').classList.add('hidden'),900)}function log(x){$('#logs').textContent+='\n'+new Date().toLocaleTimeString()+'  '+x}function setStep(i,n){step=i;$$('.step').forEach((e,j)=>e.classList.toggle('active',i===j));$('#taskCounter').textContent=(i+1)+' / 7';$('#liveLine').textContent=n;$('#currentAction').textContent=n;log(n)}
-function language(l){const d=T[l]||T.en;document.documentElement.lang=l;document.documentElement.dir=l==='fa'?'rtl':'ltr';$$('[data-i18n]').forEach(e=>{if(d[e.dataset.i18n])e.textContent=d[e.dataset.i18n]});$$('[data-i18n-placeholder]').forEach(e=>{if(d[e.dataset.i18nPlaceholder])e.placeholder=d[e.dataset.i18nPlaceholder]})}
-function transportUI(){const m=CONFIG.mode==='mock';$('#ctxMode').textContent=CONFIG.mode;$('#connectionBadge').textContent=m?'● MOCK':'● API';$('#connectionBadge').style.color=m?'var(--amber)':'var(--cyan)'}
-function addTask(a){const t={id:Date.now()+Math.random(),action:a,state:'running',at:new Date().toLocaleTimeString()};STATE.tasks.unshift(t);STATE.tasks=STATE.tasks.slice(0,20);return t}
-function mock(action,req){const p=req.payload||{},r={ok:true,action,state:action==='pause'?'paused':action==='resume'?'running':action==='stop'?'stopped':'complete',message:'Mock action executed: '+action,data:{}};if(action==='project_select'){const path=p.path||STATE.project.path,parts=path.split('\\');r.data.project={name:parts.at(-1)||'Project',path}}if(action==='provider_models')r.data.models=STATE.models[p.provider||CONFIG.provider]||[];if(action==='git_status')r.data.git={...STATE.git};if(action==='git_commit')r.data.commit={hash:'demo'+Date.now().toString().slice(-6),message:p.message||'Frontend release'};if(action==='memory_add'){if(p.content)STATE.memory.unshift({type:'User',text:p.content});r.data.memory=STATE.memory}if(action==='memory_list')r.data.memory=STATE.memory;if(action==='memory_search'){const q=(p.query||'').toLowerCase();r.data.memory=STATE.memory.filter(x=>!q||x.text.toLowerCase().includes(q)||x.type.toLowerCase().includes(q))}if(action==='memory_clear'){STATE.memory=[];r.data.memory=[]}if(action==='memory_export')r.data.export=JSON.stringify(STATE.memory);if(action==='tools_list')r.data.tools=['inspect_project','build','validate','run','screenshot'];if(action==='tool_permissions')r.data.permissions={read:true,write:'approval',destructive:'approval'};if(action==='approval_request'){STATE.approval={reason:p.reason||'Destructive action'};r.state='approval_required';r.data.approval=STATE.approval}if(action==='approval_approve'||action==='approval_reject')STATE.approval=null;if(action==='screenshot')r.data.screenshot='demo-viewport.png';return r}
-
-let activeEventSource=null;
-function getTaskId(r){return r?.task_id||r?.data?.task_id||null}
-function eventText(ev){
-  const title=ev?.title?String(ev.title):"";
-  let detail=ev?.detail;
-  if(detail&&typeof detail==="object"){try{detail=JSON.stringify(detail,null,2)}catch(e){detail=String(detail)}}
-  detail=detail==null?"":String(detail);
-  return [title,detail].filter(Boolean).join("\n");
-}
-function pushChatEvent(ev){
-  if(!STATE?.chat)return;
-  const text=eventText(ev); if(!text)return;
-  const status=String(ev?.status||"").toLowerCase();
-  const type=String(ev?.type||"").toLowerCase();
-  let role="system";
-  if(type==="answer"||type==="assistant"||type==="final")role="assistant";
-  STATE.chat.push({role,text,at:new Date().toLocaleTimeString()});
-  renderChat();
-}
-function attachTaskStream(taskId){
-  if(!taskId)return;
-  if(activeEventSource){try{activeEventSource.close()}catch(e){} activeEventSource=null}
-  const origin=(CONFIG.baseUrl||"").replace(/\/$/,"");
-  const url=origin+"/api/events/stream/"+encodeURIComponent(taskId);
-  log("SSE CONNECT "+url);
-  $("#taskStatus").textContent="RUNNING";
-  $("#liveLine").textContent="Live execution connected";
-  const es=new EventSource(url);
-  activeEventSource=es;
-  es.onopen=()=>{log("SSE OPEN "+taskId);toast("Live execution","Connected to Agent events.")};
-  es.onmessage=(msg)=>{
-    let ev; try{ev=JSON.parse(msg.data)}catch(e){return}
-    if(ev?.task_id&&String(ev.task_id)!==String(taskId))return;
-    const status=String(ev?.status||"").toLowerCase();
-    const title=ev?.title||ev?.type||"Agent event";
-    $("#currentAction").textContent=title;
-    $("#lastResult").textContent=eventText(ev)||title;
-    log("SSE "+JSON.stringify(ev));
-    pushChatEvent(ev);
-    const type=String(ev?.type||"").toLowerCase();
-
-    if(["failed","error","blocked","rejected","cancelled","canceled"].includes(status)){
-      $("#taskStatus").textContent=status.toUpperCase();
-    }
-    else if(type==="answer"||type==="final"||["complete","completed","done"].includes(status)){
-      $("#taskStatus").textContent="COMPLETE";
-      $("#liveLine").textContent="? Agent completed";
-    }
-    else{
-      $("#taskStatus").textContent="RUNNING";
-
-      if(type==="tool_result"){
-        $("#liveLine").textContent="? Tool finished ? thinking next step?";
-      }
-      else if(type==="tool"){
-        $("#liveLine").textContent="? "+title;
-      }
-      else{
-        $("#liveLine").textContent="? Agent working?";
-      }
-    }
-  };
-  es.onerror=()=>log("SSE changed/closed "+taskId);
-}
-async function runAction(action,payload={}){const t=addTask(action);$('#taskStatus').textContent='RUNNING';$('#taskTitle').textContent=action.replaceAll('_',' ');$('#taskDescription').textContent=CONFIG.mode==='mock'?'Frontend mock execution':'Unified backend action';setStep(Math.max(0,(step+1)%7),'→ '+action);const req={action,payload,context:{project:STATE.project,provider:CONFIG.provider,model:CONFIG.model,language:document.documentElement.lang}};try{let r;if(CONFIG.mode==='mock'){await new Promise(x=>setTimeout(x,20));r=mock(action,req)}else{const h={'Content-Type':'application/json'};if(CONFIG.token)h.Authorization='Bearer '+CONFIG.token;const res=await fetch(CONFIG.baseUrl+CONFIG.actionEndpoint,{method:'POST',headers:h,body:JSON.stringify(req)});if(!res.ok)throw Error('HTTP '+res.status);r=await res.json()}t.state=r.state||'complete';STATE.last=r;const asyncTaskId=getTaskId(r);$('#taskStatus').textContent=String(t.state).toUpperCase();$('#lastResult').textContent=r.message||action;if(asyncTaskId){$('#liveLine').textContent='↻ '+action;attachTaskStream(asyncTaskId)}else{$('#liveLine').textContent='✓ '+action;}if(action==='build')$('#buildState').textContent='Passed ✓';if(action==='validate')$('#validateState').textContent='Passed ✓';if(action==='screenshot')$('#shotPreview').innerHTML='<div><div class="core">✓</div><div style="margin-top:10px">Screenshot complete</div></div>';if(action==='project_select'&&r.data?.project){STATE.project=r.data.project;$('#projectName').textContent=STATE.project.name;$('#ctxProject').textContent=STATE.project.name;$('#ctxPath').textContent=STATE.project.path}if(action==='git_status'&&r.data?.git){STATE.git=r.data.git;$('#gitSummary').textContent=STATE.git.branch+' · '+STATE.git.status}if(action==='provider_models'&&Array.isArray(r.data?.models)){STATE.models[CONFIG.provider]=r.data.models;populateModels()}if(r.data?.approval)STATE.approval=r.data.approval;if(action==='approval_approve'||action==='approval_reject')STATE.approval=null;$('#approvalSummary').textContent=STATE.approval?'Pending: '+STATE.approval.reason:'No approval pending';toast('Action complete',action);log(JSON.stringify(r));return r}catch(e){t.state='failed';$('#taskStatus').textContent='FAILED';$('#lastResult').textContent=e.message;log('ERROR '+action+': '+e.message);toast('Action failed',e.message);return null}}
-function tasksHtml(){return STATE.tasks.length?STATE.tasks.map(t=>`<div class="card"><div class="label">${esc(t.state)}</div><div class="value">${esc(t.action)}</div><div class="sub">${esc(t.at)}</div></div>`).join(''):'<div class="card">No tasks yet</div>'}function memHtml(a=STATE.memory){return a.length?a.map(x=>`<div class="card"><div class="label">${esc(x.type)}</div><div class="value">${esc(x.text)}</div></div>`).join(''):'<div class="card">No memory</div>'}
-function chatHtml(){if(!STATE.chat.length)return '<div class="chat-empty">No messages yet</div>';return STATE.chat.map((m,i)=>`<div class="msg ${esc(m.role)}" data-msg-index="${i}">${esc(m.text)}<span class="msgmeta">${esc(m.at||'')}</span></div>`).join('')}function renderChat(){const l=$('#chatList');if(!l)return;l.innerHTML=chatHtml();l.scrollTop=l.scrollHeight}function chatResponse(r){if(!r)return 'No response.';if(typeof r.message==='string'&&r.message.trim())return r.message;const d=r.data;if(typeof d==='string')return d;if(d&&typeof d==='object'){for(const k of ['message','reply','response','answer','text','final','content'])if(typeof d[k]==='string'&&d[k].trim())return d[k];try{return JSON.stringify(d,null,2)}catch(e){}}return String(r.state||'complete')}async function sendChat(text){const m=String(text||'').trim();if(!m)return;STATE.chat.push({role:'user',text:m,at:new Date().toLocaleTimeString()});renderChat();const r=await runAction('prompt',{message:m});const taskId=getTaskId(r);if(taskId){STATE.chat.push({role:'system',text:'Agent started task '+taskId+'. Live events will appear here.',at:new Date().toLocaleTimeString()})}else{STATE.chat.push({role:'assistant',text:chatResponse(r),at:new Date().toLocaleTimeString()})}renderChat();return r}function panelHtml(t){if(t==='chat')return `<div class="chat-wrap"><div class="chat-list" id="chatList">${chatHtml()}</div><div class="chat-compose"><textarea id="chatInput" placeholder="پیام برای Unreal Agent…"></textarea><div class="chat-buttons"><button class="action primary" id="chatSend">Send</button><button class="action" id="chatRetry">Retry</button><button class="action danger" id="chatStop">Stop</button><button class="action" id="chatClear">Clear</button></div></div></div>`;if(t==='tasks')return `<div class="cards" id="taskCards">${tasksHtml()}</div><div class="section actions"><button class="action" data-panel-action="tasks_refresh">Refresh</button></div>`;if(t==='projects')return `<div class="field"><label>Local Project</label><input id="projectInput" value="${esc(STATE.project.path)}"></div><div class="field"><label>Git URL</label><input id="gitUrlInput" placeholder="https://github.com/org/repo.git"></div><div class="actions"><button class="action primary" data-panel-action="project_select">Select Project</button><button class="action" data-panel-action="project_clone">Clone Repo</button></div>`;if(t==='git')return `<div class="formrow"><div class="field"><label>Branch</label><select id="branchSelect"><option>${esc(STATE.git.branch)}</option><option>dev</option><option>ui-redesign</option></select></div><div class="field"><label>Commit Message</label><input id="commitMsg" value="Frontend release"></div></div><div class="block"><h4>Changed Files</h4>${STATE.git.changed.map(esc).join('<br>')}</div><pre class="card">diff --git a/ui/index.html b/ui/index.html\n+ unified action transport\n+ task and provider state</pre><div class="actions"><button class="action" data-panel-action="git_status">Refresh</button><button class="action good" data-panel-action="git_checkpoint">Checkpoint</button><button class="action primary" data-panel-action="git_commit">Commit</button><button class="action danger" data-panel-action="git_revert">Revert</button></div>`;if(t==='providers')return `<div class="cards">${Object.keys(STATE.models).map(p=>`<div class="card"><div class="label">${p}</div><div class="value">${STATE.models[p].length} models</div></div>`).join('')}</div><div class="section actions"><button class="action primary" id="configureModels">Configure</button><button class="action" data-panel-action="provider_models">Refresh Models</button></div>`;if(t==='memory')return `<div class="field"><label>Search Memory</label><input id="memorySearch"></div><div class="actions"><button class="action" data-panel-action="memory_search">Search</button><button class="action" data-panel-action="memory_list">Refresh</button></div><div class="cards section" id="memoryCards">${memHtml()}</div><div class="field section"><label>New Memory</label><textarea id="memoryInput">Inspect before modifying.</textarea></div><div class="actions"><button class="action good" data-panel-action="memory_add">Add</button><button class="action" data-panel-action="memory_export">Export</button><button class="action danger" data-panel-action="memory_clear">Clear</button></div>`;if(t==='tools')return `<div class="cards"><div class="card"><div class="label">READ</div><div class="value">Inspect · Assets · Status</div></div><div class="card"><div class="label">WRITE</div><div class="value">Patch · Blueprint · Files</div></div><div class="card"><div class="label">VERIFY</div><div class="value">Build · Run · Capture</div></div></div><div class="section actions"><button class="action" data-panel-action="tools_list">List Tools</button><button class="action" data-panel-action="tool_permissions">Permissions</button><button class="action danger" data-panel-action="approval_request">Approval Demo</button></div>`;return ''}
-function wirePanel(){if($('#chatSend')){$('#chatSend').onclick=async()=>{const v=$('#chatInput').value;$('#chatInput').value='';await sendChat(v)};$('#chatInput').onkeydown=async e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const v=e.currentTarget.value;e.currentTarget.value='';await sendChat(v)}};$('#chatRetry').onclick=async()=>{const last=[...STATE.chat].reverse().find(m=>m.role==='user');if(last)await sendChat(last.text);else toast('Retry','No previous user message')};$('#chatStop').onclick=()=>runAction('stop',{source:'chat'});$('#chatClear').onclick=()=>{STATE.chat=[];renderChat();toast('Chat cleared','')}} $('#configureModels')?.addEventListener('click',()=>{$('#panelModal').classList.add('hidden');$('#settingsModal').classList.remove('hidden')});$$('[data-panel-action]').forEach(b=>b.onclick=async()=>{const a=b.dataset.panelAction;if(a==='tasks_refresh'){ $('#taskCards').innerHTML=tasksHtml();return}const p={};if(a==='project_select')p.path=$('#projectInput')?.value||'';if(a==='project_clone')p.url=$('#gitUrlInput')?.value||'';if(a.startsWith('git_'))p.branch=$('#branchSelect')?.value||STATE.git.branch;if(a==='git_commit')p.message=$('#commitMsg')?.value||'';if(a==='provider_models')p.provider=CONFIG.provider;if(a==='memory_add')p.content=$('#memoryInput')?.value||'';if(a==='memory_search')p.query=$('#memorySearch')?.value||'';if(a==='approval_request')p.reason='Frontend approval test';const r=await runAction(a,p);if(a.startsWith('memory_')&&r?.data?.memory&&$('#memoryCards'))$('#memoryCards').innerHTML=memHtml(r.data.memory)})}
-$$('[data-action]').forEach(b=>b.onclick=()=>runAction(b.dataset.action));$$('.tab').forEach(t=>t.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');$$('.view').forEach(v=>v.classList.remove('active'));$('#view-'+t.dataset.view).classList.add('active')});$$('.nav').forEach(n=>n.onclick=()=>{$$('.nav').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.panel==='mission'){ $('#panelModal').classList.add('hidden');return}$('#panelTitle').textContent=n.querySelector('span').textContent;$('#panelContent').innerHTML=panelHtml(n.dataset.panel);$('#panelModal').classList.remove('hidden');wirePanel()});
-function populateModels(){const p=$('#providerSelect').value,l=STATE.models[p]||[];$('#modelSelect').innerHTML=l.map(x=>`<option>${esc(x)}</option>`).join('');if(l.includes(CONFIG.model))$('#modelSelect').value=CONFIG.model}$('#providerSelect').onchange=populateModels;populateModels();$('#settingsButton').onclick=$('#modelButton').onclick=()=>{$('#modeSelect').value=CONFIG.mode;$('#baseUrlInput').value=CONFIG.baseUrl;$('#endpointInput').value=CONFIG.actionEndpoint;$('#providerSelect').value=CONFIG.provider;populateModels();$('#modelSelect').value=CONFIG.model;$('#settingsModal').classList.remove('hidden')};$('#saveSettings').onclick=()=>{CONFIG.mode=$('#modeSelect').value;CONFIG.baseUrl=$('#baseUrlInput').value.replace(/\/$/,'');CONFIG.actionEndpoint=$('#endpointInput').value.startsWith('/')?$('#endpointInput').value:'/'+$('#endpointInput').value;CONFIG.provider=$('#providerSelect').value;CONFIG.model=$('#modelSelect').value;CONFIG.token=$('#tokenInput').value;$('#tokenInput').value='';$('#modelButton').textContent=CONFIG.provider+' · '+CONFIG.model;$('#ctxProvider').textContent=CONFIG.provider;$('#ctxModel').textContent=CONFIG.model;$('#providerSummary').textContent=CONFIG.provider+' · '+CONFIG.model;transportUI();$('#settingsModal').classList.add('hidden');toast('Settings saved','Unified transport updated')};$('#pingAction').onclick=()=>runAction('ping',{source:'frontend'});$('#language').onchange=e=>language(e.target.value);$$('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).classList.add('hidden'));$$('.modalbg').forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.add('hidden')});$('#clearLogs').onclick=()=>$('#logs').textContent='';$('#prompt').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim()){sendChat(e.target.value.trim());e.target.value=''}};
-async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode='mock';transportUI();$('#language').value='en';$('#language').dispatchEvent(new Event('change'));ok('language-en',document.documentElement.dir==='ltr'&&document.querySelector('[data-i18n="tasks"]').textContent==='Tasks');$('#language').value='fa';$('#language').dispatchEvent(new Event('change'));ok('language-fa',document.documentElement.dir==='rtl'&&document.querySelector('[data-i18n="tasks"]').textContent==='تسک‌ها');for(const t of $$('.tab')){t.click();ok('tab-'+t.dataset.view,$('#view-'+t.dataset.view).classList.contains('active'))}for(const a of ['pause','resume','stop','retry','self_fix','inspect_project','plan','build','validate','run','screenshot','patch_apply','patch_reject','patch_revert'])ok('action-'+a,(await runAction(a,{test:true}))?.ok);document.querySelector('[data-panel="projects"]').click();const pr=await runAction('project_select',{path:'C:\\Demo\\MyProject'});ok('project',pr?.data?.project?.name==='MyProject'&&$('#ctxProject').textContent==='MyProject');$('#panelModal').classList.add('hidden');ok('models',(await runAction('provider_models',{provider:'Ollama'}))?.data?.models?.length>0);ok('git',(await runAction('git_status',{branch:'main'}))?.data?.git?.branch==='main');const before=STATE.memory.length;await runAction('memory_add',{content:'selftest memory'});ok('memory-add',STATE.memory.length===before+1);ok('memory-search',(await runAction('memory_search',{query:'selftest'}))?.data?.memory?.length>0);await runAction('approval_request',{reason:'test'});ok('approval-pending',!!STATE.approval);await runAction('approval_approve',{});ok('approval-clear',!STATE.approval);document.querySelector('[data-panel="chat"]').click();ok('chat-open',!!$('#chatInput'));const cb=STATE.chat.length;await sendChat('self test chat');ok('chat-message',STATE.chat.length>=cb+2);$('#panelModal').classList.add('hidden');$('#settingsButton').click();ok('settings-open',!$('#settingsModal').classList.contains('hidden'));$('#settingsModal').classList.add('hidden');$('#prompt').value='self test prompt';$('#prompt').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));await new Promise(r=>setTimeout(r,60));ok('prompt',STATE.tasks.some(t=>t.action==='prompt'))}catch(e){f.push('exception:'+e.message)}const r=$('#SELF_TEST_RESULT');r.style.display='block';r.textContent=f.length?'FAIL '+f.join(','):'PASS 0 failures';document.title=f.length?'SELFTEST_FAIL':'SELFTEST_PASS'}language('fa');transportUI();if(new URLSearchParams(location.search).get('selftest')==='1')setTimeout(selfTest,80);
-</script>
-<script>
-(function () {
-  async function overnightRequest(path, method = "GET") {
-    const response = await fetch("/api/overnight/" + path, {
-      method,
-      headers: {"Content-Type": "application/json"}
-    });
-
-    return await response.json();
-  }
-
-  function renderOvernight(data) {
-    const state = data.state || {};
-    const tasks = state.tasks || [];
-
-    const running = document.getElementById("overnightRunning");
-    const current = document.getElementById("overnightCurrent");
-    const progress = document.getElementById("overnightProgress");
-    const taskBox = document.getElementById("overnightTasks");
-    const logBox = document.getElementById("overnightLog");
-
-    if (!running) return;
-
-    if (data.paused) {
-      running.textContent = "PAUSED";
-    } else if (data.running) {
-      running.textContent = "RUNNING";
-    } else if (state.finished) {
-      running.textContent = "FINISHED";
-    } else {
-      running.textContent = "IDLE";
-    }
-
-    const active = data.current || {};
-    current.textContent = active.title || "?";
-
-    const done = tasks.filter(
-      t => t.status === "DONE"
-    ).length;
-
-    progress.textContent =
-      done + " / " + (tasks.length || 13);
-
-    taskBox.textContent = tasks.length
-      ? tasks.map(t =>
-          String(t.index).padStart(2, "0")
-          + "  "
-          + (t.status || "PENDING")
-          + "  "
-          + (t.title || "")
-        ).join("\n")
-      : "No mission state yet.";
-
-    logBox.textContent =
-      (data.log_tail || []).join("\n")
-      || "Waiting for mission log?";
-  }
-
-  window.refreshOvernightStatus = async function () {
-    try {
-      renderOvernight(
-        await overnightRequest("status")
-      );
-    } catch (error) {
-      const log = document.getElementById("overnightLog");
-      if (log) {
-        log.textContent =
-          "Overnight API error: " + error;
-      }
-    }
-  };
-
-  async function command(name) {
-    try {
-      const data = await overnightRequest(
-        name,
-        "POST"
-      );
-
-      renderOvernight(data);
-    } catch (error) {
-      alert(
-        "Overnight command failed: "
-        + error
-      );
-    }
-  }
-
-  document.addEventListener("click", function (event) {
-    const id = event.target && event.target.id;
-
-    if (id === "overnightStart") command("start");
-    if (id === "overnightPause") command("pause");
-    if (id === "overnightResume") command("resume");
-    if (id === "overnightStop") command("stop");
-  });
-
-  setInterval(
-    window.refreshOvernightStatus,
-    3000
-  );
-
-  window.refreshOvernightStatus();
-})();
-</script>
-
-
-
-
 
 <script>
 (function(){
-"use strict";
+  "use strict";
+  var API = location.origin || "http://127.0.0.1:8765";
+  var $ = function(id){ return document.getElementById(id); };
+  var taskInput = $("taskInput"), sendBtn = $("sendBtn"), statusLine = $("statusLine");
+  var progressFill = $("progressFill"), taskCard = $("taskCard"), taskMeta = $("taskMeta");
+  var resultEl = $("result"), retryBtn = $("retryBtn"), newTaskBtn = $("newTaskBtn");
+  var proofCard = $("proofCard"), proofArea = $("proofArea"), logCard = $("logCard"), logsEl = $("logs");
+  var stageEls = {}; [].forEach.call(document.querySelectorAll(".stage"), function(s){ stageEls[s.dataset.stage] = s; });
 
-const STATUSES = [
-  "planned","approval","ready","progress",
-  "testing","tested","finished","blocked"
-];
+  var STAGES = [
+    { key: "understand", keys: ["understanding"], label: "Understanding" },
+    { key: "plan",       keys: ["planning", "planned", "plan_generated", "execution_plan", "plan"], label: "Planning" },
+    { key: "edit",       keys: ["editing", "dispatch", "tool", "step_started", "step_completed", "step_failed"], label: "Editing" },
+    { key: "build",      keys: ["building", "compile", "save"], label: "Building" },
+    { key: "validate",   keys: ["validating", "validation", "verify", "get_actor", "get_blueprint"], label: "Validating" },
+    { key: "fix",        keys: ["fixing", "fix", "retry", "replan"], label: "Fixing" },
+    { key: "complete",   keys: ["complete", "final", "done", "success"], label: "Complete" }
+  ];
+  var STAGE_ORDER = ["understand", "plan", "edit", "build", "validate", "fix", "complete"];
 
-let AB = {sprints:[],tasks:[],activity:[]};
-
-const byId = id => document.getElementById(id);
-
-async function api(path, method="GET", body=null){
-  const options = {
-    method,
-    headers: {"Content-Type":"application/json"}
+  var state = {
+    taskId: null,
+    running: false,
+    es: null,
+    final: null,
+    stageIndex: -1,
+    proofShown: false,
+    lastError: null
   };
-  if(body !== null) options.body = JSON.stringify(body);
 
-  const response = await fetch("/api/workboard/" + path, options);
-
-  let data;
-  try{
-    data = await response.json();
-  }catch(e){
-    throw new Error("Invalid backend response");
+  function api(path, opts){
+    opts = opts || {};
+    opts.headers = opts.headers || {};
+    if (opts.body && typeof opts.body !== "string") { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(opts.body); }
+    return fetch(API + path, opts);
   }
 
-  if(!response.ok || data.ok === false){
-    throw new Error(data.error || data.message || ("HTTP " + response.status));
-  }
+  function setStatus(html){ statusLine.innerHTML = html; }
 
-  return data;
-}
-
-function esc(v){
-  return String(v ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;");
-}
-
-function sprintName(id){
-  const s = AB.sprints.find(x=>x.id===id);
-  return s ? s.title : "No Sprint";
-}
-
-function card(task){
-  const scheduled = task.scheduled_at
-    ? `<div class="sub" style="margin-top:6px">? ${esc(task.scheduled_at)}</div>`
-    : "";
-
-  return `
-  <div class="ab-card"
-       draggable="true"
-       data-card-id="${esc(task.id)}"
-       data-card-status="${esc(task.status)}">
-
-    <div class="ab-card-title">${esc(task.title)}</div>
-
-    ${task.description
-      ? `<div class="ab-card-desc">${esc(task.description)}</div>`
-      : ""}
-
-    <div class="ab-meta">
-      <span class="ab-chip">${esc(sprintName(task.sprint_id))}</span>
-      <span class="ab-chip">P${Number(task.priority || 0)}</span>
-      ${task.estimate_minutes
-        ? `<span class="ab-chip">${Number(task.estimate_minutes)}m</span>`
-        : ""}
-      ${task.requires_approval
-        ? `<span class="ab-chip ab-approval">Approval</span>`
-        : ""}
-    </div>
-
-    ${task.depends_on?.length
-      ? `<div class="sub" style="margin-top:6px">Depends on ${task.depends_on.length} task(s)</div>`
-      : ""}
-
-    ${scheduled}
-
-    <div class="ab-actions">
-      ${task.status === "approval"
-        ? `
-          <button class="action good" data-approve="${esc(task.id)}">Approve</button>
-          <button class="action danger" data-reject="${esc(task.id)}">Reject</button>
-        `
-        : ""}
-
-      <button class="action"
-              data-priority="${esc(task.id)}"
-              data-value="${Number(task.priority || 50) + 10}">?</button>
-
-      <button class="action"
-              data-priority="${esc(task.id)}"
-              data-value="${Math.max(1, Number(task.priority || 50) - 10)}">?</button>
-    </div>
-  </div>`;
-}
-
-function render(){
-  const tasks = Array.isArray(AB.tasks) ? AB.tasks : [];
-  const sprints = Array.isArray(AB.sprints) ? AB.sprints : [];
-
-  byId("abStatSprints").textContent = sprints.length;
-  byId("abStatTasks").textContent = tasks.length;
-  byId("abStatApproval").textContent = tasks.filter(t=>t.status==="approval").length;
-  byId("abStatReady").textContent = tasks.filter(t=>t.status==="ready").length;
-  byId("abStatProgress").textContent = tasks.filter(t=>t.status==="progress").length;
-  byId("abStatFinished").textContent = tasks.filter(t=>t.status==="finished").length;
-
-  byId("abTaskSprint").innerHTML =
-    sprints.length
-      ? sprints.map(s=>`<option value="${esc(s.id)}">${esc(s.title)}</option>`).join("")
-      : `<option value="">Create a Sprint first</option>`;
-
-  for(const status of STATUSES){
-    const list = tasks
-      .filter(t=>t.status===status)
-      .sort((a,b)=>(Number(b.priority||0)-Number(a.priority||0)));
-
-    byId("abCount-"+status).textContent = list.length;
-    byId("abCol-"+status).innerHTML =
-      list.length
-        ? list.map(card).join("")
-        : `<div class="ab-empty">No tasks</div>`;
-  }
-
-  const activity = [...(AB.activity || [])].reverse().slice(0,40);
-  byId("abActivity").innerHTML =
-    activity.length
-      ? activity.map(a=>`<div class="ab-row">${esc(a.text)}</div>`).join("")
-      : `<div class="ab-empty">No activity yet</div>`;
-
-  const approvals = tasks.filter(t=>t.status==="approval");
-  byId("abApprovalQueue").innerHTML =
-    approvals.length
-      ? approvals.map(t=>`
-          <div class="ab-approval-row">
-            <div>
-              <div class="ab-card-title">${esc(t.title)}</div>
-              <div class="sub">${esc(sprintName(t.sprint_id))}</div>
-            </div>
-            <div class="actions">
-              <button class="action good" data-approve="${esc(t.id)}">?</button>
-              <button class="action danger" data-reject="${esc(t.id)}">?</button>
-            </div>
-          </div>
-        `).join("")
-      : `<div class="ab-empty">Nothing waiting for approval</div>`;
-
-  const ready = tasks.filter(t=>t.status==="ready").length;
-  const blocked = tasks.filter(t=>t.status==="blocked").length;
-  const planned = tasks.filter(t=>t.status==="planned").length;
-
-  byId("abScheduleReview").innerHTML =
-    `Ready now: <strong>${ready}</strong><br>` +
-    `Scheduled / planned: <strong>${planned}</strong><br>` +
-    `Waiting approval: <strong>${approvals.length}</strong><br>` +
-    `Blocked: <strong>${blocked}</strong>`;
-
-  bindDynamic();
-}
-
-function bindDynamic(){
-  document.querySelectorAll("[data-approve]").forEach(btn=>{
-    btn.onclick = async ()=>{
-      try{
-        await api(`tasks/${btn.dataset.approve}/approve`,"POST");
-        await refresh();
-      }catch(e){ showError(e); }
-    };
-  });
-
-  document.querySelectorAll("[data-reject]").forEach(btn=>{
-    btn.onclick = async ()=>{
-      try{
-        await api(`tasks/${btn.dataset.reject}/reject`,"POST");
-        await refresh();
-      }catch(e){ showError(e); }
-    };
-  });
-
-  document.querySelectorAll("[data-priority]").forEach(btn=>{
-    btn.onclick = async ()=>{
-      try{
-        await api(`tasks/${btn.dataset.priority}/schedule`,"POST",{
-          priority: Math.max(1, Math.min(100, Number(btn.dataset.value)))
-        });
-        await refresh();
-      }catch(e){ showError(e); }
-    };
-  });
-
-  document.querySelectorAll("[data-card-id]").forEach(cardEl=>{
-    cardEl.addEventListener("dragstart", e=>{
-      cardEl.classList.add("dragging");
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", cardEl.dataset.cardId);
-      e.dataTransfer.setData("application/x-agent-status", cardEl.dataset.cardStatus);
+  function resetStages(){
+    STAGE_ORDER.forEach(function(k){
+      var el = stageEls[k];
+      el.classList.remove("active", "done", "fail");
     });
+    state.stageIndex = -1;
+  }
 
-    cardEl.addEventListener("dragend", ()=>{
-      cardEl.classList.remove("dragging");
-      document.querySelectorAll(".ab-col").forEach(c=>c.classList.remove("drag-over"));
+  function setStage(key, mode){
+    var idx = STAGE_ORDER.indexOf(key);
+    if (idx >= 0 && idx > state.stageIndex) state.stageIndex = idx;
+    STAGE_ORDER.forEach(function(k, i){
+      var el = stageEls[k];
+      el.classList.remove("active");
+      if (mode === "fail" && k === key) { el.classList.add("fail"); return; }
+      if (state.stageIndex >= 0 && i <= state.stageIndex) el.classList.add(mode === "done" ? "done" : "active");
     });
-  });
-}
-
-document.querySelectorAll(".ab-col").forEach(col=>{
-  col.addEventListener("dragover", e=>{
-    e.preventDefault();
-    col.classList.add("drag-over");
-  });
-
-  col.addEventListener("dragleave", ()=>{
-    col.classList.remove("drag-over");
-  });
-
-  col.addEventListener("drop", async e=>{
-    e.preventDefault();
-    col.classList.remove("drag-over");
-
-    const id = e.dataTransfer.getData("text/plain");
-    const oldStatus = e.dataTransfer.getData("application/x-agent-status");
-    const newStatus = col.dataset.status;
-
-    if(!id || !newStatus || oldStatus === newStatus) return;
-
-    try{
-      await api(`tasks/${id}/move`,"POST",{status:newStatus});
-      await refresh();
-    }catch(err){
-      showError(err);
-    }
-  });
-});
-
-function showError(error){
-  console.error(error);
-  if(typeof toast === "function"){
-    toast("Agent Board", error.message || String(error));
-  }else{
-    alert(error.message || String(error));
-  }
-}
-
-async function refresh(){
-  const result = await api("state");
-  AB = result.data || {sprints:[],tasks:[],activity:[]};
-  render();
-}
-
-
-let GENERATED_PLAN = null;
-
-function renderPlanPreview(plan){
-  const box = byId("abPlanPreview");
-  const tasks = plan.tasks || [];
-
-  box.style.display = "block";
-
-  box.innerHTML = `
-    <div class="ab-card" style="margin-bottom:10px">
-      <div class="ab-card-title">${esc(plan.title)}</div>
-      <div class="sub">${esc(plan.description || "")}</div>
-      <div class="ab-meta" style="margin-top:8px">
-        <span class="ab-chip">${tasks.length} tasks</span>
-        <span class="ab-chip">
-          ${tasks.reduce((n,t)=>n+Number(t.estimate_minutes||0),0)} min
-        </span>
-        <span class="ab-chip">
-          ${tasks.filter(t=>t.requires_approval).length} approvals
-        </span>
-      </div>
-    </div>
-
-    ${tasks.map((t,i)=>`
-      <div class="ab-card" style="margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;gap:10px">
-          <div class="ab-card-title">
-            ${esc(t.key)} ? ${esc(t.title)}
-          </div>
-          <div class="ab-meta">
-            <span class="ab-chip">P${Number(t.priority||0)}</span>
-            <span class="ab-chip">${Number(t.estimate_minutes||0)}m</span>
-          </div>
-        </div>
-
-        <div class="ab-card-desc">${esc(t.description || "")}</div>
-
-        <div class="ab-meta" style="margin-top:8px">
-          ${t.depends_on?.length
-            ? `<span class="ab-chip">After ${esc(t.depends_on.join(", "))}</span>`
-            : `<span class="ab-chip">No dependency</span>`}
-
-          ${t.requires_approval
-            ? `<span class="ab-chip ab-approval">Needs Approval</span>`
-            : ""}
-
-          ${t.scheduled_at
-            ? `<span class="ab-chip">${esc(t.scheduled_at)}</span>`
-            : ""}
-        </div>
-      </div>
-    `).join("")}
-  `;
-}
-
-
-byId("abGeneratePlan").onclick = async ()=>{
-  const title = byId("abPlanTitle").value.trim();
-  const description = byId("abPlanDescription").value.trim();
-
-  if(!title){
-    showError(new Error("Plan title is required"));
-    return;
   }
 
-  byId("abGeneratePlan").disabled = true;
-  byId("abCommitPlan").disabled = true;
-  byId("abPlanStatus").textContent =
-    "AI Project Manager is decomposing the plan...";
-
-  try{
-    const result = await api("plan/preview","POST",{
-      title,
-      description,
-      start_at: byId("abPlanStart").value || null,
-      end_at: byId("abPlanEnd").value || null
-    });
-
-    GENERATED_PLAN = result.plan;
-
-    renderPlanPreview(GENERATED_PLAN);
-
-    byId("abPlanStatus").textContent =
-      `Plan ready ? ${GENERATED_PLAN.tasks.length} executable tasks`;
-
-    byId("abCommitPlan").disabled = false;
-
-  }catch(e){
-    GENERATED_PLAN = null;
-    showError(e);
-    byId("abPlanStatus").textContent =
-      "Plan generation failed.";
-  }finally{
-    byId("abGeneratePlan").disabled = false;
-  }
-};
-
-
-byId("abCommitPlan").onclick = async ()=>{
-  if(!GENERATED_PLAN) return;
-
-  byId("abCommitPlan").disabled = true;
-  byId("abPlanStatus").textContent =
-    "Creating Sprint and task graph...";
-
-  try{
-    const result = await api("plan/commit","POST",{
-      plan: GENERATED_PLAN,
-      start_queue: true
-    });
-
-    byId("abPlanStatus").textContent =
-      `Sprint created ? ${result.tasks.length} tasks ? Queue started`;
-
-    GENERATED_PLAN = null;
-
-    await refresh();
-
-  }catch(e){
-    showError(e);
-    byId("abCommitPlan").disabled = false;
-  }
-};
-
-
-byId("abClearPlan").onclick = ()=>{
-  GENERATED_PLAN = null;
-
-  byId("abPlanTitle").value = "";
-  byId("abPlanDescription").value = "";
-  byId("abPlanStart").value = "";
-  byId("abPlanEnd").value = "";
-
-  byId("abPlanPreview").style.display = "none";
-  byId("abPlanPreview").innerHTML = "";
-  byId("abPlanStatus").textContent = "No generated plan yet.";
-  byId("abCommitPlan").disabled = true;
-};
-
-
-
-byId("abRefresh").onclick = ()=>refresh().catch(showError);
-
-
-
-byId("abSelfTest").onclick = async ()=>{
-  const panel = byId("abSelfTestPanel");
-  panel.style.display = "block";
-  panel.open = true;
-
-  byId("abSelfTestStatus").textContent = "RUNNING";
-  byId("abSelfTestDetail").textContent =
-    "Agent is testing Sprint, Approval, Queue and real execution...";
-
-  try{
-    const r = await fetch("/api/workboard/selftest/start", {
-      method:"POST"
-    });
-
-    if(!r.ok) throw new Error("Could not start self-test");
-
-  }catch(e){
-    showError(e);
-  }
-};
-
-async function refreshSelfTest(){
-  try{
-    const r = await fetch("/api/workboard/selftest/status");
-    if(!r.ok) return;
-
-    const j = await r.json();
-    const st = j.state || {};
-
-    const panel = byId("abSelfTestPanel");
-    if(!panel) return;
-
-    // Diagnostics stay out of the product workflow unless they are
-    // currently running or the user explicitly opened them.
-    if(st.running){
-      panel.style.display = "block";
-      panel.open = true;
-    }
-
-    const status = byId("abSelfTestStatus");
-    const detail = byId("abSelfTestDetail");
-
-    status.textContent =
-      st.status === "pass" ? "PASS" :
-      st.status === "fail" ? "FAIL" :
-      st.running ? "RUNNING" :
-      "IDLE";
-
-    const rows = (st.results || []).map(x =>
-      `${x.ok ? "?" : "?"} ${x.name}: ${
-        typeof x.detail === "string"
-          ? x.detail
-          : JSON.stringify(x.detail)
-      }`
-    );
-
-    if(st.current_test){
-      rows.unshift("Running: " + st.current_test);
-    }
-
-    if(st.error){
-      rows.push("ERROR: " + st.error);
-    }
-
-    detail.innerHTML = rows.map(esc).join("<br>");
-
-  }catch(e){}
-}
-
-setInterval(refreshSelfTest, 2000);
-refreshSelfTest();
-
-byId("abRunnerStart").onclick = async ()=>{
-  try{
-    await fetch("/api/workboard/runner/start", {
-      method:"POST"
-    });
-
-    await refresh();
-  }catch(e){
-    showError(e);
-  }
-};
-
-byId("abRunnerStop").onclick = async ()=>{
-  try{
-    await fetch("/api/workboard/runner/stop", {
-      method:"POST"
-    });
-  }catch(e){
-    showError(e);
-  }
-};
-
-async function refreshRunner(){
-  try{
-    const r = await fetch("/api/workboard/runner/status");
-    const j = await r.json();
-
-    const state = byId("abRunnerState");
-
-    if(state){
-      state.textContent = j.running
-        ? "Queue Running"
-        : "Queue Idle";
-    }
-  }catch(e){}
-}
-
-setInterval(refreshRunner,3000);
-refreshRunner();
-
-byId("abScheduler").onclick = async ()=>{
-  try{
-    const result = await api("tick","POST");
-    AB = result.data;
-    render();
-  }catch(e){ showError(e); }
-};
-
-byId("abCreateSprint").onclick = async ()=>{
-  const title = byId("abSprintTitle").value.trim();
-  if(!title){
-    return showError(new Error("Sprint title is required"));
-  }
-
-  try{
-    await api("sprints","POST",{
-      title,
-      start_at: byId("abSprintStart").value || null,
-      end_at: byId("abSprintEnd").value || null
-    });
-
-    byId("abSprintTitle").value = "";
-    await refresh();
-  }catch(e){ showError(e); }
-};
-
-byId("abCreateTask").onclick = async ()=>{
-  const sprintId = byId("abTaskSprint").value;
-  const title = byId("abTaskTitle").value.trim();
-
-  if(!sprintId){
-    return showError(new Error("Create or select a Sprint first"));
-  }
-
-  if(!title){
-    return showError(new Error("Task title is required"));
-  }
-
-  try{
-    await api("tasks","POST",{
-      sprint_id: sprintId,
-      title,
-      priority: Number(byId("abTaskPriority").value || 50),
-      requires_approval: byId("abTaskApproval").checked,
-      scheduled_at: byId("abTaskSchedule").value || null,
-      estimate_minutes: Number(byId("abTaskEstimate").value || 0) || null
-    });
-
-    byId("abTaskTitle").value = "";
-    await refresh();
-  }catch(e){ showError(e); }
-};
-
-setInterval(()=>{
-  const view = byId("view-workboard");
-  if(view && view.classList.contains("active")){
-    api("tick","POST")
-      .then(r=>{
-        AB = r.data;
-        render();
-      })
-      .catch(console.error);
-  }
-},15000);
-
-refresh().catch(showError);
-
-})();
-</script>
-
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  try {
-    if (typeof CONFIG !== "undefined") {
-      CONFIG.provider = "Ollama";
-      CONFIG.model = "unreal-coder:latest";
-    }
-
-    const model = document.getElementById("modelSelect");
-    if (model) {
-      const exists = [...model.options].some(
-        o => o.value === "unreal-coder:latest" ||
-             o.textContent === "unreal-coder:latest"
-      );
-
-      if (!exists) {
-        const opt = document.createElement("option");
-        opt.value = "unreal-coder:latest";
-        opt.textContent = "unreal-coder:latest";
-        model.appendChild(opt);
+  function mapEvent(e){
+    var t = String(e.type || e.event || "").toLowerCase();
+    var st = String(e.status || "").toLowerCase();
+    var title = String(e.title || "").toLowerCase();
+    var tool = toolName(e);
+    for (var i = 0; i < STAGES.length; i++){
+      var s = STAGES[i];
+      for (var j = 0; j < s.keys.length; j++){
+        if (t.indexOf(s.keys[j]) !== -1) return s.key;
       }
-
-      model.value = "unreal-coder:latest";
     }
-
-    const topModel = document.querySelector(
-      ".topactions select:last-of-type"
-    );
-
-    if (topModel && [...topModel.options].some(
-      o => o.value === "unreal-coder:latest" ||
-           o.textContent === "unreal-coder:latest"
-    )) {
-      topModel.value = "unreal-coder:latest";
-    }
-
-    const providerSummary =
-      document.getElementById("providerSummary");
-
-    if (providerSummary) {
-      providerSummary.textContent =
-        "Ollama ? unreal-coder:latest";
-    }
-  } catch (e) {
-    console.warn("Default model UI init failed", e);
-  }
-});
-</script>
-
-
-<script>
-(function () {
-  const UNREAL_CODER = "unreal-coder:latest";
-
-  function installAgentStatus() {
-    const board = document.getElementById("view-workboard");
-    if (!board) return;
-
-    if (!document.getElementById("aiWorkStatus")) {
-      const bar = document.createElement("div");
-      bar.id = "aiWorkStatus";
-      bar.innerHTML = `
-        <span id="aiWorkDot">?</span>
-        <strong id="aiWorkState">IDLE</strong>
-        <span id="aiWorkMessage">Ready for a plan</span>
-        <span id="aiWorkProgress"></span>
-      `;
-
-      Object.assign(bar.style, {
-        position: "sticky",
-        top: "0",
-        zIndex: "999",
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        padding: "13px 16px",
-        marginBottom: "12px",
-        border: "1px solid #30405a",
-        borderRadius: "12px",
-        background: "#0b111bf5",
-        color: "#eef4ff",
-        fontSize: "12px",
-        fontWeight: "600"
-      });
-
-      const shell = board.querySelector(".workboard-shell") || board;
-      shell.insertBefore(bar, shell.firstChild);
-    }
+    // fallbacks based on tool name / title
+    if (tool && (tool.indexOf("spawn") !== -1 || tool.indexOf("create") !== -1 || tool.indexOf("set_") !== -1)) return "edit";
+    if (tool && tool.indexOf("save") !== -1) return "build";
+    if (tool && (tool.indexOf("get_actor") !== -1 || tool.indexOf("verify") !== -1 || tool.indexOf("list_") !== -1 || tool.indexOf("inspect") !== -1)) return "validate";
+    if (tool && tool.indexOf("capture") !== -1) return "validate";
+    if (title.indexOf("compile") !== -1 || title.indexOf("build") !== -1) return "build";
+    return null;
   }
 
-  async function updateAgentStatus() {
-    installAgentStatus();
-
-    const box = document.getElementById("aiWorkStatus");
-    if (!box) return;
-
-    try {
-      const tick = await fetch(
-        "/api/workboard/autopilot/tick",
-        {
-          method: "POST",
-          cache: "no-store"
-        }
-      ).then(r => r.json());
-
-      if(!tick.ok){
-        const box = document.getElementById("aiWorkStatus");
-        const state = document.getElementById("aiWorkState");
-        const msg = document.getElementById("aiWorkMessage");
-
-        if(box && state && msg){
-          state.textContent = "AUTOPILOT ERROR";
-          state.style.color = "#ff7180";
-          msg.textContent = tick.error || "Autopilot failed";
-        }
-
-        return;
-      }
-
-      const [stateRes, runner] = await Promise.all([
-        fetch("/api/workboard/state", {cache:"no-store"}).then(r => r.json()),
-        fetch("/api/workboard/runner/status", {cache:"no-store"}).then(r => r.json())
-      ]);
-
-      const data = stateRes.data || stateRes || {};
-      const tasks = data.tasks || [];
-
-      const n = status => tasks.filter(t => t.status === status).length;
-
-      const finished = n("finished");
-      const approval = n("approval");
-      const progress = n("progress");
-      const testing = n("testing");
-      const ready = n("ready");
-      const planned = n("planned");
-      const blocked = n("blocked");
-
-      const total =
-        finished + approval + progress +
-        testing + ready + planned + blocked;
-
-      let state = "IDLE";
-      let message = "Ready for a plan";
-      let color = "#8995a8";
-
-      if (approval) {
-        state = "WAITING FOR YOU";
-        message = `${approval} sensitive action needs approval`;
-        color = "#ffc56e";
-
-      } else if (runner.running || progress || testing) {
-        state = "WORKING";
-        color = "#72e6ff";
-
-        const current = tasks.find(
-          t => t.id === runner.current_task_id
-        );
-
-        message = current
-          ? `${current.title} ? ${current.status}`
-          : testing
-            ? "Validating completed work?"
-            : "Agent team is executing the Sprint?";
-
-      } else if (ready || planned) {
-        state = "AUTOPILOT";
-        message = tick.started
-          ? "Starting next task now?"
-          : "Preparing next executable task?";
-        color = "#72e6ff";
-
-      } else if (total && finished + blocked === total) {
-        if (blocked) {
-          state = "NEEDS ATTENTION";
-          message = `${blocked} task(s) blocked`;
-          color = "#ff7180";
-        } else {
-          state = "DONE";
-          message = "Sprint completed and validated";
-          color = "#56e39d";
-        }
-      }
-
-      document.getElementById("aiWorkDot").style.color = color;
-      document.getElementById("aiWorkState").style.color = color;
-      document.getElementById("aiWorkState").textContent = state;
-      document.getElementById("aiWorkMessage").textContent = message;
-
-      const prog = document.getElementById("aiWorkProgress");
-      prog.textContent = total ? `${finished}/${total} finished` : "";
-      prog.style.marginLeft = "auto";
-      prog.style.color = "#8995a8";
-
-    } catch (_) {}
+  function toolName(e){
+    if (e.step && e.step.tool_name) return String(e.step.tool_name);
+    if (e.tool_name) return String(e.tool_name);
+    var t = String(e.title || "");
+    var m = t.match(/^(?:Running|finished|failed)\s+([a-z0-9_]+)/i);
+    if (m) return m[1];
+    return null;
   }
 
-  function forceUnrealCoder() {
-    document.querySelectorAll("select").forEach(sel => {
-      const options = [...sel.options];
+  function logLine(text, cls){
+    var d = document.createElement("div");
+    if (cls) d.className = cls;
+    d.textContent = text;
+    logsEl.appendChild(d);
+    while (logsEl.children.length > 400) logsEl.removeChild(logsEl.firstChild);
+    logsEl.scrollTop = logsEl.scrollHeight;
+  }
 
-      const target = options.find(o =>
-        o.value === UNREAL_CODER ||
-        o.textContent.includes(UNREAL_CODER)
-      );
+  function showLog(){
+    logCard.classList.remove("hidden");
+    if (logsEl.children.length) logsEl.scrollTop = logsEl.scrollHeight;
+  }
 
-      if (target) {
-        sel.value = target.value;
-        sel.dispatchEvent(new Event("change", {bubbles:true}));
-      }
-    });
+  function setProgress(pct){ progressFill.style.width = Math.max(0, Math.min(100, pct)) + "%"; }
 
-    document.querySelectorAll("*").forEach(el => {
-      if (
-        el.children.length === 0 &&
-        el.textContent.trim() === "Ollama ? qwen3:8b"
-      ) {
-        el.textContent = "Ollama ? unreal-coder:latest";
-      }
+  function stageProgress(stageIdx){
+    return Math.round(((stageIdx + 1) / STAGE_ORDER.length) * 100);
+  }
+
+  function showResult(ok, title, detail){
+    resultEl.classList.remove("hidden");
+    resultEl.className = "result " + (ok ? "ok" : "err");
+    resultEl.innerHTML = '<span class="tag">' + title + '</span>' + (detail ? "<br>" + esc(detail) : "");
+    resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    installAgentStatus();
-    forceUnrealCoder();
-    updateAgentStatus();
-
-    setInterval(updateAgentStatus, 2000);
-    setInterval(forceUnrealCoder, 5000);
-  });
-})();
-</script>
-
-
-<script>
-/* UNREAL_AGENT_AUTO_RECONNECT_V1 */
-(() => {
-  let backendOnline = true;
-  let failures = 0;
-  let recovering = false;
-
-  function statusBar(state, message, color) {
-    const st = document.getElementById("aiWorkState");
-    const msg = document.getElementById("aiWorkMessage");
-    const dot = document.getElementById("aiWorkDot");
-
-    if (st) {
-      st.textContent = state;
-      st.style.color = color;
-    }
-    if (msg) msg.textContent = message;
-    if (dot) dot.style.color = color;
+  function taskDone(ok, title, detail, extra){
+    state.running = false;
+    state.final = { ok: ok, title: title, detail: detail };
+    setStage("complete", ok ? "done" : "fail");
+    if (state.taskId) taskMeta.textContent = "Task " + state.taskId + " · " + (ok ? "completed" : "failed");
+    setProgress(100);
+    sendBtn.textContent = "Run";
+    sendBtn.classList.remove("running");
+    sendBtn.disabled = false;
+    taskInput.disabled = false;
+    showResult(ok, title, detail);
+    retryBtn.classList.toggle("hidden", ok);
+    newTaskBtn.classList.toggle("hidden", false);
+    setStatus(ok
+      ? "Done. The task completed successfully — proof below."
+      : "Task failed. Review the error above, then retry or start a new task.");
+    if (extra && extra.proofUrl) showProof(extra.proofUrl, extra.proofNote);
+    else if (ok) loadProof();
   }
 
-  async function health(timeout = 2500) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
-
-    try {
-      const r = await fetch("/api/status", {
-        cache: "no-store",
-        signal: controller.signal
-      });
-      return r.ok;
-    } catch (_) {
-      return false;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
-  async function recoverUI() {
-    if (recovering) return;
-    recovering = true;
-
-    try {
-      statusBar(
-        "RECONNECTED",
-        "Backend restored - resuming autonomous queue",
-        "#56e39d"
-      );
-
-      // Make scheduler normalize dependencies/statuses.
-      try {
-        await fetch("/api/workboard/tick", {
-          method: "POST",
-          cache: "no-store"
-        });
-      } catch (_) {}
-
-      // Kick autonomous recovery / runner.
-      try {
-        await fetch("/api/workboard/autopilot/tick", {
-          method: "POST",
-          cache: "no-store"
-        });
-      } catch (_) {}
-
-      try {
-        await fetch("/api/workboard/runner/start", {
-          method: "POST",
-          cache: "no-store"
-        });
-      } catch (_) {}
-
-      // Refresh existing UI functions without reloading the page.
-      try {
-        if (typeof refresh === "function") await refresh();
-      } catch (_) {}
-
-      try {
-        if (typeof refreshRunner === "function") await refreshRunner();
-      } catch (_) {}
-
-      try {
-        if (typeof updateAgentStatus === "function") {
-          await updateAgentStatus();
-        }
-      } catch (_) {}
-
-    } finally {
-      setTimeout(() => {
-        recovering = false;
-      }, 1500);
-    }
-  }
-
-  async function connectionLoop() {
-    const ok = await health();
-
-    if (!ok) {
-      failures += 1;
-
-      if (failures >= 2) {
-        backendOnline = false;
-
-        statusBar(
-          "RECONNECTING",
-          "Backend unavailable - retrying automatically...",
-          "#ffc56e"
-        );
+  function loadProof(){
+    api("/api/proof/status").then(function(r){ return r.json(); }).then(function(p){
+      if (p && p.ok && p.url){
+        showProof(API + p.url, "Screenshot captured from the Unreal Editor viewport" + (p.size ? " (" + Math.round(p.size / 1024) + " KB)" : ""));
       }
+    }).catch(function(){});
+  }
 
+  function showProof(url, note){
+    proofCard.classList.remove("hidden");
+    proofArea.innerHTML = "";
+    var img = document.createElement("img");
+    img.src = url;
+    img.alt = "Task proof screenshot";
+    img.onerror = function(){ proofArea.innerHTML = '<div class="meta">Proof image failed to load: ' + esc(url) + "</div>"; };
+    proofArea.appendChild(img);
+    if (note) { var m = document.createElement("div"); m.className = "meta"; m.textContent = note; proofArea.appendChild(m); }
+    state.proofShown = true;
+    proofCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function handleEvent(e){
+    if (e.task_id) state.taskId = e.task_id;
+    var ev = String(e.event || e.type || "");
+    var st = mapEvent(e);
+    if (st) setStage(st, "active");
+
+    var tool = toolName(e);
+    var isToolStart = ev === "tool" && e.status === "running";
+    var isToolResult = ev === "tool_result";
+    var detailStr = e.detail;
+    if (detailStr && typeof detailStr !== "string"){
+      try { detailStr = JSON.stringify(detailStr); if (detailStr.length > 260) detailStr = detailStr.slice(0, 260) + "&hellip;"; } catch(err){ detailStr = String(detailStr); }
+    }
+
+    if (isToolStart){
+      var tname = tool || "tool";
+      logLine("[" + ev + "] " + tname + " " + (detailStr || ""), null);
+    } else if (isToolResult){
+      var okRes = (e.status === "success");
+      logLine("[" + ev + "] " + (tool || "tool") + (okRes ? " ok" : " FAILED") + " " + (detailStr || ""), okRes ? "ok" : "err");
+    } else if (ev && ev !== "ping"){
+      logLine("[" + ev + "] " + (e.message || (typeof e.detail === "string" ? e.detail : e.title) || JSON.stringify(e).slice(0, 220)), null);
+    }
+
+    var taskFailed = (ev === "error" || (e.status === "failed") || (e.status === "error"));
+
+    if (ev === "planning"){
+      var goal = "";
+      if (e.detail && typeof e.detail === "object" && e.detail.goal) goal = e.detail.goal;
+      else if (e.title) goal = e.title;
+      setStatus("Planning&hellip; " + (goal ? esc(String(goal).slice(0, 140)) : ""));
+      if (e.detail && e.detail.steps && e.detail.steps.length){
+        logLine("[plan] " + e.detail.steps.length + " steps: " + e.detail.steps.map(function(s){ return s.preferred_tool || s.intent; }).join(" \u2192 "), "ok");
+      }
+    }
+    else if (ev === "user"){ setStatus("Task submitted &mdash; understanding your request&hellip;"); }
+    else if (isToolStart){
+      var tn = tool || "";
+      var pretty = tn.replace(/_/g, " ");
+      setStatus("Executing <b>" + esc(pretty) + "</b>&hellip;");
+      if (state.stageIndex >= 0) setProgress(stageProgress(state.stageIndex));
+    }
+    else if (isToolResult){
+      if (e.status === "error" || (e.detail && e.detail.ok === false)){
+        setStatus("<b>" + esc((tool || "").replace(/_/g, " ")) + "</b> failed &mdash; fixing&hellip;");
+        setStage("fix", "active");
+        var errDetail = (e.detail && e.detail.error) || (e.detail && e.detail.result && e.detail.result.error) || (typeof e.detail === "string" ? e.detail : e.title);
+        state.lastError = errDetail;
+      } else if (tool && tool.indexOf("save") !== -1){
+        setStatus("Level saved by the agent.");
+      } else if (tool && (tool.indexOf("get_actor") !== -1 || tool.indexOf("verify") !== -1)){
+        setStatus("Verified: actor exists and persisted.");
+      } else if (tool && tool.indexOf("capture") !== -1){
+        setStatus("Proof screenshot captured.");
+      } else {
+        setStatus("Step <b>" + esc((tool || "").replace(/_/g, " ")) + "</b> completed.");
+      }
+    }
+    else if (ev === "final" || ev === "complete"){
+      var ok = !(e.status === "failed" || e.status === "error" || e.ok === false);
+      var title = ok ? "Task complete" : "Task failed";
+      var detail = (typeof e.detail === "string" && e.detail !== "Execution complete.") ? e.detail : (e.message || e.result_summary || "");
+      if (e.detail && typeof e.detail === "object" && e.detail.summary) detail = e.detail.summary;
+      taskDone(ok, title, detail);
       return;
     }
 
-    failures = 0;
-
-    if (!backendOnline) {
-      backendOnline = true;
-      await recoverUI();
-    }
-  }
-
-  // Keep Workboard visibly fresh even without F5.
-  async function boardLoop() {
-    if (!backendOnline) return;
-
-    try {
-      const r = await fetch("/api/workboard/state", {
-        cache: "no-store"
-      });
-
-      if (!r.ok) return;
-
-      const j = await r.json();
-
-      if (
-        typeof AB !== "undefined" &&
-        j &&
-        j.data
-      ) {
-        AB = j.data;
-
-        if (typeof render === "function") {
-          render();
-        }
+    if (taskFailed && ev !== "final"){
+      var msg = (typeof e.detail === "string" ? e.detail : e.message) || e.title || "Unknown error";
+      if (ev === "error" && /EXECUTION_STALLED|terminated/i.test(msg)){
+        logLine("FATAL: " + msg, "err");
+        taskDone(false, "Task failed", "The agent execution stalled. This usually means the plan could not be executed to completion. Try rephrasing the task.");
+        return;
       }
-    } catch (_) {}
+      if (!state.final){
+        logLine("ERROR: " + msg, "err");
+      }
+    }
+    if (state.running && state.stageIndex >= 0) setProgress(stageProgress(state.stageIndex));
   }
 
-  window.addEventListener("online", () => {
-    failures = 0;
-    connectionLoop();
+  function streamTask(taskId){
+    if (state.es) state.es.close();
+    state.es = null;
+    if (!window.EventSource){
+      logLine("EventSource not supported — falling back to status polling.", "warn");
+      pollStatus(taskId);
+      return;
+    }
+    var es = new EventSource(API + "/api/events/stream/" + encodeURIComponent(taskId));
+    state.es = es;
+    es.onopen = function(){ logLine("Connected to live event stream.", "ok"); showLog(); };
+    es.onmessage = function(msg){
+      var e; try { e = JSON.parse(msg.data); } catch (err){ logLine("Bad event payload: " + msg.data, "warn"); return; }
+      if (e && e.type === "ping") return;
+      handleEvent(e || {});
+    };
+    es.onerror = function(){
+      // stream closed (normal on completion) or dropped; fall back to status poll
+      es.close(); state.es = null;
+      if (state.running) pollStatus(taskId);
+    };
+  }
+
+  function pollStatus(taskId){
+    api("/api/status?task_id=" + encodeURIComponent(taskId)).then(function(r){ return r.json(); }).then(function(s){
+      if (!state.running) return;
+      if (s && (s.status === "completed" || s.status === "success")){ handleEvent({ event: "final", ok: true, result_summary: s.result_summary || s.message || "Completed" }); }
+      else if (s && (s.status === "failed" || s.status === "error" || s.status === "cancelled")){ handleEvent({ event: "final", ok: false, result_summary: s.message || s.error || s.result_summary || "Failed" }); }
+      else { setTimeout(function(){ pollStatus(taskId); }, 1500); }
+    }).catch(function(){ setTimeout(function(){ pollStatus(taskId); }, 2000); });
+  }
+
+  function submitTask(){
+    var text = taskInput.value.trim();
+    if (!text){ taskInput.focus(); return; }
+    state.final = null; state.lastError = null; state.proofShown = false;
+    resetStages();
+    resultEl.classList.add("hidden");
+    retryBtn.classList.add("hidden"); newTaskBtn.classList.add("hidden");
+    proofCard.classList.add("hidden"); proofArea.innerHTML = "";
+    logsEl.innerHTML = "";
+    taskCard.classList.remove("hidden");
+    logCard.classList.remove("hidden");
+    sendBtn.disabled = true; sendBtn.textContent = "Running&hellip;"; sendBtn.classList.add("running");
+    taskInput.disabled = true;
+    setProgress(4);
+    setStatus("Submitting task&hellip;");
+    taskMeta.textContent = "";
+    state.running = true;
+
+    api("/api/action", { method: "POST", body: { action: "prompt", payload: { message: text } } })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, json: j }; }); })
+      .then(function(res){
+        if (!res.ok){
+          state.running = false;
+          sendBtn.disabled = false; sendBtn.textContent = "Run"; sendBtn.classList.remove("running");
+          taskInput.disabled = false;
+          var msg = res.json.detail || res.json.error || ("HTTP " + res.status);
+          showResult(false, "Submission failed", msg);
+          retryBtn.classList.remove("hidden");
+          newTaskBtn.classList.remove("hidden");
+          setStatus("Could not start the task. Check the backend and Unreal Editor.");
+          logLine("Submission failed: " + msg, "err");
+          return;
+        }
+        var taskId = res.json.task_id || res.json.id;
+        if (!taskId){ throw new Error("No task_id in response: " + JSON.stringify(res.json)); }
+        state.taskId = taskId;
+        taskMeta.textContent = "Task " + taskId + " · running";
+        logLine("Task started: " + taskId + " → " + text, "ok");
+        setStatus("Task started &mdash; waiting for the agent&hellip;");
+        streamTask(taskId);
+      })
+      .catch(function(err){
+        state.running = false;
+        sendBtn.disabled = false; sendBtn.textContent = "Run"; sendBtn.classList.remove("running");
+        taskInput.disabled = false;
+        showResult(false, "Submission failed", String(err.message || err));
+        retryBtn.classList.remove("hidden");
+        newTaskBtn.classList.remove("hidden");
+        setStatus("Could not reach the backend at " + API + ".");
+        logLine("Network error: " + err.message, "err");
+      });
+  }
+
+  function newTask(){
+    state.running = false;
+    if (state.es){ state.es.close(); state.es = null; }
+    state.taskId = null; state.final = null;
+    taskInput.value = ""; taskInput.disabled = false;
+    taskInput.focus();
+    resetStages();
+    setProgress(0);
+    setStatus("");
+    taskMeta.textContent = "";
+    resultEl.classList.add("hidden");
+    retryBtn.classList.add("hidden"); newTaskBtn.classList.add("hidden");
+    proofCard.classList.add("hidden"); proofArea.innerHTML = "";
+    logCard.classList.add("hidden"); logsEl.innerHTML = "";
+    taskCard.classList.add("hidden");
+    sendBtn.disabled = false; sendBtn.textContent = "Run"; sendBtn.classList.remove("running");
+  }
+
+  function checkStatus(){
+    setStatus("Checking agent and editor status&hellip;");
+    api("/api/status").then(function(r){ return r.json(); }).then(function(s){
+      var lines = [];
+      lines.push("Backend: " + (s.backend || s.status || "ok"));
+      if (s.unreal) lines.push("Unreal: " + JSON.stringify(s.unreal));
+      if (s.bridge) lines.push("Bridge: " + JSON.stringify(s.bridge));
+      if (s.models && s.models.length) lines.push("Models: " + s.models.join(", "));
+      setStatus(lines.join(" &nbsp;·&nbsp; "));
+    }).catch(function(err){
+      setStatus("Cannot reach backend at " + API + " (" + err.message + ").");
+    });
+  }
+
+  sendBtn.addEventListener("click", submitTask);
+  retryBtn.addEventListener("click", function(){
+    if (state.lastError) logLine("Retrying after: " + state.lastError, "warn");
+    submitTask();
+  });
+  newTaskBtn.addEventListener("click", newTask);
+  $("statusBtn").addEventListener("click", checkStatus);
+  $("devBtn").addEventListener("click", function(){ window.open(API + "/static/devboard.html", "_blank"); });
+  taskInput.addEventListener("keydown", function(ev){
+    if (ev.key === "Enter" && !ev.shiftKey){ ev.preventDefault(); if (!sendBtn.disabled) submitTask(); }
   });
 
-  setInterval(connectionLoop, 2000);
-  setInterval(boardLoop, 3000);
-
-  connectionLoop();
+  checkStatus();
 })();
 </script>
-
-</body></html>
+</body>
+</html>

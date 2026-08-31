@@ -14,7 +14,9 @@ class BlueprintTools:
         asset_path: str,
         parent_class: str = "Actor",
     ) -> Dict[str, Any]:
+        package_path = asset_path.rsplit("/", 1)[0] if "/" in asset_path else "/Game"
         return self.bridge.execute_python(f'''
+import time
 parent_class = getattr(unreal, "{parent_class}", None)
 
 if parent_class is None:
@@ -23,10 +25,24 @@ if parent_class is None:
         "error": "Unknown Unreal parent class: {parent_class}"
     }}
 else:
-    bp = unreal.BlueprintEditorLibrary.create_blueprint_asset_with_parent(
-        "{asset_path}",
-        parent_class
-    )
+    unreal.EditorAssetLibrary.make_directory("{package_path}")
+    registry = unreal.AssetRegistryHelpers.get_asset_registry()
+    registry.scan_paths_synchronous(["{package_path}"], force_rescan=True)
+    bp = unreal.EditorAssetLibrary.load_asset("{asset_path}")
+    if bp is None:
+        bp = unreal.BlueprintEditorLibrary.create_blueprint_asset_with_parent(
+            "{asset_path}",
+            parent_class
+        )
+    if bp is None:
+        time.sleep(0.25)
+        registry.scan_paths_synchronous(["{package_path}"], force_rescan=True)
+        bp = unreal.EditorAssetLibrary.load_asset("{asset_path}")
+    if bp is None:
+        bp = unreal.BlueprintEditorLibrary.create_blueprint_asset_with_parent(
+            "{asset_path}",
+            parent_class
+        )
 
     __bridge_result__ = {{
         "ok": bp is not None,
@@ -124,6 +140,44 @@ else:
             "variable_name": "{variable_name}",
             "variable_type": "{variable_type}"
         }}
+''')
+
+    def set_blueprint_variable_default(
+        self,
+        asset_path: str,
+        variable_name: str,
+        value: str,
+    ) -> Dict[str, Any]:
+        return self.bridge.execute_python(f'''
+asset = unreal.EditorAssetLibrary.load_asset("{asset_path}")
+if asset is None:
+    __bridge_result__ = {{"ok": False, "error": "Blueprint asset not found: {asset_path}"}}
+else:
+    try:
+        unreal.BlueprintEditorLibrary.compile_blueprint(asset)
+        obj = unreal.get_default_object(asset.generated_class())
+        obj.set_editor_property("{variable_name}", "{value}")
+        unreal.EditorAssetLibrary.save_loaded_asset(asset, False)
+        __bridge_result__ = {{"ok": True, "asset_path": asset.get_path_name(), "variable_name": "{variable_name}", "value": "{value}"}}
+    except Exception as exc:
+        __bridge_result__ = {{"ok": False, "error": str(exc)}}
+''')
+
+    def get_blueprint_variable_default(
+        self,
+        asset_path: str,
+        variable_name: str,
+    ) -> Dict[str, Any]:
+        return self.bridge.execute_python(f'''
+asset = unreal.EditorAssetLibrary.load_asset("{asset_path}")
+if asset is None:
+    __bridge_result__ = {{"ok": False, "error": "Blueprint asset not found: {asset_path}"}}
+else:
+    obj = unreal.get_default_object(asset.generated_class())
+    try:
+        __bridge_result__ = {{"ok": True, "asset_path": asset.get_path_name(), "variable_name": "{variable_name}", "value": str(obj.get_editor_property("{variable_name}"))}}
+    except Exception as exc:
+        __bridge_result__ = {{"ok": False, "error": str(exc)}}
 ''')
 
     def add_blueprint_component(

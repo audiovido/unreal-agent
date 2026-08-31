@@ -4,31 +4,7 @@
     "content": "\nYou are UnrealAgent.\n\nYou are not merely a tool runner.\n\nYou are an adaptive senior Unreal Engine engineering agent,\ntechnical director, software engineer, game-development planner,\ndebugger and conversational assistant.\n\nYou understand both Persian and English.\n\nYou support three modes:\n\nCHAT\nNormal questions, explanations, brainstorming and consultation.\n\nPLAN\nArchitecture, game planning, production planning,\ntechnical roadmaps and implementation strategy.\n\nEXECUTE\nReal inspection, coding, Unreal Engine work and project modification.\n\nThe user should never need to manually select a mode.\nYou decide automatically.\n\nNever pretend that a real-world action occurred\nunless actual tool output proves it.\n"
   },
   {
-    "role": "user",
-    "content": "Ping test. Reply with exactly: CONNECTED"
-  },
-  {
     "role": "assistant",
-    "content": "CONNECTED"
-  },
-  {
-    "role": "user",
-    "content": "Ping test. Reply with exactly: CONNECTED"
-  },
-  {
-    "role": "assistant",
-    "content": "CONNECTED"
-  },
-  {
-    "role": "user",
-    "content": "READ ONLY.\n\nInspect the currently active Unreal project and report its real current state.\n\nRequired:\n1. Confirm Unreal connectivity.\n2. Confirm the active project.\n3. Confirm the current level.\n4. Inspect /Game/AVLC_Main.AVLC_Main.\n5. List the important actors, Blueprints, C++ systems, and relevant assets you can verify.\n6. Identify what is already working.\n7. Identify concrete broken, incomplete, or suspicious parts using actual tool evidence.\n8. Do not modify files, actors, Blueprints, levels, or settings.\n9. Do not invent tools, assets, functions, or project settings.\n10. Do not use visual_review_unreal.\n11. Stop after the factual inspection report.\n\nReturn:\n- Project status\n- Current level\n- Important systems found\n- Working systems\n- Problems / incomplete systems\n- Recommended next 3 tasks, prioritized"
-  },
-  {
-    "role": "user",
-    "content": "READ ONLY.\n\nThe Unreal project is ALREADY OPEN and active.\nDO NOT call open_project.\nDO NOT call discover_projects.\nDO NOT change project, level, files, actors, Blueprints, settings, or assets.\n\nUse ONLY these registered read-only tools where relevant:\n- unreal_ping\n- unreal_status\n- get_current_level\n- list_level_actors\n- get_actor\n- get_selected_actors\n- list_assets\n- get_asset_info\n- inspect_project\n- inspect_blueprint\n- read_text_file\n- is_level_dirty\n\nInspect the currently active project only.\n\nRequired:\n1. Confirm Unreal connectivity.\n2. Confirm the current active level.\n3. Inspect /Game/AVLC_Main.AVLC_Main using read-only inspection only.\n4. List important actors and relevant assets.\n5. Inspect relevant Blueprints and project information without opening another project.\n6. Identify systems that are working.\n7. Identify concrete incomplete or suspicious systems using actual tool evidence.\n8. Do not use visual_review_unreal.\n9. If a requested fact cannot be verified with the allowed tools, say so instead of calling another tool.\n10. If any tool call is blocked, DO NOT repeat the same tool call.\n\nReturn:\n- Project status\n- Current level\n- Important systems found\n- Working systems\n- Problems / incomplete systems\n- Recommended next 3 tasks"
-  },
-  {
-    "role": "assistant",
-    "content": "Project status: Confirmed valid Unreal connection.\nCurrent level: AVLC_Main.\nImportant systems found: DirectionalLight, SkyAtmosphere, SkyLight, ExponentialHeightFog, VolumetricCloud, PlayerStart, SM_SkySphere, Floor.\nWorking systems: Lighting, sky, player start, static mesh actors.\nProblems / incomplete systems: None identified with the available tools.\nRecommended next 3 tasks: Analyze actor component hierarchies, verify asset dependencies, and check for uncompiled Blueprints."
+    "content": "The project has been inspected, and the current state has been verified. No unnecessary actors or unused assets have been identified, and the level is not dirty."
   }
 ]

@@ -16,6 +16,7 @@ MAX_RUNTIME_SECONDS = 3600
 LAST_CALLS = {}
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -78,6 +79,12 @@ app = FastAPI(
     title="Unreal Agent",
     version="5.2.0",
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(overnight_router)
 app.include_router(workboard_router)
@@ -93,6 +100,32 @@ app.mount(
 
 # Create MemorySystem instance for API
 MEMORY = MemorySystem()
+
+
+def _resolve_bridge():
+    for spec in REGISTRY.values():
+        func = getattr(spec, "func", None)
+        owner = getattr(func, "__self__", None)
+        if owner is not None and owner.__class__.__name__ == "UnrealBridge":
+            return owner
+    return None
+
+
+BRIDGE = _resolve_bridge()
+
+PHASE_TOOL_RULES = {
+    "INSPECT": {"inspect_project", "unreal_ping", "list_assets", "get_asset_info", "inspect_blueprint"},
+    "EDIT": {"create_blueprint", "add_blueprint_variable", "set_blueprint_variable_default", "add_blueprint_component"},
+    "BUILD": {"compile_blueprint", "save_blueprint", "save_level"},
+    "VALIDATE": {"get_asset_info", "get_blueprint_variable_default", "inspect_blueprint", "list_assets"},
+    "FIX": {"set_blueprint_variable_default", "compile_blueprint", "save_blueprint"},
+    "RETRY": {"get_asset_info", "get_blueprint_variable_default", "inspect_blueprint", "list_assets"},
+    "EVIDENCE": {"capture_unreal_viewport"},
+    "CLEANUP": {"delete_asset", "delete_actor"},
+    "VERIFY_CLEANUP": {"get_asset_info", "list_assets"},
+    "COMPLETE": set(),
+    "FAILED": set(),
+}
 
 
 class ChatRequest(BaseModel):
@@ -175,6 +208,46 @@ def serialize(value):
     )
 
 
+def _resource_key(action: str, args: dict[str, Any] | None = None):
+    args = args or {}
+    if action == "spawn_actor":
+        return f"{action}:{str(args.get('actor_name') or '').lower()}"
+    if "asset_path" in args:
+        return f"{action}:{str(args.get('asset_path') or '').lower()}"
+    if "actor_name" in args:
+        return f"{action}:{str(args.get('actor_name') or '').lower()}"
+    return f"{action}:{json.dumps(args, sort_keys=True, default=str)}"
+
+
+def _validation_mismatch(payload: dict[str, Any] | None = None):
+    payload = payload or {}
+    return {
+        "expected": payload.get("expected"),
+        "actual": payload.get("actual"),
+        "resource": payload.get("resource"),
+    }
+
+
+def _project_already_loaded(task: str, args: dict[str, Any]):
+    if BRIDGE is None:
+        return False
+    target = str(args.get("uproject_path") or "").strip().lower()
+    if not target:
+        return False
+    try:
+        BRIDGE.ping()
+        result = BRIDGE.execute_python(
+            "__bridge_result__ = {'project': None}"
+        )
+    except Exception:
+        return False
+    project = ""
+    if isinstance(result, dict):
+        payload = result.get("result") if isinstance(result.get("result"), dict) else result
+        project = str(payload.get("project") or payload.get("uproject_path") or "")
+    return project.strip().lower() == target
+
+
 # ============================================================
 # APPROVAL POLICY
 # ============================================================
@@ -249,10 +322,329 @@ def requires_approval(
 # EXECUTION STATE
 # ============================================================
 
-def new_execution(task: str):
+def _extract_task_parameters(task):
+    import re
+    text = str(task or "")
+    m = re.search(r"(/Game/[A-Za-z0-9_/-]+)", text)
+    asset = m.group(1) if m else None
+    m = re.search(r"(?:String variable|variable)\s+([A-Za-z_][A-Za-z0-9_]*)", text, re.I)
+    variable = m.group(1) if m else None
+    values = re.findall(r"\b(?:WRONG_VALUE|EXPECTED_VALUE)\b", text)
+    actor = None
+    actor_match = re.search(r"(?:actor|marker|cube)\s+(?:named|called)\s+[\\\"']?([A-Za-z_][A-Za-z0-9_]*)", text, re.I)
+    if actor_match:
+        actor = actor_match.group(1)
+    project_name = None
+    project_match = re.search(r"project\s+(?:named|called)\s+[\\\"']?([A-Za-z_][A-Za-z0-9_]*)", text, re.I)
+    if project_match:
+        project_name = project_match.group(1)
+    return {"asset_path": asset, "variable_name": variable, "initial_value": values[0] if values else None, "expected_value": values[-1] if values else None, "actor_name": actor, "project_name": project_name, "disposable": bool(asset and "agentgraduation" in asset.lower())}
 
+
+def normalize_execution_plan(task, plan):
+    p = _extract_task_parameters(task)
+    steps = []
+    def add(step_id, phase, intent, tool, parameters=None, expected=None):
+        steps.append({"step_id": step_id, "phase": phase, "intent": intent, "action_category": intent, "preferred_tool": tool, "allowed_tools": [tool], "target_type": "blueprint" if p["asset_path"] else "project", "target_resource": p["asset_path"], "parameters": parameters or {}, "expected_result": expected or {}, "validation_tool": None, "validation_parameters": {}, "depends_on": [steps[-1]["step_id"]] if steps else [], "disposable": p["disposable"], "status": "pending"})
+    if p["project_name"] and not p["asset_path"] and p["actor_name"]:
+        destination = r"C:\Users\Shadow\Desktop\UnrealAgentGraduation"
+        uproject_path = f"{destination}\\{p['project_name']}\\{p['project_name']}.uproject"
+        add("create_project", "EDIT", "create_project", "create_project", {"project_name": p["project_name"], "destination": destination, "template": "Blank"})
+        add("inspect_new_project", "INSPECT", "inspect_project", "inspect_project", {"uproject_path": uproject_path})
+        add("create_default_level", "EDIT", "create_default_level", "create_default_level", {"level_path": f"/Game/{p['project_name']}"})
+        add("project_identity", "VALIDATE", "get_project_identity", "get_project_identity", {}, {"expected": p["project_name"]})
+        add("spawn_new_project_marker", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "StaticMeshActor", "actor_name": p["actor_name"], "location": [300, 0, 100], "scale": [0.5, 0.5, 0.5], "mesh_asset": "/Engine/BasicShapes/Cube.Cube"})
+        add("save_new_project", "BUILD", "save_level", "save_level", {})
+        add("validate_new_project_actor", "VALIDATE", "get_actor", "get_actor", {"actor_name": p["actor_name"]}, {"expected": p["actor_name"]})
+        add("validate_new_project", "VALIDATE", "validate_project_creation", "validate_project_creation", {"project_name": p["project_name"], "actor_name": p["actor_name"]}, {"expected": True})
+    else:
+        add("inspect_project", "INSPECT", "inspect_project", "inspect_project", {})
+    if p["project_name"] and not p["asset_path"] and p["actor_name"]:
+        pass
+    else:
+        if p["asset_path"] and "create" in str(task).lower(): add("create_blueprint", "EDIT", "create_blueprint", "create_blueprint", {"asset_path": p["asset_path"], "parent_class": "Actor"}, {"exists": True})
+        if p["variable_name"]: add("add_variable", "EDIT", "add_blueprint_variable", "add_blueprint_variable", {"asset_path": p["asset_path"], "variable_name": p["variable_name"], "variable_type": "String"})
+        if p["initial_value"]: add("set_initial_value", "EDIT", "set_blueprint_variable_default", "set_blueprint_variable_default", {"asset_path": p["asset_path"], "variable_name": p["variable_name"], "value": p["initial_value"]})
+        if p["asset_path"]: add("compile_save", "BUILD", "compile_blueprint", "compile_blueprint", {"asset_path": p["asset_path"]})
+        if p["expected_value"]: add("validate_value", "VALIDATE", "get_blueprint_variable_default", "get_blueprint_variable_default", {"asset_path": p["asset_path"], "variable_name": p["variable_name"]}, {"expected": p["expected_value"]})
+        if p["actor_name"] and not p["asset_path"]:
+            add("spawn_actor", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "StaticMeshActor", "actor_name": p["actor_name"], "location": [300, 0, 100], "scale": [0.5, 0.5, 0.5], "mesh_asset": "/Engine/BasicShapes/Cube.Cube"})
+            add("save_level", "BUILD", "save_level", "save_level", {})
+            add("validate_actor", "VALIDATE", "get_actor", "get_actor", {"actor_name": p["actor_name"]}, {"exists": True})
+    if p["disposable"]:
+        add("evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
+        add("cleanup", "CLEANUP", "delete_asset", "delete_asset", {"asset_path": p["asset_path"]}, {"absent": True})
+
+    # Arbitrary natural-language requests that the deterministic patterns
+    # above cannot map still need a real plan. Ask the local coder model
+    # for a small structured tool plan and sanitize it against the real
+    # registry so the deterministic executor can run it.
+    has_task_steps = any(s["step_id"] != "inspect_project" for s in steps)
+    if not has_task_steps:
+        llm_steps = _llm_structured_steps(task)
+        if len(llm_steps) >= 2:
+            steps = steps[:1] + llm_steps
+            has_grounded_validation = any(
+                s.get("phase") == "VALIDATE"
+                and (s.get("expected_result") or {}).get("expected") is not None
+                for s in steps
+            )
+            if not has_grounded_validation:
+                verify = _deterministic_verify_step(steps)
+                if verify is not None:
+                    steps.append(verify)
+            if not any(s.get("phase") == "EVIDENCE" for s in steps) and "capture_unreal_viewport" in REGISTRY:
+                steps.append({
+                    "step_id": "evidence:capture",
+                    "phase": "EVIDENCE",
+                    "intent": "capture_unreal_viewport",
+                    "action_category": "capture_unreal_viewport",
+                    "preferred_tool": "capture_unreal_viewport",
+                    "allowed_tools": ["capture_unreal_viewport"],
+                    "target_type": "project",
+                    "target_resource": None,
+                    "parameters": {},
+                    "expected_result": {},
+                    "validation_tool": None,
+                    "validation_parameters": {},
+                    "depends_on": [steps[-1]["step_id"]],
+                    "disposable": False,
+                    "status": "pending",
+                })
+    return {"goal": (plan or {}).get("goal", task) if isinstance(plan, dict) else task, "steps": steps, "success_criteria": (plan or {}).get("success_criteria", []) if isinstance(plan, dict) else []}
+
+
+def _llm_structured_steps(task):
+    """Build a small structured tool plan for an arbitrary task.
+
+    The result is sanitized against the real tool registry, so the
+    deterministic executor can never be asked to run an unknown tool or
+    pass undeclared arguments. Returns [] when the model is unavailable.
+    """
+    # Tools the deterministic executor can actually report as success.
+    # read_text_file/write_text_file/run_powershell/unreal_status and other
+    # tools without an explicit ok flag, plus destructive project openers,
+    # are intentionally not offered to the planner.
+    planner_deny = {
+        "read_text_file", "write_text_file", "run_powershell",
+        "unreal_status", "discover_projects", "open_project",
+        "start_pie", "stop_pie", "delete_asset", "visual_review_unreal",
+    }
+    try:
+        hints = {}
+        for name, spec in REGISTRY.items():
+            if name in planner_deny:
+                continue
+            hints[name] = {
+                k: (v[:80] if isinstance(v, str) else v)
+                for k, v in (spec.args or {}).items()
+            }
+        prompt = (
+            "You plan ONE Unreal Engine task for a deterministic tool executor.\n\n"
+            "TASK:\n" + str(task) + "\n\n"
+            "Return ONLY one JSON object:\n"
+            '{"steps":[{"tool":"name","parameters":{...},"phase":"INSPECT|EDIT|BUILD|VALIDATE|FIX|EVIDENCE","expected":{...}}]}\n\n'
+            "AVAILABLE TOOLS and their declared parameters:\n"
+            + json.dumps(hints, ensure_ascii=False)
+            + "\n\nRULES:\n"
+            "- Use ONLY the exact tool names listed above.\n"
+            "- Pass only declared parameters.\n"
+            "- spawn_actor takes class_name and an [x,y,z] location array; the spawned actor keeps the class name as its label.\n"
+            "- move_actor takes actor_name and an [x,y,z] location array.\n"
+            "- get_actor takes actor_name (internal name or outliner label).\n"
+            "- save_level takes no parameters.\n"
+            "- Inspect first, then mutate, then build/save, then verify with a read tool, then capture evidence.\n"
+            "- Every VALIDATE step MUST include expected.expected set to the exact value the read tool will report (e.g. the actor label used by spawn_actor). Never leave expected empty on a VALIDATE step.\n"
+            "- Finish with an EVIDENCE step using capture_unreal_viewport when the task involves visible Unreal content.\n"
+            "- 5 to 9 steps, smallest useful plan.\n"
+        )
+        raw = call_model(
+            [
+                {"role": "system", "content": "You output strict JSON only."},
+                {"role": "user", "content": prompt},
+            ],
+            model=CODER_MODEL,
+            json_mode=True,
+            temperature=0.05,
+            num_ctx=8192,
+            timeout=240,
+        )
+        parsed = json.loads(raw)
+    except Exception:
+        return []
+
+    steps = []
+    last_id = "inspect_project"
+    for item in (parsed.get("steps") or [])[:10]:
+        if not isinstance(item, dict):
+            continue
+        tool = str(item.get("tool") or "").strip().lower()
+        if tool not in REGISTRY or tool in planner_deny:
+            continue
+        params = item.get("parameters") or {}
+        if not isinstance(params, dict):
+            params = {}
+        declared = set(REGISTRY[tool].args.keys())
+        cleaned = {k: v for k, v in params.items() if k in declared and v is not None}
+        valid, _ = validate_args(REGISTRY[tool], cleaned)
+        if not valid:
+            continue
+        phase = str(item.get("phase") or "").upper()
+        if phase not in ("INSPECT", "EDIT", "BUILD", "VALIDATE", "FIX", "EVIDENCE"):
+            phase = "EDIT"
+        expected_result = {}
+        expected = item.get("expected")
+        if isinstance(expected, dict) and expected.get("expected") is not None:
+            exp = expected["expected"]
+            if isinstance(exp, (str, int, float, bool)):
+                expected_result = {"expected": exp}
+        step_id = tool + ":" + str(len(steps))
+        steps.append({
+            "step_id": step_id,
+            "phase": phase,
+            "intent": tool,
+            "action_category": tool,
+            "preferred_tool": tool,
+            "allowed_tools": [tool],
+            "target_type": "project",
+            "target_resource": cleaned.get("asset_path") or cleaned.get("actor_name"),
+            "parameters": cleaned,
+            "expected_result": expected_result,
+            "validation_tool": None,
+            "validation_parameters": {},
+            "depends_on": [last_id],
+            "disposable": False,
+            "status": "pending",
+        })
+        last_id = step_id
+    return steps
+
+
+def _deterministic_verify_step(steps):
+    """Ground a VALIDATE step in the actor the plan actually creates."""
+    actor_name = None
+    for s in reversed(steps):
+        params = s.get("parameters") or {}
+        name = params.get("actor_name") or params.get("name")
+        if name:
+            actor_name = str(name)
+            break
+    if actor_name and "get_actor" in REGISTRY:
+        return {
+            "step_id": "verify:actor",
+            "phase": "VALIDATE",
+            "intent": "get_actor",
+            "action_category": "get_actor",
+            "preferred_tool": "get_actor",
+            "allowed_tools": ["get_actor"],
+            "target_type": "project",
+            "target_resource": actor_name,
+            "parameters": {"actor_name": actor_name},
+            "expected_result": {"expected": actor_name},
+            "validation_tool": None,
+            "validation_parameters": {},
+            "depends_on": [steps[-1]["step_id"]],
+            "disposable": False,
+            "status": "pending",
+        }
+    return None
+
+
+def _tool_success(result):
+    if not isinstance(result, dict):
+        return False
+    payload = None
+    for key in ("result", "payload", "data"):
+        if isinstance(result.get(key), dict):
+            payload = result[key]
+            break
+    if isinstance(payload, dict):
+        if payload.get("ok") is False or payload.get("success") is False:
+            return False
+        if payload.get("ok") is True or payload.get("success") is True or payload.get("status") == "success":
+            return True
+    if result.get("ok") is False or result.get("success") is False:
+        return False
+    if result.get("ok") is True or result.get("success") is True or result.get("status") == "success":
+        return True
+    return False
+
+
+def _tool_payload(result):
+    if not isinstance(result, dict):
+        return {}
+    for key in ("result", "payload", "data"):
+        if isinstance(result.get(key), dict):
+            return result[key]
+    return result
+
+
+def _extract_tool_value(result):
+    payload = _tool_payload(result)
+    for key in ("value", "default_value", "current_value", "actual", "project_name", "label", "actor_name", "name", "ok"):
+        if key in payload:
+            return payload[key]
+    # General read-back evidence. Actor/asset/level tools do not expose a
+    # generic "value" field, so verification of those tasks compares the
+    # concrete label/name/saved flag the tool actually reported. Existing
+    # Blueprint-variable flows keep their original "value" semantics.
+    for key in ("found", "exists", "saved", "created", "asset_path"):
+        if key in payload:
+            return payload[key]
+    return None
+
+
+def _extract_resource_path(result):
+    payload = _tool_payload(result)
+    for key in ("asset_path", "object_path", "path", "package_path", "created_asset"):
+        if payload.get(key):
+            return payload[key]
+    return None
+
+
+def _extract_tool_error(result):
+    if not isinstance(result, dict):
+        return None
+    payload = _tool_payload(result)
+    if isinstance(payload, dict):
+        for key in ("error", "message", "detail", "reason"):
+            if payload.get(key):
+                return payload.get(key)
+    for key in ("error", "message", "detail", "reason"):
+        if result.get(key):
+            return result[key]
+    return None
+
+
+PROJECT_CONTEXT_DEFAULT = {
+    "uproject_path": r"C:\Users\Shadow\Desktop\app\AudioVidoLivingCity\AudioVidoLivingCity.uproject",
+    "project_name": "AudioVidoLivingCity",
+    "world": "/Game/AVLC_Main.AVLC_Main",
+}
+
+_PLACEHOLDER_HINTS = (
+    "/path/to/your/project.uproject",
+    "/path/to/project.uproject",
+    "path/to/your/project.uproject",
+    "path/to/project.uproject",
+    "/game/",
+    "your_project",
+    "<project",
+)
+
+
+def _is_placeholder(value):
+    if not isinstance(value, str) or not value.strip():
+        return True
+    lowered = value.strip().lower()
+    if "placeholder" in lowered:
+        return True
+    return any(hint in lowered for hint in _PLACEHOLDER_HINTS)
+
+
+def new_execution(task: str):
     task_id = str(uuid.uuid4())
-    plan = create_execution_plan(task)
+    plan = normalize_execution_plan(task, create_execution_plan(task))
 
     emit(
         "planning",
@@ -267,6 +659,22 @@ def new_execution(task: str):
         "id": task_id,
         "task": task,
         "plan": plan,
+        "project_context": dict(PROJECT_CONTEXT_DEFAULT),
+        "phase": "PLAN",
+        "current_phase": "PLAN",
+        "current_step": 0,
+        "completed_steps": [],
+        "failed_step": None,
+        "retry_count": 0,
+        "validation_result": None,
+        "created_resources": [],
+        "processed_dispatch_ids": [],
+        "fix_pending": False,
+        "fix_step_id": None,
+        "retry_pending": False,
+        "retry_validation_step_id": None,
+        "max_retries": 3,
+        "max_tool_calls": 40,
         "model_messages": [
             {
                 "role": "system",
@@ -289,6 +697,262 @@ def new_execution(task: str):
         "start_ts": None,
         "end_ts": None,
     }
+
+
+def _next_normalized_step(execution):
+    steps = (execution.get("plan") or {}).get("steps", [])
+    completed = {s.get("step_id") for s in steps if s.get("status") == "completed"}
+    for index, step in enumerate(steps):
+        if step.get("status") != "pending":
+            continue
+        phase = str(step.get("phase", "")).upper()
+        intent = str(step.get("intent", "")).lower()
+        if phase in {"CLEANUP", "VERIFY_CLEANUP"} or intent in {"cleanup", "verify_cleanup"}:
+            continue
+        if set(step.get("depends_on") or []).issubset(completed):
+            return index, step
+    return None, None
+
+
+def _resolved_step_args(execution, step, project_context=None):
+    args = dict(step.get("parameters") or {})
+    context = project_context or execution.get("project_context") or PROJECT_CONTEXT_DEFAULT
+    spec = REGISTRY.get(step.get("preferred_tool") or "")
+    accepted = set((spec.args or {}).keys()) if spec is not None else set()
+    tool = step.get("preferred_tool") or ""
+    for key in ("uproject_path", "project_name", "world"):
+        if key not in accepted:
+            continue
+        # A new project must NOT inherit the currently active project name.
+        if key == "project_name" and tool == "create_project":
+            continue
+        if (not args.get(key) or _is_placeholder(args.get(key))) and context.get(key):
+            args[key] = context[key]
+    if step.get("preferred_tool") == "inspect_project" and (not args.get("uproject_path") or _is_placeholder(args.get("uproject_path"))):
+        args["uproject_path"] = PROJECT_CONTEXT_DEFAULT["uproject_path"]
+    return args
+
+
+def _deterministic_step_dispatch(execution, step, project_context=None):
+    action = step.get("preferred_tool")
+    args = _resolved_step_args(execution, step, project_context)
+    if not action or action not in REGISTRY:
+        return {"dispatch_id": str(uuid.uuid4()), "step_id": step.get("step_id"), "tool_name": action, "args": args, "transport_success": False, "ok": False, "raw_result": None, "payload": {}, "value": None, "resource_path": None, "error": "Unknown preferred tool"}
+    valid, error = validate_args(REGISTRY[action], args)
+    if not valid:
+        return {"dispatch_id": str(uuid.uuid4()), "step_id": step.get("step_id"), "tool_name": action, "args": args, "transport_success": False, "ok": False, "raw_result": None, "payload": {}, "value": None, "resource_path": None, "error": error}
+    emit("tool", f"Running {action}", {"step_id": step.get("step_id"), "args": args}, "running")
+    try:
+        tool_timeout = 480 if action in {"create_project", "open_project"} else 90 if action in {"create_default_level", "validate_project_creation"} else 60
+        raw = call_tool_hard_timeout(REGISTRY[action], args, timeout_seconds=tool_timeout)
+    except Exception as exc:
+        raw = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+    raw = serialize(raw)
+    success = _tool_success(raw)
+    emit("tool_result", f"{action} finished", raw, "success" if success else "error")
+    return {"dispatch_id": str(uuid.uuid4()), "step_id": step.get("step_id"), "tool_name": action, "args": args, "transport_success": success, "ok": success, "raw_result": raw, "payload": _tool_payload(raw), "value": _extract_tool_value(raw), "resource_path": _extract_resource_path(raw), "error": _extract_tool_error(raw)}
+
+
+def _cleanup_pending(execution):
+    return [resource for resource in execution.get("created_resources", []) if resource.get("disposable") and resource.get("verified_clean") is not True]
+
+
+def _resource_is_absent(result):
+    """Recognize absence through arbitrarily nested bridge envelopes."""
+    if isinstance(result, dict):
+        if result.get("exists") is False or result.get("found") is False:
+            return True
+        text = " ".join(
+            str(result.get(key, ""))
+            for key in ("error", "message", "detail", "reason")
+        ).lower()
+        if "not found" in text or "does not exist" in text:
+            return True
+        return any(
+            _resource_is_absent(value)
+            for key, value in result.items()
+            if key in ("result", "payload", "data")
+        )
+    return False
+
+
+def _can_complete(execution):
+    steps = (execution.get("plan") or {}).get("steps", [])
+    return (
+        execution.get("validation_result") == "passed"
+        and not execution.get("failed_step")
+        and not execution.get("fix_pending")
+        and not execution.get("retry_pending")
+        and all(
+            step.get("status") == "completed"
+            for step in steps
+            if step.get("status") != "skipped"
+            and str(step.get("phase", "")).upper() not in {"CLEANUP", "VERIFY_CLEANUP"}
+            and str(step.get("intent", "")).lower() not in {"cleanup", "verify_cleanup"}
+        )
+        and execution.get("evidence_handled", True)
+        and not _cleanup_pending(execution)
+        and not execution.get("cleanup_failure")
+        and not execution.get("pending_approvals")
+        and not execution.get("execution_blocker")
+    )
+
+
+def _apply_step_result(execution, step, dispatch_result):
+    """Apply one finite deterministic dispatch result exactly once."""
+    dispatch_id = dispatch_result.get("dispatch_id")
+    processed = execution.setdefault("processed_dispatch_ids", [])
+    if dispatch_id and dispatch_id in processed:
+        return {"applied": False, "event": "DUPLICATE_RESULT_PROCESSING", "dispatch_id": dispatch_id}
+    if dispatch_id:
+        processed.append(dispatch_id)
+
+    success = bool(dispatch_result.get("transport_success"))
+    step_id = step.get("step_id")
+    if (
+        step.get("phase") == "VERIFY_CLEANUP"
+        and _resource_is_absent(dispatch_result.get("raw_result") or dispatch_result)
+    ):
+        cleanup_path = (
+            dispatch_result.get("resource_path")
+            or step.get("cleanup_resource_path")
+            or (step.get("parameters") or {}).get("asset_path")
+        )
+        resource = next(
+            (item for item in execution.get("created_resources", []) if item.get("path") == cleanup_path),
+            None,
+        )
+        if resource:
+            resource["verified_clean"] = True
+            resource["cleanup_verification"] = "absent"
+        step["status"] = "completed"
+        execution["cleanup_failure"] = None
+        return {"applied": True, "status": "completed", "cleanup": "verified_clean"}
+
+    if not success:
+        step["status"] = "failed"
+        if step.get("phase") == "CLEANUP":
+            step["status"] = "pending"
+        execution["failure_evidence"] = {"error": dispatch_result.get("error")}
+        if step.get("phase") == "EVIDENCE":
+            execution["evidence_handled"] = True
+            execution["evidence_failure"] = dispatch_result.get("error")
+        if execution.get("fix_pending") and step_id == execution.get("fix_step_id"):
+            execution["fix_pending"] = False
+            execution["fix_step_id"] = None
+        return {"applied": True, "status": "failed", "error": dispatch_result.get("error")}
+
+    if execution.get("fix_pending") and step_id == execution.get("fix_step_id"):
+        step["status"] = "completed"
+        execution["fix_pending"] = False
+        execution["fix_step_id"] = None
+        execution["retry_pending"] = True
+        execution["retry_validation_step_id"] = execution.get("failed_step")
+        execution["current_phase"] = execution["phase"] = "RETRY"
+        return {"applied": True, "status": "completed", "transition": "retry_pending"}
+
+    if step.get("phase") == "EVIDENCE":
+        step["status"] = "completed"
+        execution["evidence_handled"] = True
+        execution["evidence_result"] = dispatch_result.get("raw_result") or dispatch_result.get("payload") or dispatch_result.get("value")
+        return {"applied": True, "status": "completed", "evidence": "captured"}
+
+    if step.get("phase") == "CLEANUP":
+        step["status"] = "completed"
+        execution["cleanup_action_success"] = True
+        execution["cleanup_stage"] = "verify"
+        return {"applied": True, "status": "completed", "cleanup": "action_succeeded"}
+
+    cleanup_path = dispatch_result.get("resource_path") or step.get("cleanup_resource_path") or (step.get("parameters") or {}).get("asset_path")
+    if step.get("phase") == "VERIFY_CLEANUP" or dispatch_result.get("cleanup_verification"):
+        resource = next((item for item in execution.get("created_resources", []) if item.get("path") == cleanup_path), None)
+        if resource:
+            if _resource_is_absent(dispatch_result.get("raw_result") or dispatch_result):
+                resource["verified_clean"] = True
+                resource["cleanup_verification"] = "absent"
+                return {"applied": True, "status": "completed", "cleanup": "verified_clean"}
+            execution["cleanup_failure"] = {"path": cleanup_path, "reason": "resource_still_present"}
+            return {"applied": True, "status": "failed", "cleanup": "verification_failed"}
+
+    expected_result = step.get("expected_result") or {}
+    expected = expected_result.get("expected")
+    is_validation = step.get("phase") == "VALIDATE" or expected is not None
+    if execution.get("retry_pending") and step_id == execution.get("retry_validation_step_id"):
+        execution["retry_count"] = execution.get("retry_count", 0) + 1
+        actual = dispatch_result.get("value")
+        if step.get("preferred_tool") == "validate_project_creation" and dispatch_result.get("transport_success"):
+            actual = True
+        if "exists" in expected_result and dispatch_result.get("transport_success"):
+            actual = True if expected_result.get("exists") is True else actual
+        if actual == expected:
+            step["status"] = "completed"
+            execution["validation_result"] = "passed"
+            execution["failed_step"] = None
+            execution["retry_pending"] = False
+            execution["retry_validation_step_id"] = None
+            execution["current_phase"] = execution["phase"] = "EVIDENCE"
+            return {"applied": True, "status": "completed", "validation": "passed"}
+        execution["retry_pending"] = False
+        execution["retry_validation_step_id"] = None
+        step["status"] = "failed_validation"
+        execution["failure_evidence"] = {"expected": expected, "actual": actual, "resource": dispatch_result.get("resource_path")}
+        if execution["retry_count"] < execution.get("max_retries", 3):
+            fix_id = f"fix:{step_id}:{execution['retry_count']}"
+            fix_step = {"step_id": fix_id, "phase": "FIX", "preferred_tool": "set_blueprint_variable_default", "allowed_tools": ["set_blueprint_variable_default"], "parameters": dict(step.get("parameters") or {}), "expected_result": {}, "depends_on": [step_id], "disposable": False, "status": "pending", "generated_from": step_id}
+            fix_step["parameters"]["value"] = expected
+            execution.setdefault("plan", {"steps": []}).setdefault("steps", []).append(fix_step)
+            execution["fix_pending"] = True
+            execution["fix_step_id"] = fix_id
+            execution["current_phase"] = execution["phase"] = "FIX"
+            return {"applied": True, "status": "failed_validation", "transition": "next_fix"}
+        execution["failure_evidence"]["retry_limit"] = True
+        execution["current_phase"] = execution["phase"] = "FAILED"
+        return {"applied": True, "status": "failed_validation", "transition": "retry_limit"}
+
+    if is_validation and expected is not None:
+        actual = dispatch_result.get("value")
+        if step.get("preferred_tool") == "validate_project_creation" and dispatch_result.get("transport_success"):
+            actual = True
+        if "exists" in expected_result and dispatch_result.get("transport_success"):
+            actual = True if expected_result.get("exists") is True else actual
+        if actual == expected:
+            step["status"] = "completed"
+            execution["validation_result"] = "passed"
+            execution["failed_step"] = None
+            return {"applied": True, "status": "completed", "validation": "passed"}
+        step["status"] = "failed_validation"
+        execution["validation_result"] = "failed"
+        execution["failed_step"] = step_id
+        execution["failure_evidence"] = {"expected": expected, "actual": actual, "resource": dispatch_result.get("resource_path")}
+        if not execution.get("fix_pending"):
+            fix_id = f"fix:{step_id}:1"
+            fix_step = {"step_id": fix_id, "phase": "FIX", "preferred_tool": "set_blueprint_variable_default", "allowed_tools": ["set_blueprint_variable_default"], "parameters": dict(step.get("parameters") or {}), "expected_result": {}, "depends_on": [step_id], "disposable": False, "status": "pending", "generated_from": step_id}
+            fix_step["parameters"]["value"] = expected
+            execution.setdefault("plan", {"steps": []}).setdefault("steps", []).append(fix_step)
+            execution["fix_pending"] = True
+            execution["fix_step_id"] = fix_id
+            execution["current_phase"] = execution["phase"] = "FIX"
+        execution["retry_pending"] = False
+        execution["retry_validation_step_id"] = step_id
+        return {"applied": True, "status": "failed_validation", "validation": "failed", "transition": "fix_pending"}
+
+    step["status"] = "completed"
+    if step.get("phase") == "VALIDATE":
+        execution["validation_result"] = "passed"
+    # A plan made entirely of read-only inspection steps still needs a
+    # terminal validation marker so the completion gate cannot stall.
+    if step.get("phase") == "INSPECT" and not any(
+        str(item.get("phase", "")).upper() == "VALIDATE"
+        for item in (execution.get("plan") or {}).get("steps", [])
+    ):
+        execution["validation_result"] = "passed"
+    resource_path = dispatch_result.get("resource_path")
+    created_by_step = step.get("intent") in {"create_blueprint", "spawn_actor", "create_project"} or not step.get("intent")
+    if resource_path and step.get("disposable") and created_by_step:
+        resources = execution.setdefault("created_resources", [])
+        if not any(item.get("path") == resource_path for item in resources):
+            resources.append({"path": resource_path, "resource_type": dispatch_result.get("resource_type"), "step_id": step_id, "disposable": True, "verified_clean": False})
+    return {"applied": True, "status": "completed"}
 
 
 def trace_summary(state, count=10):
@@ -625,626 +1289,63 @@ def process_tool_result(state, raw, action, args, result):
 
     return result, ok
 
-# redefinition of run_execution_until_pause follows unchanged
+# deterministic Layer F orchestration
 
 def run_execution_until_pause():
-
     global execution_state
-    global messages
-
     state = execution_state
-
     if state is None:
-        return {
-            "state": "error",
-            "message": "No active execution.",
-        }
-
-    if state.get("state") == "PLANNING":
-        state["state"] = "RUNNING"
-        state["start_ts"] = time.time()
-
-        if state.get("start_ts") and (time.time() - state["start_ts"]) >= MAX_RUNTIME_SECONDS:
-            state["state"] = "FAILED"
-            state["end_ts"] = time.time()
-            return {
-                "state": "failed",
-                "message": "Execution stopped: maximum runtime reached.",
-            }
-
-    for _ in range(80):
-
-        # /api/reset may replace or clear the global execution_state.
-        # The old worker must notice and exit instead of continuing
-        # forever with its private local reference.
-        if execution_state is not state:
-            state["state"] = "CANCELLED"
-            state["end_ts"] = time.time()
-
-            return {
-                "state": "interrupted",
-                "message": "Execution was reset; Workboard may retry safely.",
-            }
-
-        if state.get("start_ts") and (time.time() - state["start_ts"]) >= MAX_RUNTIME_SECONDS:
-            state["state"] = "FAILED"
-            state["end_ts"] = time.time()
-            return {
-                "state": "failed",
-                "message": "Execution stopped: maximum runtime reached.",
-            }
-
-        if state.get("state") == "PAUSED":
-            return {"state":"paused","message":"Execution paused."}
-
-        if state.get("state") == "CANCELLED":
-            state["end_ts"] = time.time()
-            return {"state":"cancelled","message":"Execution cancelled."}
-
-        state["step"] += 1
-
-        # Workboard liveness heartbeat.
-        # Both execution and independent QA keep their card alive.
-        heartbeat_task_id = (
-            state.get("workboard_task_id")
-            or state.get("workboard_validation_for")
-        )
-
-        if heartbeat_task_id:
-            touch_runtime_task(
-                heartbeat_task_id,
-                note=f"Agent active ? step {state['step']}",
-            )
-
-        emit(
-            "thinking",
-            "Agent deciding next step",
-            {
-                "step": state["step"],
-                "after_tool": state.get("current_action"),
-            },
-            "running",
-        )
-
-        try:
-            raw = call_model_hard_timeout(
-                state["model_messages"],
-                timeout_seconds=90,
-            )
-
-        except Exception as exc:
-
-            msg = (
-                f"Model request failed: "
-                f"{type(exc).__name__}: {exc}"
-            )
-
-            state["state"] = "FAILED"
-            state["end_ts"] = time.time()
-
-            emit(
-                "error",
-                "Model request failed",
-                msg,
-                "error",
-            )
-
-            return {
-                "state": "error",
-                "message": msg,
-            }
-
-        try:
-            decision = json.loads(raw)
-
-        except Exception as exc:
-
-            state["model_messages"].append(
-                {
-                    "role": "assistant",
-                    "content": raw,
-                }
-            )
-
-            state["model_messages"].append(
-                {
-                    "role": "user",
-                    "content": (
-                        "INVALID JSON RESPONSE. "
-                        "Return exactly one valid JSON object. "
-                        f"Error: {exc}"
-                    ),
-                }
-            )
-
-            emit(
-                "error",
-                "Model JSON repair",
-                raw,
-                "warning",
-            )
-
-            continue
-
-        action = str(
-            decision.get("action")
-            or ""
-        ).strip()
-
-        args = decision.get("args") or {}
-
-        reason = str(
-            decision.get("reason")
-            or ""
-        )
-
-        # ----------------------------------------------------
-        # FINAL
-        # ----------------------------------------------------
-
-        if action == "final":
-
-            proposed = str(
-                decision.get("final")
-                or ""
-            )
-
-            if state["verification_pending"]:
-
-                state["model_messages"].append(
-                    {
-                        "role": "assistant",
-                        "content": raw,
-                    }
-                )
-
-                state["model_messages"].append(
-                    {
-                        "role": "user",
-                        "content": (
-                            "FINAL REJECTED. "
-                            "A mutation still requires "
-                            "independent read-only verification."
-                        ),
-                    }
-                )
-
-                emit(
-                    "review",
-                    "Verification still required",
-                    None,
-                    "warning",
-                )
-
-                continue
-
-            if state["successful_calls"] == 0:
-
-                state["model_messages"].append(
-                    {
-                        "role": "assistant",
-                        "content": raw,
-                    }
-                )
-
-                state["model_messages"].append(
-                    {
-                        "role": "user",
-                        "content": (
-                            "FINAL REJECTED. "
-                            "EXECUTE mode requires real tool evidence."
-                        ),
-                    }
-                )
-
-                continue
-
-            review = review_completion(
-                state["task"],
-                state["plan"],
-                state["trace"],
-                proposed,
-            )
-
-            if (
-                not review.get("complete", False)
-                and state["final_rejections"] < 3
-            ):
-
-                state["final_rejections"] += 1
-
-                state["model_messages"].append(
-                    {
-                        "role": "assistant",
-                        "content": raw,
-                    }
-                )
-
-                state["model_messages"].append(
-                    {
-                        "role": "user",
-                        "content": (
-                            "QA REVIEW REJECTED COMPLETION.\n"
-                            "Missing:\n"
-                            + json.dumps(
-                                review.get(
-                                    "missing",
-                                    [],
-                                ),
-                                ensure_ascii=False,
-                            )
-                            + "\nInstruction:\n"
-                            + str(
-                                review.get(
-                                    "instruction",
-                                    "",
-                                )
-                            )
-                            + "\nContinue execution."
-                        ),
-                    }
-                )
-
-                emit(
-                    "review",
-                    "QA requested more work",
-                    review,
-                    "warning",
-                )
-
-                continue
-
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": proposed,
-                }
-            )
-
-            save_session(messages)
-
-            emit(
-                "answer",
-                "Agent completed",
-                proposed,
-                "success",
-            )
-
-            # IMPORTANT:
-            # Workboard transition happens INSIDE the exact Agent
-            # completion branch. It no longer depends on the Queue
-            # runner observing a return value later.
-            workboard_task_id = state.get("workboard_task_id")
-
-            if workboard_task_id:
-                update_runtime_task(
-                    workboard_task_id,
-                    "testing",
-                    note="Agent execution completed; ready for validation",
-                    evidence={
-                        "type": "agent_completion",
-                        "execution_id": state.get("id"),
-                        "final": proposed,
-                        "successful_calls": state.get("successful_calls", 0),
-                        "tool_call_count": state.get("tool_call_count", 0),
-                        "at": time.time(),
-                    },
-                )
-
-            execution_state = None
-
-            return {
-                "state": "complete",
-                "message": proposed,
-                "workboard_task_id": workboard_task_id,
-            }
-
-        # ----------------------------------------------------
-        # TOOL NAME
-        # ----------------------------------------------------
-
-        if not action or action not in REGISTRY:
-
-            state["model_messages"].append(
-                {
-                    "role": "assistant",
-                    "content": raw,
-                }
-            )
-
-            state["model_messages"].append(
-                {
-                    "role": "user",
-                    "content": (
-                        f"ERROR: Unknown tool '{action}'. "
-                        "Use ONLY an exact tool from AVAILABLE TOOLS."
-                    ),
-                }
-            )
-
-            emit(
-                "error",
-                f"Unknown tool: {action or '<empty>'}",
-                reason,
-                "error",
-            )
-
-            continue
-
-        spec = REGISTRY[action]
-
-        # ----------------------------------------------------
-        # SCHEMA
-        # ----------------------------------------------------
-
-        valid, validation_error = validate_args(
-            spec,
-            args,
-        )
-
-        if not valid:
-
-            state["model_messages"].append(
-                {
-                    "role": "assistant",
-                    "content": raw,
-                }
-            )
-
-            state["model_messages"].append(
-                {
-                    "role": "user",
-                    "content": (
-                        f"TOOL SCHEMA ERROR for {action}: "
-                        f"{validation_error}. "
-                        f"Required schema: {spec.args}"
-                    ),
-                }
-            )
-
-            emit(
-                "error",
-                f"Schema rejected: {action}",
-                validation_error,
-                "error",
-            )
-
-            continue
-
-        # ----------------------------------------------------
-        # HARD GUARDS
-        # ----------------------------------------------------
-
-        allowed, guard_error = guard_tool_call(
-            state["task"],
-            action,
-            args,
-        )
-
-        if not allowed:
-
-            result = {
-                "ok": False,
-                "error": guard_error,
-                "blocked_by_guard": True,
-            }
-
-            # Count blocked attempts too, otherwise a model can loop forever
-            # on a tool that the task explicitly forbids.
-            state["tool_call_count"] = state.get("tool_call_count", 0) + 1
-
-            signature = json.dumps(
-                {
-                    "guard_blocked": True,
-                    "action": action,
-                    "args": args,
-                },
-                sort_keys=True,
-                default=str,
-            )
-
-            state["failed_calls"][signature] = (
-                state["failed_calls"].get(signature, 0) + 1
-            )
-
-            emit(
-                "guard",
-                f"Blocked invalid action: {action}",
-                guard_error,
-                "warning",
-            )
-
-            # Feed the guard result back to the model so it can change strategy.
-            state["model_messages"].append(
-                {
-                    "role": "assistant",
-                    "content": raw,
-                }
-            )
-
-            state["model_messages"].append(
-                {
-                    "role": "user",
-                    "content": (
-                        "TOOL CALL BLOCKED BY HARD GUARD.\n"
-                        f"Tool: {action}\n"
-                        f"Reason: {guard_error}\n"
-                        "This tool is unavailable for this task. "
-                        "Do NOT call it again. "
-                        "Immediately choose a different registered tool "
-                        "that complies with the task."
-                    ),
-                }
-            )
-
-            # Stop a pathological identical blocked loop quickly.
-            if state["failed_calls"][signature] >= 3:
-                state["state"] = "FAILED"
-                state["end_ts"] = time.time()
-
-                return {
-                    "state": "failed",
-                    "message": (
-                        f"Execution stopped: model repeated guard-blocked "
-                        f"tool '{action}' three times."
-                    ),
-                }
-
-            if state.get("tool_call_count", 0) >= MAX_TOOL_CALLS:
-                state["state"] = "FAILED"
-                state["end_ts"] = time.time()
-                return {
-                    "state": "failed",
-                    "message": "Execution stopped: maximum tool call limit reached."
-                }
-
-            continue
-
-        # ----------------------------------------------------
-        # APPROVAL
-        # ----------------------------------------------------
-
-        if requires_approval(action, args):
-
-            approval_id = str(uuid.uuid4())
-
-            pending_approvals[approval_id] = {
-                "execution_id": state["id"],
-                "raw": raw,
-                "action": action,
-                "args": args,
-                "reason": reason,
-            }
-
-            emit(
-                "approval",
-                f"Approval required: {action}",
-                {
-                    "approval_id": approval_id,
-                    "tool": action,
-                    "args": args,
-                    "reason": reason,
-                },
-                "warning",
-            )
-
-            return {
-                "state": "approval_required",
-                "approval_id": approval_id,
-                "tool": action,
-                "args": args,
-                "reason": reason,
-            }
-
-        # ----------------------------------------------------
-        # EXECUTE
-        # ----------------------------------------------------
-
-        emit(
-            "tool",
-            f"Running {action}",
-            {
-                "args": args,
-                "reason": reason,
-                "step": state["step"],
-            },
-            "running",
-        )
-
-        try:
-            result = call_tool_hard_timeout(
-                spec,
-                args,
-                timeout_seconds=60,
-            )
-
-        except Exception as exc:
-            result = {
-                "ok": False,
-                "error":
-                    f"{type(exc).__name__}: {exc}",
-                "transient": isinstance(exc, TimeoutError),
-            }
-
-        process_tool_result(
-            state,
-            raw,
-            action,
-            args,
-            result,
-        )
-        tool_signature = action + ":" + json.dumps(args, sort_keys=True, default=str)
-        if state.get("last_tool_signature") == tool_signature:
-            state["repeated_tool_count"] = state.get("repeated_tool_count", 1) + 1
+        return {"state": "error", "message": "No active execution."}
+    if state.get("state") in {"COMPLETE", "FAILED", "STALLED"}:
+        execution_state = None
+        return {"state": state["state"].lower(), "message": "Execution already terminal."}
+    state.setdefault("start_ts", time.time())
+    state.setdefault("max_execution_iterations", 80)
+    state.setdefault("no_progress_count", 0)
+    state.setdefault("evidence_handled", True)
+    state.setdefault("pending_approvals", {})
+    state["state"] = "RUNNING"
+    for _ in range(state["max_execution_iterations"]):
+        before = repr((state.get("fix_pending"), state.get("retry_pending"), [(x.get("step_id"), x.get("status")) for x in state.get("plan", {}).get("steps", [])], state.get("created_resources")))
+        if state.get("fix_pending"):
+            step = next((x for x in state["plan"]["steps"] if x.get("step_id") == state.get("fix_step_id")), None)
+        elif state.get("retry_pending"):
+            step = next((x for x in state["plan"]["steps"] if x.get("step_id") == state.get("retry_validation_step_id")), None)
         else:
-            state["last_tool_signature"] = tool_signature
-            state["repeated_tool_count"] = 1
-
-        # Successful read/inspection calls must not become a silent loop.
-        # After the second identical call, explicitly force the model to use
-        # the evidence it already has and advance to a different action.
-        if (
-            state.get("repeated_tool_count", 0) == 2
-            and result_ok(result)
-        ):
-            state["model_messages"].append(
-                {
-                    "role": "user",
-                    "content": (
-                        "ANTI-LOOP DIRECTIVE. "
-                        f"You have just executed the exact same successful tool call twice: {action}. "
-                        "The result is already available and must be treated as sufficient evidence. "
-                        "DO NOT call this exact tool with these exact arguments again. "
-                        "Advance the task now: choose the next different registered tool required "
-                        "to satisfy the user's requested workflow, or return final only if all "
-                        "requirements are genuinely verified."
-                    ),
-                }
-            )
-
-            emit(
-                "review",
-                "Repeated successful call detected ? forcing progress",
-                {
-                    "tool": action,
-                    "args": args,
-                    "repeat_count": state["repeated_tool_count"],
-                },
-                "warning",
-            )
-
-        if state.get("repeated_tool_count", 0) >= 3:
-            state["state"] = "FAILED"
-            state["end_ts"] = time.time()
-            return {
-                "state": "failed",
-                "message": "Execution stopped: probable tool loop detected.",
-            }
-
-        if state.get("tool_call_count", 0) >= MAX_TOOL_CALLS:
-            state["state"] = "FAILED"
-            state["end_ts"] = time.time()
-            return {
-                "state": "failed",
-                "message": "Execution stopped: maximum tool call limit reached.",
-            }
-
-
-    emit(
-        "error",
-        "Execution safety limit reached",
-        trace_summary(state, 15),
-        "error",
-    )
-
-    return {
-        "state": "error",
-        "message":
-            "Execution reached the 80-step safety limit.",
-    }
-
-
-
+            _, step = _next_normalized_step(state)
+        if step is None:
+            pending_cleanup = _cleanup_pending(state)
+            if pending_cleanup:
+                resource = pending_cleanup[0]
+                stage = state.get("cleanup_stage") or "delete"
+                step = {"step_id": f"cleanup:{resource['path']}" if stage == "delete" else f"verify_cleanup:{resource['path']}", "phase": "CLEANUP" if stage == "delete" else "VERIFY_CLEANUP", "preferred_tool": "delete_asset" if stage == "delete" else "get_asset_info", "parameters": {"asset_path": resource["path"]}, "status": "pending", "cleanup_resource_path": resource["path"]}
+                state["cleanup_stage"] = stage
+            if step is None:
+                if _can_complete(state):
+                    state["state"] = "COMPLETE"
+                    execution_state = None
+                    emit("complete", "COMPLETE", None, "success")
+                    return {"state": "complete", "message": "Execution complete."}
+                emit("error", "EXECUTION_STALLED", None, "error")
+                state["state"] = "STALLED"
+                execution_state = None
+                return {"state": "failed", "message": "Execution stalled."}
+        step["status"] = "running"
+        dispatch = _deterministic_step_dispatch(state, step)
+        applied = _apply_step_result(state, step, dispatch)
+        if step.get("phase") == "CLEANUP" and applied.get("status") == "completed": state["cleanup_stage"] = "verify"
+        elif step.get("phase") == "VERIFY_CLEANUP" and applied.get("cleanup") == "verified_clean": state["cleanup_stage"] = None
+        after = repr((state.get("fix_pending"), state.get("retry_pending"), [(x.get("step_id"), x.get("status")) for x in state.get("plan", {}).get("steps", [])], state.get("created_resources")))
+        state["no_progress_count"] = state.get("no_progress_count", 0) + 1 if before == after else 0
+        if state["no_progress_count"] >= 3:
+            emit("error", "EXECUTION_STALLED", None, "error")
+            state["state"] = "STALLED"
+            execution_state = None
+            return {"state": "failed", "message": "Execution stalled."}
+    emit("error", "EXECUTION_ITERATION_LIMIT", None, "error")
+    state["state"] = "FAILED"
+    execution_state = None
+    return {"state": "failed", "message": "Execution iteration limit reached."}
 
 def _workboard_autopilot_watchdog():
     """

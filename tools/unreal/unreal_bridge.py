@@ -432,13 +432,83 @@ else:
 world = unreal.EditorLevelLibrary.get_editor_world()
 
 __bridge_result__ = {
+    "ok": world is not None,
     "world_name": world.get_name() if world else None,
     "world_path": world.get_path_name() if world else None
 }
 ''')
 
+    def get_project_identity(self):
+        return self.execute_python(r'''
+project_path = str(unreal.Paths.get_project_file_path()).replace(chr(92), "/")
+project_name = project_path.rsplit("/", 1)[-1].rsplit(".", 1)[0]
+__bridge_result__ = {
+    "ok": bool(project_path),
+    "project_path": project_path,
+    "project_name": project_name,
+    "engine": unreal.SystemLibrary.get_engine_version(),
+}
+''')
 
+    def create_default_level(self, level_path: str):
+        previous_timeout = self.timeout
+        self.timeout = max(self.timeout, 180)
+        try:
+            return self.execute_python(f'''
+level_path = {level_path!r}
+subsystem = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
+created = bool(subsystem.new_level(level_path))
+saved = False
+if created:
+    saved = bool(subsystem.save_current_level())
+__bridge_result__ = {{
+    "ok": bool(created and saved),
+    "level_path": level_path,
+    "created": created,
+    "saved": saved,
+}}
+''')
+        finally:
+            self.timeout = previous_timeout
 
+    def validate_project_creation(self, project_name: str, actor_name: str):
+        return self.execute_python(f'''
+project_path = str(unreal.Paths.get_project_file_path()).replace(chr(92), "/")
+active_project = project_path.rsplit("/", 1)[-1].rsplit(".", 1)[0]
+world = unreal.EditorLevelLibrary.get_editor_world()
+actors = unreal.EditorLevelLibrary.get_all_level_actors() if world else []
+matches = [a for a in actors if a.get_actor_label() == {actor_name!r}]
+actor = matches[0] if len(matches) == 1 else None
+mesh = None
+if actor is not None and hasattr(actor, "static_mesh_component"):
+    mesh = actor.static_mesh_component.get_editor_property("static_mesh")
+package = world.get_outermost() if world else None
+dirty = bool(package and package in unreal.EditorLoadingAndSavingUtils.get_dirty_map_packages())
+checks = {
+    "project_identity": active_project == {project_name!r},
+    "project_path": project_path.lower().endswith("/" + {project_name!r}.lower() + ".uproject"),
+    "level_loaded": world is not None,
+    "actor_exists": actor is not None,
+    "visible_mesh_actor": actor is not None and actor.get_class().get_name() == "StaticMeshActor" and mesh is not None,
+    "clean_after_save": not dirty,
+}
+__bridge_result__ = {
+    "ok": all(checks.values()),
+    "project_name": active_project,
+    "project_path": project_path,
+    "level_path": world.get_path_name() if world else None,
+    "actor_name": actor.get_actor_label() if actor else None,
+    "actor_class": actor.get_class().get_name() if actor else None,
+    "actor_transform": {
+        "location": [actor.get_actor_location().x, actor.get_actor_location().y, actor.get_actor_location().z],
+        "rotation": [actor.get_actor_rotation().pitch, actor.get_actor_rotation().yaw, actor.get_actor_rotation().roll],
+        "scale": [actor.get_actor_scale3d().x, actor.get_actor_scale3d().y, actor.get_actor_scale3d().z],
+    } if actor else None,
+    "mesh_path": mesh.get_path_name() if mesh else None,
+    "is_dirty": dirty,
+    "checks": checks,
+}
+''')
 
     def list_assets(self, path="/Game", recursive=True):
         return self.execute_python(f"""
@@ -522,9 +592,11 @@ if target is not None:
         "scale": [scale.x, scale.y, scale.z]
     }}
 """)
-    def spawn_actor(self, class_name: str, location=None, rotation=None):
+    def spawn_actor(self, class_name: str = None, location=None, rotation=None, actor_type: str = None, scale=None, actor_name: str = None, mesh_asset: str = None):
+        class_name = class_name or actor_type or "Actor"
         location = location or [0, 0, 0]
         rotation = rotation or [0, 0, 0]
+        scale = scale or [1, 1, 1]
 
         return self.execute_python(f'''
 actor_class = getattr(unreal, "{class_name}", None)
@@ -542,6 +614,14 @@ else:
         unreal.Vector({location[0]}, {location[1]}, {location[2]}),
         unreal.Rotator(pitch={rotation[0]}, yaw={rotation[1]}, roll={rotation[2]})
     )
+    if actor is not None:
+        actor.set_actor_scale3d(unreal.Vector({scale[0]}, {scale[1]}, {scale[2]}))
+        if {actor_name!r}:
+            actor.set_actor_label({actor_name!r})
+        if {mesh_asset!r} and hasattr(actor, "static_mesh_component"):
+            mesh = unreal.load_asset({mesh_asset!r})
+            if mesh is not None:
+                actor.static_mesh_component.set_static_mesh(mesh)
 
     __bridge_result__ = {{
         "ok": actor is not None,
@@ -744,6 +824,23 @@ if target is not None:
         "label": label
     }}
 """)
+
+    def delete_asset(self, asset_path: str):
+        return self.execute_python(f'''
+if not unreal.EditorAssetLibrary.does_asset_exist("{asset_path}"):
+    __bridge_result__ = {{
+        "ok": False,
+        "error": "Asset not found: {asset_path}"
+    }}
+else:
+    deleted = unreal.EditorAssetLibrary.delete_asset("{asset_path}")
+
+    __bridge_result__ = {{
+        "ok": bool(deleted),
+        "asset_path": "{asset_path}",
+        "deleted": bool(deleted)
+    }}
+''')
 
     def save_level(self):
         return self.execute_python(r'''

@@ -649,6 +649,55 @@ app = api.app
 
 
 # ============================================================
+# UI PROOF SERVING
+# ============================================================
+
+from pathlib import Path as _Path
+from fastapi.responses import FileResponse as _FileResponse
+
+
+@app.get("/api/proof/latest")
+def proof_latest():
+    """Serve the latest Unreal viewport capture so the UI can show real
+    proof of what the agent did (screenshot written by the bridge).
+    """
+    try:
+        project_dir = _Path(_PROJECT_FILE).resolve().parent
+        candidates = [
+            project_dir / "Saved" / "UnrealAgent" / "viewport_latest.png",
+            project_dir / "Saved" / "UnrealAgent" / "pie_viewport_latest.png",
+        ]
+        for candidate in candidates:
+            if candidate.is_file() and candidate.stat().st_size > 0:
+                return _FileResponse(
+                    str(candidate),
+                    media_type="image/png",
+                    headers={"Cache-Control": "no-store"},
+                )
+    except Exception as exc:
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+    return {"ok": False, "error": "no screenshot captured yet"}
+
+
+@app.get("/api/proof/status")
+def proof_status():
+    """Return whether proof evidence exists and its path/size."""
+    try:
+        project_dir = _Path(_PROJECT_FILE).resolve().parent
+        candidate = project_dir / "Saved" / "UnrealAgent" / "viewport_latest.png"
+        if candidate.is_file() and candidate.stat().st_size > 0:
+            return {
+                "ok": True,
+                "path": str(candidate).replace("\\", "/"),
+                "size": candidate.stat().st_size,
+                "url": "/api/proof/latest",
+            }
+    except Exception as exc:
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+    return {"ok": False, "error": "no screenshot captured yet"}
+
+
+# ============================================================
 # FINAL DEADLOCK BREAKER V1
 # ============================================================
 

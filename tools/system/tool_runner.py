@@ -89,10 +89,26 @@ def find_unreal_projects(search_root: str) -> list[str]:
 
 
 def unreal_status() -> dict:
+    from tools.unreal.unreal_bridge import UnrealBridge
+    bridge = UnrealBridge(timeout=3)
+    ping = bridge.ping()
+    live = {}
+    if ping.get("ok"):
+        try:
+            response = bridge.execute_python('''import unreal\n__bridge_result__={"project_path":str(unreal.Paths.get_project_file_path()),"project_name":str(unreal.Paths.get_project_file_path()).replace("\\\\","/").rsplit("/",1)[-1].rsplit(".",1)[0],"engine":unreal.SystemLibrary.get_engine_version(),"world":str(unreal.EditorLevelLibrary.get_editor_world().get_path_name()) if unreal.EditorLevelLibrary.get_editor_world() else None}''')
+            live = response.get("result") or {}
+        except Exception as exc:
+            live = {"error": str(exc)}
     return {
-        "engine_root": str(UNREAL_ENGINE),
-        "editor_exe": str(UNREAL_EDITOR),
-        "editor_exists": UNREAL_EDITOR.exists()
+        "configured_engine_path": str(UNREAL_ENGINE),
+        "configured_editor_exe": str(UNREAL_EDITOR),
+        "detected_live_engine": live.get("engine") or ping.get("engine"),
+        "editor_exists": bool(ping.get("ok") or UNREAL_EDITOR.exists()),
+        "bridge_connected": bool(ping.get("ok")),
+        "bridge": ping,
+        "loaded_project": live.get("project_name"),
+        "loaded_project_path": live.get("project_path"),
+        "world": live.get("world"),
     }
 
 

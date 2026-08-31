@@ -16,6 +16,7 @@ def build_registry(
     discover_projects,
     inspect_project,
     open_project,
+    create_project,
     read_text_file,
     write_text_file,
     run_powershell,
@@ -46,6 +47,17 @@ def build_registry(
                 "uproject_path": "Absolute path to the .uproject file"
             },
             func=open_project,
+        ),
+
+        "create_project": ToolSpec(
+            name="create_project",
+            description="Create a new Unreal project using the configured engine.",
+            args={
+                "project_name": "New project name",
+                "destination": "Directory where the project will be created",
+                "template": "Unreal project template name"
+            },
+            func=create_project,
         ),
 
         "read_text_file": ToolSpec(
@@ -125,6 +137,31 @@ def build_registry(
                 description="Return information about the currently open Unreal level.",
                 args={},
                 func=bridge.get_current_level,
+            ),
+
+            "get_project_identity": ToolSpec(
+                name="get_project_identity",
+                description="Return the exact Unreal project currently open in the live Editor.",
+                args={},
+                func=bridge.get_project_identity,
+            ),
+
+            "create_default_level": ToolSpec(
+                name="create_default_level",
+                description="Create and save a real Unreal level in the currently open project.",
+                args={"level_path": "Unreal map path such as /Game/Main"},
+                func=bridge.create_default_level,
+                destructive=True,
+            ),
+
+            "validate_project_creation": ToolSpec(
+                name="validate_project_creation",
+                description="Strictly validate active project identity, loaded level, visible mesh actor, and clean saved state.",
+                args={
+                    "project_name": "Expected active Unreal project name",
+                    "actor_name": "Expected visible actor label",
+                },
+                func=bridge.validate_project_creation,
             ),
 
             "start_pie": ToolSpec(
@@ -209,7 +246,11 @@ def build_registry(
                 description="Spawn an Unreal Actor in the currently open level.",
                 args={
                     "class_name": "Unreal class name, for example StaticMeshActor",
-                    "location": "XYZ array such as [0, 0, 100]"
+                    "location": "XYZ array such as [0, 0, 100]",
+                    "rotation": "Optional Pitch/Yaw/Roll array",
+                    "scale": "Optional XYZ scale array",
+                    "actor_name": "Optional Outliner label",
+                    "mesh_asset": "Optional static mesh asset path"
                 },
                 func=bridge.spawn_actor,
                 destructive=True,
@@ -258,6 +299,16 @@ def build_registry(
                 destructive=True,
             ),
 
+            "delete_asset": ToolSpec(
+                name="delete_asset",
+                description="Delete an Unreal content asset.",
+                args={
+                    "asset_path": "Asset content path such as /Game/MyFolder/MyAsset"
+                },
+                func=bridge.delete_asset,
+                destructive=True,
+            ),
+
             "save_level": ToolSpec(
                 name="save_level",
                 description="Save dirty Unreal level and project packages.",
@@ -293,6 +344,28 @@ def build_registry(
             },
             func=blueprints.add_blueprint_variable,
             destructive=True,
+        ),
+
+        "set_blueprint_variable_default": ToolSpec(
+            name="set_blueprint_variable_default",
+            description="Set a Blueprint member variable default value.",
+            args={
+                "asset_path": "Blueprint content path",
+                "variable_name": "Variable name",
+                "value": "Default value",
+            },
+            func=blueprints.set_blueprint_variable_default,
+            destructive=True,
+        ),
+
+        "get_blueprint_variable_default": ToolSpec(
+            name="get_blueprint_variable_default",
+            description="Read a Blueprint member variable default value.",
+            args={
+                "asset_path": "Blueprint content path",
+                "variable_name": "Variable name",
+            },
+            func=blueprints.get_blueprint_variable_default,
         ),
 
         "add_blueprint_component": ToolSpec(

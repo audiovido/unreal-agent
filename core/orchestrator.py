@@ -17,6 +17,7 @@ from tools.unreal.project_manager import (
     discover_projects,
     inspect_project,
     open_project,
+    create_project,
 )
 
 from tools.system.tool_runner import (
@@ -56,6 +57,7 @@ REGISTRY = build_registry(
     discover_projects,
     inspect_project,
     open_project,
+    create_project,
     read_text_file,
     write_text_file,
     run_powershell,

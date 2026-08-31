@@ -7,7 +7,7 @@ This script will create a modern room using only the available bridge methods.
 import sys
 from tools.unreal.unreal_bridge import UnrealBridge
 
-def test_modern_room():
+def run_modern_room():
     """Test 1: Create a modern room with floor, walls, lighting"""
     print("=== TEST 1: MODERN ROOM CREATION ===")
     
@@ -77,7 +77,7 @@ def test_modern_room():
     print("=== MODERN ROOM TEST COMPLETED ===\n")
     return True
 
-if __name__ == "__main__":
+def main():
     try:
         success = test_modern_room()
         if success:

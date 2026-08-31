@@ -1,0 +1,255 @@
+{
+  "status": "idle",
+  "workers": [
+    {
+      "id": "worker_core",
+      "name": "Core Worker",
+      "role": "core_backend",
+      "status": "idle",
+      "current_task_id": null,
+      "tasks_completed": 2,
+      "tasks_failed": 4,
+      "last_heartbeat": 1788184975.7194376,
+      "last_output": "Created file: memory\\supervisor\\test_workspace\\test_beta.txt\nContent: MARKER_HELLO from worker worker_core",
+      "error": null,
+      "created_at": 1788184975.6628556
+    },
+    {
+      "id": "worker_ui",
+      "name": "UI Worker",
+      "role": "ui_integration",
+      "status": "idle",
+      "current_task_id": null,
+      "tasks_completed": 0,
+      "tasks_failed": 0,
+      "last_heartbeat": 1788184975.662859,
+      "last_output": "",
+      "error": null,
+      "created_at": 1788184975.6628592
+    }
+  ],
+  "tasks": [],
+  "completed_tasks": [
+    {
+      "id": "d9bd76a2-a36f-40ce-8d7b-b1ed8ba77f88",
+      "title": "Create test_alpha.txt",
+      "prompt": "Create file memory/supervisor/test_workspace/test_alpha.txt with content ALPHA",
+      "worker_id": "worker_core",
+      "status": "passed",
+      "attempt": 1,
+      "max_attempts": 5,
+      "result": null,
+      "last_output": "Created file: memory\\supervisor\\test_workspace\\test_alpha.txt\nContent: MARKER_HELLO from worker worker_core",
+      "pass_fail": "PASS",
+      "error": null,
+      "blocked_reason": null,
+      "followup_prompt": null,
+      "created_at": 1788184975.665632,
+      "assigned_at": 1788184975.6739528,
+      "started_at": 1788184975.6739724,
+      "finished_at": 1788184975.6802287,
+      "locked_files": [],
+      "tags": [
+        "test"
+      ],
+      "details": {}
+    },
+    {
+      "id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "title": "Read missing file",
+      "prompt": "Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: ERROR: File not found: memory\\supervisor\\t",
+      "worker_id": "worker_core",
+      "status": "blocked",
+      "attempt": 5,
+      "max_attempts": 5,
+      "result": null,
+      "last_output": "Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: ERROR: File not found: memory\\supervisor\\t\nStatus: completed",
+      "pass_fail": "FAIL",
+      "error": null,
+      "blocked_reason": "Max retries (5) exceeded",
+      "followup_prompt": "Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: ERROR: File not found: memory\\supervisor\\t",
+      "created_at": 1788184975.6677048,
+      "assigned_at": 1788184975.7114425,
+      "started_at": 1788184975.7114658,
+      "finished_at": 1788184975.7136748,
+      "locked_files": [],
+      "tags": [
+        "test"
+      ],
+      "details": {
+        "expected_content": "nothing"
+      }
+    },
+    {
+      "id": "2225fb52-b68f-48e2-a9a5-ac815af4f544",
+      "title": "Create test_beta.txt",
+      "prompt": "Create file memory/supervisor/test_workspace/test_beta.txt with content BETA",
+      "worker_id": "worker_core",
+      "status": "passed",
+      "attempt": 1,
+      "max_attempts": 5,
+      "result": null,
+      "last_output": "Created file: memory\\supervisor\\test_workspace\\test_beta.txt\nContent: MARKER_HELLO from worker worker_core",
+      "pass_fail": "PASS",
+      "error": null,
+      "blocked_reason": null,
+      "followup_prompt": null,
+      "created_at": 1788184975.6698537,
+      "assigned_at": 1788184975.7170038,
+      "started_at": 1788184975.7170258,
+      "finished_at": 1788184975.7194111,
+      "locked_files": [],
+      "tags": [
+        "test"
+      ],
+      "details": {}
+    }
+  ],
+  "activity_log": [
+    {
+      "id": "758e0b43-6247-4a58-b069-4f6c31a45b8c",
+      "kind": "task_added",
+      "text": "Task added: Create test_alpha.txt",
+      "timestamp": 1788184975.665646,
+      "task_id": "d9bd76a2-a36f-40ce-8d7b-b1ed8ba77f88"
+    },
+    {
+      "id": "045c99b6-177b-4f27-9ece-46cb3413a808",
+      "kind": "task_added",
+      "text": "Task added: Read missing file",
+      "timestamp": 1788184975.6677175,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e"
+    },
+    {
+      "id": "0a32488d-b763-4d16-b899-675d36f90a65",
+      "kind": "task_added",
+      "text": "Task added: Create test_beta.txt",
+      "timestamp": 1788184975.6698666,
+      "task_id": "2225fb52-b68f-48e2-a9a5-ac815af4f544"
+    },
+    {
+      "id": "e29fa491-efca-4d22-9f34-0c9919165a10",
+      "kind": "supervisor_started",
+      "text": "Supervisor loop started",
+      "timestamp": 1788184975.6739311
+    },
+    {
+      "id": "94e6376d-b725-423c-8b57-f3c546b065e3",
+      "kind": "task_assigned",
+      "text": "Assigned 'Create test_alpha.txt' to Core Worker",
+      "timestamp": 1788184975.6739707,
+      "task_id": "d9bd76a2-a36f-40ce-8d7b-b1ed8ba77f88",
+      "worker_id": "worker_core"
+    },
+    {
+      "id": "4d39d231-5a42-4635-be42-f894f5e7988a",
+      "kind": "task_passed",
+      "text": "Task PASSED: Create test_alpha.txt (attempt 1)",
+      "timestamp": 1788184975.6802564,
+      "task_id": "d9bd76a2-a36f-40ce-8d7b-b1ed8ba77f88"
+    },
+    {
+      "id": "9585c226-f868-40f8-ab0e-7ffc15fb336f",
+      "kind": "task_assigned",
+      "text": "Assigned 'Read missing file' to Core Worker",
+      "timestamp": 1788184975.6843188,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "worker_id": "worker_core"
+    },
+    {
+      "id": "7e7d0aa9-013a-4795-8d13-493a078c8cf1",
+      "kind": "task_failed",
+      "text": "Task FAILED: Read missing file (attempt 1)",
+      "timestamp": 1788184975.686265,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "followup": "Fix the error and retry. Previous output: ERROR: File not found: memory\\supervisor\\test_workspace\\MISSING.txt"
+    },
+    {
+      "id": "4fc857d1-a9a4-4557-b9dd-7500fa6447fa",
+      "kind": "task_assigned",
+      "text": "Assigned 'Read missing file' to Core Worker",
+      "timestamp": 1788184975.6916428,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "worker_id": "worker_core"
+    },
+    {
+      "id": "0bc97d5b-9d48-455c-bab6-8577b39a5ebc",
+      "kind": "task_failed",
+      "text": "Task FAILED: Read missing file (attempt 2)",
+      "timestamp": 1788184975.693766,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "followup": "Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: ERROR: File not found: memory\\supervisor\\test_workspace\\MISSING.txt\nStatus: completed"
+    },
+    {
+      "id": "8e5e88c7-677e-40a2-9ab4-0fa6c2a1b34a",
+      "kind": "task_assigned",
+      "text": "Assigned 'Read missing file' to Core Worker",
+      "timestamp": 1788184975.6988475,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "worker_id": "worker_core"
+    },
+    {
+      "id": "dae42390-77a7-4e03-9436-25a96bf822ee",
+      "kind": "task_failed",
+      "text": "Task FAILED: Read missing file (attempt 3)",
+      "timestamp": 1788184975.7009087,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "followup": "Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: ERROR: File not found: memory\\supervisor\\test_workspace\\MISSING.txt\nStatus: completed\nStatus: completed"
+    },
+    {
+      "id": "a25c06f0-cab8-4686-8652-5f86598a8516",
+      "kind": "task_assigned",
+      "text": "Assigned 'Read missing file' to Core Worker",
+      "timestamp": 1788184975.7056584,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "worker_id": "worker_core"
+    },
+    {
+      "id": "5e825229-7fdf-4128-99a2-a61b9f001262",
+      "kind": "task_failed",
+      "text": "Task FAILED: Read missing file (attempt 4)",
+      "timestamp": 1788184975.7077045,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "followup": "Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: Task executed by worker worker_core\nPrompt: Fix the error and retry. Previous output: ERROR: File not found: memory\\supervisor\\t"
+    },
+    {
+      "id": "164b60f3-1d90-45cd-ae2e-e15d16a39e79",
+      "kind": "task_assigned",
+      "text": "Assigned 'Read missing file' to Core Worker",
+      "timestamp": 1788184975.711464,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e",
+      "worker_id": "worker_core"
+    },
+    {
+      "id": "24844bbd-dc16-42e0-9585-295974f72b30",
+      "kind": "task_blocked",
+      "text": "Task BLOCKED: Read missing file — max retries",
+      "timestamp": 1788184975.7137024,
+      "task_id": "683470a0-dd67-4d8c-8ca8-6962bf6a317e"
+    },
+    {
+      "id": "c1165a50-66f4-4596-9507-582710a25533",
+      "kind": "task_assigned",
+      "text": "Assigned 'Create test_beta.txt' to Core Worker",
+      "timestamp": 1788184975.717024,
+      "task_id": "2225fb52-b68f-48e2-a9a5-ac815af4f544",
+      "worker_id": "worker_core"
+    },
+    {
+      "id": "14df4ed8-cee3-44af-90e7-d9c4ca9cfad1",
+      "kind": "task_passed",
+      "text": "Task PASSED: Create test_beta.txt (attempt 1)",
+      "timestamp": 1788184975.7194343,
+      "task_id": "2225fb52-b68f-48e2-a9a5-ac815af4f544"
+    },
+    {
+      "id": "cc9b814d-9b72-41f4-b6e4-84fe304e3c11",
+      "kind": "supervisor_complete",
+      "text": "All tasks completed",
+      "timestamp": 1788184975.7244227
+    }
+  ],
+  "started_at": 1788184975.6720352,
+  "last_tick": 1788184975.724397,
+  "total_cycles": 8
+}

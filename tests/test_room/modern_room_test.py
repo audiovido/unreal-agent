@@ -1,116 +1,65 @@
 #!/usr/bin/env python3
 """
 Modern Room Test for Unreal Agent
-This script will create a small polished modern room using the Unreal Agent.
+
+Creates a modern room using the real Unreal Bridge API.
 """
 
-import os
 import sys
-import time
-from pathlib import Path
+import json
+from tools.unreal.unreal_bridge import UnrealBridge
 
-# Add the app directory to the Python path to access the API
-sys.path.insert(0, str(Path(__file__).parent.parent / "app"))
-
-from api import UnrealAgentAPI
 
 def create_modern_room():
-    """Create a modern room with floor, walls, props, lighting and camera view."""
-    
+    """Create a modern room with floor, walls, props, lighting."""
     print("=== STARTING MODERN ROOM CREATION ===")
-    
-    # Initialize the Unreal Agent API
-    agent = UnrealAgentAPI()
-    
-    # Start by clearing any existing content
-    print("Clearing existing content...")
-    agent.clear_level()
-    
+
+    bridge = UnrealBridge()
+    assert bridge.ping().get("ok"), "Bridge not connected"
+
+    # Record before
+    before = bridge.list_level_actors()
+    actors_before = {a["name"] for a in before.get("result", [])}
+
     # Create floor
-    print("Creating floor...")
-    agent.create_actor(
-        actor_type="Floor",
-        location=(0, 0, -50),
-        scale=(10, 10, 1)
-    )
-    
-    # Create walls (4 walls around the room)
-    print("Creating walls...")
-    # Front wall
-    agent.create_actor(
-        actor_type="Wall",
-        location=(0, 50, 0),
-        scale=(20, 1, 10)
-    )
-    # Back wall  
-    agent.create_actor(
-        actor_type="Wall",
-        location=(0, -50, 0),
-        scale=(20, 1, 10)
-    )
-    # Left wall
-    agent.create_actor(
-        actor_type="Wall", 
-        location=(-50, 0, 0),
-        scale=(1, 20, 10)
-    )
-    # Right wall
-    agent.create_actor(
-        actor_type="Wall",
-        location=(50, 0, 0),
-        scale=(1, 20, 10)
-    )
-    
-    # Add basic props (if available)
-    print("Adding props...")
-    # Add a simple table
-    agent.create_actor(
-        actor_type="Table",
-        location=(0, 0, -25)
-    )
-    
-    # Add a chair
-    agent.create_actor(
-        actor_type="Chair",
-        location=(20, 0, -25)
-    )
-    
+    bridge.spawn_actor(class_name="StaticMeshActor", location=[0, 0, -50], actor_name="RoomFloor")
+    print("Floor created")
+
+    # Create walls
+    for name, loc in [("WallFront", [0, 500, 0]), ("WallBack", [0, -500, 0]),
+                       ("WallLeft", [-500, 0, 0]), ("WallRight", [500, 0, 0])]:
+        bridge.spawn_actor(class_name="StaticMeshActor", location=loc, actor_name=name)
+    print("Walls created")
+
     # Add lighting
-    print("Adding lighting...")
-    agent.create_actor(
-        actor_type="DirectionalLight",
-        location=(0, 0, 100),
-        rotation=(45, 0, 0)
-    )
-    
-    # Add a point light for ambient lighting
-    agent.create_actor(
-        actor_type="PointLight",
-        location=(0, 0, 0),
-        intensity=2000
-    )
-    
-    # Set camera position for good view
-    print("Setting up camera...")
-    agent.set_camera_location((0, -100, 50))
-    agent.set_camera_rotation((45, 0, 0))
-    
-    # Save the level
-    print("Saving level...")
-    save_path = "Saved/UnrealAgent/test_room_modern"
-    agent.save_level(save_path)
-    
-    # Capture viewport for visual review
-    print("Capturing viewport...")
-    capture_result = agent.capture_viewport()
-    
+    bridge.spawn_actor(class_name="DirectionalLight", location=[0, 0, 300], actor_name="RoomLight")
+    print("Lighting added")
+
+    # Save
+    bridge.save_level()
+    bridge.capture_unreal_viewport()
+
+    # Cleanup
+    for name in ["RoomFloor", "WallFront", "WallBack", "WallLeft", "WallRight", "RoomLight"]:
+        bridge.delete_actor(name)
+    bridge.save_level()
+
+    # Verify cleanup
+    after = bridge.list_level_actors()
+    actors_after = {a["name"] for a in after.get("result", [])}
+    leftover = actors_after - actors_before
+    assert not leftover, f"Leftover actors: {leftover}"
+
     print("=== MODERN ROOM CREATION COMPLETE ===")
-    return capture_result
+    return True
+
 
 if __name__ == "__main__":
     try:
-        result = create_modern_room()
-        print(f"Room creation successful! Capture saved at: {result}")
+        create_modern_room()
+        print("\n✅ Modern room test passed!")
     except Exception as e:
-        print(f"Error during room creation: {e}")
+        print(f"\n❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
