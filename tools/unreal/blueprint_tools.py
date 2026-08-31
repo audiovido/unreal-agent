@@ -272,21 +272,159 @@ else:
         self,
         asset_path: str,
     ) -> Dict[str, Any]:
-        return self.bridge.execute_python(f'''
-asset = unreal.EditorAssetLibrary.load_asset("{asset_path}")
-
-if asset is None:
+        """Compile, save, reload and independently verify a Blueprint asset."""
+        if not isinstance(asset_path, str) or not asset_path.startswith("/Game/") or ".umap" in asset_path.lower() or "/maps/" in asset_path.lower():
+            return {
+                "ok": False,
+                "code": "INVALID_BLUEPRINT_PATH",
+                "asset_path": asset_path,
+                "asset_found": False,
+                "is_blueprint": False,
+                "compile_called": False,
+                "save_ok": False,
+                "verified": False,
+                "errors": ["Expected a Blueprint object path under /Game/, not a Level/Map or non-string value"],
+                "recoverable": False,
+            }
+        return self.bridge.execute_python(f'''\
+import unreal
+asset_path = {asset_path!r}
+errors = []
+asset = unreal.EditorAssetLibrary.load_asset(asset_path)
+asset_found = asset is not None
+# WidgetBlueprints derive from Blueprint and compile/save through the same
+# editor library; accept both so UMG assets behave like any other Blueprint.
+is_blueprint = bool(asset_found and asset.get_class().get_name() in ("Blueprint", "WidgetBlueprint"))
+compile_called = False
+save_ok = False
+compile_status = None
+verified = False
+if not asset_found:
     __bridge_result__ = {{
-        "ok": False,
-        "error": "Blueprint asset not found: {asset_path}"
+        "ok": False, "code": "BLUEPRINT_NOT_FOUND", "asset_path": asset_path,
+        "asset_found": False, "is_blueprint": False, "compile_called": False,
+        "compile_status": None, "save_ok": False, "verified": False,
+        "errors": ["Blueprint asset not found: " + asset_path], "recoverable": True
+    }}
+elif not is_blueprint:
+    __bridge_result__ = {{
+        "ok": False, "code": "WRONG_ASSET_TYPE", "asset_path": asset_path,
+        "asset_found": True, "is_blueprint": False, "compile_called": False,
+        "compile_status": None, "save_ok": False, "verified": False,
+        "errors": ["Asset is " + asset.get_class().get_name() + ", not Blueprint"], "recoverable": False
     }}
 else:
-    unreal.BlueprintEditorLibrary.compile_blueprint(asset)
-
+    # Up to three changed strategies: original UObject, a fresh reload, then
+    # BlueprintEditorLibrary's Blueprint resolver. Never repeat the same object.
+    attempts = []
+    candidates = [asset]
+    try:
+        fresh = unreal.EditorAssetLibrary.load_asset(asset_path)
+        if fresh is not asset:
+            candidates.append(fresh)
+    except Exception as exc:
+        errors.append(type(exc).__name__ + ": " + str(exc))
+    for candidate in candidates[:3]:
+        if candidate is None:
+            continue
+        try:
+            if candidate.get_class().get_name() not in ("Blueprint", "WidgetBlueprint"):
+                continue
+            unreal.BlueprintEditorLibrary.compile_blueprint(candidate)
+            compile_called = True
+            compile_status = str(candidate.status)
+            attempts.append({{"object": candidate.get_name(), "status": compile_status}})
+            if "BS_UP_TO_DATE" not in compile_status:
+                errors.append(compile_status)
+                continue
+            save_ok = bool(unreal.EditorAssetLibrary.save_loaded_asset(candidate, False))
+            reloaded = unreal.EditorAssetLibrary.load_asset(asset_path)
+            reloaded_status = str(reloaded.status) if reloaded is not None else ""
+            verified = bool(
+                reloaded is not None
+                and reloaded.get_class().get_name() in ("Blueprint", "WidgetBlueprint")
+                and "BS_UP_TO_DATE" in reloaded_status
+                and save_ok
+            )
+            compile_status = reloaded_status or compile_status
+            if verified:
+                break
+        except Exception as exc:
+            errors.append(type(exc).__name__ + ": " + str(exc))
+    if not verified and not errors:
+        errors.append("Blueprint did not verify as BS_UP_TO_DATE after reload")
     __bridge_result__ = {{
-        "ok": True,
-        "asset_path": "{asset_path}",
-        "compiled": True
+        "ok": bool(verified), "code": None if verified else "BLUEPRINT_COMPILE_FAILED",
+        "asset_path": asset_path, "asset_found": asset_found, "is_blueprint": is_blueprint,
+        "compile_called": compile_called, "compile_status": compile_status,
+        "save_ok": save_ok, "verified": verified, "errors": errors,
+        "recoverable": not verified
+    }}
+''')
+
+    def create_umg_widget(
+        self,
+        asset_path: str,
+    ) -> Dict[str, Any]:
+        """Create a real UMG Widget Blueprint asset, compile and save it, and
+        independently verify the persisted WidgetBlueprint on disk."""
+        if not isinstance(asset_path, str) or not asset_path.startswith("/Game/"):
+            return {
+                "ok": False,
+                "code": "INVALID_WIDGET_PATH",
+                "asset_path": asset_path,
+                "errors": ["Expected a widget asset path under /Game/"],
+            }
+        package_path, _, name = asset_path.rpartition("/")
+        if not package_path or not name:
+            return {"ok": False, "code": "INVALID_WIDGET_PATH", "asset_path": asset_path, "errors": ["Widget path must include a package folder and asset name"]}
+        return self.bridge.execute_python(f'''\
+import unreal
+asset_path = {asset_path!r}
+package_path = {package_path!r}
+name = {name!r}
+errors = []
+unreal.EditorAssetLibrary.make_directory(package_path)
+asset = unreal.EditorAssetLibrary.load_asset(asset_path)
+created = False
+if asset is None:
+    try:
+        factory = unreal.WidgetBlueprintFactory()
+        asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
+        asset = asset_tools.create_asset(name, package_path, unreal.WidgetBlueprint, factory)
+        created = asset is not None
+    except Exception as exc:
+        errors.append(type(exc).__name__ + ": " + str(exc))
+if asset is None:
+    __bridge_result__ = {{
+        "ok": False, "code": "WIDGET_CREATE_FAILED", "asset_path": asset_path,
+        "created": False, "is_widget": False, "compiled": False, "saved": False, "verified": False,
+        "errors": errors or ["Unreal could not create the widget asset"],
+    }}
+else:
+    is_widget = asset.get_class().get_name() in ("WidgetBlueprint", "Blueprint")
+    compiled = False
+    saved = False
+    verified = False
+    if is_widget:
+        try:
+            unreal.BlueprintEditorLibrary.compile_blueprint(asset)
+            compiled = "BS_UP_TO_DATE" in str(asset.status)
+            saved = bool(unreal.EditorAssetLibrary.save_loaded_asset(asset, False))
+            reloaded = unreal.EditorAssetLibrary.load_asset(asset_path)
+            verified = bool(
+                reloaded is not None
+                and reloaded.get_class().get_name() in ("WidgetBlueprint", "Blueprint")
+                and "BS_UP_TO_DATE" in str(reloaded.status)
+                and saved
+            )
+        except Exception as exc:
+            errors.append(type(exc).__name__ + ": " + str(exc))
+    __bridge_result__ = {{
+        "ok": bool(verified), "code": None if verified else "WIDGET_COMPILE_FAILED",
+        "asset_path": asset_path, "created": created, "is_widget": is_widget,
+        "compiled": compiled, "saved": saved, "verified": verified,
+        "class": asset.get_class().get_name(), "errors": errors,
     }}
 ''')
 

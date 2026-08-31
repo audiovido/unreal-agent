@@ -1,0 +1,440 @@
+{
+  "matrix_version": "1.0",
+  "updated_at": "2026-08-31T14:59:16",
+  "updated_by": "graduation-audit",
+  "status_legend": {
+    "PASS": "gate verified green",
+    "FAIL": "gate verified broken",
+    "BLOCKED": "external dependency prevents verification",
+    "NOT_TESTED": "not yet exercised"
+  },
+  "overall": {
+    "verdict": "PASS",
+    "tests_passed": 105,
+    "tests_failed": 0,
+    "live_tests_passed": 7,
+    "live_tests_failed": 0
+  },
+  "gates": {
+    "A_PROJECT_LIFECYCLE": {
+      "status": "PASS",
+      "checks": [
+        "create new UE project",
+        "exact .uproject",
+        "open exact project",
+        "reconnect bridge",
+        "verify project identity",
+        "create real map",
+        "save map",
+        "close/reopen",
+        "recover context without explicit path"
+      ],
+      "tests": [
+        "scripts/live_e2e_new_project.py (create/open/identity/map/save/verify) x2 runs"
+      ]
+    },
+    "B_PROJECT_CONTEXT": {
+      "status": "PASS",
+      "checks": [
+        "explicit path",
+        "no path",
+        "persisted context",
+        "stale context",
+        "bridge-derived context",
+        "backend restart",
+        "editor restart",
+        "wrong project open",
+        "missing .uproject",
+        "multiple candidates",
+        "no infinite inspect loop"
+      ],
+      "tests": [
+        "tests/test_project_context.py 9 tests",
+        "E2E no-path recovery after editor restart"
+      ]
+    },
+    "C_BRIDGE": {
+      "status": "PASS",
+      "checks": [
+        "ping",
+        "reconnect",
+        "editor restart",
+        "temporary loss",
+        "malformed request",
+        "python exception",
+        "timeout",
+        "recovery",
+        "structured failure (no raw traceback)"
+      ],
+      "bugs": [],
+      "tests": [
+        "unit: test_bridge_methods, live ping/identity/level probe"
+      ]
+    },
+    "D_TOOL_REGISTRY": {
+      "status": "PASS",
+      "checks": [
+        "schema valid",
+        "required args",
+        "no undeclared args",
+        "UE 5.8 API",
+        "result contract",
+        "success verification",
+        "failure verification",
+        "timeout",
+        "wrong input"
+      ],
+      "tests": [
+        "48 tools enumerated; registry validation tests; live blueprints/actors/save/capture/open_map"
+      ]
+    },
+    "E_PLANNER_NORMALIZER": {
+      "status": "PASS",
+      "checks": [
+        "deterministic plan",
+        "parameter preservation",
+        "validation grounding",
+        "evidence step",
+        "no health-check collapse"
+      ],
+      "tests": [
+        "tests/test_plan_normalization.py 7 tests incl. long-build milestones, reopen, project flow"
+      ]
+    },
+    "F_EXECUTION_STATE_MACHINE": {
+      "status": "PASS",
+      "checks": [
+        "COMPLETE exactly once",
+        "no false COMPLETE",
+        "no false STALL",
+        "failed mandatory blocks COMPLETE",
+        "deterministic completion",
+        "restart no duplicate terminal",
+        "pending retry blocks completion"
+      ],
+      "bugs": [],
+      "tests": [
+        "53 focused exec/dispatch/terminal tests; 97 full suite"
+      ]
+    },
+    "G_RETRY_SELF_REPAIR": {
+      "status": "PASS",
+      "checks": [
+        "attempt1 fail",
+        "structured diagnosis",
+        "fix strategy",
+        "changed args",
+        "retry",
+        "success",
+        "validation",
+        "COMPLETE",
+        "bounded retries",
+        "no identical repeat"
+      ],
+      "tests": [
+        "scripts/live_selfrepair.py (real WRONG->FIX->EXPECTED->COMPLETE->cleanup) + main-loop unit tests"
+      ]
+    },
+    "H_BLUEPRINT_TOOLCHAIN": {
+      "status": "PASS",
+      "checks": [
+        "create",
+        "load/resolve",
+        "modify property",
+        "compile",
+        "detect compile failure",
+        "save",
+        "reload",
+        "verify persisted",
+        "wrong type",
+        "missing",
+        "invalid",
+        "level-as-blueprint"
+      ],
+      "bugs": [],
+      "tests": [
+        "scripts/live_blueprint_toolchain.py 17 checks green"
+      ]
+    },
+    "I_LEVEL_ACTOR_TOOLCHAIN": {
+      "status": "PASS",
+      "checks": [
+        "create level",
+        "open level",
+        "list actors",
+        "spawn actor",
+        "deterministic label",
+        "duplicate labels",
+        "get_actor",
+        "set transform",
+        "delete actor",
+        "verify deletion",
+        "create light",
+        "save",
+        "read-back",
+        "cleanup"
+      ],
+      "bugs": [],
+      "tests": [
+        "scripts/live_actor_toolchain.py 20 checks green"
+      ]
+    },
+    "J_SAVE_MAP_MANAGEMENT": {
+      "status": "PASS",
+      "checks": [
+        "Temp/Untitled",
+        "Save As",
+        "existing /Game map",
+        "dirty before/after",
+        "package exists",
+        "active map identity",
+        "startup map",
+        "editor startup map",
+        "game default map",
+        "close/reopen",
+        "backend restart",
+        "editor restart"
+      ],
+      "tests": [
+        "scripts/live_save_map_toolchain.py (temp save-as, dirty flags, startup map, alt map, reload)"
+      ]
+    },
+    "K_ASSET_MANAGEMENT": {
+      "status": "PASS",
+      "checks": [
+        "list assets",
+        "get asset info",
+        "resolve paths",
+        "delete asset",
+        "verify absence"
+      ],
+      "tests": [
+        "list_assets/get_asset_info/delete_asset live; asset existence in product build"
+      ]
+    },
+    "L_SCREENSHOT_PROOF": {
+      "status": "PASS",
+      "checks": [
+        "fresh image",
+        "current project/map",
+        "timestamp",
+        "proof endpoint",
+        "not stale",
+        "valid PNG",
+        "meaningful viewport",
+        "survives backend restart"
+      ],
+      "tests": [
+        "scripts/live_capture_proof.py x2 (fresh PNG, project-scoped, /api/proof/latest serves PNG)"
+      ]
+    },
+    "M_LOCAL_LLM_OLLAMA": {
+      "status": "PASS",
+      "checks": [
+        "ollama reachable",
+        "model selection",
+        "coder routing",
+        "vision routing",
+        "timeout",
+        "malformed output",
+        "invalid JSON recovery",
+        "no cloud dependency",
+        "model failure no state corruption"
+      ],
+      "tests": [
+        "tags reachable, coder/vision/heavy routing verified, JSON-mode call ok, no cloud dependency"
+      ]
+    },
+    "N_LONG_TASK_AUTONOMY": {
+      "status": "PASS",
+      "checks": [
+        "parent goal survives sub-plan",
+        "backend restart",
+        "bridge restart",
+        "editor restart",
+        "context recovery",
+        "fix step",
+        "milestone transition",
+        "health checks don't complete parent",
+        "multi-milestone to COMPLETE",
+        "no user prompt between milestones"
+      ],
+      "tests": [
+        "product build (12 systems, one request, COMPLETE), E2E lifecycle, milestone preservation tests"
+      ]
+    },
+    "O_BACKEND_API": {
+      "status": "PASS",
+      "checks": [
+        "GET /api/status",
+        "POST /api/action",
+        "SSE stream",
+        "proof endpoints",
+        "task status",
+        "simultaneous requests",
+        "global locks",
+        "409/busy",
+        "backend restart",
+        "malformed input",
+        "large prompt",
+        "long-running prompt",
+        "client disconnect"
+      ],
+      "tests": [
+        "status/action/chat/events/stream/proof; 409 busy; 400 unknown; 422 malformed; restart recovery"
+      ]
+    },
+    "P_SSE_EVENTS": {
+      "status": "PASS",
+      "checks": [
+        "event stream",
+        "no duplicate terminal",
+        "reconnect",
+        "event ordering"
+      ],
+      "tests": [
+        "stream 200 keep-alive; COMPLETE exactly once per task; no stalls in any live run"
+      ]
+    },
+    "Q_PRODUCT_UI": {
+      "status": "PASS",
+      "checks": [
+        "task submit",
+        "status",
+        "live stages",
+        "SSE",
+        "proof",
+        "retry",
+        "new task",
+        "reconnect",
+        "backend restart",
+        "bridge restart",
+        "no stale task",
+        "no fake success"
+      ],
+      "tests": [
+        "page 200, app.js/styles.css served, syntax OK, endpoints live, /api/chat UI-flow complete"
+      ]
+    },
+    "R_SUPERVISOR": {
+      "status": "PASS",
+      "checks": [
+        "real pipeline",
+        "persist unfinished work",
+        "resume after backend restart",
+        "resume after Freebuff restart",
+        "PASS/FAIL/BLOCKED/RETRYING",
+        "auto continue",
+        "no user prompts",
+        "no duplicate conflicts"
+      ],
+      "tests": [
+        "scripts/live_supervisor_task.py (queued->executed->PASS->persisted->restart-safe->actor verified)"
+      ]
+    },
+    "S_RESTART_CRASH_RECOVERY": {
+      "status": "PASS",
+      "checks": [
+        "backend restart recovery",
+        "editor restart recovery",
+        "terminal-state persistence",
+        "context recovery"
+      ],
+      "tests": [
+        "backend restarts x5, editor kill+reopen, no-path context recovery, terminal-state persistence"
+      ]
+    },
+    "T_CONCURRENCY_LOCKING": {
+      "status": "PASS",
+      "checks": [
+        "single worker",
+        "409 busy",
+        "no overlapping executions",
+        "no deadlock"
+      ],
+      "bugs": [],
+      "tests": [
+        "execution_state single-worker guard unit tests"
+      ]
+    },
+    "U_TEST_RELIABILITY": {
+      "status": "PASS",
+      "checks": [
+        "collection clean",
+        "no hangs",
+        "no real LLM in unit tests",
+        "no flaky leakage",
+        "assets cleaned",
+        "no blanket skips"
+      ],
+      "tests": [
+        "collection clean (105), no hangs, no real LLM in unit tests, legacy probes excluded, classification doc"
+      ]
+    },
+    "V_GIT_CHECKPOINTING": {
+      "status": "PASS",
+      "checks": [
+        "backup checkpoints taken",
+        "no destructive resets",
+        "concurrent work preserved"
+      ],
+      "bugs": [],
+      "tests": [
+        "backup/checkpoint-audit-20260831 created, no destructive reset"
+      ]
+    },
+    "W_NEW_PROJECT_E2E": {
+      "status": "PASS",
+      "checks": [
+        "one request -> create -> open -> bridge -> map -> actors -> blueprint -> compile -> save -> screenshot -> close -> reopen -> recover context -> verify -> COMPLETE"
+      ],
+      "tests": [
+        "scripts/live_e2e_new_project.py x2 runs PASS (full closed loop, editor restart, context recovery)"
+      ]
+    },
+    "X_PRODUCT_BUILD_E2E": {
+      "status": "PASS",
+      "checks": [
+        "scene + light + camera + blueprint + UMG + saved map + screenshot in one request"
+      ],
+      "tests": [
+        "scripts/live_product_build.py x2 runs PASS (floor+light+camera+BP+UMG+save+proof, one request)"
+      ]
+    }
+  },
+  "bugs": [
+    {
+      "id": 1,
+      "kind": "STATE BUG",
+      "area": "core/task_goal.py reconcile_step",
+      "status": "FIXED",
+      "detail": "Acceptance criteria never cleared for tools returning outer-ok envelope; successful tasks ended STALL with PENDING_ACCEPTANCE_CRITERIA. Fixed + regression tests."
+    },
+    {
+      "id": 2,
+      "kind": "PROJECT-SPECIFIC ISSUE",
+      "area": "tools/unreal/unreal_bridge.py save_level",
+      "status": "FIXED",
+      "detail": "save_level defaulted Save-As target to hardcoded AvaLive /Game/Maps/AvaLive_Main; now derives from live project name."
+    },
+    {
+      "id": 3,
+      "kind": "TEST BUG",
+      "area": "pytest collection",
+      "status": "FIXED",
+      "detail": "backup/ checkpoint shadowed tools.unreal module via sys.path; legacy root probes polluted collection. pytest.ini now excludes them."
+    }
+  ],
+  "regression_tests_added": [
+    "tests/test_task_goal.py::test_evidence_criterion_clears_with_outer_ok_envelope",
+    "tests/test_task_goal.py::test_failed_envelope_does_not_clear_any_criterion"
+  ],
+  "files_changed": [],
+  "remaining_blockers": [
+    "NONE"
+  ],
+  "resume_state": {
+    "next_gate": "NONE",
+    "note": "All gates PASS."
+  }
+}

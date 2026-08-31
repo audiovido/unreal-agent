@@ -656,24 +656,57 @@ from pathlib import Path as _Path
 from fastapi.responses import FileResponse as _FileResponse
 
 
+def _proof_candidates():
+    """Candidate viewport-capture dirs: the default project plus whichever
+    project the live Unreal Bridge currently has open. The freshest real file
+    wins, so proof follows the editor the agent actually operated on.
+    """
+    dirs = []
+    try:
+        dirs.append(_Path(_PROJECT_FILE).resolve().parent)
+    except Exception:
+        pass
+    try:
+        from tools.unreal.unreal_bridge import UnrealBridge
+        identity = UnrealBridge(timeout=8).get_project_identity()
+        info = identity.get("result") if isinstance(identity, dict) else None
+        project_path = (info or {}).get("project_path")
+        if project_path:
+            dirs.append(_Path(str(project_path)).resolve().parent)
+    except Exception:
+        pass
+    return dirs
+
+
+def _proof_files():
+    files = []
+    for project_dir in _proof_candidates():
+        for name in ("viewport_latest.png", "pie_viewport_latest.png"):
+            candidate = project_dir / "Saved" / "UnrealAgent" / name
+            try:
+                if candidate.is_file() and candidate.stat().st_size > 0:
+                    files.append(candidate)
+            except Exception:
+                continue
+    if not files:
+        return []
+    files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return files
+
+
 @app.get("/api/proof/latest")
 def proof_latest():
-    """Serve the latest Unreal viewport capture so the UI can show real
+    """Serve the freshest Unreal viewport capture so the UI can show real
     proof of what the agent did (screenshot written by the bridge).
     """
     try:
-        project_dir = _Path(_PROJECT_FILE).resolve().parent
-        candidates = [
-            project_dir / "Saved" / "UnrealAgent" / "viewport_latest.png",
-            project_dir / "Saved" / "UnrealAgent" / "pie_viewport_latest.png",
-        ]
-        for candidate in candidates:
-            if candidate.is_file() and candidate.stat().st_size > 0:
-                return _FileResponse(
-                    str(candidate),
-                    media_type="image/png",
-                    headers={"Cache-Control": "no-store"},
-                )
+        files = _proof_files()
+        if files:
+            return _FileResponse(
+                str(files[0]),
+                media_type="image/png",
+                headers={"Cache-Control": "no-store"},
+            )
     except Exception as exc:
         return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
     return {"ok": False, "error": "no screenshot captured yet"}
@@ -683,9 +716,9 @@ def proof_latest():
 def proof_status():
     """Return whether proof evidence exists and its path/size."""
     try:
-        project_dir = _Path(_PROJECT_FILE).resolve().parent
-        candidate = project_dir / "Saved" / "UnrealAgent" / "viewport_latest.png"
-        if candidate.is_file() and candidate.stat().st_size > 0:
+        files = _proof_files()
+        if files:
+            candidate = files[0]
             return {
                 "ok": True,
                 "path": str(candidate).replace("\\", "/"),

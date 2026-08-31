@@ -24,3 +24,14 @@ __pycache__/
 *.pyc
 memory/conversation.json
 ui/*.agentboard_backup
+
+# Local workspace / recovery artifacts (not product code)
+.freebuff/
+.tmp-browser/
+Microsoft/
+backup/
+memory/task_goal.json
+memory/active_project_context.json
+app/api.before_*
+app/api.pre_*
+app/api.backup_*

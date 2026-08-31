@@ -23,10 +23,17 @@ def test_next_normalized_step_is_pure_and_dependency_ready():
     assert index == 1 and step['step_id'] == 'b'
 
 
-def test_resolved_args_inject_project_path_without_model():
+def test_resolved_args_do_not_force_default_project_path_without_model():
+    # inspect_project without an EXPLICIT user-provided path must NOT be forced
+    # onto the hardcoded default; it stays unset so the tool resolves the active
+    # project from the durable context / live bridge (never a bare not-found).
     step = {'preferred_tool': 'inspect_project', 'parameters': {}}
     args = api._resolved_step_args({'project_context': {}}, step)
-    assert args['uproject_path'].endswith('AudioVidoLivingCity.uproject')
+    assert 'uproject_path' not in args
+    # An explicit path that the planner extracted IS preserved.
+    step2 = {'preferred_tool': 'inspect_project', 'parameters': {'uproject_path': r'C:\P\P.uproject'}}
+    args2 = api._resolved_step_args({'project_context': {}}, step2)
+    assert args2['uproject_path'] == r'C:\P\P.uproject'
 
 
 def test_dispatch_is_control_pure():

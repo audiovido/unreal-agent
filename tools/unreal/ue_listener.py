@@ -16,6 +16,20 @@ _running = True
 _server_socket = None
 
 
+def structured_execution_error(exc, *, code="PYTHON_EXECUTION_FAILED", recoverable=False, stdout=""):
+    tb = traceback.format_exc()
+    return {
+        "ok": False,
+        "code": code,
+        "error_type": type(exc).__name__,
+        "message": str(exc),
+        "error": tb,
+        "traceback": tb,
+        "recoverable": bool(recoverable),
+        "stdout": stdout,
+    }
+
+
 class BridgeRequest:
     def __init__(self, payload):
         self.payload = payload
@@ -64,12 +78,14 @@ def process_request(payload):
                 "stdout": stdout.getvalue()
             }
 
-        except Exception:
-            return {
-                "ok": False,
-                "error": traceback.format_exc(),
-                "stdout": stdout.getvalue()
-            }
+        except Exception as exc:
+            is_compile = "compile_blueprint" in str(code)
+            return structured_execution_error(
+                exc,
+                code="BLUEPRINT_COMPILE_FAILED" if is_compile else "PYTHON_EXECUTION_FAILED",
+                recoverable=is_compile,
+                stdout=stdout.getvalue(),
+            )
 
     return {
         "ok": False,
@@ -88,11 +104,8 @@ def on_editor_tick(delta_seconds):
 
         try:
             request.result = process_request(request.payload)
-        except Exception:
-            request.result = {
-                "ok": False,
-                "error": traceback.format_exc()
-            }
+        except Exception as exc:
+            request.result = structured_execution_error(exc)
 
         request.done.set()
         processed += 1
@@ -128,15 +141,12 @@ def handle_client(conn):
             (json.dumps(response) + "\n").encode("utf-8")
         )
 
-    except Exception:
+    except Exception as exc:
         try:
             conn.sendall(
-                (json.dumps({
-                    "ok": False,
-                    "error": traceback.format_exc()
-                }) + "\n").encode("utf-8")
+                (json.dumps(structured_execution_error(exc, code="BRIDGE_REQUEST_FAILED")) + "\n").encode("utf-8")
             )
-        except:
+        except Exception:
             pass
 
     finally:

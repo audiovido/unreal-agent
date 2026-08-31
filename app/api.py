@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 import uuid
 import threading
@@ -28,6 +29,14 @@ if str(ROOT) not in sys.path:
 
 # Import MemorySystem for API integration
 from core.memory_system import MemorySystem
+from core.task_goal import (
+    build_acceptance_contract,
+    load_task_goal,
+    save_task_goal,
+    update_task_goal,
+    reconcile_step,
+    contract_complete,
+)
 
 from core.orchestrator import (
     SYSTEM,
@@ -330,6 +339,15 @@ def _extract_task_parameters(task):
     m = re.search(r"(?:String variable|variable)\s+([A-Za-z_][A-Za-z0-9_]*)", text, re.I)
     variable = m.group(1) if m else None
     values = re.findall(r"\b(?:WRONG_VALUE|EXPECTED_VALUE)\b", text)
+    if not values:
+        # Generic extraction: an explicit initial value and/or an expected
+        # value stated as "expected value is X" (case-insensitive).
+        initial = re.search(r"(?:initially\s+)?set\s+(?:it\s+)?to\s+([A-Za-z0-9_]+)", text, re.I)
+        expected = re.search(r"expected\s+value\s+(?:is|=)\s+([A-Za-z0-9_]+)", text, re.I)
+        if initial:
+            values.append(initial.group(1))
+        if expected:
+            values.append(expected.group(1))
     actor = None
     actor_match = re.search(r"(?:actor|marker|cube)\s+(?:named|called)\s+[\\\"']?([A-Za-z_][A-Za-z0-9_]*)", text, re.I)
     if actor_match:
@@ -338,12 +356,28 @@ def _extract_task_parameters(task):
     project_match = re.search(r"project\s+(?:named|called)\s+[\\\"']?([A-Za-z_][A-Za-z0-9_]*)", text, re.I)
     if project_match:
         project_name = project_match.group(1)
-    return {"asset_path": asset, "variable_name": variable, "initial_value": values[0] if values else None, "expected_value": values[-1] if values else None, "actor_name": actor, "project_name": project_name, "disposable": bool(asset and "agentgraduation" in asset.lower())}
+    # An explicit absolute .uproject path in the user message must be
+    # propagated into the inspect/open/create steps, never dropped.
+    uproject_path = None
+    up = re.search(r"(?<!\S)[A-Za-z]:[\\/][^\s\"]*\.uproject", text, re.I)
+    if up:
+        candidate = up.group(0).strip()
+        if candidate.lower().endswith(".uproject"):
+            uproject_path = candidate
+    return {"asset_path": asset, "variable_name": variable, "initial_value": values[0] if values else None, "expected_value": values[-1] if values else None, "actor_name": actor, "project_name": project_name, "uproject_path": uproject_path, "disposable": bool(asset and "agentgraduation" in asset.lower())}
 
 
 def normalize_execution_plan(task, plan):
     p = _extract_task_parameters(task)
     steps = []
+    task_lower = str(task).lower()
+    # Deterministic long-task expansion prevents an LLM returning only health
+    # checks from collapsing the parent goal into inspect+ping.
+    is_long_build = (
+        sum(term in task_lower for term in ("avatar", "environment", "lighting", "camera", "chat", "ollama", "animation", "runtime", "screenshot")) >= 3
+        or ("cube" in task_lower and "light" in task_lower and "save" in task_lower)
+    )
+
     def add(step_id, phase, intent, tool, parameters=None, expected=None):
         steps.append({"step_id": step_id, "phase": phase, "intent": intent, "action_category": intent, "preferred_tool": tool, "allowed_tools": [tool], "target_type": "blueprint" if p["asset_path"] else "project", "target_resource": p["asset_path"], "parameters": parameters or {}, "expected_result": expected or {}, "validation_tool": None, "validation_parameters": {}, "depends_on": [steps[-1]["step_id"]] if steps else [], "disposable": p["disposable"], "status": "pending"})
     if p["project_name"] and not p["asset_path"] and p["actor_name"]:
@@ -354,26 +388,108 @@ def normalize_execution_plan(task, plan):
         add("create_default_level", "EDIT", "create_default_level", "create_default_level", {"level_path": f"/Game/{p['project_name']}"})
         add("project_identity", "VALIDATE", "get_project_identity", "get_project_identity", {}, {"expected": p["project_name"]})
         add("spawn_new_project_marker", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "StaticMeshActor", "actor_name": p["actor_name"], "location": [300, 0, 100], "scale": [0.5, 0.5, 0.5], "mesh_asset": "/Engine/BasicShapes/Cube.Cube"})
+        if "light" in task_lower:
+            # The parent contract adds light:exists for any request mentioning a
+            # light; the new-project flow must actually spawn it or completion
+            # stalls on an unsatisfiable criterion. The label is unique per task
+            # so repeated light tasks in the same map never collide and produce
+            # a deterministic ambiguous-label failure.
+            light_label = "UA_L_" + uuid.uuid4().hex[:8]
+            add("spawn_new_project_light", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "PointLight", "actor_name": light_label, "location": [0, 0, 300]})
         add("save_new_project", "BUILD", "save_level", "save_level", {})
         add("validate_new_project_actor", "VALIDATE", "get_actor", "get_actor", {"actor_name": p["actor_name"]}, {"expected": p["actor_name"]})
+        if "light" in task_lower:
+            add("validate_new_project_light", "VALIDATE", "get_actor", "get_actor", {"actor_name": light_label}, {"expected": light_label})
         add("validate_new_project", "VALIDATE", "validate_project_creation", "validate_project_creation", {"project_name": p["project_name"], "actor_name": p["actor_name"]}, {"expected": True})
+        if p["disposable"] or re.search(r"\b(?:capture|screenshot|screen shot|proof|visual evidence)\b", task, re.I):
+            # Evidence is mandatory whenever proof is requested, for ANY project
+            # (not only disposable graduated ones), or the parent contract's
+            # viewport:captured criterion can never be satisfied. Word-boundary
+            # match so project names like UA_GradNoProof do not trip the gate.
+            add("new_project_evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
+        if ("reopen" in task_lower or "relaunch" in task_lower or "restart" in task_lower) and "open_map" in REGISTRY:
+            add("reopen_map", "VALIDATE", "open_map", "open_map", {}, {"expected": True})
     else:
-        add("inspect_project", "INSPECT", "inspect_project", "inspect_project", {})
+        inspect_params = {}
+        if p["uproject_path"]:
+            inspect_params["uproject_path"] = p["uproject_path"]
+        add("inspect_project", "INSPECT", "inspect_project", "inspect_project", inspect_params)
+        # Health-check the live bridge right after project resolution so a
+        # no-path task proves both project recovery AND a connected editor.
+        if "unreal_ping" in REGISTRY:
+            add("ping", "INSPECT", "unreal_ping", "unreal_ping", {})
     if p["project_name"] and not p["asset_path"] and p["actor_name"]:
         pass
     else:
         if p["asset_path"] and "create" in str(task).lower(): add("create_blueprint", "EDIT", "create_blueprint", "create_blueprint", {"asset_path": p["asset_path"], "parent_class": "Actor"}, {"exists": True})
-        if p["variable_name"]: add("add_variable", "EDIT", "add_blueprint_variable", "add_blueprint_variable", {"asset_path": p["asset_path"], "variable_name": p["variable_name"], "variable_type": "String"})
-        if p["initial_value"]: add("set_initial_value", "EDIT", "set_blueprint_variable_default", "set_blueprint_variable_default", {"asset_path": p["asset_path"], "variable_name": p["variable_name"], "value": p["initial_value"]})
+        # Blueprint-variable steps only make sense once a real asset_path was
+        # extracted; emitting them with asset_path=None guaranteed a failed
+        # dispatch on tasks that name a variable without an explicit /Game path.
+        if p["asset_path"] and p["variable_name"]: add("add_variable", "EDIT", "add_blueprint_variable", "add_blueprint_variable", {"asset_path": p["asset_path"], "variable_name": p["variable_name"], "variable_type": "String"})
+        if p["asset_path"] and p["initial_value"]: add("set_initial_value", "EDIT", "set_blueprint_variable_default", "set_blueprint_variable_default", {"asset_path": p["asset_path"], "variable_name": p["variable_name"], "value": p["initial_value"]})
         if p["asset_path"]: add("compile_save", "BUILD", "compile_blueprint", "compile_blueprint", {"asset_path": p["asset_path"]})
-        if p["expected_value"]: add("validate_value", "VALIDATE", "get_blueprint_variable_default", "get_blueprint_variable_default", {"asset_path": p["asset_path"], "variable_name": p["variable_name"]}, {"expected": p["expected_value"]})
+        if p["asset_path"] and p["expected_value"]: add("validate_value", "VALIDATE", "get_blueprint_variable_default", "get_blueprint_variable_default", {"asset_path": p["asset_path"], "variable_name": p["variable_name"]}, {"expected": p["expected_value"]})
         if p["actor_name"] and not p["asset_path"]:
             add("spawn_actor", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "StaticMeshActor", "actor_name": p["actor_name"], "location": [300, 0, 100], "scale": [0.5, 0.5, 0.5], "mesh_asset": "/Engine/BasicShapes/Cube.Cube"})
+            if "light" in str(task).lower():
+                # Unique per-task label prevents duplicate-light collisions in
+                # maps that accumulate actors across tasks.
+                light_label = "UA_L_" + uuid.uuid4().hex[:8]
+                add("spawn_light", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "PointLight", "actor_name": light_label, "location": [0, 0, 300]})
             add("save_level", "BUILD", "save_level", "save_level", {})
-            add("validate_actor", "VALIDATE", "get_actor", "get_actor", {"actor_name": p["actor_name"]}, {"exists": True})
+            add("validate_actor", "VALIDATE", "get_actor", "get_actor", {"actor_name": p["actor_name"]}, {"expected": p["actor_name"]})
+            if ("reopen" in task_lower or "relaunch" in task_lower or "restart" in task_lower) and "open_map" in REGISTRY:
+                # A persisted /Game map now exists; reopen it so the
+                # deliverable:reopen acceptance criterion is truly verifiable.
+                add("reopen_map", "VALIDATE", "open_map", "open_map", {}, {"expected": True})
+            if "light" in str(task).lower():
+                add("validate_light", "VALIDATE", "get_actor", "get_actor", {"actor_name": light_label}, {"expected": light_label})
+            _lower_task = str(task).lower()
+            if any(w in _lower_task for w in ("capture", "screenshot", "screen shot", "proof", "visual evidence")):
+                add("evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
     if p["disposable"]:
         add("evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
         add("cleanup", "CLEANUP", "delete_asset", "delete_asset", {"asset_path": p["asset_path"]}, {"absent": True})
+
+    if is_long_build and not (p["actor_name"] and "cube" in task_lower and "light" in task_lower):
+        # Preserve the full parent goal as a milestone queue. Health checks are
+        # environment readiness only and cannot be the terminal plan.
+        existing = {s.get("preferred_tool") for s in steps}
+        if "unreal_ping" not in existing:
+            add("ping", "INSPECT", "unreal_ping", "unreal_ping", {})
+        # Use concrete registered tools where possible; remaining milestones
+        # stay explicit pending criteria for continuation rather than vanishing.
+        if "list_level_actors" in REGISTRY:
+            add("avatar_environment_inspect", "VALIDATE", "list_level_actors", "list_level_actors", {})
+        if "save_level" in REGISTRY:
+            add("save_build", "BUILD", "save_level", "save_level", {})
+        if "capture_unreal_viewport" in REGISTRY:
+            add("final_evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
+
+    # Deterministic content milestones for LONG builds: Blueprint assets, UMG
+    # widgets and cameras named in the request map to real registered tools so
+    # the parent goal's milestones are executable, not merely pending criteria.
+    if is_long_build:
+        if "blueprint" in task_lower and "create_blueprint" in REGISTRY:
+            bp_path = p.get("asset_path")
+            if not bp_path:
+                m = re.search(r"(?:blueprint|bp)\s+(?:(?:actor|asset)\s+)?(?:(?:named|called)\s+)?[\\\"']?([A-Za-z_][A-Za-z0-9_]*)", task, re.I)
+                bp_name = (m.group(1) if m else "BP_ProdProbe").lstrip("_")
+                bp_path = f"/Game/_UA_GradA/{bp_name}"
+            add("create_bp", "EDIT", "create_blueprint", "create_blueprint", {"asset_path": bp_path, "parent_class": "Actor"}, {"exists": True})
+            if p.get("variable_name"):
+                add("bp_add_var", "EDIT", "add_blueprint_variable", "add_blueprint_variable", {"asset_path": bp_path, "variable_name": p["variable_name"], "variable_type": "String"})
+                if p.get("initial_value"):
+                    add("bp_set_default", "EDIT", "set_blueprint_variable_default", "set_blueprint_variable_default", {"asset_path": bp_path, "variable_name": p["variable_name"], "value": p["initial_value"]})
+                add("bp_compile", "BUILD", "compile_blueprint", "compile_blueprint", {"asset_path": bp_path})
+                if p.get("expected_value"):
+                    add("bp_validate", "VALIDATE", "get_blueprint_variable_default", "get_blueprint_variable_default", {"asset_path": bp_path, "variable_name": p["variable_name"]}, {"expected": p["expected_value"]})
+        if ("widget" in task_lower or "umg" in task_lower) and "create_umg_widget" in REGISTRY:
+            m = re.search(r"\b(?:widget blueprint|umg widget|widget|umg)\b\s+(?:(?:named|called)\s+)?(?!(?:blueprint|widget|actor|asset|named|called|a|the|simple|with|that|which|for)\b)([A-Za-z_][A-Za-z0-9_]*)", task, re.I)
+            w_name = (m.group(1) if m else "WBP_ProdWidget").lstrip("_")
+            add("create_widget", "EDIT", "create_umg_widget", "create_umg_widget", {"asset_path": f"/Game/_UA_GradA/{w_name}"})
+        if "camera" in task_lower and "spawn_actor" in REGISTRY:
+            add("spawn_camera", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "CameraActor", "actor_name": "UA_PROD_Camera", "location": [0, 0, 200]})
 
     # Arbitrary natural-language requests that the deterministic patterns
     # above cannot map still need a real plan. Ask the local coder model
@@ -411,6 +527,10 @@ def normalize_execution_plan(task, plan):
                     "disposable": False,
                     "status": "pending",
                 })
+    # Never allow the plan to collapse to health checks for a long parent goal.
+    if is_long_build and len(steps) <= 2:
+        add("parent_goal_guard", "VALIDATE", "list_level_actors", "list_level_actors", {})
+        add("parent_goal_evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
     return {"goal": (plan or {}).get("goal", task) if isinstance(plan, dict) else task, "steps": steps, "success_criteria": (plan or {}).get("success_criteria", []) if isinstance(plan, dict) else []}
 
 
@@ -642,6 +762,23 @@ def _is_placeholder(value):
     return any(hint in lowered for hint in _PLACEHOLDER_HINTS)
 
 
+def _seed_project_context():
+    """Load the durable Active Project Context (survives backend/editor/Freebuff
+    restarts) and merge it over the legacy default so the active project is
+    always the one the agent last confirmed, not a hardcoded fallback."""
+    from tools.unreal import project_context
+    durable = project_context.load_active_context()
+    context = dict(PROJECT_CONTEXT_DEFAULT)
+    up = durable.get("uproject_path")
+    if up:
+        context["uproject_path"] = up
+    name = durable.get("project_name")
+    if name:
+        context["project_name"] = name
+    context["_durable"] = durable
+    return context
+
+
 def new_execution(task: str):
     task_id = str(uuid.uuid4())
     plan = normalize_execution_plan(task, create_execution_plan(task))
@@ -654,12 +791,16 @@ def new_execution(task: str):
         task_id=task_id,
     )
 
+    # Initialize and durably persist the parent TaskGoal before any tool runs.
+    goal = build_acceptance_contract(task, _seed_project_context())
+    goal = update_task_goal(goal, sub_execution_id=task_id)
     # Initialize task state with detailed tracking fields
     return {
         "id": task_id,
         "task": task,
+        "task_goal": goal,
         "plan": plan,
-        "project_context": dict(PROJECT_CONTEXT_DEFAULT),
+        "project_context": _seed_project_context(),
         "phase": "PLAN",
         "current_phase": "PLAN",
         "current_step": 0,
@@ -696,6 +837,8 @@ def new_execution(task: str):
         "current_action": None,
         "start_ts": None,
         "end_ts": None,
+        "milestone_queue": goal.get("continuation_state", {}).get("milestones", []),
+        "parent_goal_id": goal.get("id"),
     }
 
 
@@ -728,8 +871,15 @@ def _resolved_step_args(execution, step, project_context=None):
             continue
         if (not args.get(key) or _is_placeholder(args.get(key))) and context.get(key):
             args[key] = context[key]
-    if step.get("preferred_tool") == "inspect_project" and (not args.get("uproject_path") or _is_placeholder(args.get("uproject_path"))):
-        args["uproject_path"] = PROJECT_CONTEXT_DEFAULT["uproject_path"]
+    # inspect_project without an EXPLICIT user-provided path must resolve the
+    # active project itself (persisted context -> live bridge -> search) rather
+    # than trusting the hardcoded PROJECT_CONTEXT_DEFAULT. Drop any injected
+    # default/placeholder so the tool runs its resolution chain and never
+    # returns "uproject not found" for a recoverable task.
+    if step.get("preferred_tool") == "inspect_project":
+        explicit = (step.get("parameters") or {}).get("uproject_path")
+        if not explicit or _is_placeholder(explicit):
+            args.pop("uproject_path", None)
     return args
 
 
@@ -743,7 +893,7 @@ def _deterministic_step_dispatch(execution, step, project_context=None):
         return {"dispatch_id": str(uuid.uuid4()), "step_id": step.get("step_id"), "tool_name": action, "args": args, "transport_success": False, "ok": False, "raw_result": None, "payload": {}, "value": None, "resource_path": None, "error": error}
     emit("tool", f"Running {action}", {"step_id": step.get("step_id"), "args": args}, "running")
     try:
-        tool_timeout = 480 if action in {"create_project", "open_project"} else 90 if action in {"create_default_level", "validate_project_creation"} else 60
+        tool_timeout = 720 if action in {"create_project", "open_project"} else 90 if action in {"create_default_level", "validate_project_creation"} else 60
         raw = call_tool_hard_timeout(REGISTRY[action], args, timeout_seconds=tool_timeout)
     except Exception as exc:
         raw = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
@@ -1291,61 +1441,409 @@ def process_tool_result(state, raw, action, args, result):
 
 # deterministic Layer F orchestration
 
+# Structured interruption reasons. EXECUTION_STALLED must only be emitted when
+# there is genuinely unfinished work AND no way to make further progress, and it
+# always carries one of these structured stall codes.
+STALL_NO_PROGRESS = "STALL_NO_PROGRESS"
+STALL_TOOL_HUNG = "STALL_TOOL_HUNG"
+STALL_RECOVERY_EXHAUSTED = "STALL_RECOVERY_EXHAUSTED"
+
+
+def _progress_signature(state):
+    """Snapshot every quantity the loop can advance. Synthesized CLEANUP steps
+    never live inside plan['steps'], so the old counter (which only watched the
+    plan steps + created_resources list) counted every cleanup dispatch as "no
+    progress" and falsely tripped EXECUTION_STALLED. This signature must be
+    widened so cleanup, verification and recovery bookkeeping count as progress."""
+    def _sign(res):
+        if isinstance(res, dict):
+            return (res.get("path"), res.get("disposable"), res.get("verified_clean"))
+        return str(res)
+    plan = state.get("plan") or {}
+    return repr((
+        state.get("fix_pending"),
+        state.get("fix_step_id"),
+        state.get("retry_pending"),
+        state.get("retry_validation_step_id"),
+        state.get("failed_step"),
+        state.get("validation_result"),
+        state.get("evidence_handled"),
+        state.get("cleanup_stage"),
+        state.get("cleanup_failure"),
+        sorted((x.get("step_id"), x.get("status")) for x in plan.get("steps", [])),
+        [_sign(r) for r in state.get("created_resources", [])],
+    ))
+
+
+def _completion_blocker(execution):
+    """Deterministic terminal-state gate.
+
+    Returns None when the execution is genuinely complete, otherwise a dict with
+    a structured code and stall reason describing exactly why it is not. This is
+    the single source of truth for COMPLETE vs. STALLED / BLOCKED / FAILED, and
+    the ONLY reason EXECUTION_STALLED is allowed to fire.
+    """
+    e = execution or {}
+    # Only this execution's parent contract governs completion. Do not
+    # implicitly borrow the last process-wide goal for synthetic/legacy states;
+    # restored executions must load it into task_goal explicitly.
+    goal = e.get("task_goal")
+    if goal and not contract_complete(goal):
+        pending = goal.get("pending_criteria") or []
+        return {"code": "RUNNING", "detail": "PENDING_ACCEPTANCE_CRITERIA", "reason": "Parent goal still has mandatory criteria: " + repr(pending)}
+    steps = (e.get("plan") or {}).get("steps", [])
+
+    # Explicit human / system interrupts are BLOCKED, never a stall.
+    if e.get("execution_blocker"):
+        return {"code": "BLOCKED", "detail": "EXECUTION_BLOCKER", "reason": str(e.get("execution_blocker"))}
+    if e.get("pending_approvals"):
+        return {"code": "BLOCKED", "detail": "BLOCKED_AWAITING_APPROVAL", "reason": "Awaiting user approval"}
+
+    # Pending fix/retry is recoverable RUNNING work, not a stall.
+    if e.get("fix_pending"):
+        return {"code": "RETRYING", "detail": "FIX_PENDING", "reason": "A corrective fix step is still pending"}
+    if e.get("retry_pending"):
+        return {"code": "RETRYING", "detail": "RETRY_PENDING", "reason": "A validation retry is still pending"}
+
+    # A failed mandatory step with no pending recovery is a real failure.
+    if e.get("failed_step"):
+        return {"code": "FAILED", "detail": "FAILED_MANDATORY_STEP", "reason": f"Mandatory step {e.get('failed_step')} failed"}
+
+    # Cleanup verification could not be satisfied after its last attempt.
+    if e.get("cleanup_failure"):
+        return {"code": "STALLED", "detail": STALL_RECOVERY_EXHAUSTED, "reason": str(e.get("cleanup_failure"))}
+
+    # Still cleaning up disposable resources -> RUNNING, will keep making progress.
+    if _cleanup_pending(e):
+        return {"code": "RUNNING", "detail": "CLEANUP_IN_PROGRESS", "reason": "Disposable resources still require cleanup"}
+
+    # Read-back / validation must have passed before completion is allowed.
+    if e.get("validation_result") != "passed":
+        return {"code": "STALLED", "detail": STALL_NO_PROGRESS,
+                "reason": "All runnable steps finished but validation has not passed"}
+    if not e.get("evidence_handled", True):
+        return {"code": "STALLED", "detail": STALL_NO_PROGRESS,
+                "reason": "Evidence step has not been handled"}
+
+    # Any remaining mandatory step with no runnable recovery path is a true stall.
+    unfinished = [
+        (str(s.get("step_id")), str(s.get("status")))
+        for s in steps
+        if s.get("status") not in ("completed", "skipped")
+        and str(s.get("phase", "")).upper() not in ("CLEANUP", "VERIFY_CLEANUP")
+        and str(s.get("intent", "")).lower() not in ("cleanup", "verify_cleanup")
+    ]
+    if unfinished:
+        return {"code": "STALLED", "detail": STALL_NO_PROGRESS,
+                "reason": "Unfinished mandatory steps with no runnable recovery path: " + repr(unfinished)}
+    return None
+
+
+def _can_complete(execution):
+    """Deterministic completion gate. True only when every mandatory step
+    succeeded, validation/read-back passed, the queue is empty, and there is no
+    pending retry, failure, cleanup or blocker."""
+    return _completion_blocker(execution) is None
+
+
+def _terminal_verdict(state):
+    blocker = _completion_blocker(state)
+    if blocker is None:
+        return "COMPLETE", None
+    return blocker["code"], blocker
+
+
+def _next_step(state):
+    """Pick the next step the loop is obligated to run (fix dep -> retry -> next)."""
+    plan_steps = (state.get("plan") or {}).get("steps", [])
+    if state.get("fix_pending"):
+        return next((x for x in plan_steps if x.get("step_id") == state.get("fix_step_id")), None)
+    if state.get("retry_pending"):
+        return next((x for x in plan_steps if x.get("step_id") == state.get("retry_validation_step_id")), None)
+    _, step = _next_normalized_step(state)
+    return step
+
+
+def _make_cleanup_step(state, resource):
+    stage = state.get("cleanup_stage") or "delete"
+    delete = stage == "delete"
+    return {
+        "step_id": f"cleanup:{resource['path']}" if delete else f"verify_cleanup:{resource['path']}",
+        "phase": "CLEANUP" if delete else "VERIFY_CLEANUP",
+        "preferred_tool": "delete_asset" if delete else "get_asset_info",
+        "parameters": {"asset_path": resource["path"]},
+        "status": "pending",
+        "cleanup_resource_path": resource["path"],
+    }
+
+
+def _finalize_terminal(state, forced_stall=None):
+    """Decide, persist and emit the single deterministic terminal verdict.
+
+    * All mandatory steps succeeded + read-back/validation passed + empty queue
+      -> COMPLETE, persisted as final_verdict PASS, emitted exactly once.
+    * Otherwise emit a structured EXECUTION_STALLED / EXECUTION_FAILED / BLOCKED
+      with a stall reason. EXECUTION_STALLED requires genuinely unfinished work
+      with no progress/recovery path.
+    * The persisted verdict lets any later call return the same result without
+      re-emitting (restart/resume never duplicates terminal events).
+    """
+    global execution_state
+
+    if forced_stall:
+        code, verdict = "STALLED", "STALL"
+        stall = forced_stall.get("detail") or forced_stall.get("code") or STALL_NO_PROGRESS
+        msg = forced_stall.get("reason") or f"Execution stalled with no progress ({stall})."
+        state["state"] = code
+        state["completion_message"] = msg
+    else:
+        code, blocker = _terminal_verdict(state)
+        if code == "RETRYING":
+            # The loop had no runnable step to continue the retry -> unresolved stall.
+            code = "STALLED"
+            blocker = {"code": "STALLED", "detail": STALL_NO_PROGRESS,
+                       "reason": "Pending recovery work but no runnable step could continue it"}
+        stall = (blocker or {}).get("detail") if code == "STALLED" else None
+        msg = (
+            "Execution complete." if code == "COMPLETE"
+            else ((blocker or {}).get("reason") or "Execution not completed.")
+        )
+        verdict = {"COMPLETE": "PASS", "FAILED": "FAIL", "BLOCKED": "BLOCKED"}.get(code, "STALL")
+        state["state"] = code
+        state["completion_message"] = msg
+
+    already = bool(state.get("terminal_emitted"))
+    state["terminal_emitted"] = True
+    state["end_ts"] = time.time()
+    state["final_verdict"] = verdict
+    if code == "STALLED":
+        state["stall_reason"] = stall
+
+    # Emit the terminal event exactly once per execution.
+    if not already:
+        if code == "COMPLETE":
+            emit("complete", "COMPLETE", {"verdict": "PASS"}, "success")
+        elif code == "BLOCKED":
+            emit("error", "BLOCKED", {"reason": msg}, "blocked")
+        elif code == "FAILED":
+            emit("error", "EXECUTION_FAILED", {"reason": msg}, "error")
+        else:
+            emit("error", "EXECUTION_STALLED", {"stall_reason": stall, "reason": msg}, "error")
+
+    execution_state = None
+    return {
+        "state": {"COMPLETE": "complete", "BLOCKED": "blocked"}.get(code, "failed"),
+        "message": msg,
+        "terminal": verdict,
+        "stall_reason": stall if code == "STALLED" else None,
+    }
+
+
+def _is_project_context_missing(dispatch):
+    """True when a dispatched tool reported a recoverable PROJECT_CONTEXT_MISSING."""
+    raw = dispatch.get("raw_result") or dispatch
+    def _scan(value):
+        if isinstance(value, dict):
+            if value.get("code") == "PROJECT_CONTEXT_MISSING":
+                return True
+            for key in ("result", "payload", "data"):
+                nested = value.get(key)
+                if isinstance(nested, dict) and _scan(nested):
+                    return True
+        return False
+    return _scan(raw)
+
+
+def _collect_context_candidates(dispatch):
+    """Gather candidate paths from the structured missing error + durable store."""
+    from tools.unreal import project_context
+    out = []
+    seen = set()
+    def _push(path):
+        if not path:
+            return
+        key = str(path).casefold()
+        if key not in seen:
+            seen.add(key)
+            out.append(str(path))
+    raw = dispatch.get("raw_result") or dispatch
+    def _gather(value):
+        if isinstance(value, dict):
+            for c in (value.get("candidates") or []):
+                _push(c)
+            for key in ("result", "payload", "data"):
+                nested = value.get(key)
+                if isinstance(nested, dict):
+                    _gather(nested)
+    _gather(raw)
+    bridge = (
+        (raw.get("bridge_context") or {}).get("project_path")
+        if isinstance(raw, dict) else None
+    )
+    _push(bridge)
+    persisted = project_context.load_active_context().get("uproject_path")
+    _push(persisted)
+    return out
+
+
+def _recover_project_context_step(state, step, first_dispatch):
+    """PROJECT_CONTEXT_MISSING recovery: verify each candidate, persist the first
+    that resolves, re-dispatch inspect_project with that path. Returns
+    (new_dispatch, attempts) or (None, attempts) when recovery is exhausted.
+    Never repeats the identical missing-path call."""
+    from tools.unreal import project_context
+    from tools.unreal.project_manager import inspect_project as _inspect
+
+    candidates = _collect_context_candidates(first_dispatch)
+    max_attempts = 3
+    attempts = 0
+    tried = set()
+    for cand in candidates:
+        key = str(cand).casefold()
+        if key in tried:
+            continue
+        tried.add(key)
+        attempts += 1
+        if attempts > max_attempts:
+            break
+        resolved = _inspect(uproject_path=cand)
+        if isinstance(resolved, dict) and resolved.get("ok"):
+            # Confirm + persist exactly this project as the active context.
+            project_context.update_active_context(
+                uproject_path=resolved.get("uproject_path"),
+                project_name=resolved.get("name"),
+                source_of_truth="recovery",
+            )
+            step["parameters"] = dict(step.get("parameters") or {})
+            step["parameters"]["uproject_path"] = resolved["uproject_path"]
+            new_dispatch = _deterministic_step_dispatch(state, step)
+            emit(
+                "recovery",
+                f"Project context recovered via {resolved.get('uproject_path')}",
+                {"attempt": attempts, "path": resolved.get("uproject_path")},
+                "info",
+                task_id=state.get("id"),
+            )
+            return new_dispatch, attempts
+    return None, attempts
+
+
 def run_execution_until_pause():
     global execution_state
     state = execution_state
     if state is None:
         return {"state": "error", "message": "No active execution."}
-    if state.get("state") in {"COMPLETE", "FAILED", "STALLED"}:
+
+    # Terminal exactly-once: if a previous call already reached a terminal
+    # verdict, return the PERSISTED decision without emitting anything again.
+    terminal = str(state.get("state") or "")
+    if terminal in {"COMPLETE", "STALLED", "BLOCKED", "FAILED"}:
+        persisted = state.get("final_verdict") or ("PASS" if terminal == "COMPLETE" else "STALL")
+        result_state = {"COMPLETE": "complete", "BLOCKED": "blocked"}.get(terminal, "failed")
         execution_state = None
-        return {"state": state["state"].lower(), "message": "Execution already terminal."}
+        return {
+            "state": result_state,
+            "message": state.get("completion_message") or "Execution already terminal.",
+            "terminal": persisted,
+            "stall_reason": state.get("stall_reason"),
+            "once": True,
+        }
+
     state.setdefault("start_ts", time.time())
     state.setdefault("max_execution_iterations", 80)
     state.setdefault("no_progress_count", 0)
     state.setdefault("evidence_handled", True)
     state.setdefault("pending_approvals", {})
+    state.setdefault("cleanup_stage", None)
     state["state"] = "RUNNING"
+
     for _ in range(state["max_execution_iterations"]):
-        before = repr((state.get("fix_pending"), state.get("retry_pending"), [(x.get("step_id"), x.get("status")) for x in state.get("plan", {}).get("steps", [])], state.get("created_resources")))
-        if state.get("fix_pending"):
-            step = next((x for x in state["plan"]["steps"] if x.get("step_id") == state.get("fix_step_id")), None)
-        elif state.get("retry_pending"):
-            step = next((x for x in state["plan"]["steps"] if x.get("step_id") == state.get("retry_validation_step_id")), None)
-        else:
-            _, step = _next_normalized_step(state)
+        before = _progress_signature(state)
+
+        step = _next_step(state)
         if step is None:
             pending_cleanup = _cleanup_pending(state)
             if pending_cleanup:
                 resource = pending_cleanup[0]
-                stage = state.get("cleanup_stage") or "delete"
-                step = {"step_id": f"cleanup:{resource['path']}" if stage == "delete" else f"verify_cleanup:{resource['path']}", "phase": "CLEANUP" if stage == "delete" else "VERIFY_CLEANUP", "preferred_tool": "delete_asset" if stage == "delete" else "get_asset_info", "parameters": {"asset_path": resource["path"]}, "status": "pending", "cleanup_resource_path": resource["path"]}
-                state["cleanup_stage"] = stage
+                step = _make_cleanup_step(state, resource)
+                state["cleanup_stage"] = state.get("cleanup_stage") or "delete"
             if step is None:
-                if _can_complete(state):
-                    state["state"] = "COMPLETE"
-                    execution_state = None
-                    emit("complete", "COMPLETE", None, "success")
-                    return {"state": "complete", "message": "Execution complete."}
-                emit("error", "EXECUTION_STALLED", None, "error")
-                state["state"] = "STALLED"
-                execution_state = None
-                return {"state": "failed", "message": "Execution stalled."}
+                # Nothing left to run: this is the ONLY place we are allowed to
+                # go terminal. All mandatory work succeeded -> COMPLETE here.
+                return _finalize_terminal(state)
+
         step["status"] = "running"
         dispatch = _deterministic_step_dispatch(state, step)
+
+        # PROJECT_CONTEXT_MISSING recovery: resolve the active project through
+        # the durable context / live bridge and re-dispatch (max 3 attempts),
+        # instead of immediately stalling with no recoverable path.
+        if (
+            step.get("preferred_tool") == "inspect_project"
+            and _is_project_context_missing(dispatch)
+        ):
+            recovered, rec_attempts = _recover_project_context_step(state, step, dispatch)
+            state["context_recovery_attempts"] = (
+                state.get("context_recovery_attempts", 0) + rec_attempts
+            )
+            if recovered is not None:
+                dispatch = recovered
+            elif rec_attempts >= 3:
+                # Recovery exhausted -> structured BLOCKED, not a raw stall.
+                state["execution_blocker"] = (
+                    "PROJECT_CONTEXT_MISSING: no active Unreal project was "
+                    "resolvable after 3 recovery attempts"
+                )
         applied = _apply_step_result(state, step, dispatch)
-        if step.get("phase") == "CLEANUP" and applied.get("status") == "completed": state["cleanup_stage"] = "verify"
-        elif step.get("phase") == "VERIFY_CLEANUP" and applied.get("cleanup") == "verified_clean": state["cleanup_stage"] = None
-        after = repr((state.get("fix_pending"), state.get("retry_pending"), [(x.get("step_id"), x.get("status")) for x in state.get("plan", {}).get("steps", [])], state.get("created_resources")))
-        state["no_progress_count"] = state.get("no_progress_count", 0) + 1 if before == after else 0
+
+        # Reconcile only verified tool output into the durable parent contract.
+        if dispatch.get("transport_success"):
+            if state.get("task_goal"):
+                state["task_goal"] = reconcile_step(
+                    state["task_goal"],
+                    step,
+                    dispatch.get("raw_result") or dispatch,
+                )
+                state["completed_criteria"] = list(state["task_goal"].get("completed_criteria", []))
+                state["pending_criteria"] = list(state["task_goal"].get("pending_criteria", []))
+
+        # Project context could not be resolved after recovery attempts:
+        # finalize immediately with a structured BLOCKED verdict rather than
+        # cascading into dependent steps against an unresolved project.
+        if state.get("execution_blocker"):
+            return _finalize_terminal(state)
+
+        if step.get("phase") == "CLEANUP" and applied.get("status") == "completed":
+            state["cleanup_stage"] = "verify"
+        elif step.get("phase") == "VERIFY_CLEANUP" and applied.get("cleanup") == "verified_clean":
+            state["cleanup_stage"] = None
+
+        # Genuine zero-movement detection (only fires when the signature is
+        # exactly unchanged, which now includes cleanup bookkeeping).
+        after = _progress_signature(state)
+        if before != after:
+            state["no_progress_count"] = 0
+        else:
+            state["no_progress_count"] = state.get("no_progress_count", 0) + 1
+
         if state["no_progress_count"] >= 3:
-            emit("error", "EXECUTION_STALLED", None, "error")
-            state["state"] = "STALLED"
-            execution_state = None
-            return {"state": "failed", "message": "Execution stalled."}
-    emit("error", "EXECUTION_ITERATION_LIMIT", None, "error")
-    state["state"] = "FAILED"
-    execution_state = None
-    return {"state": "failed", "message": "Execution iteration limit reached."}
+            if _completion_blocker(state) is None:
+                # All work actually finished while we were looking -> complete.
+                return _finalize_terminal(state)
+            last_error = str(dispatch.get("error") or "")
+            if _cleanup_pending(state) or state.get("cleanup_stage"):
+                reason = {"detail": STALL_RECOVERY_EXHAUSTED,
+                          "reason": "Cleanup could not be advanced to completion (recovery exhausted)."}
+            elif "timeout" in last_error.lower() or "timed out" in last_error.lower():
+                reason = {"detail": STALL_TOOL_HUNG,
+                          "reason": f"A tool call is not returning within its hard timeout: {last_error}"}
+            else:
+                reason = {"detail": STALL_NO_PROGRESS,
+                          "reason": f"No progress advancing the plan for 3 consecutive dispatches. {last_error}".strip()}
+            return _finalize_terminal(state, forced_stall=reason)
+
+    # Hard iteration cap reached without reaching a verdict.
+    return _finalize_terminal(state)
 
 def _workboard_autopilot_watchdog():
     """

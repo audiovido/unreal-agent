@@ -154,6 +154,16 @@ def build_registry(
                 destructive=True,
             ),
 
+            "open_map": ToolSpec(
+                name="open_map",
+                description=(
+                    "Reopen a real /Game map (or the persisted EditorStartupMap "
+                    "when no path is given) and verify the active world identity."
+                ),
+                args={"level_path": "Optional Unreal map path such as /Game/Maps/Main"},
+                func=bridge.open_map,
+            ),
+
             "validate_project_creation": ToolSpec(
                 name="validate_project_creation",
                 description="Strictly validate active project identity, loaded level, visible mesh actor, and clean saved state.",
@@ -393,6 +403,14 @@ def build_registry(
             description="Save a Blueprint.",
             args={"asset_path": "Blueprint content path"},
             func=blueprints.save_blueprint,
+            destructive=True,
+        ),
+
+        "create_umg_widget": ToolSpec(
+            name="create_umg_widget",
+            description="Create, compile, save and verify a real UMG Widget Blueprint asset.",
+            args={"asset_path": "Widget Blueprint content path under /Game/"},
+            func=blueprints.create_umg_widget,
             destructive=True,
         ),
         })

@@ -2,10 +2,22 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from tools.unreal import project_manager
+from tools.unreal import project_context
 
 
-def test_create_project_prepares_blank_project_and_opens_it(tmp_path):
+@pytest.fixture()
+def context_isolation(tmp_path, monkeypatch):
+    """Create/open/inspect now persist the durable Active Project Context; these
+    unit tests must not write the real memory/active_project_context.json."""
+    monkeypatch.setattr(
+        project_context, "ACTIVE_CONTEXT_FILE", tmp_path / "test_ctx.json"
+    )
+
+
+def test_create_project_prepares_blank_project_and_opens_it(tmp_path, context_isolation):
     with patch.object(
         project_manager,
         "open_project",
@@ -42,12 +54,16 @@ def test_create_project_prepares_blank_project_and_opens_it(tmp_path):
         for plugin in descriptor["Plugins"]
     )
     assert (root / "Content" / "Python" / "init_unreal.py").is_file()
-    assert "EditorStartupMap=/Game/UA_ProjectCreation_Test" in (
-        root / "Config" / "DefaultEngine.ini"
+    engine_config = (root / "Config" / "DefaultEngine.ini").read_text(encoding="utf-8")
+    assert "EditorStartupMap=/Game/UA_ProjectCreation_Test" in engine_config
+    assert "PythonScriptPlugin.PythonScriptPluginSettings" in engine_config
+    assert "init_unreal.py" in engine_config
+    assert "EnablePythonOverride=Enable" in (
+        root / "Config" / "DefaultEditorPerProjectUserSettings.ini"
     ).read_text(encoding="utf-8")
 
 
-def test_create_project_refuses_existing_directory(tmp_path):
+def test_create_project_refuses_existing_directory(tmp_path, context_isolation):
     root = tmp_path / "UA_ProjectCreation_Test"
     root.mkdir()
 
