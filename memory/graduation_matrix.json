@@ -1,6 +1,6 @@
 {
   "matrix_version": "1.0",
-  "updated_at": "2026-08-31T14:59:16",
+  "updated_at": "2026-08-31T15:03:22",
   "updated_by": "graduation-audit",
   "status_legend": {
     "PASS": "gate verified green",
@@ -408,31 +408,87 @@
       "kind": "STATE BUG",
       "area": "core/task_goal.py reconcile_step",
       "status": "FIXED",
-      "detail": "Acceptance criteria never cleared for tools returning outer-ok envelope; successful tasks ended STALL with PENDING_ACCEPTANCE_CRITERIA. Fixed + regression tests."
+      "detail": "Acceptance criteria never cleared for outer-ok envelopes -> successful tasks stalled at PENDING_ACCEPTANCE_CRITERIA."
     },
     {
       "id": 2,
       "kind": "PROJECT-SPECIFIC ISSUE",
       "area": "tools/unreal/unreal_bridge.py save_level",
       "status": "FIXED",
-      "detail": "save_level defaulted Save-As target to hardcoded AvaLive /Game/Maps/AvaLive_Main; now derives from live project name."
+      "detail": "Temp-map Save-As defaulted to hardcoded AvaLive /Game/Maps/AvaLive_Main; now derived from live project name."
     },
     {
       "id": 3,
       "kind": "TEST BUG",
       "area": "pytest collection",
       "status": "FIXED",
-      "detail": "backup/ checkpoint shadowed tools.unreal module via sys.path; legacy root probes polluted collection. pytest.ini now excludes them."
+      "detail": "backup/checkpoint dir shadowed the real tools.unreal module via sys.path; legacy root probes polluted collection."
+    },
+    {
+      "id": 4,
+      "kind": "PLANNER BUG",
+      "area": "app/api.py + core/task_goal.py",
+      "status": "FIXED",
+      "detail": "deliverable:reopen criterion had no satisfiable step; added open_map tool (UE 5.8 load_level) + planner reopen step + reconcile mapping."
+    },
+    {
+      "id": 5,
+      "kind": "PLANNER BUG",
+      "area": "app/api.py normalize_execution_plan",
+      "status": "FIXED",
+      "detail": "New-project flow omitted requested light spawn and proof capture -> light:exists/viewport:captured criteria unsatisfiable."
+    },
+    {
+      "id": 6,
+      "kind": "STATE BUG",
+      "area": "core/task_goal.py reconcile_step",
+      "status": "FIXED",
+      "detail": "deliverable:environment/lighting/camera had no evidence mapping; long scene builds stalled after all steps succeeded."
+    },
+    {
+      "id": 7,
+      "kind": "PLANNER BUG",
+      "area": "app/api.py",
+      "status": "FIXED",
+      "detail": "Hardcoded GOAL_TEST_LIGHT label collided across tasks in one map -> deterministic ambiguous-label failure; now unique per task. Also: variable steps emitted with asset_path=None, evidence gate matched 'proof' inside project names (word-boundary fix)."
     }
   ],
   "regression_tests_added": [
     "tests/test_task_goal.py::test_evidence_criterion_clears_with_outer_ok_envelope",
-    "tests/test_task_goal.py::test_failed_envelope_does_not_clear_any_criterion"
+    "tests/test_task_goal.py::test_failed_envelope_does_not_clear_any_criterion",
+    "tests/test_task_goal.py::test_reopen_criterion_is_satisfiable_via_open_map",
+    "tests/test_task_goal.py::test_open_map_failure_does_not_complete_reopen_criterion",
+    "tests/test_task_goal.py::test_scene_deliverables_are_satisfiable_by_real_spawns",
+    "tests/test_task_goal.py::test_camera_deliverable_not_completed_by_marker_cube",
+    "tests/test_plan_normalization.py::test_reopen_task_gets_open_map_step",
+    "tests/test_plan_normalization.py::test_long_build_gets_blueprint_widget_camera_steps",
+    "tests/test_plan_normalization.py::test_new_project_flow_includes_light_and_evidence_when_requested",
+    "tests/test_plan_normalization.py::test_new_project_flow_without_proof_does_not_add_evidence"
   ],
-  "files_changed": [],
-  "remaining_blockers": [
-    "NONE"
+  "files_changed": [
+    ".gitignore",
+    "app/api.py",
+    "core/task_goal.py",
+    "core/tool_registry.py",
+    "docs/test_classification.md",
+    "memory/graduation_matrix.json",
+    "pytest.ini",
+    "scripts/live_*.py",
+    "tests/test_blueprint_compile.py",
+    "tests/test_deterministic_dispatch.py",
+    "tests/test_plan_normalization.py",
+    "tests/test_project_context.py",
+    "tests/test_project_creation.py",
+    "tests/test_save_level.py",
+    "tests/test_startup_map.py",
+    "tests/test_task_goal.py",
+    "tests/test_terminal_state.py",
+    "tools/unreal/blueprint_tools.py",
+    "tools/unreal/error_contract.py",
+    "tools/unreal/project_context.py",
+    "tools/unreal/unreal_bridge.py"
   ],
+  "remaining_blockers": "NONE",
   "resume_state": {
     "next_gate": "NONE",
     "note": "All gates PASS."
