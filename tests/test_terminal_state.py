@@ -4,11 +4,29 @@ Goal: prove that a successful execution emits COMPLETE exactly once, never
 EXECUTION_STALLED, and that EXECUTION_STALLED only fires on genuinely
 unfinished work with no progress/recovery path. Also proves resume/restart
 does not duplicate terminal events.
+
+The module autouse fixture redirects the durable parent-goal file into a temp
+dir so these tests can never clobber the live Agent's task_goal.json.
 """
+import sys
 import uuid
+from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from core import task_goal
+
 from app import api
+
+
+@pytest.fixture(autouse=True)
+def isolated_goal_file(tmp_path, monkeypatch):
+    monkeypatch.setattr(task_goal, "TASK_GOAL_FILE", tmp_path / "task_goal.json")
 
 ACTOR = "TERMINAL_STATE_FINAL_TEST"
 

@@ -106,3 +106,35 @@ def test_normalized_steps_have_single_tool_contract():
     assert plan["steps"][0]["parameters"]["project_name"] == "UA_ProjectCreation_Test"
     assert plan["steps"][4]["parameters"]["mesh_asset"] == "/Engine/BasicShapes/Cube.Cube"
     assert plan["steps"][-1]["expected_result"] == {"expected": True}
+
+
+def test_removal_task_gets_delete_save_and_absent_verify_steps():
+    plan = normalize_execution_plan(
+        "Create a visible cube actor named UA_RemovalProbe, save the level, "
+        "verify it exists, then remove it and verify cleanup.",
+        {},
+    )
+    by_id = {s["step_id"]: s for s in plan["steps"]}
+    assert by_id["delete_actor_step"]["preferred_tool"] == "delete_actor"
+    assert by_id["delete_actor_step"]["parameters"]["actor_name"] == "UA_RemovalProbe"
+    assert by_id["save_after_cleanup"]["preferred_tool"] == "save_level"
+    verify = by_id["verify_actor_absent"]
+    assert verify["phase"] == "VERIFY_CLEANUP"
+    assert verify["preferred_tool"] == "get_actor"
+    assert verify["parameters"]["actor_name"] == "UA_RemovalProbe"
+    assert verify["expected_result"].get("absent") is True
+    # Order: spawn -> save -> verify exists -> delete -> save -> verify absent.
+    tools = [s["preferred_tool"] for s in plan["steps"]]
+    ids = [s["step_id"] for s in plan["steps"]]
+    assert tools.index("delete_actor") > tools.index("get_actor")
+    assert ids.index("verify_actor_absent") == len(ids) - 1
+
+
+def test_plain_spawn_task_gets_no_delete_steps():
+    plan = normalize_execution_plan(
+        "Create a visible cube actor named UA_KeepProbe, save the level, verify it exists.",
+        {},
+    )
+    tools = [s["preferred_tool"] for s in plan["steps"]]
+    assert "delete_actor" not in tools
+    assert "get_actor" in tools

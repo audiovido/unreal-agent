@@ -123,13 +123,13 @@ def _resolve_bridge():
 BRIDGE = _resolve_bridge()
 
 PHASE_TOOL_RULES = {
-    "INSPECT": {"inspect_project", "unreal_ping", "list_assets", "get_asset_info", "inspect_blueprint"},
-    "EDIT": {"create_blueprint", "add_blueprint_variable", "set_blueprint_variable_default", "add_blueprint_component"},
+    "INSPECT": {"inspect_project", "unreal_ping", "list_assets", "get_asset_info", "inspect_blueprint", "discover_character_assets", "inspect_character_asset", "runtime_status", "verify_reopen_state", "get_widget_text", "verify_widget_visible", "verify_character_visible", "verify_ui_state", "blender_status", "blender_inspect_asset", "blender_job_status", "blender_jobs_list", "blender_verify_export", "verify_imported_asset", "verify_blender_output", "inspect_imported_asset"},
+    "EDIT": {"create_blueprint", "add_blueprint_variable", "set_blueprint_variable_default", "add_blueprint_component", "spawn_character", "set_character_transform", "assign_animation", "install_character_assets", "create_widget_blueprint", "add_text_widget", "add_scroll_box", "add_editable_text_box", "add_button", "bind_button_event", "bind_enter_submit", "add_widget_to_viewport", "set_widget_text", "set_ui_state", "chat_append_bubble", "chat_send_message", "chat_complete_roundtrip", "avatar_react", "start_pie", "stop_pie", "blender_create_asset", "blender_convert_asset", "blender_prepare_asset", "blender_prepare_character", "blender_cancel_job", "blender_recover", "create_asset_folder", "import_asset", "import_asset_fbx", "import_asset_gltf", "import_blender_output", "spawn_imported_asset", "spawn_blender_output"},
     "BUILD": {"compile_blueprint", "save_blueprint", "save_level"},
-    "VALIDATE": {"get_asset_info", "get_blueprint_variable_default", "inspect_blueprint", "list_assets"},
+    "VALIDATE": {"get_asset_info", "get_blueprint_variable_default", "inspect_blueprint", "list_assets", "ollama_chat", "runtime_widget_verify", "runtime_actor_verify", "verify_imported_asset", "verify_blender_output", "inspect_imported_asset"},
     "FIX": {"set_blueprint_variable_default", "compile_blueprint", "save_blueprint"},
     "RETRY": {"get_asset_info", "get_blueprint_variable_default", "inspect_blueprint", "list_assets"},
-    "EVIDENCE": {"capture_unreal_viewport"},
+    "EVIDENCE": {"capture_unreal_viewport", "capture_pie_viewport"},
     "CLEANUP": {"delete_asset", "delete_actor"},
     "VERIFY_CLEANUP": {"get_asset_info", "list_assets"},
     "COMPLETE": set(),
@@ -331,11 +331,29 @@ def requires_approval(
 # EXECUTION STATE
 # ============================================================
 
+def _is_level_path(path):
+    """True when a /Game/ reference points at a Level/Map (or a world/object
+    reference), never at a Blueprint asset. Maps and dotted object paths must
+    never be treated as Blueprint asset_path values."""
+    low = str(path or "").lower()
+    return (
+        low.endswith(".umap")
+        or "/maps/" in low
+        or "/levels/" in low
+        or "." in low
+    )
+
+
+def _explicit_removal_requested(task):
+    """True when the user explicitly asks to remove/delete/destroy something
+    in the request itself (mirrors the guard_tool_call deletion rule)."""
+    text = str(task or "").lower()
+    return any(w in text for w in ("remove", "delete", "destroy"))
+
+
 def _extract_task_parameters(task):
     import re
     text = str(task or "")
-    m = re.search(r"(/Game/[A-Za-z0-9_/-]+)", text)
-    asset = m.group(1) if m else None
     m = re.search(r"(?:String variable|variable)\s+([A-Za-z_][A-Za-z0-9_]*)", text, re.I)
     variable = m.group(1) if m else None
     values = re.findall(r"\b(?:WRONG_VALUE|EXPECTED_VALUE)\b", text)
@@ -364,7 +382,271 @@ def _extract_task_parameters(task):
         candidate = up.group(0).strip()
         if candidate.lower().endswith(".uproject"):
             uproject_path = candidate
+    # A /Game/ path is only a Blueprint asset_path if it is NOT a Level/Map
+    # (e.g. /Game/Maps/AvaLive_Main from a "MAP:" line). Compiling or
+    # "creating" against a World asset is exactly the AvaLive regression:
+    # create_blueprint false-succeeded on the existing map and
+    # compile_blueprint then failed with no structured stall reason.
+    asset = None
+    m = re.search(r"(/Game/[A-Za-z0-9_/-]+)", text)
+    if m and not _is_level_path(m.group(1)):
+        asset = m.group(1)
     return {"asset_path": asset, "variable_name": variable, "initial_value": values[0] if values else None, "expected_value": values[-1] if values else None, "actor_name": actor, "project_name": project_name, "uproject_path": uproject_path, "disposable": bool(asset and "agentgraduation" in asset.lower())}
+
+
+# ============================================================
+# BLENDER AGENT ROUTING (additive; plain Unreal tasks unaffected)
+# ============================================================
+
+_BLENDER_STRONG_TERMS = (
+    "blender", "3d asset", "3d model", "3d assets", "3d models",
+    "custom 3d", "fbx", "glb", "gltf", ".obj", "obj file",
+    "export to fbx", "export to glb", "convert to fbx", "convert to glb",
+    "convert to gltf", "import a fbx", "import the fbx",
+)
+
+_BLENDER_CREATE_PHRASES = (
+    "model a ", "model an ", "modeling a", "modelling a",
+    "create a 3d", "make a 3d", "build a 3d", "generate a 3d",
+    "create a table", "create a prop", "create a mesh", "create a chair",
+    "create a vase", "create a lamp", "create a desk",
+    "model a table", "model a prop", "custom 3d asset", "create a custom",
+    "create the asset", "model the asset", "build the asset",
+)
+
+_BLENDER_CHARACTER_PREP = (
+    "prepare a better character", "character prep", "character preparation",
+    "better character", "retarget", "character source", "improve the character",
+    "prepare the character", "cleanup the character", "fix the character",
+)
+
+
+BLENDER_ASSET_TERMS = (
+    "table", "prop", "asset", "cube", "sphere", "cylinder", "chair",
+    "vase", "lamp", "desk", "monkey", "torus", "cone", "furniture",
+)
+
+
+BLENDER_EXPORT_FORMATS = ("fbx", "glb", "gltf")
+
+
+def _needs_blender(task):
+    """True when the task needs the headless Blender Agent before Unreal work.
+
+    Conservative by design: plain Unreal flows ("create a cube", "spawn an
+    actor", blueprint work) must NEVER be hijacked. Routing requires an
+    explicit 3D-asset signal: blender/fbx/glb/gltf/custom-3D wording, mesh or
+    character preparation, or clearly Blender-shaped asset creation.
+    """
+    text = str(task or "").lower()
+    if any(term in text for term in _BLENDER_STRONG_TERMS):
+        return True
+    if any(phrase in text for phrase in _BLENDER_CREATE_PHRASES):
+        return True
+    if "character" in text and any(
+        term in text for term in ("prepare", "prep", "better", "retarget", "improve", "source", "cleanup", "fix")
+    ):
+        return True
+    if "mesh" in text and any(
+        term in text for term in ("cleanup", "convert", "prepare", "fix", "uv", "decimat", "lod", "scale", "optimize", "import")
+    ):
+        return True
+    if "model" in text and "3d" in text:
+        return True
+    # A Blender cube/sphere is only implied when the request is explicitly
+    # about a 3D asset, not a plain "cube" actor in Unreal.
+    if ("asset" in text or "prop" in text or "3d" in text) and any(
+        word in text for word in ("cube", "sphere", "cylinder", "torus", "monkey")
+    ) and any(
+        verb in text for verb in ("create", "model", "make", "build", "generate")
+    ):
+        return True
+    return False
+
+
+def _blender_source_path(task):
+    """Resolve an explicit source asset path from the task or the incoming dir."""
+    m = re.search(
+        r"(?<!\S)[A-Za-z]:[\\/][^\s\"']*\.(?:fbx|glb|gltf|obj)\b",
+        str(task),
+        re.I,
+    )
+    if m:
+        return m.group(0).strip()
+    try:
+        from blender_agent.config import workspace_layout
+        incoming = workspace_layout()["incoming"]
+        if incoming and incoming.exists():
+            exts = {".fbx", ".glb", ".gltf", ".obj"}
+            files = [
+                f for f in sorted(incoming.rglob("*"))
+                if f.is_file() and f.suffix.lower() in exts
+            ]
+            if files:
+                return str(files[0]).replace("\\", "/")
+    except Exception:
+        pass
+    return None
+
+
+def _blender_asset_name(task, fallback="UA_Blender_Asset"):
+    """Extract a deterministic asset/actor name from the request."""
+    m = re.search(r"\bUA_[A-Za-z0-9_]+\b", str(task))
+    if m:
+        return m.group(0)
+    m = re.search(r"(?:named|called)\s+['\"]?([A-Za-z_][A-Za-z0-9_]*)", str(task), re.I)
+    if m:
+        return m.group(1)
+    m = re.search(r"(?:prop|asset|table|object)\s*:\s*([A-Za-z_][A-Za-z0-9_]*)", str(task), re.I)
+    if m:
+        return m.group(1)
+    return fallback
+
+
+def _blender_shape(task):
+    text = str(task).lower()
+    for shape in ("table", "cube", "sphere", "cylinder", "cone", "torus", "monkey", "plane"):
+        if shape in text:
+            return shape
+    return "cube"
+
+
+def _blender_plan_steps(task, p):
+    """Deterministic Blender -> Unreal step chain, or None when not a Blender task.
+
+    Chain: blender op -> export validated -> Unreal import -> verify -> spawn
+    -> save -> screenshot. Character requests without a realistic source keep
+    an honest Unreal-side mannequin fallback and never fabricate a human.
+    """
+    if not _needs_blender(task):
+        return None
+
+    text = str(task).lower()
+    steps = []
+    last_id = "ping"
+
+    def add(step_id, phase, intent, tool, parameters=None, expected=None, target=None):
+        nonlocal last_id
+        step = {
+            "step_id": step_id,
+            "phase": phase,
+            "intent": intent,
+            "action_category": intent,
+            "preferred_tool": tool,
+            "allowed_tools": [tool],
+            "target_type": "asset",
+            "target_resource": target,
+            "parameters": parameters or {},
+            "expected_result": expected or {},
+            "validation_tool": None,
+            "validation_parameters": {},
+            "depends_on": [last_id],
+            "disposable": False,
+            "status": "pending",
+        }
+        steps.append(step)
+        last_id = step_id
+        return step
+
+    # 1. Prove Blender is present + headless-ready.
+    if "blender_status" in REGISTRY:
+        add("blender_status", "INSPECT", "blender_status", "blender_status", {}, target="blender")
+
+    name = _blender_asset_name(task)
+    source = _blender_source_path(task)
+    char_request = (
+        "character" in text
+        and any(term in text for term in ("prepare", "prep", "better", "retarget", "improve", "source"))
+    )
+    convert_request = (
+        any(fmt in text for fmt in BLENDER_EXPORT_FORMATS)
+        and any(term in text for term in ("convert", "format", "export"))
+    )
+    create_request = (
+        any(phrase in text for phrase in _BLENDER_CREATE_PHRASES)
+        or ("create" in text and any(term in text for term in BLENDER_ASSET_TERMS))
+        or ("model" in text and any(term in text for term in BLENDER_ASSET_TERMS))
+    )
+
+    export_format = "fbx"
+    # Prefer the format named AFTER "to "/"into " (the conversion target), so
+    # "convert the FBX ... to GLB" picks glb, never the source format.
+    target_m = re.search(r"\b(?:to|into)\s+(fbx|glb|gltf)\b", text)
+    if target_m:
+        export_format = target_m.group(1)
+    else:
+        for fmt in reversed(BLENDER_EXPORT_FORMATS):
+            if fmt in text:
+                export_format = fmt
+                break
+
+    if char_request:
+        params = {"name": name, "export_format": export_format}
+        if source:
+            params["source"] = source
+        add("blender_prepare_character", "EDIT", "blender_prepare_character", "blender_prepare_character", params, target=name)
+    elif create_request:
+        # Creation takes priority over conversion: "create ... exported to FBX"
+        # is a create task, not a convert task.
+        shape = _blender_shape(text)
+        params = {
+            "name": name,
+            "shape": shape,
+            "materials": "wood" if shape == "table" else "white",
+            "export_format": export_format,
+            "screenshot": True,
+        }
+        if shape == "table":
+            params["dimensions_cm"] = [200.0, 100.0, 6.0]
+            params["expected_dimensions_cm"] = [200.0, 100.0, 80.0]
+        add("blender_create_asset", "EDIT", "blender_create_asset", "blender_create_asset", params, target=name)
+    elif convert_request:
+        params = {"source": source or "", "export_format": export_format, "name": name}
+        if not source:
+            params.pop("source", None)
+        add("blender_convert_asset", "EDIT", "blender_convert_asset", "blender_convert_asset", params, target=source or name)
+    else:
+        params = {"name": name, "export_format": export_format}
+        if source:
+            params["source"] = source
+        add("blender_prepare_asset", "EDIT", "blender_prepare_asset", "blender_prepare_asset", params, target=name)
+
+    # 2. Blender -> Unreal handoff (import -> verify -> spawn -> save -> proof).
+    if "create_asset_folder" in REGISTRY:
+        add("create_asset_folder", "EDIT", "create_asset_folder", "create_asset_folder", {"folder_path": "/Game/Imported"}, target="/Game/Imported")
+    if "import_blender_output" in REGISTRY:
+        add("import_blender_output", "EDIT", "import_blender_output", "import_blender_output", {"destination_path": "/Game/Imported"}, target=name)
+    if "verify_blender_output" in REGISTRY:
+        add("verify_blender_output", "VALIDATE", "verify_blender_output", "verify_blender_output", {}, target=name)
+    if "spawn_blender_output" in REGISTRY:
+        add("spawn_blender_output", "EDIT", "spawn_blender_output", "spawn_blender_output", {"actor_name": name}, target=name)
+    if "get_actor" in REGISTRY:
+        add("validate_blender_actor", "VALIDATE", "get_actor", "get_actor", {"actor_name": name}, {"expected": name}, target=name)
+    if "save_level" in REGISTRY:
+        add("save_blender_scene", "BUILD", "save_level", "save_level", {}, target="level")
+    if "capture_unreal_viewport" in REGISTRY:
+        add("blender_evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {}, target="proof")
+
+    # 3. Character requests with NO realistic source: never fake a human. Use
+    # the real engine mannequin on the Unreal side and let the parent report
+    # carry the REALISTIC_CHARACTER_SOURCE_REQUIRED finding.
+    if char_request and not source and "spawn_character" in REGISTRY:
+        char_label = "UA_Avatar" if name == fallback_name() else name
+        if "install_character_assets" in REGISTRY:
+            add("character_fallback_install", "EDIT", "install_character_assets", "install_character_assets", {"target_root": "/Game/Mannequin"}, target="mannequin")
+        add("character_fallback_spawn", "EDIT", "spawn_character", "spawn_character", {"actor_name": char_label, "location": [120, 0, 100]}, target=char_label)
+        if "verify_character_visible" in REGISTRY:
+            add("character_fallback_verify", "VALIDATE", "verify_character_visible", "verify_character_visible", {"actor_name": char_label}, target=char_label)
+        if "save_level" in REGISTRY:
+            add("save_character_scene", "BUILD", "save_level", "save_level", {}, target="level")
+        if "capture_unreal_viewport" in REGISTRY:
+            add("character_evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {}, target="proof")
+
+    return steps
+
+
+def fallback_name():
+    return "UA_Blender_Asset"
 
 
 def normalize_execution_plan(task, plan):
@@ -418,6 +700,20 @@ def normalize_execution_plan(task, plan):
         # no-path task proves both project recovery AND a connected editor.
         if "unreal_ping" in REGISTRY:
             add("ping", "INSPECT", "unreal_ping", "unreal_ping", {})
+
+    # ------------------------------------------------------------ blender
+    # 3D-asset work routes through the headless Blender Agent, then back to
+    # the Unreal Agent for import/spawn/validate/evidence. Deterministic and
+    # strictly additive: plain Unreal tasks are untouched by this branch.
+    blender_steps = _blender_plan_steps(task, p)
+    if blender_steps is not None:
+        steps = steps + blender_steps
+        return {
+            "goal": (plan or {}).get("goal", task) if isinstance(plan, dict) else task,
+            "steps": steps,
+            "success_criteria": (plan or {}).get("success_criteria", []) if isinstance(plan, dict) else [],
+        }
+
     if p["project_name"] and not p["asset_path"] and p["actor_name"]:
         pass
     else:
@@ -438,6 +734,13 @@ def normalize_execution_plan(task, plan):
                 add("spawn_light", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "PointLight", "actor_name": light_label, "location": [0, 0, 300]})
             add("save_level", "BUILD", "save_level", "save_level", {})
             add("validate_actor", "VALIDATE", "get_actor", "get_actor", {"actor_name": p["actor_name"]}, {"expected": p["actor_name"]})
+            if _explicit_removal_requested(task):
+                # User-requested actor removal must actually execute and be
+                # verified absent, never satisfied vacuously by the success
+                # criteria. Order: delete -> persist the deletion -> verify.
+                add("delete_actor_step", "EDIT", "delete_actor", "delete_actor", {"actor_name": p["actor_name"]})
+                add("save_after_cleanup", "BUILD", "save_level", "save_level", {})
+                add("verify_actor_absent", "VERIFY_CLEANUP", "get_actor", "get_actor", {"actor_name": p["actor_name"]}, {"absent": True})
             if ("reopen" in task_lower or "relaunch" in task_lower or "restart" in task_lower) and "open_map" in REGISTRY:
                 # A persisted /Game map now exists; reopen it so the
                 # deliverable:reopen acceptance criterion is truly verifiable.
@@ -490,6 +793,95 @@ def normalize_execution_plan(task, plan):
             add("create_widget", "EDIT", "create_umg_widget", "create_umg_widget", {"asset_path": f"/Game/_UA_GradA/{w_name}"})
         if "camera" in task_lower and "spawn_actor" in REGISTRY:
             add("spawn_camera", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "CameraActor", "actor_name": "UA_PROD_Camera", "location": [0, 0, 200]})
+        # Scene-content milestones (environment floor + lighting) map to real
+        # spawn steps so deliverable:environment / deliverable:lighting can be
+        # cleared on long builds that do not name an actor. Unique labels keep
+        # repeated builds in the same map free of ambiguous-label collisions.
+        if ("environment" in task_lower or "scene" in task_lower or "room" in task_lower) and "spawn_actor" in REGISTRY:
+            if not any(str(s.get("parameters", {}).get("actor_name") or "").startswith("UA_Env_") for s in steps):
+                add("spawn_environment", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "StaticMeshActor", "actor_name": "UA_Env_Floor", "location": [0, 0, 0], "scale": [6.0, 6.0, 0.5], "mesh_asset": "/Engine/BasicShapes/Cube.Cube"})
+        if "light" in task_lower and "spawn_actor" in REGISTRY:
+            if not any(str(s.get("parameters", {}).get("class_name") or "") == "PointLight" for s in steps):
+                light_label = "UA_L_" + uuid.uuid4().hex[:8]
+                add("spawn_light", "EDIT", "spawn_actor", "spawn_actor", {"class_name": "PointLight", "actor_name": light_label, "location": [0, 0, 600]})
+
+    # Deterministic generic AI-assistant product milestones. Requests that ask
+    # for an avatar/chat/assistant experience get the full executable pipeline
+    # (spawn character -> build UMG chat -> bind Send/Enter -> wire Ollama ->
+    # runtime PIE -> live message -> states -> reaction -> save -> reopen ->
+    # screenshot) without any manual prompt between milestones. Every step is a
+    # real registered tool; the acceptance contract only clears from verified
+    # tool evidence, never from these plan entries themselves.
+    product_terms = ("avatar", "chat", "ollama", "assistant")
+    is_product_build = bool(
+        is_long_build
+        and sum(term in task_lower for term in product_terms) >= 1
+        and ("chat" in task_lower or "ollama" in task_lower or "assistant" in task_lower)
+    )
+    avatar_requested = "avatar" in task_lower or "character" in task_lower
+    if is_product_build and avatar_requested:
+        avatar_label = "UA_Avatar"
+        if "spawn_character" in REGISTRY:
+            add("spawn_avatar", "EDIT", "spawn_character", "spawn_character", {"actor_name": avatar_label, "location": [120, 0, 100]})
+        if "assign_animation" in REGISTRY:
+            add("assign_idle", "EDIT", "assign_animation", "assign_animation", {"actor_name": avatar_label})
+        if "verify_character_visible" in REGISTRY:
+            add("verify_avatar", "VALIDATE", "verify_character_visible", "verify_character_visible", {"actor_name": avatar_label})
+    if is_product_build and ("chat" in task_lower or "ui" in task_lower or "widget" in task_lower or "umg" in task_lower):
+        # Runtime-first: widgets must be created inside the running game world
+        # (outer = PIE world) so viewport attachment actually works.
+        if "save_level" in REGISTRY:
+            add("save_product", "BUILD", "save_level", "save_level", {})
+        if "start_pie" in REGISTRY:
+            add("runtime_start", "EDIT", "start_pie", "start_pie", {})
+        if "create_widget_blueprint" in REGISTRY:
+            add("create_chat_widget", "EDIT", "create_widget_blueprint", "create_widget_blueprint", {"asset_path": "/Game/_UA_Chat/WBP_Chat"}, {"exists": True})
+        if "add_text_widget" in REGISTRY:
+            add("widget_title", "EDIT", "add_text_widget", "add_text_widget", {"name": "TitleText", "text": "AI Assistant"})
+            add("widget_status", "EDIT", "add_text_widget", "add_text_widget", {"name": "StatusText", "text": "Online"})
+        if "add_scroll_box" in REGISTRY:
+            add("widget_history", "EDIT", "add_scroll_box", "add_scroll_box", {"name": "HistoryScroll"})
+        if "add_editable_text_box" in REGISTRY:
+            add("widget_input", "EDIT", "add_editable_text_box", "add_editable_text_box", {"name": "InputBox", "hint_text": "Type a message..."})
+        if "add_button" in REGISTRY:
+            add("widget_send", "EDIT", "add_button", "add_button", {"name": "SendButton", "label": "Send"})
+        if "bind_button_event" in REGISTRY:
+            add("bind_send", "EDIT", "bind_button_event", "bind_button_event", {"widget_name": "SendButton"})
+        if "bind_enter_submit" in REGISTRY:
+            add("bind_enter", "EDIT", "bind_enter_submit", "bind_enter_submit", {"widget_name": "InputBox"})
+        if "add_widget_to_viewport" in REGISTRY:
+            add("widget_viewport", "EDIT", "add_widget_to_viewport", "add_widget_to_viewport", {"widget_name": "ChatRoot"})
+        if "verify_ui_state" in REGISTRY:
+            add("verify_online_state", "VALIDATE", "verify_ui_state", "verify_ui_state", {"expected_state": "online"})
+    if is_product_build:
+        if "chat_send_message" in REGISTRY:
+            add("live_send", "EDIT", "chat_send_message", "chat_send_message", {"message": "Hello assistant. Confirm the live Unreal chat is working."})
+        if "verify_ui_state" in REGISTRY:
+            add("verify_thinking_state", "VALIDATE", "verify_ui_state", "verify_ui_state", {"expected_state": "thinking"})
+        if "ollama_chat" in REGISTRY:
+            add("live_ollama", "EDIT", "ollama_chat", "ollama_chat", {"prompt": "Hello assistant. Confirm the live Unreal chat is working.", "system_prompt": "You are a helpful assistant inside a live Unreal Engine chat UI. Reply in one concise sentence."})
+        if "set_ui_state" in REGISTRY:
+            add("state_online", "EDIT", "set_ui_state", "set_ui_state", {"state": "online"})
+        if "verify_ui_state" in REGISTRY:
+            add("verify_online_after", "VALIDATE", "verify_ui_state", "verify_ui_state", {"expected_state": "online"})
+        if "avatar_react" in REGISTRY and avatar_requested and "spawn_character" in REGISTRY and avatar_label:
+            add("avatar_reaction", "EDIT", "avatar_react", "avatar_react", {"actor_name": avatar_label, "reaction": "bob"})
+        if "runtime_actor_verify" in REGISTRY and avatar_requested and "spawn_character" in REGISTRY and avatar_label:
+            add("runtime_avatar", "VALIDATE", "runtime_actor_verify", "runtime_actor_verify", {"actor_name": avatar_label, "actor_class": "SkeletalMeshActor"})
+        if "runtime_widget_verify" in REGISTRY:
+            add("runtime_widget", "VALIDATE", "runtime_widget_verify", "runtime_widget_verify", {"widget_name": "StatusText", "expected_text": "Online"})
+        if "capture_pie_viewport" in REGISTRY:
+            add("runtime_evidence", "EVIDENCE", "capture_pie_viewport", "capture_pie_viewport", {})
+        if "stop_pie" in REGISTRY:
+            add("runtime_stop", "EDIT", "stop_pie", "stop_pie", {})
+        if "save_level" in REGISTRY:
+            add("save_product_final", "BUILD", "save_level", "save_level", {})
+        if "open_map" in REGISTRY:
+            add("reopen_map", "VALIDATE", "open_map", "open_map", {}, {"expected": True})
+        if "verify_reopen_state" in REGISTRY:
+            add("verify_reopen", "VALIDATE", "verify_reopen_state", "verify_reopen_state", {})
+        if "capture_unreal_viewport" in REGISTRY:
+            add("final_screenshot", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
 
     # Arbitrary natural-language requests that the deterministic patterns
     # above cannot map still need a real plan. Ask the local coder model
@@ -730,9 +1122,20 @@ def _extract_tool_error(result):
         for key in ("error", "message", "detail", "reason"):
             if payload.get(key):
                 return payload.get(key)
+        # Structured tools report a list of diagnostics under "errors" (e.g.
+        # compile_blueprint); surface them so stall evidence carries the real
+        # compile error instead of an empty last_error.
+        errors = payload.get("errors")
+        if isinstance(errors, list) and errors:
+            return "; ".join(str(item) for item in errors if item is not None)[:600]
+        if isinstance(errors, str) and errors:
+            return errors[:600]
     for key in ("error", "message", "detail", "reason"):
         if result.get(key):
             return result[key]
+    errors = result.get("errors")
+    if isinstance(errors, list) and errors:
+        return "; ".join(str(item) for item in errors if item is not None)[:600]
     return None
 
 
@@ -850,7 +1253,11 @@ def _next_normalized_step(execution):
             continue
         phase = str(step.get("phase", "")).upper()
         intent = str(step.get("intent", "")).lower()
-        if phase in {"CLEANUP", "VERIFY_CLEANUP"} or intent in {"cleanup", "verify_cleanup"}:
+        # Planned actor-removal steps (delete_actor / verify absence) are real
+        # work the loop must run; only the generic disposable-resource cleanup
+        # machinery (assets tracked in created_resources) stays loop-invisible.
+        is_planned_actor_cleanup = phase in {"CLEANUP", "VERIFY_CLEANUP"} and "actor_name" in (step.get("parameters") or {})
+        if (phase in {"CLEANUP", "VERIFY_CLEANUP"} or intent in {"cleanup", "verify_cleanup"}) and not is_planned_actor_cleanup:
             continue
         if set(step.get("depends_on") or []).issubset(completed):
             return index, step
@@ -893,7 +1300,7 @@ def _deterministic_step_dispatch(execution, step, project_context=None):
         return {"dispatch_id": str(uuid.uuid4()), "step_id": step.get("step_id"), "tool_name": action, "args": args, "transport_success": False, "ok": False, "raw_result": None, "payload": {}, "value": None, "resource_path": None, "error": error}
     emit("tool", f"Running {action}", {"step_id": step.get("step_id"), "args": args}, "running")
     try:
-        tool_timeout = 720 if action in {"create_project", "open_project"} else 90 if action in {"create_default_level", "validate_project_creation"} else 60
+        tool_timeout = 720 if action in {"create_project", "open_project"} or action.startswith("blender_") or action in {"import_blender_output", "import_asset", "import_asset_fbx", "import_asset_gltf"} else 90 if action in {"create_default_level", "validate_project_creation"} else 60
         raw = call_tool_hard_timeout(REGISTRY[action], args, timeout_seconds=tool_timeout)
     except Exception as exc:
         raw = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
@@ -948,6 +1355,45 @@ def _can_complete(execution):
     )
 
 
+COMPILE_RECOVERY_STRATEGIES = ("rescan", "repair")
+
+
+def _compile_recovery_step(step, attempts):
+    """Generate the NEXT changed compile strategy after a failed dispatch.
+
+    attempts is the 1-based number of compile dispatches that failed so far
+    (including the failure being handled). The first failure schedules the
+    "rescan" strategy, the second the "repair" strategy; a third failure has
+    no strategy left and recovery is exhausted. Every retry therefore changes
+    the call, so the identical failed compile call is never repeated unchanged.
+    """
+    if attempts > len(COMPILE_RECOVERY_STRATEGIES):
+        return None
+    strategy = COMPILE_RECOVERY_STRATEGIES[attempts - 1]
+    params = dict(step.get("parameters") or {})
+    params["strategy"] = strategy
+    return {
+        "step_id": f"fix:compile:{attempts}",
+        "phase": "FIX",
+        "intent": "compile_blueprint",
+        "action_category": "compile_blueprint",
+        "preferred_tool": "compile_blueprint",
+        "allowed_tools": ["compile_blueprint"],
+        "target_type": step.get("target_type") or "blueprint",
+        "target_resource": params.get("asset_path"),
+        "parameters": params,
+        "expected_result": {},
+        "validation_tool": None,
+        "validation_parameters": {},
+        "depends_on": [step.get("step_id")],
+        "disposable": False,
+        "status": "pending",
+        "generated_from": step.get("step_id"),
+        "fix_kind": "compile_recovery",
+        "strategy": strategy,
+    }
+
+
 def _apply_step_result(execution, step, dispatch_result):
     """Apply one finite deterministic dispatch result exactly once."""
     dispatch_id = dispatch_result.get("dispatch_id")
@@ -959,10 +1405,21 @@ def _apply_step_result(execution, step, dispatch_result):
 
     success = bool(dispatch_result.get("transport_success"))
     step_id = step.get("step_id")
-    if (
-        step.get("phase") == "VERIFY_CLEANUP"
-        and _resource_is_absent(dispatch_result.get("raw_result") or dispatch_result)
-    ):
+    if step.get("phase") == "VERIFY_CLEANUP":
+        if not _resource_is_absent(dispatch_result.get("raw_result") or dispatch_result):
+            # Absence verification failed: the resource is still present.
+            # Never let a still-present resource pass as verified clean.
+            step["status"] = "failed"
+            execution["cleanup_failure"] = {
+                "path": (
+                    dispatch_result.get("resource_path")
+                    or step.get("cleanup_resource_path")
+                    or (step.get("parameters") or {}).get("actor_name")
+                    or (step.get("parameters") or {}).get("asset_path")
+                ),
+                "reason": "resource_still_present",
+            }
+            return {"applied": True, "status": "failed", "cleanup": "verification_failed"}
         cleanup_path = (
             dispatch_result.get("resource_path")
             or step.get("cleanup_resource_path")
@@ -990,9 +1447,64 @@ def _apply_step_result(execution, step, dispatch_result):
         if execution.get("fix_pending") and step_id == execution.get("fix_step_id"):
             execution["fix_pending"] = False
             execution["fix_step_id"] = None
+        # A failed mandatory step (EVIDENCE/CLEANUP handled above) becomes a
+        # structured mandatory-failure with bounded automatic recovery.
+        # compile_blueprint has concrete changed strategies (rescan / repair);
+        # any other mandated step records the failure and stalls with
+        # STALL_FAILED_MANDATORY_STEP once no recovery path exists.
+        phase = str(step.get("phase") or "").upper()
+        tool = str(step.get("preferred_tool") or "")
+        if phase not in ("EVIDENCE", "CLEANUP", "VERIFY_CLEANUP") and tool:
+            attempts = execution.get("recovery_attempts", 0) + 1
+            execution["recovery_attempts"] = attempts
+            prior = execution.get("mandatory_failure") or {}
+            # A failing recovery step keeps pointing at the ORIGINAL mandatory
+            # step so the stall evidence names compile_save + compile_blueprint,
+            # never the internal fix:compile:N retry step.
+            failed_step_id = prior.get("failed_step_id") or step_id
+            failed_tool = prior.get("failed_tool") or tool
+            execution["mandatory_failure"] = {
+                "failed_step_id": failed_step_id,
+                "failed_tool": failed_tool,
+                "last_error": str(dispatch_result.get("error") or ""),
+                "recovery_attempts": attempts,
+                "exhausted": False,
+                "pending_acceptance_criteria": list((execution.get("task_goal") or {}).get("pending_criteria") or []),
+            }
+            fix_step = None
+            if tool == "compile_blueprint":
+                fix_step = _compile_recovery_step(step, attempts)
+            if fix_step is not None:
+                execution.setdefault("plan", {"steps": []}).setdefault("steps", []).append(fix_step)
+                execution["fix_pending"] = True
+                execution["fix_step_id"] = fix_step["step_id"]
+                execution["current_phase"] = execution["phase"] = "FIX"
+            else:
+                execution["mandatory_failure"]["exhausted"] = True
         return {"applied": True, "status": "failed", "error": dispatch_result.get("error")}
 
     if execution.get("fix_pending") and step_id == execution.get("fix_step_id"):
+        if step.get("fix_kind") == "compile_recovery":
+            # Compile recovery succeeded: mark the original failed step and all
+            # of its recovery attempts completed so the parent task continues.
+            step["status"] = "completed"
+            mf = execution.get("mandatory_failure") or {}
+            failed_step_id = mf.get("failed_step_id")
+            for item in (execution.get("plan") or {}).get("steps", []):
+                if (
+                    failed_step_id
+                    and (
+                        item.get("step_id") == failed_step_id
+                        or item.get("generated_from") == failed_step_id
+                    )
+                ):
+                    if item.get("status") != "completed":
+                        item["status"] = "completed"
+            execution["fix_pending"] = False
+            execution["fix_step_id"] = None
+            execution["mandatory_failure"] = None
+            execution["current_phase"] = execution["phase"] = "VALIDATE"
+            return {"applied": True, "status": "completed", "transition": "recovered"}
         step["status"] = "completed"
         execution["fix_pending"] = False
         execution["fix_step_id"] = None
@@ -1041,6 +1553,9 @@ def _apply_step_result(execution, step, dispatch_result):
             execution["retry_pending"] = False
             execution["retry_validation_step_id"] = None
             execution["current_phase"] = execution["phase"] = "EVIDENCE"
+            # A validation retry passing means the earlier tool failure was
+            # transient; drop any stale structured mandatory failure.
+            execution["mandatory_failure"] = None
             return {"applied": True, "status": "completed", "validation": "passed"}
         execution["retry_pending"] = False
         execution["retry_validation_step_id"] = None
@@ -1447,6 +1962,10 @@ def process_tool_result(state, raw, action, args, result):
 STALL_NO_PROGRESS = "STALL_NO_PROGRESS"
 STALL_TOOL_HUNG = "STALL_TOOL_HUNG"
 STALL_RECOVERY_EXHAUSTED = "STALL_RECOVERY_EXHAUSTED"
+STALL_FAILED_MANDATORY_STEP = "STALL_FAILED_MANDATORY_STEP"
+# Maximum total compile_blueprint dispatches (original + changed strategies)
+# before recovery is considered genuinely exhausted.
+COMPILE_RECOVERY_MAX_ATTEMPTS = 3
 
 
 def _progress_signature(state):
@@ -1484,13 +2003,6 @@ def _completion_blocker(execution):
     the ONLY reason EXECUTION_STALLED is allowed to fire.
     """
     e = execution or {}
-    # Only this execution's parent contract governs completion. Do not
-    # implicitly borrow the last process-wide goal for synthetic/legacy states;
-    # restored executions must load it into task_goal explicitly.
-    goal = e.get("task_goal")
-    if goal and not contract_complete(goal):
-        pending = goal.get("pending_criteria") or []
-        return {"code": "RUNNING", "detail": "PENDING_ACCEPTANCE_CRITERIA", "reason": "Parent goal still has mandatory criteria: " + repr(pending)}
     steps = (e.get("plan") or {}).get("steps", [])
 
     # Explicit human / system interrupts are BLOCKED, never a stall.
@@ -1505,9 +2017,40 @@ def _completion_blocker(execution):
     if e.get("retry_pending"):
         return {"code": "RETRYING", "detail": "RETRY_PENDING", "reason": "A validation retry is still pending"}
 
-    # A failed mandatory step with no pending recovery is a real failure.
+    # A mandatory step failed and automatic recovery is exhausted: a structured
+    # stall that identifies the exact step/tool/error/attempts/criteria. This
+    # dominates the generic PENDING_ACCEPTANCE_CRITERIA reason below so a
+    # broken compile never surfaces as a bare "parent goal incomplete" stall.
+    mf = e.get("mandatory_failure")
+    if mf and mf.get("exhausted"):
+        return {
+            "code": "STALLED",
+            "detail": STALL_FAILED_MANDATORY_STEP,
+            "reason": f"Mandatory step {mf.get('failed_step_id')} ({mf.get('failed_tool')}) failed and recovery is exhausted",
+            "stall_detail": {
+                "code": STALL_FAILED_MANDATORY_STEP,
+                "failed_step_id": mf.get("failed_step_id"),
+                "failed_tool": mf.get("failed_tool"),
+                "last_error": mf.get("last_error"),
+                "recovery_attempts": mf.get("recovery_attempts"),
+                "pending_acceptance_criteria": list(mf.get("pending_acceptance_criteria") or []),
+            },
+        }
+
+    # A failed mandatory validation step with no pending recovery is a real failure.
     if e.get("failed_step"):
         return {"code": "FAILED", "detail": "FAILED_MANDATORY_STEP", "reason": f"Mandatory step {e.get('failed_step')} failed"}
+
+    # Only this execution's parent contract governs completion. Do not
+    # implicitly borrow the last process-wide goal for synthetic/legacy states;
+    # restored executions must load it into task_goal explicitly. Checked AFTER
+    # the failure branches so a broken step can never be masked as a generic
+    # "parent goal still has mandatory criteria" RUNNING state that used to map
+    # to EXECUTION_STALLED with stall_reason null.
+    goal = e.get("task_goal")
+    if goal and not contract_complete(goal):
+        pending = goal.get("pending_criteria") or []
+        return {"code": "RUNNING", "detail": "PENDING_ACCEPTANCE_CRITERIA", "reason": "Parent goal still has mandatory criteria: " + repr(pending)}
 
     # Cleanup verification could not be satisfied after its last attempt.
     if e.get("cleanup_failure"):
@@ -1594,6 +2137,7 @@ def _finalize_terminal(state, forced_stall=None):
         code, verdict = "STALLED", "STALL"
         stall = forced_stall.get("detail") or forced_stall.get("code") or STALL_NO_PROGRESS
         msg = forced_stall.get("reason") or f"Execution stalled with no progress ({stall})."
+        blocker = forced_stall
         state["state"] = code
         state["completion_message"] = msg
     else:
@@ -1603,6 +2147,23 @@ def _finalize_terminal(state, forced_stall=None):
             code = "STALLED"
             blocker = {"code": "STALLED", "detail": STALL_NO_PROGRESS,
                        "reason": "Pending recovery work but no runnable step could continue it"}
+        elif code == "RUNNING":
+            # Nothing runnable remains but the parent contract is not complete:
+            # a genuine stall with a real structured reason. This is the exact
+            # AvaLive regression where EXECUTION_STALLED carried a null
+            # stall_reason (PENDING_ACCEPTANCE_CRITERIA mapped to STALL but
+            # the detail was dropped). EXECUTION_STALLED must never be null.
+            pending = [c for c in (state.get("task_goal") or {}).get("pending_criteria") or []]
+            code = "STALLED"
+            blocker = {
+                "code": "STALLED",
+                "detail": STALL_NO_PROGRESS,
+                "reason": (blocker or {}).get("reason") or "Parent goal criteria could not be verified with the available steps",
+                "stall_detail": {
+                    "code": STALL_NO_PROGRESS,
+                    "pending_acceptance_criteria": pending,
+                },
+            }
         stall = (blocker or {}).get("detail") if code == "STALLED" else None
         msg = (
             "Execution complete." if code == "COMPLETE"
@@ -1618,8 +2179,10 @@ def _finalize_terminal(state, forced_stall=None):
     state["final_verdict"] = verdict
     if code == "STALLED":
         state["stall_reason"] = stall
+        state["stall_detail"] = (blocker or {}).get("stall_detail") or {"code": stall}
 
-    # Emit the terminal event exactly once per execution.
+    # Emit the terminal event exactly once per execution. EXECUTION_STALLED
+    # always carries a non-null structured stall_reason plus stall_detail.
     if not already:
         if code == "COMPLETE":
             emit("complete", "COMPLETE", {"verdict": "PASS"}, "success")
@@ -1628,7 +2191,7 @@ def _finalize_terminal(state, forced_stall=None):
         elif code == "FAILED":
             emit("error", "EXECUTION_FAILED", {"reason": msg}, "error")
         else:
-            emit("error", "EXECUTION_STALLED", {"stall_reason": stall, "reason": msg}, "error")
+            emit("error", "EXECUTION_STALLED", {"stall_reason": stall, "stall_detail": state.get("stall_detail"), "reason": msg}, "error")
 
     execution_state = None
     return {
@@ -1636,6 +2199,7 @@ def _finalize_terminal(state, forced_stall=None):
         "message": msg,
         "terminal": verdict,
         "stall_reason": stall if code == "STALLED" else None,
+        "stall_detail": state.get("stall_detail") if code == "STALLED" else None,
     }
 
 
@@ -1746,6 +2310,7 @@ def run_execution_until_pause():
             "message": state.get("completion_message") or "Execution already terminal.",
             "terminal": persisted,
             "stall_reason": state.get("stall_reason"),
+            "stall_detail": state.get("stall_detail"),
             "once": True,
         }
 

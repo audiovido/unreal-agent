@@ -20,6 +20,27 @@ def _has(text, *terms):
     return any(term in lowered for term in terms)
 
 
+def _blender_request(text):
+    """True when the request routes through the Blender Agent (kept in sync
+    with app.api._needs_blender so acceptance criteria match the plan)."""
+    lowered = text.lower()
+    strong = (
+        "blender", "3d asset", "3d model", "3d assets", "3d models",
+        "custom 3d", "fbx", "glb", "gltf", "obj file",
+    )
+    if any(term in lowered for term in strong):
+        return True
+    if "mesh" in lowered and any(
+        term in lowered for term in ("cleanup", "convert", "prepare", "fix", "uv", "decimat", "lod", "scale", "optimize")
+    ):
+        return True
+    if "character" in lowered and any(
+        term in lowered for term in ("prepare", "prep", "better", "retarget", "improve", "source", "cleanup")
+    ):
+        return True
+    return False
+
+
 def build_acceptance_contract(request, project_context=None):
     """Create a deterministic contract; preserve the complete original request."""
     text = _text(request)
@@ -68,6 +89,22 @@ def build_acceptance_contract(request, project_context=None):
     for term, label in long_terms.items():
         if term in text.lower():
             add(f"deliverable:{term.replace(' ', '_')}", label)
+    # Blender Agent deliverables. These criteria are only emitted when the
+    # request actually routes through the Blender Agent, so plain Unreal tasks
+    # are never burdened with unsatisfiable 3D-pipeline criteria.
+    if _blender_request(text):
+        add("deliverable:blender_asset", "Blender asset")
+        if _has(text, "export"):
+            add("deliverable:blender_export", "Blender export")
+        if _has(text, "import into unreal", "unreal import", "import it into"):
+            add("deliverable:unreal_import", "Unreal import")
+        if _has(text, "spawn", "place it", "place the asset"):
+            add("deliverable:asset_spawned", "spawned asset")
+    if _has(text, "character") and any(
+        t in text for t in ("prepare", "prep", "better", "retarget", "improve", "source", "cleanup")
+    ):
+        add("deliverable:character", "prepared character")
+
     # Concrete criteria are sufficient; an aggregate "build complete" flag
     # would be impossible to independently verify and could deadlock completion.
 
@@ -221,6 +258,116 @@ def reconcile_step(goal, step, result):
         completed.extend([f"actor:{actor_name}:exists", f"actor:{actor_name}:verified"])
     if tool == "save_level" and step_ok:
         completed.append("level:saved")
+    # ------------------------------------------------------------ product
+    # capabilities: acceptance criteria are satisfiable ONLY from real verified
+    # tool evidence. A criterion is never cleared by planner intent alone.
+    product = {
+        "deliverable:avatar": [
+            ("spawn_character", lambda p: p.get("verified") is True and p.get("mesh") is not None),
+            ("verify_character_visible", lambda p: p.get("verified") is True and p.get("mesh") is not None and p.get("visible") is True),
+        ],
+        "deliverable:animation": [
+            ("assign_animation", lambda p: p.get("verified") is True and p.get("animation") is not None),
+            ("avatar_react", lambda p: p.get("verified") is True and p.get("moved") is True),
+        ],
+        "deliverable:chat_ui": [
+            ("create_widget_blueprint", lambda p: p.get("verified") is True or p.get("is_widget") is True),
+            ("add_widget_to_viewport", lambda p: p.get("verified") is True and p.get("in_viewport") is True),
+            ("verify_widget_visible", lambda p: p.get("verified") is True and p.get("visible") is True and p.get("found") is True),
+        ],
+        "deliverable:text_input": [
+            ("add_editable_text_box", lambda p: p.get("verified") is True),
+        ],
+        "deliverable:send": [
+            ("bind_button_event", lambda p: p.get("verified") is True and p.get("bound") is True),
+            ("chat_send_message", lambda p: p.get("verified") is True and p.get("input_verified") is True),
+        ],
+        "deliverable:enter-to-send": [
+            ("bind_enter_submit", lambda p: p.get("verified") is True and p.get("bound") is True),
+        ],
+        "deliverable:ollama": [
+            ("ollama_chat", lambda p: p.get("verified") is True and bool(str(p.get("response") or "").strip()) and p.get("local_only") is True),
+        ],
+        "deliverable:thinking": [
+            ("set_ui_state", lambda p: p.get("verified") is True and p.get("state") == "thinking"),
+            ("verify_ui_state", lambda p: p.get("verified") is True and p.get("state") == "thinking" and p.get("match") is True),
+        ],
+        "deliverable:online": [
+            ("set_ui_state", lambda p: p.get("verified") is True and p.get("state") == "online"),
+            ("verify_ui_state", lambda p: p.get("verified") is True and p.get("state") == "online" and p.get("match") is True),
+        ],
+        "deliverable:runtime": [
+            ("runtime_status", lambda p: p.get("ok") is True and p.get("is_playing") is True),
+            ("runtime_widget_verify", lambda p: p.get("verified") is True and p.get("is_playing") is True),
+            ("runtime_actor_verify", lambda p: p.get("verified") is True and p.get("is_playing") is True and p.get("found") is True),
+        ],
+        "deliverable:reopen": [
+            ("verify_reopen_state", lambda p: p.get("verified") is True),
+        ],
+    }
+    for criterion, rules in product.items():
+        if criterion not in required or criterion in completed:
+            continue
+        for tool_name, predicate in rules:
+            if tool != tool_name:
+                continue
+            if predicate(nested):
+                completed.append(criterion)
+                break
+    # ------------------------------------------------------------ blender
+    # Blender Agent deliverables clear only from verified pipeline evidence:
+    # a validated Blender export, a verified Unreal import, or a spawned
+    # actor. blender_prepare_character with code REALISTIC_CHARACTER_SOURCE_
+    # REQUIRED clears nothing — the Unreal mannequin fallback (spawn/install)
+    # is what honestly satisfies deliverable:character without faking a human.
+    blender = {
+        "deliverable:blender_asset": [
+            ("blender_create_asset", lambda p: p.get("verified") is True and bool(p.get("export_path"))),
+            ("blender_convert_asset", lambda p: p.get("verified") is True and bool(p.get("export_path"))),
+            ("blender_prepare_asset", lambda p: p.get("verified") is True and bool(p.get("export_path"))),
+            ("blender_prepare_character", lambda p: p.get("verified") is True and bool(p.get("export_path"))),
+        ],
+        "deliverable:blender_export": [
+            ("blender_create_asset", lambda p: p.get("verified") is True and bool(p.get("export_path"))),
+            ("blender_convert_asset", lambda p: p.get("verified") is True and bool(p.get("export_path"))),
+            ("blender_prepare_asset", lambda p: p.get("verified") is True and bool(p.get("export_path"))),
+            ("blender_prepare_character", lambda p: p.get("verified") is True and bool(p.get("export_path"))),
+        ],
+        "deliverable:character": [
+            ("blender_prepare_character", lambda p: p.get("verified") is True and bool(p.get("export_path")) and p.get("code") != "REALISTIC_CHARACTER_SOURCE_REQUIRED"),
+            ("spawn_character", lambda p: p.get("verified") is True and p.get("mesh") is not None),
+            ("install_character_assets", lambda p: p.get("verified") is True and p.get("mesh") is not None),
+            ("verify_character_visible", lambda p: p.get("verified") is True and p.get("mesh") is not None and p.get("visible") is True),
+        ],
+        "deliverable:unreal_import": [
+            ("import_blender_output", lambda p: p.get("verified") is True and bool(p.get("asset_path"))),
+            ("import_asset", lambda p: p.get("verified") is True and bool(p.get("asset_path"))),
+            ("import_asset_fbx", lambda p: p.get("verified") is True and bool(p.get("asset_path"))),
+            ("import_asset_gltf", lambda p: p.get("verified") is True and bool(p.get("asset_path"))),
+        ],
+        "deliverable:asset_spawned": [
+            ("spawn_blender_output", lambda p: p.get("verified") is True and bool(p.get("actor_name"))),
+            ("spawn_imported_asset", lambda p: p.get("verified") is True and bool(p.get("actor_name"))),
+            ("spawn_actor", lambda p: bool(p.get("label")) or bool(p.get("actor_name"))),
+        ],
+    }
+    for criterion, rules in blender.items():
+        if criterion not in required or criterion in completed:
+            continue
+        for tool_name, predicate in rules:
+            if tool != tool_name:
+                continue
+            if predicate(nested):
+                completed.append(criterion)
+                break
+    # A Blender-created static-mesh actor proves the environment deliverable.
+    if (
+        "deliverable:environment" in required
+        and "deliverable:environment" not in completed
+        and tool == "spawn_blender_output"
+        and step_ok
+    ):
+        completed.append("deliverable:environment")
     if tool == "open_map" and step_ok:
         level = (step.get("parameters") or {}).get("level_path") or nested.get("level_path") or nested.get("world_path")
         if str(level or "").startswith("/Game/"):
@@ -230,6 +377,14 @@ def reconcile_step(goal, step, result):
     if tool in {"spawn_actor", "get_actor"} and str((step.get("parameters") or {}).get("class_name")) == "PointLight":
         if step_ok:
             completed.append("light:exists")
+    # The synthetic catch-all criterion (auto added when a request parsed no
+    # concrete criteria) only clears once every real criterion is complete AND
+    # evidence has actually been captured. Planner intent alone never clears it.
+    if "task:original_goal_complete" in required and "task:original_goal_complete" not in completed:
+        others = [c for c in required if c != "task:original_goal_complete"]
+        others_done = (not others) or set(others).issubset(set(completed))
+        if others_done and ("viewport:captured" in completed or (tool == "capture_unreal_viewport" and step_ok)):
+            completed.append("task:original_goal_complete")
     return update_task_goal(goal, completed=completed)
 
 

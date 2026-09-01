@@ -1,5 +1,21 @@
+import sys
+from pathlib import Path
 from unittest.mock import patch
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from core import task_goal
+
 from app import api
+
+
+@pytest.fixture(autouse=True)
+def isolated_goal_file(tmp_path, monkeypatch):
+    monkeypatch.setattr(task_goal, "TASK_GOAL_FILE", tmp_path / "task_goal.json")
 
 
 def test_fake_validation_mismatch_creates_fix_step():
