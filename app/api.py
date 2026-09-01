@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 import uuid
 import threading
@@ -3810,6 +3811,7 @@ def status():
             ),
         },
         "unreal": serialize(bridge_status),
+        "ollama": _ollama_status(),
         "pending_approvals":
             len(pending_approvals),
         "event_count":
@@ -3817,6 +3819,118 @@ def status():
         "execution_active":
             execution_state is not None,
     }
+
+
+def _ollama_status():
+    """Read-only Ollama reachability probe for the workspace status panel.
+    Never blocks the status endpoint for long."""
+    import requests
+    try:
+        from core.orchestrator import ollama_base
+        r = requests.get(ollama_base() + "/api/tags", timeout=2.5)
+        if r.ok:
+            tags = [t.get("name") for t in (r.json() or {}).get("models", [])]
+            return {"ok": True, "models": tags}
+        return {"ok": False, "error": "HTTP " + str(r.status_code)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)[:120]}
+
+
+@app.get("/api/workspace")
+def workspace_info():
+    """Read-only git + project-context summary for the workspace panel."""
+    info = {"ok": True, "repo": ROOT.name, "branch": None, "commit": None,
+            "commit_date": None, "dirty_count": None, "project": None,
+            "last_verified_at": None}
+    try:
+        def _git(*args):
+            return subprocess.run(
+                ["git", "-C", str(ROOT), *args],
+                capture_output=True, text=True, timeout=10,
+            ).stdout.strip()
+        info["branch"] = _git("branch", "--show-current") or None
+        head = _git("log", "-1", "--format=%h %ad", "--date=format:%Y-%m-%d %H:%M")
+        if head:
+            info["commit"], _, info["commit_date"] = head.partition(" ")
+        porcelain = _git("status", "--porcelain")
+        info["dirty_count"] = len([l for l in porcelain.splitlines() if l.strip()])
+    except Exception as exc:
+        info["git_error"] = str(exc)[:120]
+    try:
+        ctx = json.loads((ROOT / "memory" / "active_project_context.json").read_text(encoding="utf-8"))
+        info["project"] = ctx.get("project_name")
+        info["last_verified_at"] = ctx.get("last_verified_at") or ctx.get("saved_at")
+    except Exception:
+        pass
+    return info
+
+
+@app.get("/api/workspace/changes")
+def workspace_changes():
+    """Real `git status` of the Unreal-Agent working tree (read-only)."""
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(ROOT), "status", "--porcelain"],
+            capture_output=True, text=True, timeout=10,
+        ).stdout
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)[:160], "changes": []}
+    changes = []
+    for line in out.splitlines():
+        if not line.strip():
+            continue
+        raw = line[:2]
+        path = line[3:]
+        code = raw.strip() or "??"
+        if raw.startswith("??"):
+            kind = "untracked"
+        elif code == "D":
+            kind = "deleted"
+        elif code == "A":
+            kind = "added"
+        else:
+            kind = "modified"
+        changes.append({
+            "path": path,
+            "status": code,
+            "staged": raw[0] not in (" ", "?"),
+            "kind": kind,
+        })
+    return {"ok": True, "changes": changes, "count": len(changes)}
+
+
+@app.get("/api/workspace/files")
+def workspace_files():
+    """Shallow read-only file tree of the repository (heavy/generated dirs excluded)."""
+    excluded = {".git", ".venv", "venv", "vendor", "node_modules", "__pycache__",
+                "downloads", "workspace", ".freebuff", ".tmp-browser", "backup",
+                "backups", "Microsoft", "DerivedDataCache", "Saved", "Intermediate",
+                "logs", ".pytest_cache", ".ruff_cache"}
+    max_depth, max_entries = 3, 500
+    out = []
+
+    def walk(d, depth):
+        if depth > max_depth or len(out) >= max_entries:
+            return
+        try:
+            entries = sorted(d.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
+        except Exception:
+            return
+        for p in entries:
+            name = p.name
+            if name in excluded or name.startswith(".") or name.startswith("backup-"):
+                continue
+            try:
+                size = p.stat().st_size if p.is_file() else None
+            except Exception:
+                size = None
+            out.append({"path": str(p.relative_to(ROOT)).replace("\\", "/"),
+                        "type": "dir" if p.is_dir() else "file", "size": size})
+            if p.is_dir():
+                walk(p, depth + 1)
+
+    walk(ROOT, 1)
+    return {"ok": True, "root": ROOT.name, "files": out, "count": len(out)}
 
 
 @app.get("/api/events")

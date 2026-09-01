@@ -3,504 +3,203 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Unreal Agent</title>
-<style>
-:root{
-  --bg:#07090d;--panel:#0e1219;--panel2:#111722;--line:#202632;
-  --text:#f5f7fb;--muted:#7f8997;--cyan:#72e6ff;--green:#56e39d;
-  --amber:#ffc56e;--red:#ff7180;--purple:#a78bfa;
-}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,sans-serif;
-  background:radial-gradient(circle at 50% -10%,#18223b 0,#07090d 34%);color:var(--text)}
-button,input,select,textarea{font:inherit;color:inherit}
-button{cursor:pointer}
-.wrap{max-width:960px;margin:0 auto;padding:20px 16px 60px}
-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-.brand{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,#7de8ff,#8172ff);
-  display:grid;place-items:center;color:#071018;font-weight:900;font-size:20px;flex:none}
-h1{font-size:18px;margin:0;font-weight:700}
-h1 small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}
-.headright{margin-left:auto;display:flex;gap:8px;align-items:center}
-.linkbtn{background:transparent;border:1px solid var(--line);color:var(--muted);
-  border-radius:10px;padding:7px 12px;font-size:12px}
-.linkbtn:hover{color:var(--text);border-color:#33405a}
-.card{background:linear-gradient(145deg,#111722ee,#0a0e14ee);border:1px solid var(--line);
-  border-radius:16px;padding:16px;margin-bottom:14px}
-.composer{display:flex;gap:10px}
-.composer textarea{flex:1;background:#0a0e14;border:1px solid var(--line);border-radius:12px;
-  padding:12px 14px;resize:vertical;min-height:56px;max-height:160px;line-height:1.5;font-size:14px}
-.composer textarea:focus{outline:none;border-color:#3d8fd1}
-#sendBtn{flex:none;background:linear-gradient(145deg,#7de8ff,#8172ff);color:#071018;
-  border:none;border-radius:12px;padding:0 26px;font-weight:700;font-size:14px;align-self:stretch}
-#sendBtn:disabled{opacity:.45;cursor:not-allowed}
-#sendBtn.running{background:linear-gradient(145deg,#ffc56e,#ff7180)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.taskmeta{font-size:12px;color:var(--muted)}
-.taskmeta b{color:var(--text);font-weight:600}
-.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px}
-.stage{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;
-  color:var(--muted);background:#0a0e14;position:relative}
-.stage .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2a3140;margin-right:6px;vertical-align:middle}
-.stage.active{border-color:#3d8fd1;color:var(--text)}
-.stage.active .dot{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
-.stage.done{border-color:#1f6b45;color:#9fe8c4}
-.stage.done .dot{background:var(--green)}
-.stage.fail{border-color:#8f2f3a;color:var(--red)}
-.stage.fail .dot{background:var(--red)}
-.hidden{display:none!important}
-#statusLine{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}
-#statusLine b{color:var(--text)}
-#progressBar{height:4px;background:#1a2130;border-radius:2px;margin-top:10px;overflow:hidden}
-#progressFill{height:100%;width:0;background:linear-gradient(90deg,#7de8ff,#8172ff);transition:width .4s}
-.result{border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.55;margin-top:10px;white-space:pre-wrap;word-break:break-word}
-.result.ok{background:#0d241a;border:1px solid #1f6b45;color:#9fe8c4}
-.result.err{background:#2a0f14;border:1px solid #8f2f3a;color:var(--red)}
-.result .tag{font-weight:700}
-.sectitle{font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
-#proofArea img{max-width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px;display:block}
-#proofArea .meta{font-size:12px;color:var(--muted);margin-top:6px;word-break:break-all}
-#logs{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;line-height:1.6;color:#b6c2d4;
-  max-height:220px;overflow:auto;background:#070a0f;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-#logs div{padding:2px 0;border-bottom:1px dashed #131a26}
-#logs div:last-child{border-bottom:none}
-#logs .err{color:var(--red)}
-#logs .warn{color:var(--amber)}
-#logs .ok{color:var(--green)}
-footer{text-align:center;color:#3d4656;font-size:11px;margin-top:26px}
-.fade{animation:fade .25s ease}
-@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-</style>
+<title>Unreal Agent — Workspace</title>
+<meta name="description" content="Unreal Agent — AI development workspace for the Unreal Editor.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230c1017'/><text x='16' y='21' font-family='Arial' font-size='13' font-weight='800' fill='%236fd98f' text-anchor='middle'>UA</text></svg>">
+<link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="brand">UA</div>
-    <h1>Unreal Agent<small>Tell it what to build in AudioVidoLivingCity</small></h1>
-    <div class="headright">
-      <button class="linkbtn" id="statusBtn" title="Check agent + editor status">Status</button>
-      <button class="linkbtn" id="devBtn" title="Open the full developer dashboard in a new tab">Developer mode</button>
-    </div>
-  </header>
+<div id="app">
 
-  <div class="card">
-    <div class="composer">
-      <textarea id="taskInput" placeholder="Describe a task for Unreal, e.g.&#10;&quot;Create a simple test actor in the current level, place it visibly, save the project, and verify it exists.&quot;&#10;&#10;Enter to send &middot; Shift+Enter for a new line"></textarea>
-      <button id="sendBtn">Run</button>
+  <!-- ======================= SIDEBAR ======================= -->
+  <aside id="sidebar">
+    <div class="brand-row">
+      <div class="brand">UA</div>
+      <div class="brand-text"><strong>Unreal Agent</strong><span>AI Development Workspace</span></div>
     </div>
-    <div id="statusLine"></div>
-    <div id="progressBar"><div id="progressFill"></div></div>
-    <div class="stages" id="stages">
-      <div class="stage" data-stage="understand"><span class="dot"></span>Understanding</div>
-      <div class="stage" data-stage="plan"><span class="dot"></span>Planning</div>
-      <div class="stage" data-stage="edit"><span class="dot"></span>Editing</div>
-      <div class="stage" data-stage="build"><span class="dot"></span>Building</div>
-      <div class="stage" data-stage="validate"><span class="dot"></span>Validating</div>
-      <div class="stage" data-stage="fix"><span class="dot"></span>Fixing</div>
-      <div class="stage" data-stage="complete"><span class="dot"></span>Complete</div>
+
+    <div class="nav-label">Agents</div>
+    <nav class="agents" id="agentList">
+      <button class="agent active" data-agent="unreal">
+        <span class="dot ok"></span><span class="name">Unreal Agent</span><span class="state">online</span>
+      </button>
+      <button class="agent" data-agent="audio">
+        <span class="dot off"></span><span class="name">Audio Agent</span><span class="state">offline</span>
+      </button>
+      <button class="agent" data-agent="assets">
+        <span class="dot off"></span><span class="name">Assets Agent</span><span class="state">offline</span>
+      </button>
+      <button class="agent" data-agent="avlc">
+        <span class="dot warn"></span><span class="name">AudioVidoLiving…</span><span class="state">idle</span>
+      </button>
+      <button class="agent" data-agent="ops">
+        <span class="dot off"></span><span class="name">Project Ops</span><span class="state">offline</span>
+      </button>
+      <button id="addAgent" class="add-agent" title="Register a new agent workspace">+ Add agent</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="ws-card">
+        <div class="ws-label">Workspace</div>
+        <div class="ws-name" id="wsName">unreal-agent</div>
+        <div class="ws-meta"><span id="wsBranch">—</span> · <span id="wsCommit">—</span></div>
+      </div>
+      <div class="account-row">
+        <div class="avatar">PM</div>
+        <div class="acc-text"><strong>audiovido</strong><span>maintainer</span></div>
+        <button id="devLink" class="icon-btn" title="Open the full developer dashboard in a new tab">▤</button>
+      </div>
     </div>
-  </div>
+  </aside>
 
-  <div class="card hidden" id="taskCard">
-    <div class="sectitle">Current task</div>
-    <div class="row">
-      <div class="taskmeta" id="taskMeta"></div>
+  <!-- ======================= CHAT ======================= -->
+  <main id="chat">
+    <header class="chat-head">
+      <button id="menuBtn" class="icon-btn" title="Toggle agent list">☰</button>
+      <div class="chat-title">
+        <strong id="chatAgentName">Unreal Agent</strong>
+        <span class="chat-sub">
+          <span id="onlineDot" class="dot ok"></span>
+          <span id="onlineText">Online</span>
+          <span>·</span>
+          <span id="headModel">—</span>
+        </span>
+      </div>
+      <div class="chat-actions">
+        <button id="panelBtn" class="btn ghost" title="Toggle workspace panel">
+          <span class="btn-label">Workspace</span><span>▤</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="messages" class="messages" aria-live="polite">
+      <div class="msg-col" id="msgCol"></div>
     </div>
-    <div class="result hidden" id="result"></div>
-    <div class="row" style="margin-top:12px">
-      <button class="linkbtn hidden" id="retryBtn">Retry</button>
-      <button class="linkbtn hidden" id="newTaskBtn">Start another task</button>
+
+    <div id="emptyState" class="empty-state">
+      <div class="empty-brand">UA</div>
+      <h2>Tell Unreal Agent what to build</h2>
+      <p>Describe a change for the Unreal project. The agent plans, executes, validates and reports proof — no hand-holding required.</p>
+      <div class="prompt-chips">
+        <button class="chip">Create a visible cube actor named Marker, save the level, verify it exists, then remove it and verify cleanup</button>
+        <button class="chip">Build a small scene: floor, light, camera, blueprint actor with a String variable — then capture a screenshot</button>
+        <button class="chip">Add a String variable to a blueprint, set it to a value, compile and verify the read-back</button>
+      </div>
     </div>
-  </div>
 
-  <div class="card hidden" id="proofCard">
-    <div class="sectitle">Proof</div>
-    <div id="proofArea"></div>
-  </div>
+    <div id="composer" class="composer">
+      <div class="composer-inner">
+        <div id="attachChips" class="attach-chips"></div>
+        <div class="composer-bar">
+          <div class="mode-seg">
+            <button class="seg active" data-mode="build" id="modeBuild">Build</button>
+            <button class="seg" data-mode="plan" id="modePlan">Plan</button>
+          </div>
+          <label class="field">Model
+            <select id="modelSel" title="Model preference sent with the task context"></select>
+          </label>
+          <label class="field">Reasoning
+            <select id="reasonSel">
+              <option value="standard">Standard</option>
+              <option value="deep">Deep</option>
+            </select>
+          </label>
+          <span class="spacer"></span>
+          <span id="composerState" class="composer-state"><span class="dot ok"></span> Online</span>
+        </div>
+        <div class="composer-row">
+          <button id="attachBtn" class="icon-btn" title="Attach a file reference">＋</button>
+          <textarea id="input" rows="1" placeholder="Describe a task for Unreal Agent — e.g. “Create a visible cube actor named Marker in the current level, save and verify it.”"></textarea>
+          <button id="sendBtn" class="btn primary" disabled>Run</button>
+        </div>
+        <div class="composer-hint"><kbd>Enter</kbd> send &nbsp;·&nbsp; <kbd>Shift</kbd>+<kbd>Enter</kbd> new line</div>
+        <input type="file" id="fileInput" class="hidden" multiple>
+      </div>
+    </div>
+  </main>
 
-  <div class="card hidden" id="logCard">
-    <div class="sectitle">Live log</div>
-    <div id="logs"></div>
-  </div>
+  <!-- ======================= WORKSPACE PANEL ======================= -->
+  <aside id="panel">
+    <div class="panel-head">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="preview">Preview</button>
+        <button class="tab" data-tab="queue">Queue</button>
+        <button class="tab" data-tab="changes">Changes</button>
+        <button class="tab" data-tab="files">Files</button>
+        <button class="tab" data-tab="terminal">Terminal</button>
+      </div>
+      <button id="panelClose" class="icon-btn" title="Close panel">×</button>
+    </div>
 
-  <footer>Unreal Agent &middot; powered by Ollama + Unreal Editor bridge</footer>
+    <!-- Preview -->
+    <div class="tab-body" id="tab-preview">
+      <div class="preview-head">
+        <div class="preview-name">
+          <div class="brand sm">UA</div>
+          <div><strong>Unreal Agent</strong><span id="pvVersion">—</span></div>
+        </div>
+        <span id="pvHealth" class="health">…</span>
+      </div>
+      <div class="status-grid">
+        <div class="stat"><label>Backend API</label><span id="pvBackend" class="val">—</span></div>
+        <div class="stat"><label>Unreal bridge</label><span id="pvBridge" class="val">—</span></div>
+        <div class="stat"><label>Ollama</label><span id="pvOllama" class="val">—</span></div>
+      </div>
+      <div class="kv">
+        <div><label>Branch</label><span id="pvBranch">—</span></div>
+        <div><label>Commit</label><span id="pvCommit">—</span></div>
+        <div><label>Project</label><span id="pvProject">—</span></div>
+        <div><label>Last verified</label><span id="pvVerified">—</span></div>
+        <div><label>Updated</label><span id="pvUpdated">—</span></div>
+      </div>
+      <div class="proof-box">
+        <div class="proof-label">Viewport preview — latest proof capture</div>
+        <img id="pvProof" alt="Latest Unreal viewport proof" src="">
+        <div class="proof-meta" id="pvProofMeta">No capture yet.</div>
+      </div>
+      <div class="preview-actions">
+        <button id="pvLaunch" class="btn primary">Launch Preview</button>
+        <button id="pvOpen" class="btn ghost">Open in new tab</button>
+        <button id="pvRefresh" class="btn ghost" title="Refresh now">↻</button>
+        <label class="auto"><input type="checkbox" id="pvAuto" checked> Auto-refresh 5s</label>
+      </div>
+    </div>
+
+    <!-- Queue -->
+    <div class="tab-body hidden" id="tab-queue">
+      <div class="panel-title">Task queue <span id="queueMeta"></span></div>
+      <div id="queueList"></div>
+    </div>
+
+    <!-- Changes -->
+    <div class="tab-body hidden" id="tab-changes">
+      <div class="panel-title">Working tree <span id="changesMeta"></span></div>
+      <div id="changesList"></div>
+    </div>
+
+    <!-- Files -->
+    <div class="tab-body hidden" id="tab-files">
+      <div class="panel-title">Repository files <span id="filesMeta"></span></div>
+      <div class="files-search"><input id="filesSearch" type="text" placeholder="Filter files…"></div>
+      <div id="filesList"></div>
+    </div>
+
+    <!-- Terminal -->
+    <div class="tab-body hidden" id="tab-terminal">
+      <div class="term-head">
+        <strong>Live event log</strong>
+        <span>· backend activity stream (not a shell)</span>
+        <span class="spacer"></span>
+        <button id="termClear" class="btn ghost" style="padding:3px 10px;font-size:11px">Clear</button>
+      </div>
+      <div id="term" class="term"></div>
+    </div>
+  </aside>
+
+  <div id="scrim" class="scrim"></div>
 </div>
 
-<script>
-(function(){
-  "use strict";
-  var API = location.origin || "http://127.0.0.1:8765";
-  var $ = function(id){ return document.getElementById(id); };
-  var taskInput = $("taskInput"), sendBtn = $("sendBtn"), statusLine = $("statusLine");
-  var progressFill = $("progressFill"), taskCard = $("taskCard"), taskMeta = $("taskMeta");
-  var resultEl = $("result"), retryBtn = $("retryBtn"), newTaskBtn = $("newTaskBtn");
-  var proofCard = $("proofCard"), proofArea = $("proofArea"), logCard = $("logCard"), logsEl = $("logs");
-  var stageEls = {}; [].forEach.call(document.querySelectorAll(".stage"), function(s){ stageEls[s.dataset.stage] = s; });
-
-  var STAGES = [
-    { key: "understand", keys: ["understanding"], label: "Understanding" },
-    { key: "plan",       keys: ["planning", "planned", "plan_generated", "execution_plan", "plan"], label: "Planning" },
-    { key: "edit",       keys: ["editing", "dispatch", "tool", "step_started", "step_completed", "step_failed"], label: "Editing" },
-    { key: "build",      keys: ["building", "compile", "save"], label: "Building" },
-    { key: "validate",   keys: ["validating", "validation", "verify", "get_actor", "get_blueprint"], label: "Validating" },
-    { key: "fix",        keys: ["fixing", "fix", "retry", "replan"], label: "Fixing" },
-    { key: "complete",   keys: ["complete", "final", "done", "success"], label: "Complete" }
-  ];
-  var STAGE_ORDER = ["understand", "plan", "edit", "build", "validate", "fix", "complete"];
-
-  var state = {
-    taskId: null,
-    running: false,
-    es: null,
-    final: null,
-    stageIndex: -1,
-    proofShown: false,
-    lastError: null
-  };
-
-  function api(path, opts){
-    opts = opts || {};
-    opts.headers = opts.headers || {};
-    if (opts.body && typeof opts.body !== "string") { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(opts.body); }
-    return fetch(API + path, opts);
-  }
-
-  function setStatus(html){ statusLine.innerHTML = html; }
-
-  function resetStages(){
-    STAGE_ORDER.forEach(function(k){
-      var el = stageEls[k];
-      el.classList.remove("active", "done", "fail");
-    });
-    state.stageIndex = -1;
-  }
-
-  function setStage(key, mode){
-    var idx = STAGE_ORDER.indexOf(key);
-    if (idx >= 0 && idx > state.stageIndex) state.stageIndex = idx;
-    STAGE_ORDER.forEach(function(k, i){
-      var el = stageEls[k];
-      el.classList.remove("active");
-      if (mode === "fail" && k === key) { el.classList.add("fail"); return; }
-      if (state.stageIndex >= 0 && i <= state.stageIndex) el.classList.add(mode === "done" ? "done" : "active");
-    });
-  }
-
-  function mapEvent(e){
-    var t = String(e.type || e.event || "").toLowerCase();
-    var st = String(e.status || "").toLowerCase();
-    var title = String(e.title || "").toLowerCase();
-    var tool = toolName(e);
-    for (var i = 0; i < STAGES.length; i++){
-      var s = STAGES[i];
-      for (var j = 0; j < s.keys.length; j++){
-        if (t.indexOf(s.keys[j]) !== -1) return s.key;
-      }
-    }
-    // fallbacks based on tool name / title
-    if (tool && (tool.indexOf("spawn") !== -1 || tool.indexOf("create") !== -1 || tool.indexOf("set_") !== -1)) return "edit";
-    if (tool && tool.indexOf("save") !== -1) return "build";
-    if (tool && (tool.indexOf("get_actor") !== -1 || tool.indexOf("verify") !== -1 || tool.indexOf("list_") !== -1 || tool.indexOf("inspect") !== -1)) return "validate";
-    if (tool && tool.indexOf("capture") !== -1) return "validate";
-    if (title.indexOf("compile") !== -1 || title.indexOf("build") !== -1) return "build";
-    return null;
-  }
-
-  function toolName(e){
-    if (e.step && e.step.tool_name) return String(e.step.tool_name);
-    if (e.tool_name) return String(e.tool_name);
-    var t = String(e.title || "");
-    var m = t.match(/^(?:Running|finished|failed)\s+([a-z0-9_]+)/i);
-    if (m) return m[1];
-    return null;
-  }
-
-  function logLine(text, cls){
-    var d = document.createElement("div");
-    if (cls) d.className = cls;
-    d.textContent = text;
-    logsEl.appendChild(d);
-    while (logsEl.children.length > 400) logsEl.removeChild(logsEl.firstChild);
-    logsEl.scrollTop = logsEl.scrollHeight;
-  }
-
-  function showLog(){
-    logCard.classList.remove("hidden");
-    if (logsEl.children.length) logsEl.scrollTop = logsEl.scrollHeight;
-  }
-
-  function setProgress(pct){ progressFill.style.width = Math.max(0, Math.min(100, pct)) + "%"; }
-
-  function stageProgress(stageIdx){
-    return Math.round(((stageIdx + 1) / STAGE_ORDER.length) * 100);
-  }
-
-  function showResult(ok, title, detail){
-    resultEl.classList.remove("hidden");
-    resultEl.className = "result " + (ok ? "ok" : "err");
-    resultEl.innerHTML = '<span class="tag">' + title + '</span>' + (detail ? "<br>" + esc(detail) : "");
-    resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
-
-  function esc(s){
-    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  }
-
-  function taskDone(ok, title, detail, extra){
-    state.running = false;
-    state.final = { ok: ok, title: title, detail: detail };
-    setStage("complete", ok ? "done" : "fail");
-    if (state.taskId) taskMeta.textContent = "Task " + state.taskId + " · " + (ok ? "completed" : "failed");
-    setProgress(100);
-    sendBtn.textContent = "Run";
-    sendBtn.classList.remove("running");
-    sendBtn.disabled = false;
-    taskInput.disabled = false;
-    showResult(ok, title, detail);
-    retryBtn.classList.toggle("hidden", ok);
-    newTaskBtn.classList.toggle("hidden", false);
-    setStatus(ok
-      ? "Done. The task completed successfully — proof below."
-      : "Task failed. Review the error above, then retry or start a new task.");
-    if (extra && extra.proofUrl) showProof(extra.proofUrl, extra.proofNote);
-    else if (ok) loadProof();
-  }
-
-  function loadProof(){
-    api("/api/proof/status").then(function(r){ return r.json(); }).then(function(p){
-      if (p && p.ok && p.url){
-        showProof(API + p.url, "Screenshot captured from the Unreal Editor viewport" + (p.size ? " (" + Math.round(p.size / 1024) + " KB)" : ""));
-      }
-    }).catch(function(){});
-  }
-
-  function showProof(url, note){
-    proofCard.classList.remove("hidden");
-    proofArea.innerHTML = "";
-    var img = document.createElement("img");
-    img.src = url;
-    img.alt = "Task proof screenshot";
-    img.onerror = function(){ proofArea.innerHTML = '<div class="meta">Proof image failed to load: ' + esc(url) + "</div>"; };
-    proofArea.appendChild(img);
-    if (note) { var m = document.createElement("div"); m.className = "meta"; m.textContent = note; proofArea.appendChild(m); }
-    state.proofShown = true;
-    proofCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
-
-  function handleEvent(e){
-    if (e.task_id) state.taskId = e.task_id;
-    var ev = String(e.event || e.type || "");
-    var st = mapEvent(e);
-    if (st) setStage(st, "active");
-
-    var tool = toolName(e);
-    var isToolStart = ev === "tool" && e.status === "running";
-    var isToolResult = ev === "tool_result";
-    var detailStr = e.detail;
-    if (detailStr && typeof detailStr !== "string"){
-      try { detailStr = JSON.stringify(detailStr); if (detailStr.length > 260) detailStr = detailStr.slice(0, 260) + "&hellip;"; } catch(err){ detailStr = String(detailStr); }
-    }
-
-    if (isToolStart){
-      var tname = tool || "tool";
-      logLine("[" + ev + "] " + tname + " " + (detailStr || ""), null);
-    } else if (isToolResult){
-      var okRes = (e.status === "success");
-      logLine("[" + ev + "] " + (tool || "tool") + (okRes ? " ok" : " FAILED") + " " + (detailStr || ""), okRes ? "ok" : "err");
-    } else if (ev && ev !== "ping"){
-      logLine("[" + ev + "] " + (e.message || (typeof e.detail === "string" ? e.detail : e.title) || JSON.stringify(e).slice(0, 220)), null);
-    }
-
-    var taskFailed = (ev === "error" || (e.status === "failed") || (e.status === "error"));
-
-    if (ev === "planning"){
-      var goal = "";
-      if (e.detail && typeof e.detail === "object" && e.detail.goal) goal = e.detail.goal;
-      else if (e.title) goal = e.title;
-      setStatus("Planning&hellip; " + (goal ? esc(String(goal).slice(0, 140)) : ""));
-      if (e.detail && e.detail.steps && e.detail.steps.length){
-        logLine("[plan] " + e.detail.steps.length + " steps: " + e.detail.steps.map(function(s){ return s.preferred_tool || s.intent; }).join(" \u2192 "), "ok");
-      }
-    }
-    else if (ev === "user"){ setStatus("Task submitted &mdash; understanding your request&hellip;"); }
-    else if (isToolStart){
-      var tn = tool || "";
-      var pretty = tn.replace(/_/g, " ");
-      setStatus("Executing <b>" + esc(pretty) + "</b>&hellip;");
-      if (state.stageIndex >= 0) setProgress(stageProgress(state.stageIndex));
-    }
-    else if (isToolResult){
-      if (e.status === "error" || (e.detail && e.detail.ok === false)){
-        setStatus("<b>" + esc((tool || "").replace(/_/g, " ")) + "</b> failed &mdash; fixing&hellip;");
-        setStage("fix", "active");
-        var errDetail = (e.detail && e.detail.error) || (e.detail && e.detail.result && e.detail.result.error) || (typeof e.detail === "string" ? e.detail : e.title);
-        state.lastError = errDetail;
-      } else if (tool && tool.indexOf("save") !== -1){
-        setStatus("Level saved by the agent.");
-      } else if (tool && (tool.indexOf("get_actor") !== -1 || tool.indexOf("verify") !== -1)){
-        setStatus("Verified: actor exists and persisted.");
-      } else if (tool && tool.indexOf("capture") !== -1){
-        setStatus("Proof screenshot captured.");
-      } else {
-        setStatus("Step <b>" + esc((tool || "").replace(/_/g, " ")) + "</b> completed.");
-      }
-    }
-    else if (ev === "final" || ev === "complete"){
-      var ok = !(e.status === "failed" || e.status === "error" || e.ok === false);
-      var title = ok ? "Task complete" : "Task failed";
-      var detail = (typeof e.detail === "string" && e.detail !== "Execution complete.") ? e.detail : (e.message || e.result_summary || "");
-      if (e.detail && typeof e.detail === "object" && e.detail.summary) detail = e.detail.summary;
-      taskDone(ok, title, detail);
-      return;
-    }
-
-    if (taskFailed && ev !== "final"){
-      var msg = (typeof e.detail === "string" ? e.detail : e.message) || e.title || "Unknown error";
-      if (ev === "error" && /EXECUTION_STALLED|terminated/i.test(msg)){
-        logLine("FATAL: " + msg, "err");
-        taskDone(false, "Task failed", "The agent execution stalled. This usually means the plan could not be executed to completion. Try rephrasing the task.");
-        return;
-      }
-      if (!state.final){
-        logLine("ERROR: " + msg, "err");
-      }
-    }
-    if (state.running && state.stageIndex >= 0) setProgress(stageProgress(state.stageIndex));
-  }
-
-  function streamTask(taskId){
-    if (state.es) state.es.close();
-    state.es = null;
-    if (!window.EventSource){
-      logLine("EventSource not supported — falling back to status polling.", "warn");
-      pollStatus(taskId);
-      return;
-    }
-    var es = new EventSource(API + "/api/events/stream/" + encodeURIComponent(taskId));
-    state.es = es;
-    es.onopen = function(){ logLine("Connected to live event stream.", "ok"); showLog(); };
-    es.onmessage = function(msg){
-      var e; try { e = JSON.parse(msg.data); } catch (err){ logLine("Bad event payload: " + msg.data, "warn"); return; }
-      if (e && e.type === "ping") return;
-      handleEvent(e || {});
-    };
-    es.onerror = function(){
-      // stream closed (normal on completion) or dropped; fall back to status poll
-      es.close(); state.es = null;
-      if (state.running) pollStatus(taskId);
-    };
-  }
-
-  function pollStatus(taskId){
-    api("/api/status?task_id=" + encodeURIComponent(taskId)).then(function(r){ return r.json(); }).then(function(s){
-      if (!state.running) return;
-      if (s && (s.status === "completed" || s.status === "success")){ handleEvent({ event: "final", ok: true, result_summary: s.result_summary || s.message || "Completed" }); }
-      else if (s && (s.status === "failed" || s.status === "error" || s.status === "cancelled")){ handleEvent({ event: "final", ok: false, result_summary: s.message || s.error || s.result_summary || "Failed" }); }
-      else { setTimeout(function(){ pollStatus(taskId); }, 1500); }
-    }).catch(function(){ setTimeout(function(){ pollStatus(taskId); }, 2000); });
-  }
-
-  function submitTask(){
-    var text = taskInput.value.trim();
-    if (!text){ taskInput.focus(); return; }
-    state.final = null; state.lastError = null; state.proofShown = false;
-    resetStages();
-    resultEl.classList.add("hidden");
-    retryBtn.classList.add("hidden"); newTaskBtn.classList.add("hidden");
-    proofCard.classList.add("hidden"); proofArea.innerHTML = "";
-    logsEl.innerHTML = "";
-    taskCard.classList.remove("hidden");
-    logCard.classList.remove("hidden");
-    sendBtn.disabled = true; sendBtn.textContent = "Running&hellip;"; sendBtn.classList.add("running");
-    taskInput.disabled = true;
-    setProgress(4);
-    setStatus("Submitting task&hellip;");
-    taskMeta.textContent = "";
-    state.running = true;
-
-    api("/api/action", { method: "POST", body: { action: "prompt", payload: { message: text } } })
-      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, json: j }; }); })
-      .then(function(res){
-        if (!res.ok){
-          state.running = false;
-          sendBtn.disabled = false; sendBtn.textContent = "Run"; sendBtn.classList.remove("running");
-          taskInput.disabled = false;
-          var msg = res.json.detail || res.json.error || ("HTTP " + res.status);
-          showResult(false, "Submission failed", msg);
-          retryBtn.classList.remove("hidden");
-          newTaskBtn.classList.remove("hidden");
-          setStatus("Could not start the task. Check the backend and Unreal Editor.");
-          logLine("Submission failed: " + msg, "err");
-          return;
-        }
-        var taskId = res.json.task_id || res.json.id;
-        if (!taskId){ throw new Error("No task_id in response: " + JSON.stringify(res.json)); }
-        state.taskId = taskId;
-        taskMeta.textContent = "Task " + taskId + " · running";
-        logLine("Task started: " + taskId + " → " + text, "ok");
-        setStatus("Task started &mdash; waiting for the agent&hellip;");
-        streamTask(taskId);
-      })
-      .catch(function(err){
-        state.running = false;
-        sendBtn.disabled = false; sendBtn.textContent = "Run"; sendBtn.classList.remove("running");
-        taskInput.disabled = false;
-        showResult(false, "Submission failed", String(err.message || err));
-        retryBtn.classList.remove("hidden");
-        newTaskBtn.classList.remove("hidden");
-        setStatus("Could not reach the backend at " + API + ".");
-        logLine("Network error: " + err.message, "err");
-      });
-  }
-
-  function newTask(){
-    state.running = false;
-    if (state.es){ state.es.close(); state.es = null; }
-    state.taskId = null; state.final = null;
-    taskInput.value = ""; taskInput.disabled = false;
-    taskInput.focus();
-    resetStages();
-    setProgress(0);
-    setStatus("");
-    taskMeta.textContent = "";
-    resultEl.classList.add("hidden");
-    retryBtn.classList.add("hidden"); newTaskBtn.classList.add("hidden");
-    proofCard.classList.add("hidden"); proofArea.innerHTML = "";
-    logCard.classList.add("hidden"); logsEl.innerHTML = "";
-    taskCard.classList.add("hidden");
-    sendBtn.disabled = false; sendBtn.textContent = "Run"; sendBtn.classList.remove("running");
-  }
-
-  function checkStatus(){
-    setStatus("Checking agent and editor status&hellip;");
-    api("/api/status").then(function(r){ return r.json(); }).then(function(s){
-      var lines = [];
-      lines.push("Backend: " + (s.backend || s.status || "ok"));
-      if (s.unreal) lines.push("Unreal: " + JSON.stringify(s.unreal));
-      if (s.bridge) lines.push("Bridge: " + JSON.stringify(s.bridge));
-      if (s.models && s.models.length) lines.push("Models: " + s.models.join(", "));
-      setStatus(lines.join(" &nbsp;·&nbsp; "));
-    }).catch(function(err){
-      setStatus("Cannot reach backend at " + API + " (" + err.message + ").");
-    });
-  }
-
-  sendBtn.addEventListener("click", submitTask);
-  retryBtn.addEventListener("click", function(){
-    if (state.lastError) logLine("Retrying after: " + state.lastError, "warn");
-    submitTask();
-  });
-  newTaskBtn.addEventListener("click", newTask);
-  $("statusBtn").addEventListener("click", checkStatus);
-  $("devBtn").addEventListener("click", function(){ window.open(API + "/static/devboard.html", "_blank"); });
-  taskInput.addEventListener("keydown", function(ev){
-    if (ev.key === "Enter" && !ev.shiftKey){ ev.preventDefault(); if (!sendBtn.disabled) submitTask(); }
-  });
-
-  checkStatus();
-})();
-</script>
+<div id="toast" role="status"></div>
+<script src="/static/app.js"></script>
 </body>
 </html>
