@@ -35,3 +35,14 @@ memory/active_project_context.json
 app/api.before_*
 app/api.pre_*
 app/api.backup_*
+
+# FREEBUFF ASSET library - bulk/generated content (code + catalog stay tracked)
+assetlib/content/
+assetlib/source/
+assetlib/downloads/
+assetlib/projects/
+assetlib/tests/ue/*/Intermediate/
+assetlib/tests/ue/*/Saved/
+assetlib/tests/ue/*/DerivedDataCache/
+assetlib/proof/*.png
+assetlib/proof/screens/*.png

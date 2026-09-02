@@ -29,6 +29,7 @@ from tools.system.tool_runner import (
 
 from core.tool_registry import build_registry, tool_prompt, validate_args
 from tools.unreal.unreal_bridge import UnrealBridge
+from core.production_pipeline import production_preflight, visual_scorecard
 
 
 # ============================================================
@@ -455,14 +456,23 @@ def call_model(
 def classify_intent(task):
     text = str(task).lower()
 
-    execute_terms = (
+    # Strong action verbs always signal EXECUTE.
+    execute_verbs = (
         "inspect", "screenshot", "screen shot", "capture", "verify",
         "open", "run", "build", "create", "modify", "fix", "save",
-        "compile", "project", "unreal", "viewport", "level", "map",
-        "asset", "widget", "blueprint", "all pages"
+        "compile"
     )
 
-    if any(term in text for term in execute_terms):
+    # Conversational questions (ending in "?") and noun-only mentions
+    # ("unreal", "map", "asset"...) must be decided by the LLM router,
+    # not the keyword heuristic. Terms like "unreal", "map" or "asset"
+    # appear in ordinary requests ("What can you help me with in Unreal
+    # Engine?", "List your main Unreal Engine capabilities") and would
+    # otherwise misfire into the executor loop and surface workflow
+    # artifacts as the reply.
+    is_question = text.rstrip().endswith("?")
+
+    if not is_question and any(verb in text for verb in execute_verbs):
         return "execute"
 
 
@@ -673,6 +683,7 @@ Answer in the user's language.
 
 def create_execution_plan(task):
 
+    preflight = production_preflight(task)
     planner = f"""
 You are the planning brain of an autonomous
 Unreal Engine engineering agent.
@@ -680,6 +691,9 @@ Unreal Engine engineering agent.
 USER TASK:
 
 {task}
+
+INTERNAL PRODUCTION PREFLIGHT (mandatory before execution):
+{json.dumps(preflight, ensure_ascii=False, indent=2)}
 
 REAL AVAILABLE TOOL NAMES:
 
@@ -738,6 +752,9 @@ Return JSON only:
         result = json.loads(raw)
 
         if isinstance(result, dict):
+            result["production_preflight"] = preflight
+            result.setdefault("_routing", {})["execution_mode"] = preflight["execution_mode"]
+            result.setdefault("_routing", {})["asset_template_route"] = preflight["asset_template_route"]
             return result
 
     except Exception as exc:
@@ -757,6 +774,8 @@ Return JSON only:
                 "Planner fallback: "
                 + type(exc).__name__
             ],
+            "production_preflight": preflight,
+            "_routing": {"execution_mode": preflight["execution_mode"], "asset_template_route": preflight["asset_template_route"]},
         }
 
     return {
@@ -770,6 +789,8 @@ Return JSON only:
             "Result is verified"
         ],
         "risks": [],
+        "production_preflight": preflight,
+        "_routing": {"execution_mode": preflight["execution_mode"], "asset_template_route": preflight["asset_template_route"]},
     }
 
 

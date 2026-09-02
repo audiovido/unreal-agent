@@ -20,6 +20,134 @@ def _has(text, *terms):
     return any(term in lowered for term in terms)
 
 
+def _read_only_inspection(text):
+    """True for explicit read-only inspection/query requests (no mutation).
+
+    Such goals are satisfied by the inspection evidence itself, so they get a
+    satisfiable inspection:result criterion instead of the synthetic
+    task:original_goal_complete catch-all that intentionally never completes
+    on health checks alone. Vague no-criteria requests and any request with
+    mutation intent keep the catch-all, so write-task completion gates are
+    never weakened.
+    """
+    lowered = _text(text).lower()
+    # Hard read-only markers (mirrors core/orchestrator's guard allow-list).
+    if any(
+        marker in lowered
+        for marker in (
+            "read-only",
+            "read only",
+            "readonly",
+            "no modification",
+            "no modifications",
+            "do not modify",
+            "don't modify",
+            "do not change",
+            "do not edit",
+            "do not alter",
+            "inspection only",
+            "visual inspection only",
+        )
+    ):
+        return True
+    query = any(
+        term in lowered
+        for term in (
+            "inspect",
+            "inspection",
+            "tell me",
+            "what is",
+            "what's",
+            "whats",
+            "list the",
+            "list actors",
+            "report",
+            "describe",
+            "summarize",
+            "summarise",
+            "status of",
+            "what is open",
+            "what's open",
+            "which actors",
+            "is pie",
+            "pie status",
+            "how many",
+            "show me",
+            "check the current",
+            "check if",
+            "is the bridge",
+            "is the level",
+        )
+    )
+    mutation = any(
+        term in lowered
+        for term in (
+            "create",
+            "spawn",
+            "build",
+            "make ",
+            "make a",
+            "make an",
+            "add ",
+            "add a",
+            "add an",
+            "set ",
+            "delete",
+            "remove",
+            "save",
+            "compile",
+            "place",
+            "edit",
+            "modify",
+            "fix",
+            "write",
+            "generate",
+            "import",
+            "open project",
+            "open the project",
+            "load project",
+            "switch project",
+            "change",
+            "update",
+            "configure",
+            "install",
+            "prepare",
+            "rename",
+            "replace",
+            "convert",
+            "cleanup",
+            "polish",
+            "optimize",
+        )
+    )
+    return query and not mutation
+
+
+# Tools whose successful, non-empty result constitutes read-only inspection
+# evidence. Mirrors the guard's read-only allow-list in core/orchestrator;
+# PIE start/stop toggles are excluded because they produce no inspection data.
+INSPECTION_EVIDENCE_TOOLS = {
+    "discover_projects",
+    "inspect_project",
+    "get_current_level",
+    "get_selected_actors",
+    "get_actor",
+    "get_asset_info",
+    "inspect_blueprint",
+    "graph_list_nodes",
+    "is_level_dirty",
+    "list_assets",
+    "list_level_actors",
+    "read_text_file",
+    "unreal_ping",
+    "unreal_status",
+    "capture_unreal_viewport",
+    "capture_pie_viewport",
+    "get_pie_status",
+    "visual_review_unreal",
+}
+
+
 def _blender_request(text):
     """True when the request routes through the Blender Agent (kept in sync
     with app.api._needs_blender so acceptance criteria match the plan)."""
@@ -109,9 +237,15 @@ def build_acceptance_contract(request, project_context=None):
     # would be impossible to independently verify and could deadlock completion.
 
     # A task with no parsed mutation still has a mandatory parent goal. This is
-    # intentionally not satisfied by health checks.
+    # intentionally not satisfied by health checks. Explicit read-only
+    # inspection/query requests are the exception: their goal IS the
+    # inspection, so they complete from real inspection evidence instead of
+    # inheriting the unsatisfiable catch-all.
     if not criteria:
-        add("task:original_goal_complete", text[:240])
+        if _read_only_inspection(text):
+            add("inspection:result", "inspection result")
+        else:
+            add("task:original_goal_complete", text[:240])
 
     optional = []
     if _has(text, "optional", "nice to have"):
@@ -377,6 +511,15 @@ def reconcile_step(goal, step, result):
     if tool in {"spawn_actor", "get_actor"} and str((step.get("parameters") or {}).get("class_name")) == "PointLight":
         if step_ok:
             completed.append("light:exists")
+    # Read-only inspection/query goals complete from real inspection evidence:
+    # a successful inspection tool with a non-empty result. This is the only
+    # path that satisfies inspection:result, so vague no-criteria requests
+    # (which keep the task:original_goal_complete catch-all) still cannot
+    # complete from health checks alone.
+    if "inspection:result" in required and "inspection:result" not in completed:
+        if step_ok and tool in INSPECTION_EVIDENCE_TOOLS and (payload or nested):
+            completed.append("inspection:result")
+
     # The synthetic catch-all criterion (auto added when a request parsed no
     # concrete criteria) only clears once every real criterion is complete AND
     # evidence has actually been captured. Planner intent alone never clears it.

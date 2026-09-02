@@ -216,9 +216,20 @@ else:
     try:
         unreal.BlueprintEditorLibrary.compile_blueprint(asset)
         obj = unreal.get_default_object(asset.generated_class())
-        obj.set_editor_property("{variable_name}", "{value}")
+        _value = "{value}"
+        _prop = obj.get_editor_property("{variable_name}")
+        # Coerce the string by the property's REAL native type: passing a str
+        # to set_editor_property fails on 5.8 numeric properties.
+        if isinstance(_value, str):
+            if isinstance(_prop, bool):
+                _value = _value.strip().lower() in ("true", "1", "yes")
+            elif isinstance(_prop, int):
+                _value = int(float(_value))
+            elif isinstance(_prop, float):
+                _value = float(_value)
+        obj.set_editor_property("{variable_name}", _value)
         unreal.EditorAssetLibrary.save_loaded_asset(asset, False)
-        __bridge_result__ = {{"ok": True, "asset_path": asset.get_path_name(), "variable_name": "{variable_name}", "value": "{value}"}}
+        __bridge_result__ = {{"ok": True, "asset_path": asset.get_path_name(), "variable_name": "{variable_name}", "value": str(_value)}}
     except Exception as exc:
         __bridge_result__ = {{"ok": False, "error": str(exc)}}
 ''')
@@ -317,7 +328,7 @@ else:
                 ) if data is not None else None
 
                 __bridge_result__ = {{
-                    "ok": bool(renamed),
+                    "ok": bool(obj is not None),
                     "asset_path": "{asset_path}",
                     "component_name": "{component_name}",
                     "component_class": "{component_class}",

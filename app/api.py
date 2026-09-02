@@ -30,6 +30,7 @@ if str(ROOT) not in sys.path:
 
 # Import MemorySystem for API integration
 from core.memory_system import MemorySystem
+from core.production_pipeline import production_preflight, visual_scorecard
 from core.task_goal import (
     build_acceptance_contract,
     load_task_goal,
@@ -1185,7 +1186,11 @@ def _seed_project_context():
 
 def new_execution(task: str):
     task_id = str(uuid.uuid4())
+    preflight = production_preflight(task)
     plan = normalize_execution_plan(task, create_execution_plan(task))
+    plan["production_preflight"] = preflight
+    plan.setdefault("_routing", {})["execution_mode"] = preflight.get("execution_mode")
+    plan["_routing"]["asset_template_route"] = preflight.get("asset_template_route")
 
     emit(
         "planning",
@@ -1243,6 +1248,8 @@ def new_execution(task: str):
         "end_ts": None,
         "milestone_queue": goal.get("continuation_state", {}).get("milestones", []),
         "parent_goal_id": goal.get("id"),
+        "production_preflight": preflight,
+        "visual_quality_target": 9.0 if preflight.get("visual_task") else None,
     }
 
 
@@ -3770,6 +3777,16 @@ def requires_approval(action, args):
 
 @app.get("/")
 def index():
+    # Product UI: single immersive chat around the living AI avatar.
+    return FileResponse(
+        UI_DIR / "ava.html"
+    )
+
+
+@app.get("/dev")
+def dev_console():
+    """Full developer dashboard (queue / changes / files / terminal / preview).
+    Kept behind the Advanced control in the product UI."""
     return FileResponse(
         UI_DIR / "index.html"
     )
@@ -4464,6 +4481,28 @@ def _start_async_ui_execution(message: str, source: str = "ui"):
                     409,
                     "Another task is already active. Finish, stop, or resume it first.",
                 )
+
+        # Conversation/planning prompts must return the real user-facing
+        # assistant reply, exactly like /api/chat. Forcing them through the
+        # executor loop surfaces internal workflow artifacts (e.g.
+        # EXECUTION_STALLED / mandatory-step traces) as the answer.
+        try:
+            mode = classify_intent(message)
+        except Exception:
+            mode = "execute"
+
+        if mode in ("chat", "plan"):
+            messages.append({"role": "user", "content": message})
+            result = route_request(message)
+            answer = str((result or {}).get("message") or "")
+            return {
+                "ok": bool(answer),
+                "state": (result or {}).get("state") or ("complete" if answer else "error"),
+                "action": source,
+                "mode": mode,
+                "message": answer,
+                "data": result,
+            }
 
         messages.append({"role": "user", "content": message})
         execution_state = new_execution(message)

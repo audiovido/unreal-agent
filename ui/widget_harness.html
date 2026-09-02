@@ -1,0 +1,72 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ava widget harness</title>
+<style>
+  body { background:#0a0d14; color:#cfe3f5; font-family:system-ui,monospace; margin:0; display:flex; gap:12px; padding:12px; height:100vh; box-sizing:border-box; }
+  .panel { flex:1; display:flex; flex-direction:column; min-width:0; }
+  h1 { font-size:14px; margin:0 0 8px; color:#7dd3fc; }
+  #log { flex:1; background:#05070d; border:1px solid #1e293b; border-radius:8px; padding:8px; font-size:11px; overflow:auto; white-space:pre-wrap; }
+  #log .ev { color:#86efac; } #log .meta { color:#64748b; }
+  .btns { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  button { background:#123a6b; border:1px solid #38bdf8; color:#e0f2fe; border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer; }
+  iframe { width:100%; height:100%; border:1px solid #1e293b; border-radius:8px; background:#05070d; }
+</style></head>
+<body>
+  <div class="panel">
+    <h1>Widget (/?widget=1) — real surface</h1>
+    <iframe id="w" src="/?widget=1" title="Ava widget"></iframe>
+  </div>
+  <div class="panel">
+    <h1>Host event log (postMessage)</h1>
+    <div id="log">awaiting ava:* events…</div>
+    <div class="btns">
+      <button id="send">Send “Hello from host”</button>
+      <button id="clear">Clear</button>
+      <button id="focus">Focus composer</button>
+      <button id="grow">Grow iframe</button>
+    </div>
+  </div>
+<script>
+  "use strict";
+  var log = document.getElementById("log");
+  function line(cls, text) {
+    var div = document.createElement("div");
+    div.className = cls;
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+  window.addEventListener("message", function (ev) {
+    if (!ev.data || typeof ev.data.type !== "string" || ev.data.type.indexOf("ava:") !== 0) return;
+    var d = ev.data;
+    line("meta", new Date(d.ts || Date.now()).toISOString().slice(11, 19));
+    line("ev", d.type + " " + JSON.stringify(d.payload || {}));
+  });
+  function cmd(command, message) {
+    var msg = { type: "ava:command", command: command };
+    if (message != null) msg.message = message;
+    document.getElementById("w").contentWindow.postMessage(msg, "*");
+    line("meta", "→ command " + command);
+  }
+  document.getElementById("send").addEventListener("click", function () { cmd("send", "Hello from host"); });
+  document.getElementById("clear").addEventListener("click", function () { cmd("clear"); });
+  document.getElementById("focus").addEventListener("click", function () { cmd("focus"); });
+  var grow = document.getElementById("grow");
+  grow.addEventListener("click", function () {
+    var f = document.getElementById("w");
+    f.style.height = (f.clientHeight < 500 ? 620 : 380) + "px";
+    line("meta", "→ iframe height " + f.style.height);
+  });
+
+  // ?demo=1 — auto-drive one send after the widget is ready (used by
+  // headless/automated proof runs; the interactive harness stays manual).
+  if (new URLSearchParams(location.search).get("demo") === "1") {
+    var demoFired = false;
+    window.addEventListener("message", function (ev) {
+      if (demoFired || !ev.data || ev.data.type !== "ava:ready") return;
+      demoFired = true;
+      setTimeout(function () { cmd("send", "Hello from host"); }, 1500);
+    });
+  }
+</script>
+</body></html>

@@ -195,3 +195,110 @@ def test_camera_deliverable_not_completed_by_marker_cube(isolated_goal):
     goal = task_goal.build_acceptance_contract("Build a scene with a camera and a cube named C1; save; capture proof.")
     goal = task_goal.reconcile_step(goal, {"preferred_tool": "spawn_actor", "parameters": {"actor_name": "C1", "class_name": "StaticMeshActor"}}, {"ok": True, "result": {"label": "C1"}})
     assert "deliverable:camera" not in goal["completed_criteria"]
+
+
+# ============================================================
+# READ-ONLY INSPECTION — regression: a pure inspection/query
+# goal must complete from inspection evidence instead of dying
+# with STALL_NO_PROGRESS / PENDING_ACCEPTANCE_CRITERIA.
+# ============================================================
+
+READ_ONLY_REQUEST = (
+    "Inspect the current Unreal project read-only. Report the current level "
+    "name, whether PIE is running, and the main actors present. "
+    "Do not modify anything."
+)
+
+
+def test_read_only_inspection_contract_uses_inspection_criterion(isolated_goal):
+    goal = task_goal.build_acceptance_contract(READ_ONLY_REQUEST)
+    assert "inspection:result" in goal["acceptance_criteria"]
+    assert "task:original_goal_complete" not in goal["acceptance_criteria"]
+
+
+def test_read_only_inspection_goal_completes_from_inspection_evidence(isolated_goal):
+    goal = task_goal.build_acceptance_contract(READ_ONLY_REQUEST)
+    # tool executes -> useful result exists
+    goal = task_goal.reconcile_step(
+        goal,
+        {"preferred_tool": "inspect_project"},
+        {"ok": True, "result": {"uproject": {"EngineAssociation": "5.8"}}},
+    )
+    goal = task_goal.reconcile_step(
+        goal,
+        {"preferred_tool": "unreal_ping"},
+        {"ok": True, "result": {"ok": True, "engine": "5.8.2"}},
+    )
+    assert "inspection:result" in goal["completed_criteria"]
+    assert task_goal.contract_complete(goal) is True
+    # terminal verdict is COMPLETE, not STALL_NO_PROGRESS
+    state = {
+        "task_goal": goal,
+        "plan": {"steps": [
+            {"step_id": "inspect_project", "status": "completed", "phase": "INSPECT"},
+            {"step_id": "ping", "status": "completed", "phase": "INSPECT"},
+        ]},
+        "validation_result": "passed",
+    }
+    assert api._terminal_verdict(state)[0] == "COMPLETE"
+    assert api._completion_blocker(state) is None
+
+
+def test_failed_inspection_does_not_clear_inspection_criterion(isolated_goal):
+    goal = task_goal.build_acceptance_contract(READ_ONLY_REQUEST)
+    before = list(goal["pending_criteria"])
+    goal = task_goal.reconcile_step(
+        goal,
+        {"preferred_tool": "inspect_project"},
+        {"ok": False, "error": "bridge down"},
+    )
+    assert goal["pending_criteria"] == before
+    assert task_goal.contract_complete(goal) is False
+
+
+def test_vague_no_criteria_request_keeps_catchall_gate(isolated_goal):
+    """Write-task gate is NOT weakened: vague no-criteria requests still carry
+    the unsatisfiable catch-all and cannot complete from health checks."""
+    goal = task_goal.build_acceptance_contract(
+        "Make the project feel more complete and polished."
+    )
+    assert "task:original_goal_complete" in goal["acceptance_criteria"]
+    assert "inspection:result" not in goal["acceptance_criteria"]
+    state = {
+        "task_goal": goal,
+        "plan": {"steps": [
+            {"step_id": "inspect_project", "status": "completed", "phase": "INSPECT"},
+            {"step_id": "ping", "status": "completed", "phase": "INSPECT"},
+        ]},
+        "validation_result": "passed",
+    }
+    # Health checks alone can never finish it: the catch-all stays pending and
+    # the completion gate reports PENDING_ACCEPTANCE_CRITERIA (which the
+    # finalizer maps to EXECUTION_STALLED / STALL_NO_PROGRESS).
+    blocker = api._completion_blocker(state)
+    assert blocker is not None
+    assert blocker["detail"] == "PENDING_ACCEPTANCE_CRITERIA"
+    assert api._terminal_verdict(state)[0] == "RUNNING"
+
+
+def test_mutation_request_is_never_treated_as_read_only(isolated_goal):
+    """A query-phrased request with mutation intent must NOT be treated as
+    read-only: it keeps the catch-all gate so it cannot complete from
+    inspection evidence alone."""
+    goal = task_goal.build_acceptance_contract(
+        "Inspect the project, then make it look more futuristic."
+    )
+    assert "task:original_goal_complete" in goal["acceptance_criteria"]
+    assert "inspection:result" not in goal["acceptance_criteria"]
+
+
+def test_concrete_criteria_are_never_replaced_by_read_only_path(isolated_goal):
+    """Requests that parse concrete criteria keep them: the read-only path
+    only ever kicks in when nothing else was parsed, so real write goals are
+    never downgraded to an inspection-only contract."""
+    goal = task_goal.build_acceptance_contract(
+        "Inspect the project, then add a cube named Z1 and save the level."
+    )
+    assert "actor:Z1:exists" in goal["acceptance_criteria"]
+    assert "level:saved" in goal["acceptance_criteria"]
+    assert "inspection:result" not in goal["acceptance_criteria"]

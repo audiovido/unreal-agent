@@ -1,0 +1,11 @@
+{
+  "mapping": {
+    "worker": "ASSET",
+    "project": "ASSET_Showcase2",
+    "host": "127.0.0.1",
+    "port": 6766,
+    "uproject": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject"
+  },
+  "note": "persisted per mission: ASSET worker -> ASSET_Showcase2 -> 6766 (identity-guarded listener; never AudioVido fallback)",
+  "updated_at": "2026-09-02"
+}
