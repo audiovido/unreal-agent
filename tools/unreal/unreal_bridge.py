@@ -7,10 +7,6 @@ import re
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 6766
-PROJECT_TARGETS = {
-    "avalive": ("127.0.0.1", 6766, r"C:/Users/Shadow/Desktop/AvaLive/AvaLive/AvaLive.uproject"),
-    "audiovido": ("127.0.0.1", 6767, r"C:/Users/Shadow/Desktop/app/AudioVidoLivingCity/AudioVidoLivingCity.uproject"),
-}
 
 
 def verify_startup_map_result(result):
@@ -37,15 +33,8 @@ def verify_save_result(result):
 
 
 class UnrealBridge:
-    def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=30, target=None):
-        if target is not None:
-            if target not in PROJECT_TARGETS:
-                raise ValueError(f"Unknown Unreal project target: {target}")
-            host, port, self.expected_project = PROJECT_TARGETS[target]
-            self.target = target
-        else:
-            self.expected_project = None
-            self.target = None
+    def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=30):
+        self.expected_project = None
         self.host = host
         self.port = port
         self.timeout = timeout
