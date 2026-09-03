@@ -127,10 +127,16 @@ class AutonomousVisualLoop:
         out_dir: Optional[str] = None,
         subject_locator: Optional[Callable] = None,
         ui_locator: Optional[Callable] = None,
+        gate: Optional[Callable[[Any, Any], bool]] = None,
     ) -> None:
+        """gate: optional (metrics, score) -> bool terminal predicate.  When
+        provided it REPLACES the default acceptance contract for termination
+        (it may only be stricter; the standard contract is the fallback when
+        gate is None)."""
         self.target = target
         self.subject_locator = subject_locator
         self.ui_locator = ui_locator
+        self.gate = gate
         self.capture = capture
         self.apply = apply
         self.vision = vision
@@ -150,6 +156,20 @@ class AutonomousVisualLoop:
         zero an image-derived camera-roll when the actual camera rotation is
         read back as level). Default: no-op."""
         return None
+
+    def _gate_ok(self, metrics: Any, s: Any) -> bool:
+        """Terminal acceptance predicate.  An injected release-grade gate is
+        honored when provided (it is only ever stricter than the standard
+        contract); otherwise the standard target acceptance contract is
+        used, preserving the historic behavior exactly."""
+        if self.gate is not None:
+            try:
+                return bool(self.gate(metrics, s))
+            except Exception:
+                return False
+        return accepts(
+            s, self.target,
+            allow_external_blocker=bool(self.external_blocker))
 
     # ------------------------------------------------------------------
     # helpers
@@ -256,11 +276,9 @@ class AutonomousVisualLoop:
             final_score, final_metrics, final_vision = s, m, vision
 
             defects = self._derive_defects(m, s)
-            gate = accepts(
-                s, self.target,
-                allow_external_blocker=bool(self.external_blocker))
-            verdict = "PASS" if gate else "REVISE"
-            action = self._choose_action(defects) if not gate else None
+            gate_ok = self._gate_ok(m, s)
+            verdict = "PASS" if gate_ok else "REVISE"
+            action = self._choose_action(defects) if not gate_ok else None
             lp = LoopPass(
                 index=i, path=path, hash_md5_12=m.hash_md5_12,
                 defects=defects, actions=[action] if action else [],
@@ -281,7 +299,7 @@ class AutonomousVisualLoop:
                 self.action_logs.append(pend)
                 self._pending_log = None
 
-            if gate:
+            if gate_ok:
                 break
 
             if action is None:
@@ -363,9 +381,7 @@ class AutonomousVisualLoop:
         visual_ok = False
         critique: Dict[str, Any] = {"verdict": "REVISE"}
         if final_score is not None and final_metrics is not None:
-            visual_ok = accepts(final_score, self.target,
-                                allow_external_blocker=bool(
-                                    self.external_blocker))
+            visual_ok = self._gate_ok(final_metrics, final_score)
             critique = self_critique(final_path, final_metrics, final_score,
                                      vision_review=final_vision)
 

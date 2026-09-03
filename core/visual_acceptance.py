@@ -101,39 +101,163 @@ def find_subject_bbox(
     min_luma: int = 45,
     max_luma: int = 250,
 ) -> Optional[List[int]]:
-    """Bounding box of the dominant foreground blob inside a region of
-    interest (fractions of the frame). Heuristic: rows/cols whose mid-tone
-    count significantly exceeds the background baseline. Returns pixel coords
-    [x0, y0, x1, y1] or None when the frame is empty/flat."""
+    """Bounding box of the dominant foreground subject inside a region of
+    interest (fractions of the frame).
+
+    Segmentation is component-based instead of marginal row/column density:
+    the ROI is coarse-gridded and a cell counts as foreground only when it is
+    a mid-tone cell with real local structure (contrast). That excludes
+    smooth sky gradients, flat walls and flat floors, which is what made the
+    old marginal scan union the whole ROI on any busy/mid-tone frame and
+    falsely report HEAD_CROPPED and oversized coverage. Connected foreground
+    cells form components and the dominant one (largest area, preferring a
+    centroid in the central band) becomes the subject. Falls back to the flat-
+    field density scan only when no structured component exists. Returns pixel
+    coords [x0, y0, x1, y1] or None when the frame is empty/flat."""
     w, h = image.size
     if roi is None:
         roi = [0.02, 0.05, 0.72, 0.97]   # left-center band where heroes sit
-    x0, y0 = int(w * roi[0]), int(h * roi[1])
-    x1, y1 = int(w * roi[2]), int(h * roi[3])
+    rx0, ry0 = int(w * roi[0]), int(h * roi[1])
+    rx1, ry1 = int(w * roi[2]), int(h * roi[3])
+    if rx1 <= rx0 or ry1 <= ry0:
+        return None
     gray = image.convert("L")
     px = gray.load()
-    xs, ys = [], []
-    for y in range(y0, y1, 2):
-        cnt = 0
-        for x in range(x0, x1, 2):
-            p = px[x, y]
-            if min_luma < p < max_luma:
-                cnt += 1
-        if cnt > (x1 - x0) / 2 * 0.18:
-            ys.append(y)
-    for x in range(x0, x1, 2):
-        cnt = 0
-        for y in range(y0, y1, 2):
-            p = px[x, y]
-            if min_luma < p < max_luma:
-                cnt += 1
-        if cnt > (y1 - y0) / 2 * 0.18:
-            xs.append(x)
-    if not xs or not ys:
-        return None
+    step = 6
+    contrast_min = 12          # a cell must carry structure, not smooth fill
+    cell_w = (rx1 - rx0 + step - 1) // step
+    cell_h = (ry1 - ry0 + step - 1) // step
+    grid = [[False] * cell_w for _ in range(cell_h)]
+    for cy in range(cell_h):
+        y0 = ry0 + cy * step
+        y1 = min(ry0 + (cy + 1) * step, ry1)
+        for cx in range(cell_w):
+            x0 = rx0 + cx * step
+            x1 = min(rx0 + (cx + 1) * step, rx1)
+            total = 0
+            lo, hi = 255, 0
+            for y in range(y0, y1):
+                for x in range(x0, x1):
+                    p = px[x, y]
+                    total += p
+                    if p < lo:
+                        lo = p
+                    if p > hi:
+                        hi = p
+            mean = total / max((x1 - x0) * (y1 - y0), 1)
+            if min_luma < mean < max_luma and hi - lo >= contrast_min:
+                grid[cy][cx] = True
+    # connected components over the coarse grid (4-connectivity)
+    seen = [[False] * cell_w for _ in range(cell_h)]
+    comps: List[tuple] = []    # (area, min_x, min_y, max_x, max_y, centroid_y)
+    for cy in range(cell_h):
+        for cx in range(cell_w):
+            if not grid[cy][cx] or seen[cy][cx]:
+                continue
+            stack = [(cx, cy)]
+            seen[cy][cx] = True
+            area = 0
+            mnx = mny = 1 << 30
+            mxx = mxy = -1
+            sy = 0
+            while stack:
+                gx, gy = stack.pop()
+                area += 1
+                sy += gy
+                if gx < mnx:
+                    mnx = gx
+                if gx > mxx:
+                    mxx = gx
+                if gy < mny:
+                    mny = gy
+                if gy > mxy:
+                    mxy = gy
+                for ngx, ngy in ((gx - 1, gy), (gx + 1, gy),
+                                 (gx, gy - 1), (gx, gy + 1)):
+                    if 0 <= ngx < cell_w and 0 <= ngy < cell_h \
+                            and grid[ngy][ngx] and not seen[ngy][ngx]:
+                        seen[ngy][ngx] = True
+                        stack.append((ngx, ngy))
+            comps.append((area, mnx, mny, mxx, mxy, sy / max(area, 1)))
+
+    def _marginal_bbox():
+        # flat-field / hollow-subject scan: luma-band density over rows/cols.
+        # Used only when no structured component exists or the best component
+        # is a hollow outline (flat-filled subjects leave no interior
+        # structure), where band density still frames the subject correctly.
+        xs, ys = [], []
+        for y in range(ry0, ry1, 2):
+            cnt = 0
+            for x in range(rx0, rx1, 2):
+                p = px[x, y]
+                if min_luma < p < max_luma:
+                    cnt += 1
+            if cnt > (rx1 - rx0) / 2 * 0.18:
+                ys.append(y)
+        for x in range(rx0, rx1, 2):
+            cnt = 0
+            for y in range(ry0, ry1, 2):
+                p = px[x, y]
+                if min_luma < p < max_luma:
+                    cnt += 1
+            if cnt > (ry1 - ry0) / 2 * 0.18:
+                xs.append(x)
+        if not xs or not ys:
+            return None
+        pad = 6
+        return [max(rx0, min(xs) - pad), max(ry0, min(ys) - pad),
+                min(rx1, max(xs) + pad), min(ry1, max(ys) + pad)]
+
+    if not comps:
+        return _marginal_bbox()
+    # marginal bbox = the luma-band mass (the classic density scan)
+    marginal = _marginal_bbox()
+    roi_area = (rx1 - rx0) * (ry1 - ry0)
+    # Two views of the scene, each right in different situations:
+    #  * marginal = the luma-band mass. Correct when it covers only a small
+    #    slice of the ROI (a well-defined band subject, e.g. a flat-filled
+    #    hero on an out-of-band background). On busy or sky-heavy frames the
+    #    marginal scan unions nearly the whole ROI and reports a false
+    #    HEAD_CROPPED.
+    #  * component = the dominant STRUCTURED mass. Correct when the marginal
+    #    mass swallows the ROI, but flat-filled subjects leave only thin
+    #    boundary strips (no interior structure), so a small fragmentary
+    #    component must not override a clean marginal subject.
+    if marginal is None:
+        # no in-band mass: the largest structured component is the subject
+        _, mnx, mny, mxx, mxy, _ = max(comps, key=lambda c: c[0])
+        return [max(rx0, rx0 + mnx * step - 6),
+                max(ry0, ry0 + mny * step - 6),
+                min(rx1, rx0 + (mxx + 1) * step + 6),
+                min(ry1, ry0 + (mxy + 1) * step + 6)]
+    m_area = (marginal[2] - marginal[0]) * (marginal[3] - marginal[1])
+    if m_area < roi_area * 0.45:
+        return marginal
+    # Busy/sky-heavy frame: prefer the dominant structured component, but
+    # only when it is a real mass (>= 6% of the ROI cells), not an outline
+    # strip left by a flat-filled subject.
+    total_cells = cell_w * cell_h
+    best = None
+    for c in comps:
+        if c[0] < total_cells * 0.06:
+            continue
+        if 0.15 * cell_h <= c[5] <= 0.85 * cell_h:
+            if best is None or c[0] > best[0]:
+                best = c
+    if best is None:
+        best = max(comps, key=lambda c: c[0])
+    area, mnx, mny, mxx, mxy, _ = best
     pad = 6
-    return [max(x0, min(xs) - pad), max(y0, min(ys) - pad),
-            min(x1, max(xs) + pad), min(y1, max(ys) + pad)]
+    if area < total_cells * 0.06:
+        return marginal
+    # hollow check: an outline with an empty interior has a meaningless bbox
+    bbox_cells = (mxx - mnx + 1) * (mxy - mny + 1)
+    if area < bbox_cells * 0.25:
+        return marginal
+    return [max(rx0, rx0 + mnx * step - pad),
+            max(ry0, ry0 + mny * step - pad),
+            min(rx1, rx0 + (mxx + 1) * step + pad),
+            min(ry1, ry0 + (mxy + 1) * step + pad)]
 
 
 def find_ui_bbox(
@@ -182,15 +306,17 @@ def find_ui_bbox(
 
 
 def detect_camera_roll(image: Image.Image, threshold_deg: float = 4.0) -> float:
-    """Cheap horizontal/vertical edge-alignment roll heuristic: measure the
-    dominant gradient orientation on strong edges near the frame border.
+    """Raw median edge-orientation estimate of camera roll.
 
-    Edge samples are folded to [0, 45] degrees and the median is returned (a
-    median, not a mean, because the sample population is heavily skewed by
-    ambiguous exactly-45-degree rectangle corners — those corner samples are
-    excluded since they carry no roll signal: a truly rolled frame produces
-    thousands of coherent rotated-edge samples, a clean frame produces almost
-    none. A sub-threshold sample count therefore means 'no roll signal'."""
+    Strong edges near the frame border are sampled and their orientation is
+    folded to [0, 45] degrees (vertical and horizontal edges both fold toward
+    zero for a level camera; a rolled camera shifts them together). The
+    folded median is returned. This raw value is a SENSITIVE signal, not a
+    verdict: perspective keystone and texture noise bias it even for a level
+    camera, so measure() gates it with roll_support() — a roll is only
+    recorded when most strong edges genuinely agree on the angle. Genuine
+    gross rolls (a rotated horizon/skyline with few competing structures)
+    agree strongly; busy or keystoned content does not."""
     gray = image.convert("L")
     w, h = gray.size
     px = gray.load()
@@ -201,8 +327,8 @@ def detect_camera_roll(image: Image.Image, threshold_deg: float = 4.0) -> float:
             gx = px[min(x + 4, w - 1), y] - px[max(x - 4, 0), y]
             gy = px[x, min(y + 4, h - 1)] - px[max(y - 4, 0), y]
             if abs(gx) < 12 or abs(gy) < 12:
-                continue
-            mag = math.hypot(gx, gy)
+                continue     # require a genuinely tilted edge: pure axis
+            mag = math.hypot(gx, gy)     # edges fold to 0 and drown roll
             if mag < 30:
                 continue
             angle = math.degrees(math.atan2(gy, gx)) % 90.0
@@ -215,6 +341,44 @@ def detect_camera_roll(image: Image.Image, threshold_deg: float = 4.0) -> float:
         return 0.0
     angles.sort()
     return round(angles[len(angles) // 2], 2)
+
+
+def roll_support(image: Image.Image, roll_deg: float, window: float = 5.0) -> float:
+    """Fraction of strong edge samples agreeing with a candidate roll.
+
+    A camera roll is physically a rotation of the whole frame: if it is real,
+    the dominant edge family follows it and a large share of strong edges
+    agree within `window` degrees. Keystone perspective and texture noise
+    bias the raw median without broad agreement, so support near 1 means
+    'the whole frame really is tilted', support near 0 means the median is an
+    artifact of a mixed-orientation scene. Returns 0.0 when there is nothing
+    to agree on."""
+    if roll_deg <= 0.0:
+        return 0.0
+    gray = image.convert("L")
+    w, h = gray.size
+    px = gray.load()
+    agree = total = 0
+    band = 28
+    for y in range(band, h - band, 12):
+        for x in range(band, w - band, 12):
+            gx = px[min(x + 4, w - 1), y] - px[max(x - 4, 0), y]
+            gy = px[x, min(y + 4, h - 1)] - px[max(y - 4, 0), y]
+            if abs(gx) < 12 or abs(gy) < 12:
+                continue     # same tilted-edge requirement as the detector
+            if math.hypot(gx, gy) < 30:
+                continue
+            angle = math.degrees(math.atan2(gy, gx)) % 90.0
+            if angle > 45.0:
+                angle = 90.0 - angle
+            if 42.5 <= angle <= 47.5:
+                continue
+            total += 1
+            if abs(angle - roll_deg) <= window:
+                agree += 1
+    if total < 12:
+        return 0.0
+    return round(agree / float(total), 2)
 
 
 def _coverage(bbox, w, h) -> float:
@@ -283,7 +447,16 @@ def measure(
     m.empty_space_ratio = round(
         max(0.0, 1.0 - (stat.stddev[0] / max(m.mean_luma + 1e-6, 1.0)) / 3.0), 4
     )
-    m.roll_deg = detect_camera_roll(image)
+    # Roll is recorded only when the frame broadly agrees on one tilt angle.
+    # The raw edge-orientation median is a sensitive but noisy signal (keystone
+    # perspective and texture bias it even for a level camera), so a low-
+    # support reading is treated as level. This is intentionally strict:
+    # image-only heuristics never override runtime ground truth (frozen
+    # camera transforms / the documented _post_measure hook), they only
+    # prevent false CAMERA_ROLL defects on level frames.
+    raw_roll = detect_camera_roll(image)
+    support = roll_support(image, raw_roll) if raw_roll > 3.5 else 1.0
+    m.roll_deg = round(raw_roll, 2) if support >= 0.6 else 0.0
     if m.bands:
         m.issues.append("BLACK_BAND:" + ",".join(m.bands))
     # clipping flags use the TARGET-owned budget (mk. + a small tolerance) so
@@ -298,6 +471,8 @@ def measure(
     if m.stale:
         m.issues.append("STALE_CAPTURE")
     m.raw = raw
+    m.raw["roll_raw"] = raw_roll
+    m.raw["roll_support"] = support
     return m
 
 
