@@ -38,11 +38,11 @@ def test_scenarios_table_is_the_contract():
 
 @pytest.mark.parametrize("scn", CONTRACT_SCENARIOS,
                          ids=[s["id"] for s in CONTRACT_SCENARIOS])
-def test_convert_scenario(scn):
+def test_convert_scenario(scn, tmp_path):
     blender = _blender_or_skip()
     _ensure_samples()
-    job = _job(scn)
-    result = run_job_host(job, blender=blender)
+    job = _job(scn, work_root=tmp_path)
+    result = run_job_host(job, blender=blender, work_root=tmp_path)
     passed, fails = check_scenario(scn, result)
     assert passed, "; ".join(fails or ["scenario failed"])
     if scn["expect"].get("ok"):
@@ -55,14 +55,14 @@ def test_convert_scenario(scn):
         assert on_disk["asset"] == (result.get("outputs") or {}).get("name")
 
 
-def test_error_cases_surface_structured_codes():
+def test_error_cases_surface_structured_codes(tmp_path):
     """Boundary cases return structured codes, not tracebacks."""
     blender = _blender_or_skip()
     for scn in CONTRACT_SCENARIOS:
         if scn["expect"].get("ok", True):
             continue
-        job = _job(scn)
-        result = run_job_host(job, blender=blender)
+        job = _job(scn, work_root=tmp_path)
+        result = run_job_host(job, blender=blender, work_root=tmp_path)
         passed, _fails = check_scenario(scn, result)
         assert passed
         assert result.get("code") is not None or not result.get("ok")
