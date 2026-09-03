@@ -157,13 +157,18 @@ def resolve_scene_locators(name):
 # Missions
 # ---------------------------------------------------------------------------
 
-def _make_evaluate(bridge, scene_locators=None):
+def _make_evaluate(bridge, scene_locators=None, target=None):
     """Deterministic + provider visual evaluation for live evidence.
 
     scene_locators: optional dict of locator callables (subject_locator /
     ui_locator) resolved from a mission's scene profile and passed to
     measure() through the documented injection mechanism.  None keeps the
     generic plain-measure behavior.
+
+    target: optional VisualTarget dict whose ``required_visual_categories``
+    make acceptance task-aware (only categories the task actually requested
+    weigh on the overall).  None/{} keeps the historic all-categories
+    contract exactly (UI tasks, Step-5/6, and every existing caller).
 
     The captured dict may carry precomputed "_metrics" and "_score" from a
     caller that already measured the exact same frame (e.g. the visual
@@ -198,7 +203,7 @@ def _make_evaluate(bridge, scene_locators=None):
                     "review": {"ok": False}}
         s = (captured or {}).get("_score")
         if s is None:
-            s = score_fn(metrics)
+            s = score_fn(metrics, target=target)
         decisive = None if os.getenv("UNREAL_AGENT_FORCE_VISION") else 8.5
         review = vision_provider.review_image(
             path, providers=vision_provider.get_configured_providers(),

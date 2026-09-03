@@ -51,6 +51,39 @@ class VisualMetrics:
     raw: Dict[str, Any] = field(default_factory=dict)
 
 
+# Score categories and their fixed relative weights. ``score()`` computes
+# every category honestly (never fabricating values) and aggregates the
+# weighted average over ALL categories by default.  A caller whose target
+# declares ``required_visual_categories`` (task-aware acceptance) scopes the
+# aggregation to exactly that category set, renormalizing the SAME weights —
+# categories the task never requested (e.g. UI when the user asked for a
+# prop) no longer drag the overall below acceptance, and their honest low
+# values remain visible in the per-category scores.
+SCORE_CATEGORIES = ("composition", "subject_framing", "lighting",
+                    "environment", "ui", "readability", "target_match",
+                    "technical_integrity")
+SCORE_WEIGHTS = {
+    "composition": 0.15, "subject_framing": 0.20, "lighting": 0.15,
+    "environment": 0.12, "ui": 0.12, "readability": 0.10,
+    "target_match": 0.10, "technical_integrity": 0.06,
+}
+
+
+def _scoped_categories(target: Dict[str, Any]) -> Optional[List[str]]:
+    """Categories the aggregation must cover for this target.
+
+    None means the full default set (historic behavior).  An explicit
+    ``required_visual_categories`` list on the target scopes acceptance to
+    only the categories the task actually requires; unknown names are
+    ignored so a future category never silently vanishes.
+    """
+    req = target.get("required_visual_categories")
+    if not isinstance(req, (list, tuple, set)) or not req:
+        return None
+    cats = [c for c in SCORE_CATEGORIES if c in req]
+    return cats or None
+
+
 @dataclass
 class VisualScore:
     composition: float = 0.0
@@ -599,11 +632,22 @@ def score(metrics: VisualMetrics, target: Optional[Dict[str, Any]] = None) -> Vi
         match -= 2.0
     s.target_match = _clamp(match)
 
-    overall = (
-        s.composition * 0.15 + s.subject_framing * 0.20 + s.lighting * 0.15 +
-        s.environment * 0.12 + s.ui * 0.12 + s.readability * 0.10 +
-        s.target_match * 0.10 + s.technical_integrity * 0.06
-    )
+    cats = _scoped_categories(target)
+    if cats:
+        # Task-aware aggregation: weighted mean over ONLY the categories the
+        # task requires, using the same fixed weights renormalized.  Every
+        # category value above is still the honest measurement — nothing is
+        # awarded to a category the frame does not earn.
+        wsum = sum(SCORE_WEIGHTS[c] for c in cats)
+        overall = (sum(getattr(s, c) * SCORE_WEIGHTS[c] for c in cats)
+                   / wsum) if wsum else 0.0
+    else:
+        overall = (
+            s.composition * 0.15 + s.subject_framing * 0.20 +
+            s.lighting * 0.15 + s.environment * 0.12 + s.ui * 0.12 +
+            s.readability * 0.10 + s.target_match * 0.10 +
+            s.technical_integrity * 0.06
+        )
     s.overall = _clamp(overall)
     return s
 

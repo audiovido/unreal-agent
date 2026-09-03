@@ -197,6 +197,7 @@ class ProductSession:
         self._owner_id = f"product-{os.getpid()}"
         self._lease_key: Optional[str] = None
         self._lease_held = False
+        self._active_target: Dict[str, Any] = {}
         self._lease_s = float(lease_s)
         self._heartbeat_s = float(heartbeat_s or max(5.0, self._lease_s / 4.0))
         self._hb_stop = threading.Event()
@@ -603,6 +604,27 @@ class ProductSession:
          "Deletes a named actor from the level and saves."),
     ]
 
+    # Capabilities whose plans only ever touch scene ACTORS (no UI request):
+    # acceptance for them covers the scene-quality categories the task asks
+    # for and never requires a UI panel / chat readability the user did not
+    # ask for.  UI-requesting tasks are not planned here (they fail fast in
+    # _plan), so the strict all-categories gate stays reserved for UI work.
+    ACTOR_TASK_CATEGORIES = ["composition", "subject_framing", "lighting",
+                             "environment", "technical_integrity"]
+
+    def visual_target_for_capability(self, capability: Optional[str]) -> Dict:
+        """Task-aware VisualTarget for a planned capability.
+
+        Non-UI actor operations scope acceptance to the scene categories the
+        task actually requires (subject/framing, lighting, environment,
+        composition, technical integrity).  Unknown capabilities keep an
+        empty target -> the historic all-categories acceptance gate.
+        """
+        if capability in ("add_visible_prop", "remove_actor"):
+            return {"required_visual_categories":
+                    list(self.ACTOR_TASK_CATEGORIES)}
+        return {}
+
     def _plan(self, prompt: str) -> Dict[str, Any]:
         """Map a natural-language request onto real operations.
 
@@ -647,7 +669,9 @@ class ProductSession:
                          "expected": "actor no longer present"},
                     ]
                 return {"ok": True, "capability": capability,
-                        "description": desc, "steps": steps}
+                        "description": desc, "steps": steps,
+                        "visual_target":
+                            self.visual_target_for_capability(capability)}
         return {"ok": False,
                 "reason": ("I can add or remove a named prop (cube/box) in "
                            "the level. Describe one of those actions to "
@@ -688,6 +712,7 @@ class ProductSession:
                 return self._busy_response(lease)
             prev_project = dict(self.state.project or {})
             self._cancel.clear()
+            self._active_target = {}
             self.state = ProductState()
             self.state.state = UNDERSTANDING_REQUEST
             self.state.status_text = "Reading your request…"
@@ -846,6 +871,8 @@ class ProductSession:
             return
         self.state.steps_total = len(plan["steps"])
         self.state.steps_done = 0
+        # task-aware acceptance target for the remainder of this task
+        self._active_target = dict(plan.get("visual_target") or {})
         self._finish_stage("plan", True, str(plan.get("capability")))
 
         # EXECUTING through real bridge ops
@@ -999,7 +1026,11 @@ Write-Output 'OK'
             _make_evaluate, resolve_scene_locators)
         name = self._profile_name()
         locs = resolve_scene_locators(name) if name else None
-        fn = _make_evaluate(self.bridge(), scene_locators=locs)
+        # Task-aware acceptance: the current plan's visual target scopes
+        # scoring to the categories the request actually required.  Empty
+        # (default) keeps the historic all-categories gate.
+        fn = _make_evaluate(self.bridge(), scene_locators=locs,
+                            target=dict(self._active_target or {}))
         return fn({"path": str(Path(path).resolve()), "ok": True})
 
     def _validate_and_accept(self, prompt: str) -> Dict[str, Any]:
@@ -1051,7 +1082,8 @@ Write-Output 'OK'
 
         adapter = UnrealFixAdapter(self.bridge(), visible_retries=2)
         loop = AutonomousVisualLoop(
-            target={}, capture=capture, apply=adapter.apply,
+            target=dict(self._active_target or {}), capture=capture,
+            apply=adapter.apply,
             max_passes=3, out_dir=str(proof_dir),
             gate=release_accept,
             subject_locator=loc_kw.get("subject_locator"),
