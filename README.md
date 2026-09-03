@@ -2,6 +2,14 @@
 
 Local autonomous AI agent specialized exclusively for Unreal Engine.
 
+# UNREAL CODER (universal platform)
+
+ONE INPUT + ONE API + ONE AGENT. `POST /api/unreal-coder` with only a natural
+language `prompt` interprets, plans, capability-selects, executes through the
+proven Unreal machinery, validates (technical + visual), checkpoints and
+returns a concise verdict for ANY Unreal project type. See
+`docs/unreal_coder.md` for the full architecture, examples and troubleshooting.
+
 Core goals:
 - Control and inspect Unreal Engine projects
 - C++ development
