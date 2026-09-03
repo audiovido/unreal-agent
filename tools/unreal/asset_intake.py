@@ -33,8 +33,10 @@ SUPPORTED_AUDIO = {".wav", ".mp3", ".ogg", ".flac"}
 SUPPORTED_VIDEO = {".mp4", ".avi", ".mov", ".mkv"}
 
 # Reasonable Unreal content bounds (Unreal units = cm).
+# A single imported mesh larger than 1 km is almost always a unit error
+# (world/landscape work uses tiled levels, not one OBJ).
 MIN_DIMENSION_CM = 0.1
-MAX_DIMENSION_CM = 10_000_000.0
+MAX_DIMENSION_CM = 100_000.0
 
 NAMING_BAD_CHARS = re.compile(r"[^A-Za-z0-9_]")
 
@@ -270,9 +272,10 @@ def analyze_asset(source: str, folder: Optional[str] = None) -> IntakeReport:
         if report.size_bytes == 0:
             report.warnings.append("Empty file.")
             report.repair_needed.append("empty_file")
-        else:
-            report.ok = True
+            report.ok = False
             return report
+        report.ok = True
+        return report
     else:
         report.warnings.append(
             f"Unsupported format '{report.format}' for automatic intake.")

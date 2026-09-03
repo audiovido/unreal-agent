@@ -193,7 +193,7 @@ CAPABILITY_CATALOG: List[CapabilitySpec] = [
         name="sequencer_cinematic", domain="cinematics",
         description="Create Level Sequences with camera actors, bindings "
                     "and camera cuts.",
-        tools=["spawn_actor"], optional_tools=["capture_unreal_viewport"],
+        tools=["create_level_sequence"], optional_tools=["add_camera_cut", "capture_unreal_viewport"],
         requires_visual_validation=True, quality_floor=7.5,
         recovery=RECOVERY_VISUAL,
     ),
@@ -201,7 +201,7 @@ CAPABILITY_CATALOG: List[CapabilitySpec] = [
         name="camera_framing", domain="camera",
         description="Compute and apply composition-aware camera framing "
                     "(coverage, headroom, angle).",
-        tools=["spawn_actor"], optional_tools=["capture_unreal_viewport"],
+        tools=["add_camera_cut"], optional_tools=["capture_unreal_viewport"],
         requires_visual_validation=True, recovery=RECOVERY_VISUAL,
     ),
     # ---- assets ------------------------------------------------------------------

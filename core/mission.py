@@ -414,7 +414,9 @@ class MissionEngine:
                 if gate_needed else
                 f"All {len(state.completed_step_ids)} steps verified.")
         elif technical_ok and gate_needed:
-            state.status = "complete"
+            # A visual rejection is deliberately resumable: technical work is
+            # preserved while a later repaired capture can be revalidated.
+            state.status = "repairing"
             state.verdict = "PARTIAL"
             state.why = (
                 f"Technical work verified but visual score {score:.2f} below "
@@ -471,7 +473,15 @@ class MissionEngine:
                 return {"score": score, "defects": defects,
                         "evidence": evidence, "iterations": iteration + 1,
                         "verdict": "STAGNANT"}
-            self.repair(defects)
+            repair_result = self.repair(defects)
+            # A repair policy name is not a repair.  Production adapters
+            # return a structured, read-back-verified result; legacy tests
+            # may continue to return a descriptive string.
+            if isinstance(repair_result, dict) and not repair_result.get("ok"):
+                return {"score": score, "defects": defects,
+                        "evidence": evidence, "iterations": iteration + 1,
+                        "verdict": "REPAIR_UNAVAILABLE",
+                        "repair_error": str(repair_result.get("error") or "")}
         return {"score": best_score, "defects": best_defects,
                 "evidence": evidence, "iterations": MAX_VISUAL_ITERATIONS,
                 "verdict": "BUDGET"}
@@ -524,8 +534,8 @@ def mission_response(state: MissionState) -> Dict[str, Any]:
                 state.step_results.get(sid, {}) for sid in state.completed_step_ids
             ) if isinstance(r, dict) and (r.get("resource_path") or r.get("path"))
         ],
-        "resumable": state.status in {"executing", "validating", "blocked",
-                                      "failed"},
+        "resumable": state.status in {"executing", "validating", "repairing",
+                                      "blocked", "failed"},
     }
 
 

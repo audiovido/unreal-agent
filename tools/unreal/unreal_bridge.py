@@ -889,6 +889,43 @@ if target is not None:
         "rotation": [r.pitch, r.yaw, r.roll]
     }}
 """)
+
+    def frame_viewport_from_actor(self, actor_name: str, distance: float = 0.0):
+        """Aim the active editor viewport from one unambiguous camera actor.
+
+        This intentionally does not guess at arbitrary scene actors: callers
+        must supply a mission-owned camera label.  It gives visual acceptance
+        evidence a deterministic relationship to the camera it is repairing.
+        """
+        return self.execute_python(f"""
+actors = unreal.EditorLevelLibrary.get_all_level_actors()
+matches = [a for a in actors if a.get_name() == {actor_name!r}
+           or a.get_actor_label() == {actor_name!r}]
+if len(matches) != 1:
+    __bridge_result__ = {{
+        "ok": False,
+        "error": "Camera actor not found or ambiguous: {actor_name}",
+        "matches": [a.get_name() for a in matches],
+    }}
+else:
+    camera = matches[0]
+    loc = camera.get_actor_location()
+    rot = camera.get_actor_rotation()
+    # Pulling back along the camera forward vector is bounded and is used
+    # only for a framing repair.  It never moves the camera actor itself.
+    offset = camera.get_actor_forward_vector() * float({float(distance)!r})
+    view_loc = loc - offset
+    editor = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem)
+    editor.set_level_viewport_camera_info(view_loc, rot)
+    readback = editor.get_level_viewport_camera_info()
+    __bridge_result__ = {{
+        "ok": readback is not None,
+        "camera": camera.get_actor_label(),
+        "location": [view_loc.x, view_loc.y, view_loc.z],
+        "rotation": [rot.pitch, rot.yaw, rot.roll],
+        "distance": float({float(distance)!r}),
+    }}
+""")
     def scale_actor(self, actor_name: str, scale):
         return self.execute_python(f"""
 actors = unreal.EditorLevelLibrary.get_all_level_actors()

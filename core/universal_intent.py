@@ -29,7 +29,8 @@ from typing import Any, Dict, List
 DOMAIN_TRIGGERS: List[tuple] = [
     ("cinematics", ("sequencer", "cinematic", "level sequence", "camera cut",
                     "film", "trailer", "shot", "camera animation",
-                    "cutscene", "in-game movie", "intro")),
+                    "cutscene", "in-game movie", "intro", "camera flythrough",
+                    "flythrough", "camera path", "camera intro")),
     ("ui", ("main menu", "umg", "widget", "hud", "settings menu", "pause menu",
             "character picker", "character selection", "login", "dashboard",
             "inventory screen", "ui", "user interface", "menu", "button",
@@ -52,7 +53,8 @@ DOMAIN_TRIGGERS: List[tuple] = [
                    "type", "looks bad", "materials look")),
     ("lighting", ("lighting", "fix my light", "lights", "lumen", "global "
                   "illumination", "illumination", "shadows", "light study",
-                  "brighter", "darker", "mood lighting")),
+                  "brighter", "brighten", "brighten up", "darker", "darken",
+                  "mood lighting")),
     ("archviz", ("archviz", "architectural", "architecture", "interior "
                  "visualization", "exterior visualization", "floor plan",
                  "apartment tour", "real estate")),
@@ -69,7 +71,10 @@ DOMAIN_TRIGGERS: List[tuple] = [
                       "bottleneck", "too slow", "lag", "profiling")),
     ("asset_pipeline", ("import", "fbx", "obj", "gltf", "glb", "asset "
                         "pipeline", "asset intake", "prepare asset",
-                        "clean up mesh", "asset looks", "fix this asset")),
+                        "clean up mesh", "asset looks", "fix this asset",
+                        "delete the unused", "delete unused assets",
+                        "asset cleanup", "unused test assets",
+                        "unused assets", "delete the asset", "delete assets")),
     ("packaging", ("package", "ship build", "shipping build", "cook",
                    "deployment")),
 ]
@@ -114,6 +119,14 @@ READ_ONLY_MARKERS = (
     "how many", "check the current", "check if", "is the bridge",
 )
 
+# Negation markers: when a domain trigger word appears only after one of
+# these, the user EXCLUDED that scope ("don't touch gameplay").
+NEGATION_MARKERS = (
+    "don't touch", "dont touch", "without touching", "don't modify",
+    "dont modify", "no gameplay", "no blender", "no multiplayer",
+    "without any gameplay", "don't build", "dont build",
+)
+
 EXECUTE_MARKERS = (
     "create", "make", "build", "generate", "add", "import", "fix", "improve",
     "optimize", "repair", "design", "construct", "convert", "prepare",
@@ -121,12 +134,17 @@ EXECUTE_MARKERS = (
     "block out", "blockout", "greybox", "graybox", "delete", "remove",
     "clean up", "cleanup", "replace", "wire", "stage",
     "i want", "i need", "give me",        # implicit action phrasing
+    "brighten", "tweak", "adjust", "fix up", "touch up",
 )
 
 DESTRUCTIVE_MARKERS = (
     "delete all", "wipe", "reset project", "remove everything",
     "overwrite the original", "delete the project", "mass delete",
     "delete every asset", "reformat",
+    # Scoped deletion of named assets is still destructive: a backup
+    # checkpoint + provenance is required before it runs.
+    "delete the unused", "delete unused", "unused assets", "delete assets",
+    "delete the asset", "asset cleanup", "clean up assets",
 )
 
 
@@ -270,6 +288,25 @@ def _extract_deliverables(text: str, domains: List[str]) -> List[str]:
     return deliverables or ["scene"]
 
 
+def _domain_negated(lowered: str, domain: str, triggers) -> bool:
+    """True when the ONLY mentions of a domain's triggers occur inside a
+    negation clause ("don't touch gameplay")."""
+    mentioned = any(t in lowered for t in triggers)
+    if not mentioned:
+        return False
+    for marker in NEGATION_MARKERS:
+        idx = lowered.find(marker)
+        if idx < 0:
+            continue
+        tail = lowered[idx + len(marker):]
+        if any(t in tail for t in triggers):
+            # Only negated when the trigger never appears BEFORE the marker.
+            head = lowered[:idx]
+            if not any(t in head for t in triggers):
+                return True
+    return False
+
+
 def interpret_intent(prompt: str) -> UniversalIntent:
     """Layer 1: classify one prompt into a structured UniversalIntent."""
     text = str(prompt or "").strip()
@@ -294,6 +331,19 @@ def interpret_intent(prompt: str) -> UniversalIntent:
 
     # ---- domains --------------------------------------------------------
     intent.domains = detect_domains(lowered)
+    # Anti-overreach: drop domains the user explicitly excluded
+    # ("tweak the lighting, don't touch gameplay").
+    excluded_domains = [
+        domain for domain, markers in DOMAIN_TRIGGERS
+        for _ in [0] if _domain_negated(lowered, domain, markers)
+    ]
+    if excluded_domains and intent.domains:
+        remaining = [d for d in intent.domains if d not in excluded_domains]
+        if remaining:  # never drop the LAST domain (request must stay valid)
+            intent.domains = remaining
+            for domain in excluded_domains:
+                intent.warnings.append(
+                    f"Domain '{domain}' excluded by user request.")
     intent.primary_domain = intent.domains[0]
     intent.mixed = len(intent.domains) > 1
 
@@ -604,6 +654,13 @@ def expand_requirements(intent: UniversalIntent) -> RequirementSpec:
             "desc": "Record provenance of anything replaced or removed",
             "ops": ["provenance"],
         })
+        # Scoped asset deletion/cleanup capability with absence verification.
+        if "asset_pipeline" in intent.domains:
+            spec.requirements.append({
+                "id": "cleanup", "kind": "cleanup",
+                "desc": "Delete the scoped assets and verify their absence",
+                "ops": ["delete_asset", "verify_absence"],
+            })
 
     # Anti-overreach: record what was deliberately excluded.
     if not intent.needs_networking:

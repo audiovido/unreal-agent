@@ -368,6 +368,21 @@ class TestMissionEngine:
         assert result.verdict in {"PARTIAL", "FAIL", "STAGNANT", "BUDGET"}
         assert len(repairs) <= 3  # bounded, never infinite
 
+    def test_visual_rejection_is_resumable(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(mission_mod, "CHECKPOINT_DIR", tmp_path / "cp")
+        state = _engine().start_mission("make a beautiful room")
+        engine = _engine(capture=lambda: {"path": "x.png"},
+                         evaluate=lambda _: {"score": 1.0,
+                                             "defects": ["CHEAP_PRIMITIVE_LOOK"]},
+                         repair=lambda _: {"ok": False,
+                                           "error": "scene-specific repair required"})
+        engine.interpret(state)
+        engine.plan(state)
+        result = engine.run(state)
+        assert result.verdict == "PARTIAL"
+        assert result.status == "repairing"
+        assert mission_response(result)["resumable"] is True
+
     def test_response_shape(self, tmp_path, monkeypatch):
         monkeypatch.setattr(mission_mod, "CHECKPOINT_DIR", tmp_path / "cp")
         engine = _engine()

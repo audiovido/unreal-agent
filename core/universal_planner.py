@@ -28,6 +28,10 @@ QUALITY_VISUAL_FLOORS = {
     "production": 7.5,
     "cinematic": 8.0,
     "photoreal": 8.0,
+    # Release acceptance is stricter than ordinary production or cinematic
+    # work.  Keep it explicit so callers can require the final 9.0 gate
+    # without weakening the default beginner experience.
+    "release": 9.0,
     "performance": 5.5,
     "mobile": 6.0,
 }
@@ -47,6 +51,7 @@ KIND_TO_CAPABILITY = {
     "media": ["media_playback"],
     "optimization": ["performance_analysis"],
     "assets": ["asset_intake_analysis", "asset_import"],
+    "cleanup": ["asset_cleanup_destructive"],
     "world": ["terrain_setup", "foliage_distribution"],
     "camera": ["camera_framing"],
     "safety": ["level_inspection"],
@@ -358,9 +363,15 @@ class UniversalPlanner:
             if capability_name != "lighting_setup":
                 params["mesh_asset"] = "/Engine/BasicShapes/Cube.Cube"
                 params["scale"] = [2.0, 2.0, 0.5]
-        elif capability_name in {"sequencer_cinematic", "camera_framing"}:
-            params = {"actor_name": "UA_Cam_" + req.get("id", "Shot")[:12],
-                      "location": [0, -400, 200]}
+        elif capability_name == "sequencer_cinematic":
+            params = {"asset_path": "/Game/UA_Mission/Intro"}
+        elif capability_name == "camera_framing":
+            params = {"seq_path": "/Game/UA_Mission/Intro",
+                      "actor_label": "UA_Cam_Intro",
+                      "location": [0, -400, 200],
+                      "start_s": 0.0, "end_s": 5.0}
+        elif capability_name == "umg_widget_authoring":
+            params = {"asset_path": "/Game/UA_Mission/WBP_MainMenu"}
         elif capability_name == "project_inspection":
             params = {}
         elif capability_name == "blueprint_authoring":

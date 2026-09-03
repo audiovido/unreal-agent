@@ -230,12 +230,14 @@ def build_registry(
         from tools.unreal.chat_tools import ChatTools
         from tools.unreal.runtime_tools import RuntimeTools
         from tools.unreal.import_tools import ImportTools
+        from tools.unreal.sequencer_tools_gap import SequencerToolsGap
 
         blueprints = BlueprintTools(bridge)
         avatar_tools = AvatarTools(bridge)
         chat_tools = ChatTools(bridge)
         runtime_tools = RuntimeTools(bridge)
         import_tools = ImportTools(bridge)
+        sequencer_tools = SequencerToolsGap(bridge)
 
 
         registry.update({
@@ -313,6 +315,69 @@ def build_registry(
                 description="Request Play In Editor for the currently open Unreal level.",
                 args={},
                 func=bridge.start_pie,
+            ),
+
+            # ---------------------------------------------- sequencer (live-probed)
+            "create_level_sequence": ToolSpec(
+                name="create_level_sequence",
+                description="Create, save and verify a real Level Sequence asset under /Game/.",
+                args={"asset_path": "Sequence content path such as /Game/Cinematics/Intro"},
+                func=sequencer_tools.create_level_sequence,
+                destructive=True,
+            ),
+
+            "list_level_sequences": ToolSpec(
+                name="list_level_sequences",
+                description="List Level Sequence assets under a Content path.",
+                args={"path": "Content path such as /Game/Cinematics"},
+                func=sequencer_tools.list_level_sequences,
+            ),
+
+            "add_actor_binding": ToolSpec(
+                name="add_actor_binding",
+                description="Bind a level actor to a sequence as a possessable and return the binding id.",
+                args={
+                    "seq_path": "Level Sequence asset path",
+                    "actor_label": "Actor label or internal name",
+                },
+                func=sequencer_tools.add_actor_binding,
+                destructive=True,
+            ),
+
+            "add_camera_cut": ToolSpec(
+                name="add_camera_cut",
+                description="Spawn/reuse a CineCamera actor and add a camera-cut track section over a time range.",
+                args={
+                    "seq_path": "Level Sequence asset path",
+                    "actor_label": "Camera actor label",
+                    "location": "XYZ array such as [0, -400, 200]",
+                    "start_s": "Cut start time in seconds",
+                    "end_s": "Cut end time in seconds",
+                },
+                func=sequencer_tools.add_camera_cut,
+                destructive=True,
+            ),
+
+            "scrub_and_play": ToolSpec(
+                name="scrub_and_play",
+                description="Open a sequence, scrub, set playback speed, play and pause with read-back.",
+                args={"seq_path": "Level Sequence asset path"},
+                func=sequencer_tools.scrub_and_play,
+            ),
+
+            "read_sequence_structure": ToolSpec(
+                name="read_sequence_structure",
+                description="Read back a sequence's bindings, tracks and section ranges.",
+                args={"seq_path": "Level Sequence asset path"},
+                func=sequencer_tools.read_sequence_structure,
+            ),
+
+            "save_sequence": ToolSpec(
+                name="save_sequence",
+                description="Save a Level Sequence and verify identity after reload.",
+                args={"seq_path": "Level Sequence asset path"},
+                func=sequencer_tools.save_sequence,
+                destructive=True,
             ),
 
             "stop_pie": ToolSpec(
@@ -419,6 +484,16 @@ def build_registry(
                     "rotation": "Pitch/Yaw/Roll array"
                 },
                 func=bridge.rotate_actor,
+                destructive=True,
+            ),
+
+            "frame_viewport_from_actor": ToolSpec(
+                name="frame_viewport_from_actor",
+                description=("Set the editor viewport from one unambiguous "
+                             "mission-owned camera actor, with read-back."),
+                args={"actor_name": "Camera actor label or internal name",
+                      "distance": "Optional bounded pull-back distance"},
+                func=bridge.frame_viewport_from_actor,
                 destructive=True,
             ),
 
