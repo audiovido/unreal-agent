@@ -1,0 +1,13 @@
+{
+  "before": "assetlib/proof/product/task_53b856b9ba/capture_402524.png",
+  "after": "assetlib/proof/product/task_0a474294bd/capture_23cdb5.png",
+  "changed_frac": 0.0015,
+  "max_delta": 174,
+  "bbox": [
+    510,
+    24,
+    1772,
+    503
+  ],
+  "note": "removal-final frame vs add-final frame (Step9Guard visible)"
+}
