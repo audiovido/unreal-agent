@@ -71,6 +71,47 @@ def test_packaged_leases_cli(pkg):
     assert r.returncode == 0
 
 
+TASK_PATH_FILES = [
+    "core/universal_intent.py", "core/visual_acceptance.py",
+    "core/visual_loop.py", "core/visual_director.py",
+    "core/release_director.py", "core/unreal_fix_adapter.py",
+    "core/scene_locators.py", "core/mission.py",
+    "core/universal_planner.py", "core/capability_registry.py",
+    "core/tool_registry.py",
+    "tools/unreal/unreal_bridge.py", "tools/unreal/project_manager.py",
+    "tools/unreal/project_context.py", "tools/unreal/asset_intake.py",
+    "tools/visual/shot_quality.py",
+    "assetlib/reports/unreal_coder_release_missions.py",
+]
+
+
+def test_task_path_closure_packaged(pkg):
+    pkg_dir, _ = pkg
+    for rel in TASK_PATH_FILES:
+        assert (pkg_dir / rel).exists(), rel
+
+
+def test_task_path_closure_importable(pkg):
+    """The packaged layout must import the full real-task module closure
+    offline (no editor, no repo tree on the path)."""
+    pkg_dir, _ = pkg
+    code = (
+        "import core.product_core, core.universal_intent, "
+        "core.visual_acceptance, core.visual_loop, core.visual_director, "
+        "core.release_director, core.unreal_fix_adapter, core.scene_locators, "
+        "core.mission, core.universal_planner, core.capability_registry, "
+        "core.tool_registry, tools.unreal.unreal_bridge, "
+        "tools.unreal.project_manager, tools.unreal.project_context, "
+        "tools.unreal.asset_intake, tools.visual.shot_quality, "
+        "assetlib.reports.unreal_coder_release_missions, app.product_app; "
+        "assert 'unreal-agent-' in core.product_core.__file__; "
+        "print('TASK_CLOSURE_OK')")
+    r = subprocess.run([sys.executable, "-c", code], cwd=str(pkg_dir),
+                       capture_output=True, text=True, timeout=90)
+    assert r.returncode == 0, r.stderr
+    assert "TASK_CLOSURE_OK" in r.stdout
+
+
 def test_build_report_records_packager_evidence(pkg):
     _, report = pkg
     assert "native_exe" in report

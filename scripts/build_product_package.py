@@ -42,8 +42,21 @@ MODULES_CORE = [
     "app_config.py", "env_doctor.py", "service_lifecycle.py",
     "editor_lease.py", "first_run.py", "product_core.py",
     "config.py", "doctor.py", "observability.py", "project_safety.py",
+    # real-task runtime closure (Step-5/6/7 machinery the product task path
+    # executes: intent -> plan -> bridge -> capture -> evaluate -> fix):
+    "universal_intent.py", "visual_acceptance.py", "visual_loop.py",
+    "visual_director.py", "release_director.py", "unreal_fix_adapter.py",
+    "scene_locators.py", "vision_provider.py", "mission.py",
+    "universal_planner.py", "capability_registry.py", "tool_registry.py",
 ]
 MODULES_APP = ["product_app.py"]
+# tools/ and assetlib/ packages pulled in by the real-task path:
+MODULES_TOOLS_UNREAL = [
+    "unreal_bridge.py", "project_manager.py", "project_context.py",
+    "asset_intake.py",
+]
+MODULES_TOOLS_VISUAL = ["shot_quality.py"]
+ASSETLIB_REPORTS = ["unreal_coder_release_missions.py"]
 
 README = """Unreal Agent — product shell package
 ====================================
@@ -83,6 +96,9 @@ def build(out_dir: Path) -> Dict:
     (pkg / "core").mkdir()
     (pkg / "app").mkdir()
     (pkg / "config").mkdir()
+    (pkg / "tools" / "unreal").mkdir(parents=True)
+    (pkg / "tools" / "visual").mkdir(parents=True)
+    (pkg / "assetlib" / "reports").mkdir(parents=True)
 
     # entrypoint
     shutil.copy2(ROOT / "scripts" / "product_launcher.py",
@@ -103,6 +119,28 @@ def build(out_dir: Path) -> Dict:
             copied_app.append(f"app/{mod}")
     shutil.copy2(ROOT / "app" / "__init__.py", pkg / "app" / "__init__.py")
 
+    # real-task tool + assetlib closure (namespace packages; tools/visual
+    # keeps its repo __init__.py for parity)
+    copied_tools: List[str] = []
+    for rel_dir, files in ((("tools", "unreal"), MODULES_TOOLS_UNREAL),
+                           (("tools", "visual"), MODULES_TOOLS_VISUAL)):
+        for mod in files:
+            src = ROOT.joinpath(*rel_dir) / mod
+            if src.exists():
+                shutil.copy2(src, pkg.joinpath(*rel_dir) / mod)
+                copied_tools.append(f"/".join(rel_dir) + f"/{mod}")
+    tools_visual_init = ROOT / "tools" / "visual" / "__init__.py"
+    if tools_visual_init.exists():
+        shutil.copy2(tools_visual_init, pkg / "tools" / "visual" /
+                     "__init__.py")
+        copied_tools.append("tools/visual/__init__.py")
+    copied_assetlib: List[str] = []
+    for mod in ASSETLIB_REPORTS:
+        src = ROOT / "assetlib" / "reports" / mod
+        if src.exists():
+            shutil.copy2(src, pkg / "assetlib" / "reports" / mod)
+            copied_assetlib.append(f"assetlib/reports/{mod}")
+
     # UI resources + settings (settings.json has no secrets; kept for parity)
     for d in COPY_DIRS:
         shutil.copytree(ROOT / d, pkg / d,
@@ -120,7 +158,8 @@ def build(out_dir: Path) -> Dict:
         "name": f"unreal-agent-{version}", "version": version,
         "entrypoint": "product_launcher.py",
         "runtime": "python3 (project .venv)",
-        "files": sorted(copied_core + copied_app + COPY_DIRS +
+        "files": sorted(copied_core + copied_app + copied_tools +
+                        copied_assetlib + COPY_DIRS +
                         ["product_launcher.py", "config/settings.json"]),
         "built_at": now,
     }
