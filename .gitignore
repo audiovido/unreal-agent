@@ -25,6 +25,10 @@ __pycache__/
 memory/conversation.json
 ui/*.agentboard_backup
 
+# Native packaging outputs (generated — never committed)
+dist/
+build/
+
 # Local workspace / recovery artifacts (not product code)
 .freebuff/
 .tmp-browser/
