@@ -670,6 +670,19 @@ app.post("/api/chat/speak")(_speak.chat_speak)
 app.get("/api/chat/speak/status")(_speak.chat_speak_status)
 
 
+# ============================================================
+# UNREAL CODER — canonical single API (universal agent platform).
+# One POST /api/unreal-coder request interprets, plans, executes through
+# the EXISTING registry/executor, validates and reports. Routes live in
+# app/unreal_coder_api.py; registered here (composition root).
+# ============================================================
+from app.unreal_coder_api import register_unreal_coder_api
+register_unreal_coder_api(
+    app,
+    tool_registry=lambda: api.REGISTRY,
+)
+
+
 app.get("/api/proof/status")(_proof.proof_status)
 
 
