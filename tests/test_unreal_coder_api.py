@@ -29,6 +29,21 @@ def client():
 
 
 class TestUnrealCoderAPI:
+    def test_native_invisible_capture_is_not_visual_evidence(self):
+        """A PNG written from a hidden editor viewport cannot satisfy release QA."""
+        from app.unreal_coder_api import _default_visual_adapters
+
+        class Spec:
+            def func(self):
+                return {"result": {"ok": True, "path": "hidden.png",
+                                   "diagnostic": "OK|source=LevelViewport[1]|visible=0"}}
+
+        capture, _evaluate, _repair = _default_visual_adapters(
+            {"capture_unreal_viewport": Spec()})
+        evidence = capture()
+        assert evidence["ok"] is False
+        assert "not visible" in evidence["error"]
+
     def test_route_registered(self, client):
         response = client.get("/openapi.json")
         assert response.status_code == 200

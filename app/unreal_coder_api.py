@@ -33,17 +33,20 @@ from __future__ import annotations
 import json
 import time
 import uuid
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
 from core.capability_registry import build_capability_registry
+from core.config import redact
 from core.mission import (
     MissionEngine,
     MissionState,
     mission_response,
     resume_latest_mission,
 )
+from core.observability import MissionLogger, user_result_contract
 from core.universal_intent import expand_requirements, interpret_intent
 from core.universal_planner import build_universal_planner
 from tools.unreal.asset_intake import analyze_asset
@@ -150,7 +153,7 @@ def interpret_request(payload: Dict[str, Any]) -> Dict[str, Any]:
 # Router registration (called from app/served.py composition root)
 # --------------------------------------------------------------------------
 
-def _default_visual_adapters(tool_registry):
+def _default_visual_adapters(tool_registry, scene_locators=None):
     """Build visual-loop adapters from the LIVE registry and the existing
     deterministic visual acceptance machinery (core/visual_acceptance.py).
 
@@ -169,19 +172,39 @@ def _default_visual_adapters(tool_registry):
         payload = _tool_payload(raw) if isinstance(raw, dict) else {}
         inner = payload.get("result") if isinstance(
             payload.get("result"), dict) else payload
+        diagnostic = str((inner or {}).get("diagnostic") or "")
+        # Native capture can return a file while the editor viewport is
+        # hidden.  That file is diagnostic-only, never valid release proof.
+        native_invisible = (
+            "source=LevelViewport" in diagnostic
+            and "visible=0" in diagnostic
+        )
         return {
-            "ok": bool((inner or {}).get("ok")),
+            "ok": bool((inner or {}).get("ok")) and not native_invisible,
             "path": (inner or {}).get("path"),
             "tool": "capture_unreal_viewport",
+            "error": ("editor viewport was not visible" if native_invisible
+                      else None),
+            "diagnostic": diagnostic,
         }
 
     def evaluate(captured):
+        """Production visual review (Phase B): deterministic measurement plus
+        configured vision providers, with disagreement handling. Never raises;
+        provider failure degrades to deterministic-only."""
         from core.visual_acceptance import measure, score
+        from core import vision_provider
         path = (captured or {}).get("path")
-        metrics = measure(path or "")
+        locator_kw = {}
+        if scene_locators:
+            for key in ("subject_locator", "ui_locator"):
+                fn = scene_locators.get(key)
+                if fn is not None:
+                    locator_kw[key] = fn
+        metrics = measure(path or "", **locator_kw)
         if not metrics.ok:
             return {"score": 0.0, "defects": ["CAPTURE_UNREADABLE"],
-                    "metrics": {"ok": False}}
+                    "metrics": {"ok": False}, "review": {"ok": False}}
         s = score(metrics)
         defects: list = list(metrics.issues)
         # Deterministic defect mapping from the measured values.
@@ -191,14 +214,56 @@ def _default_visual_adapters(tool_registry):
             defects.append("BLACK_CLIPPING")
         if metrics.mean_luma < 40:
             defects.append("SUBJECT_TOO_DARK")
+        review = vision_provider.review_image(
+            path or "", providers=vision_provider.get_configured_providers(),
+            metrics=metrics, score=s)
+        # When a vision model contributed (and agreed), its defect vocabulary
+        # enriches the deterministic defect list; deterministic always wins
+        # on strong conflict (handled inside review_image).
+        for d in (review.get("defects") or []):
+            if d not in defects:
+                defects.append(d)
         return {"score": float(s.overall), "defects": defects,
                 "metrics": {"mean_luma": metrics.mean_luma,
                             "entropy": metrics.entropy,
-                            "technical_integrity": s.technical_integrity}}
+                            "technical_integrity": s.technical_integrity},
+                "review": review}
 
     def repair(defects):
+        """Apply a bounded, read-back-verified camera repair when safe.
+
+        The generic Visual Director is still the policy source, but policy
+        text is not evidence of a repair.  Only the camera label created by
+        the universal mission is touched here; other defects explicitly stop
+        for a different scene strategy rather than mutating unknown content.
+        """
         from core.visual_director import defect_to_action
-        return defect_to_action(defects[0] if defects else "")
+        defect = str(defects[0] if defects else "").split(":", 1)[0].upper()
+        action = defect_to_action(defect)
+        bridge = _resolve_live_bridge(registry)
+        if bridge is None:
+            return {"ok": False, "action": action,
+                    "error": "live Unreal bridge unavailable for repair"}
+        camera_label = "UA_Cam_Intro"
+        if defect == "CAMERA_ROLL":
+            camera = bridge.get_actor(camera_label)
+            payload = camera.get("result", camera) if isinstance(camera, dict) else {}
+            rotation = payload.get("rotation") if isinstance(payload, dict) else None
+            if not (isinstance(rotation, list) and len(rotation) == 3):
+                return {"ok": False, "action": action,
+                        "error": "mission camera read-back unavailable"}
+            changed = bridge.rotate_actor(camera_label,
+                                          [rotation[0], rotation[1], 0.0])
+            framed = bridge.frame_viewport_from_actor(camera_label)
+            return {"ok": bool(_bridge_ok(changed) and _bridge_ok(framed)),
+                    "action": action, "camera": camera_label,
+                    "change": changed, "readback": framed}
+        if defect in {"HEAD_CROPPED", "SUBJECT_TOO_LARGE"}:
+            framed = bridge.frame_viewport_from_actor(camera_label, 180.0)
+            return {"ok": bool(_bridge_ok(framed)), "action": action,
+                    "camera": camera_label, "readback": framed}
+        return {"ok": False, "action": action,
+                "error": "defect requires scene-specific repair; no unknown actors modified"}
 
     return capture, evaluate, repair
 
@@ -210,6 +275,7 @@ def register_unreal_coder_api(
     capture=None,
     evaluate=None,
     repair=None,
+    scene_locators=None,
 ):
     """Register POST /api/unreal-coder (+ status/resume) on the FastAPI app.
 
@@ -271,6 +337,12 @@ def register_unreal_coder_api(
         )
         planner = build_universal_planner(_tool_registry_value(tool_registry))
         intent_obj = interpret_intent(prompt)
+        # Keep the planner in sync with the public advanced quality override.
+        # Without this, the response intent can say "release" while the
+        # execution plan silently falls back to the prompt-derived tier.
+        if request.quality:
+            intent_obj.quality = str(request.quality).lower()
+            intent_obj.quality_source = "user"
         requirements_obj = expand_requirements(intent_obj)
         mission_plan = planner.build_plan(
             intent_obj, requirements_obj, None)
@@ -288,7 +360,8 @@ def register_unreal_coder_api(
         # comes from the deterministic adapters above.
         run_capture, run_evaluate, run_repair = (
             (capture, evaluate, repair) if capture is not None
-            else _default_visual_adapters(tool_registry))
+            else _default_visual_adapters(tool_registry,
+                                           scene_locators=scene_locators))
 
         def production_dispatch(step, _registry=_tool_registry_value(
                 tool_registry)):
@@ -304,15 +377,51 @@ def register_unreal_coder_api(
                 return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
             return {"ok": _tool_success(raw), "result": raw, "tool": tool}
 
+        # -- project safety guard (Phase C) ---------------------------------
+        # Every MUTATING step re-validates the live editor session: project
+        # identity, editor PID, active map, PIE state. Cross-project mutation
+        # is blocked with a structured WRONG_PROJECT error, never executed.
+        guard = None
+        mission_log = MissionLogger(state.mission_id)
+        try:
+            from core.project_safety import ProjectMutationGuard, guard_dispatch
+            bridge = _resolve_live_bridge(_tool_registry_value(tool_registry))
+            guard = ProjectMutationGuard(bridge=bridge)
+            identity = guard.capture_identity()
+            if identity.uproject_path:
+                mission_log.project = identity.to_dict()
+                dispatch_base = guard_dispatch(
+                    dispatch_bridge or production_dispatch, guard)
+            else:
+                # No live editor: dry-run/planning style missions still work;
+                # mutating steps will fail at dispatch with a bridge error.
+                dispatch_base = dispatch_bridge or production_dispatch
+                mission_log.warning(
+                    "no live editor session; project guard passive")
+        except Exception as guard_exc:
+            dispatch_base = dispatch_bridge or production_dispatch
+            mission_log.warning(
+                f"project guard unavailable: {type(guard_exc).__name__}")
+
         engine = build_mission_engine(
             _tool_registry_value(tool_registry),
-            dispatch=dispatch_bridge or production_dispatch,
+            dispatch=dispatch_base,
             capture=run_capture,
             evaluate=run_evaluate,
             repair=run_repair,
         )
         state = engine.run(state)
-        return mission_response(state)
+        mission_log.event(
+            "mission_finished", phase="validate", result=state.verdict or "",
+            detail={"completed": len(state.completed_step_ids)})
+        mission_log.save()
+        response = mission_response(state)
+        # Phase T: simple user contract alongside the machine envelope.
+        response["user_result"] = user_result_contract(state, mission_log)
+        response["mission_log"] = str(
+            (Path(__file__).resolve().parents[1] / "memory" / "mission_logs"
+             / f"{state.mission_id}.json"))
+        return response
 
     @app.get("/api/unreal-coder/capabilities")
     def unreal_coder_capabilities():
@@ -326,15 +435,49 @@ def register_unreal_coder_api(
             raise HTTPException(404, f"Unknown mission {mission_id}")
         return mission_response(state)
 
+    @app.get("/api/unreal-coder/doctor")
+    def unreal_coder_doctor():
+        """Structured PASS/WARN/FAIL setup report (Phase D)."""
+        from core import doctor as doctor_mod
+        report = doctor_mod.run_doctor()
+        return report
+
+    @app.get("/api/unreal-coder/session")
+    def unreal_coder_session():
+        """Live editor session identity (Phase C transparency)."""
+        from core.project_safety import active_session_identity
+        identity = active_session_identity(
+            _resolve_live_bridge(_tool_registry_value(tool_registry)))
+        if identity is None:
+            return {"ok": False, "message": "No live editor session."}
+        return {"ok": True, "session": identity.to_dict()}
+
     @app.post("/api/unreal-coder/resume")
     def unreal_coder_resume():
         latest = resume_latest_mission()
         if latest is None:
             return {"ok": False, "message": "No resumable mission checkpoint."}
+        run_capture, run_evaluate, run_repair = (
+            (capture, evaluate, repair) if capture is not None
+            else _default_visual_adapters(tool_registry,
+                                           scene_locators=scene_locators))
+        registry = _tool_registry_value(tool_registry)
+
+        def production_dispatch(step):
+            tool = step.get("preferred_tool")
+            spec = registry.get(tool)
+            if spec is None:
+                return {"ok": False, "error": f"Unknown tool {tool}"}
+            from app.api import call_tool_hard_timeout, _tool_success
+            try:
+                raw = call_tool_hard_timeout(spec, dict(step.get("parameters") or {}))
+            except Exception as exc:
+                return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+            return {"ok": _tool_success(raw), "result": raw, "tool": tool}
+
         engine = build_mission_engine(
-            _tool_registry_value(tool_registry),
-            dispatch=dispatch_bridge, capture=capture, evaluate=evaluate,
-            repair=repair)
+            registry, dispatch=dispatch_bridge or production_dispatch,
+            capture=run_capture, evaluate=run_evaluate, repair=run_repair)
         latest = engine.run(latest)
         return mission_response(latest)
 
@@ -344,3 +487,20 @@ def _tool_registry_value(tool_registry):
     if callable(tool_registry) and not isinstance(tool_registry, dict):
         return tool_registry()
     return tool_registry
+
+
+def _resolve_live_bridge(registry: Dict[str, Any]):
+    """Find the live UnrealBridge instance behind the tool registry."""
+    for spec in (registry or {}).values():
+        owner = getattr(getattr(spec, "func", None), "__self__", None)
+        if owner is not None and owner.__class__.__name__ == "UnrealBridge":
+            return owner
+    return None
+
+
+def _bridge_ok(result: Any) -> bool:
+    """Normalize the bridge envelope without treating transport success as work."""
+    if not isinstance(result, dict):
+        return False
+    payload = result.get("result") if isinstance(result.get("result"), dict) else result
+    return bool(isinstance(payload, dict) and payload.get("ok"))
