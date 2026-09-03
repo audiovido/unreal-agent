@@ -771,12 +771,14 @@ else:
         unreal.Vector({location[0]}, {location[1]}, {location[2]}),
         unreal.Rotator(pitch={rotation[0]}, yaw={rotation[1]}, roll={rotation[2]})
     )
+    mesh_loaded = None
     if actor is not None:
         actor.set_actor_scale3d(unreal.Vector({scale[0]}, {scale[1]}, {scale[2]}))
         if {actor_name!r}:
             actor.set_actor_label({actor_name!r})
         if {mesh_asset!r} and hasattr(actor, "static_mesh_component"):
             mesh = unreal.load_asset({mesh_asset!r})
+            mesh_loaded = mesh is not None
             if mesh is not None:
                 actor.static_mesh_component.set_static_mesh(mesh)
 
@@ -784,8 +786,14 @@ else:
         "ok": actor is not None,
         "name": actor.get_name() if actor else None,
         "label": actor.get_actor_label() if actor else None,
-        "class": actor.get_class().get_name() if actor else None
+        "class": actor.get_class().get_name() if actor else None,
+        "mesh_loaded": mesh_loaded,
+        "requested_mesh": {mesh_asset!r} or None,
     }}
+    if mesh_loaded is False:
+        __bridge_result__["warning"] = (
+            "Requested mesh asset not found: " + {mesh_asset!r}
+        )
 ''')
 
     def move_actor(self, actor_name: str, location):
