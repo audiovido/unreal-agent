@@ -150,6 +150,59 @@ def interpret_request(payload: Dict[str, Any]) -> Dict[str, Any]:
 # Router registration (called from app/served.py composition root)
 # --------------------------------------------------------------------------
 
+def _default_visual_adapters(tool_registry):
+    """Build visual-loop adapters from the LIVE registry and the existing
+    deterministic visual acceptance machinery (core/visual_acceptance.py).
+
+    capture:  the registered capture tool (real editor viewport screenshot)
+    evaluate: deterministic measurement + scoring -> {score, defects}
+    repair:   defect->action via the existing Visual Director mapping
+    """
+    registry = _tool_registry_value(tool_registry)
+    capture_spec = registry.get("capture_unreal_viewport")
+
+    def capture():
+        if capture_spec is None:
+            return {"ok": False, "error": "capture tool unavailable"}
+        raw = capture_spec.func()
+        from app.api import _tool_payload
+        payload = _tool_payload(raw) if isinstance(raw, dict) else {}
+        inner = payload.get("result") if isinstance(
+            payload.get("result"), dict) else payload
+        return {
+            "ok": bool((inner or {}).get("ok")),
+            "path": (inner or {}).get("path"),
+            "tool": "capture_unreal_viewport",
+        }
+
+    def evaluate(captured):
+        from core.visual_acceptance import measure, score
+        path = (captured or {}).get("path")
+        metrics = measure(path or "")
+        if not metrics.ok:
+            return {"score": 0.0, "defects": ["CAPTURE_UNREADABLE"],
+                    "metrics": {"ok": False}}
+        s = score(metrics)
+        defects: list = list(metrics.issues)
+        # Deterministic defect mapping from the measured values.
+        if metrics.pct_white > 0.10:
+            defects.append("WHITE_CLIPPING")
+        if metrics.pct_black > 0.30:
+            defects.append("BLACK_CLIPPING")
+        if metrics.mean_luma < 40:
+            defects.append("SUBJECT_TOO_DARK")
+        return {"score": float(s.overall), "defects": defects,
+                "metrics": {"mean_luma": metrics.mean_luma,
+                            "entropy": metrics.entropy,
+                            "technical_integrity": s.technical_integrity}}
+
+    def repair(defects):
+        from core.visual_director import defect_to_action
+        return defect_to_action(defects[0] if defects else "")
+
+    return capture, evaluate, repair
+
+
 def register_unreal_coder_api(
     app,
     tool_registry,
@@ -229,12 +282,34 @@ def register_unreal_coder_api(
             return mission_response(state)
 
         # -- execute (existing dispatcher) ---------------------------------
+        # Execute-mode missions run through the production dispatcher:
+        # capability-selected steps call real registered tools (the same
+        # hard-timeout machinery as /api/chat execute mode); visual evidence
+        # comes from the deterministic adapters above.
+        run_capture, run_evaluate, run_repair = (
+            (capture, evaluate, repair) if capture is not None
+            else _default_visual_adapters(tool_registry))
+
+        def production_dispatch(step, _registry=_tool_registry_value(
+                tool_registry)):
+            tool = step.get("preferred_tool")
+            spec = _registry.get(tool)
+            if spec is None:
+                return {"ok": False, "error": f"Unknown tool {tool}"}
+            args = dict(step.get("parameters") or {})
+            from app.api import call_tool_hard_timeout, _tool_success
+            try:
+                raw = call_tool_hard_timeout(spec, args)
+            except Exception as exc:
+                return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+            return {"ok": _tool_success(raw), "result": raw, "tool": tool}
+
         engine = build_mission_engine(
             _tool_registry_value(tool_registry),
-            dispatch=dispatch_bridge,
-            capture=capture,
-            evaluate=evaluate,
-            repair=repair,
+            dispatch=dispatch_bridge or production_dispatch,
+            capture=run_capture,
+            evaluate=run_evaluate,
+            repair=run_repair,
         )
         state = engine.run(state)
         return mission_response(state)
