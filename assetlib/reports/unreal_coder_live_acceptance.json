@@ -1,0 +1,117 @@
+{
+  "runner": "unreal_coder_live_acceptance",
+  "started_at": 1788397998.0314481,
+  "engine_version": "5.8.2-56702186+++UE5+Release-5.8",
+  "project": "ASSET_Showcase2",
+  "mission_id": "mission_live_c590ce1c",
+  "request": "Add a warm accent light and a small marker prop to the current scene, then capture proof of the result.",
+  "plan_summary": {
+    "selected_capabilities": [
+      "project_inspection",
+      "bridge_health",
+      "environment_composition",
+      "material_authoring",
+      "lighting_setup",
+      "visual_quality_gate"
+    ],
+    "visual_gate": {
+      "enabled": true,
+      "score_floor": 6.0,
+      "max_iterations": 3,
+      "policy": "capture -> measure -> repair highest-impact defect -> re-capture; stop on pass, stagnation, or budget"
+    },
+    "steps": [
+      {
+        "step_id": "resolve_project",
+        "tool": "inspect_project",
+        "phase": "INSPECT"
+      },
+      {
+        "step_id": "bridge_health",
+        "tool": "unreal_ping",
+        "phase": "INSPECT"
+      },
+      {
+        "step_id": "environment_composition_2",
+        "tool": "spawn_actor",
+        "phase": "EDIT"
+      },
+      {
+        "step_id": "material_authoring_2",
+        "tool": "spawn_actor",
+        "phase": "EDIT"
+      },
+      {
+        "step_id": "lighting_setup_2",
+        "tool": "spawn_actor",
+        "phase": "EDIT"
+      },
+      {
+        "step_id": "visual_gate",
+        "tool": "capture_unreal_viewport",
+        "phase": "VISUAL"
+      }
+    ]
+  },
+  "dispatched_tools": [
+    {
+      "tool": "inspect_project",
+      "step": "resolve_project"
+    },
+    {
+      "tool": "unreal_ping",
+      "step": "bridge_health"
+    },
+    {
+      "tool": "spawn_actor",
+      "step": "environment_composition_2"
+    },
+    {
+      "tool": "spawn_actor",
+      "step": "material_authoring_2"
+    },
+    {
+      "tool": "spawn_actor",
+      "step": "lighting_setup_2"
+    },
+    {
+      "tool": "capture_unreal_viewport",
+      "step": "visual_gate"
+    }
+  ],
+  "live_verifications": [
+    {
+      "check": "editor_identity",
+      "ok": true,
+      "engine": "5.8.2-56702186+++UE5+Release-5.8",
+      "project": "ASSET_Showcase2",
+      "world": "/Game/ShowcaseMap.ShowcaseMap"
+    },
+    {
+      "check": "actor_exists:UA_UC_Live_d70448",
+      "ok": true
+    },
+    {
+      "check": "actor_exists:UA_UC_Prop_1db97f",
+      "ok": true
+    },
+    {
+      "check": "evidence_capture_path_exists",
+      "ok": true,
+      "paths": [
+        "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+      "tool": "capture_unreal_viewport",
+      "ok": true
+    }
+  ],
+  "verdict": "PASS",
+  "why": "mission=PASS (All 6 steps verified; visual score 7.60 >= floor 6.00.); live read-back {'UA_UC_Live_d70448': True, 'UA_UC_Prop_1db97f': True}; capture_ok=True",
+  "finished_at": 1788398001.5717201,
+  "duration_s": 3.5
+}

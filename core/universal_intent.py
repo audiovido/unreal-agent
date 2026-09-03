@@ -29,7 +29,7 @@ from typing import Any, Dict, List
 DOMAIN_TRIGGERS: List[tuple] = [
     ("cinematics", ("sequencer", "cinematic", "level sequence", "camera cut",
                     "film", "trailer", "shot", "camera animation",
-                    "cutscene", "in-game movie")),
+                    "cutscene", "in-game movie", "intro")),
     ("ui", ("main menu", "umg", "widget", "hud", "settings menu", "pause menu",
             "character picker", "character selection", "login", "dashboard",
             "inventory screen", "ui", "user interface", "menu", "button",
@@ -120,6 +120,7 @@ EXECUTE_MARKERS = (
     "render", "record", "set up", "setup", "polish", "turn this", "turn my",
     "block out", "blockout", "greybox", "graybox", "delete", "remove",
     "clean up", "cleanup", "replace", "wire", "stage",
+    "i want", "i need", "give me",        # implicit action phrasing
 )
 
 DESTRUCTIVE_MARKERS = (
@@ -577,6 +578,15 @@ def expand_requirements(intent: UniversalIntent) -> RequirementSpec:
             "desc": "High visual quality threshold enforced by the Visual "
             "Director before acceptance", "ops": ["visual_gate"],
         })
+        # Photoreal/cinematic surfaces demand material + lighting craft even
+        # when the user did not name them (a photoreal menu is still lit and
+        # surfaced work). Seeded before requirement ordering below.
+        seeded = {r["id"] for r in spec.requirements}
+        for domain in ("materials", "lighting"):
+            for req in DOMAIN_REQUIREMENTS.get(domain, []):
+                if req["id"] not in seeded:
+                    spec.requirements.append(dict(req))
+                    seeded.add(req["id"])
     if intent.needs_networking:
         spec.requirements.append({
             "id": "net_review", "kind": "gameplay",
