@@ -680,6 +680,7 @@ from app.unreal_coder_api import register_unreal_coder_api
 register_unreal_coder_api(
     app,
     tool_registry=lambda: api.REGISTRY,
+    dispatch_bridge=None,   # execute mode uses api.new_execution (L3 plans)
 )
 
 

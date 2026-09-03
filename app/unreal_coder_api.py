@@ -150,12 +150,24 @@ def interpret_request(payload: Dict[str, Any]) -> Dict[str, Any]:
 # Router registration (called from app/served.py composition root)
 # --------------------------------------------------------------------------
 
-def register_unreal_coder_api(app, tool_registry, dispatch_bridge=None):
+def register_unreal_coder_api(
+    app,
+    tool_registry,
+    dispatch_bridge=None,
+    capture=None,
+    evaluate=None,
+    repair=None,
+):
     """Register POST /api/unreal-coder (+ status/resume) on the FastAPI app.
 
     dispatch_bridge: optional callable(step)->result wired to the existing
     executor. In production app/api.py passes its deterministic dispatcher so
     universal missions run on the same machinery as /api/chat execute mode.
+
+    capture/evaluate/repair: optional visual-loop adapters. When omitted,
+    sensible defaults are built from the live bridge capture tool and the
+    deterministic visual acceptance measurement, so execute-mode missions
+    produce real visual evidence without caller wiring.
     """
 
     @app.post("/api/unreal-coder")
@@ -204,8 +216,7 @@ def register_unreal_coder_api(app, tool_registry, dispatch_bridge=None):
             _tool_registry_value(tool_registry),
             dispatch=dispatch_bridge,
         )
-        planner = build_universal_planner(
-            _tool_registry_value(tool_registry))
+        planner = build_universal_planner(_tool_registry_value(tool_registry))
         intent_obj = interpret_intent(prompt)
         requirements_obj = expand_requirements(intent_obj)
         mission_plan = planner.build_plan(
@@ -218,6 +229,13 @@ def register_unreal_coder_api(app, tool_registry, dispatch_bridge=None):
             return mission_response(state)
 
         # -- execute (existing dispatcher) ---------------------------------
+        engine = build_mission_engine(
+            _tool_registry_value(tool_registry),
+            dispatch=dispatch_bridge,
+            capture=capture,
+            evaluate=evaluate,
+            repair=repair,
+        )
         state = engine.run(state)
         return mission_response(state)
 
@@ -239,7 +257,9 @@ def register_unreal_coder_api(app, tool_registry, dispatch_bridge=None):
         if latest is None:
             return {"ok": False, "message": "No resumable mission checkpoint."}
         engine = build_mission_engine(
-            _tool_registry_value(tool_registry), dispatch=dispatch_bridge)
+            _tool_registry_value(tool_registry),
+            dispatch=dispatch_bridge, capture=capture, evaluate=evaluate,
+            repair=repair)
         latest = engine.run(latest)
         return mission_response(latest)
 
