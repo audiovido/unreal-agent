@@ -162,5 +162,43 @@ class TestUniversalPlanner:
         assert plan.warnings  # visual gate availability warning
 
 
+class TestActorPlacementPlan:
+    """spawn -> get_actor read-back at the requested coordinates (regression:
+    planner dropped the requested location and never verified existence)."""
+
+    E2E_PROMPT = (
+        "Spawn a StaticMeshActor using a basic cube mesh at location "
+        "(200, 200, 50), then verify that the actor actually exists "
+        "in the Unreal level actor list."
+    )
+
+    def test_spawns_cube_at_requested_location(self, planner):
+        intent = interpret_intent(self.E2E_PROMPT)
+        spec = expand_requirements(intent)
+        plan = planner.build_plan(intent, spec, None)
+        spawns = [s for s in plan.steps
+                  if s.preferred_tool == "spawn_actor"]
+        assert len(spawns) == 1
+        p = spawns[0].parameters
+        assert p["class_name"] == "StaticMeshActor"
+        assert p["location"] == [200.0, 200.0, 50.0]
+        assert p["mesh_asset"] == "/Engine/BasicShapes/Cube.Cube"
+        assert p["actor_name"].startswith("UA_E2E_")
+
+    def test_plan_adds_independent_readback_verify(self, planner):
+        intent = interpret_intent(self.E2E_PROMPT)
+        spec = expand_requirements(intent)
+        plan = planner.build_plan(intent, spec, None)
+        verifies = [s for s in plan.steps
+                    if s.preferred_tool == "get_actor"]
+        assert len(verifies) == 1
+        spawns = [s for s in plan.steps
+                  if s.preferred_tool == "spawn_actor"]
+        assert verifies[0].parameters["actor_name"] == \
+            spawns[0].parameters["actor_name"]
+        assert verifies[0].depends_on == [spawns[0].step_id]
+        assert verifies[0].phase == "VALIDATE"
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))

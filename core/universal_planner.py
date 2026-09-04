@@ -38,6 +38,7 @@ QUALITY_VISUAL_FLOORS = {
 
 # Requirements kinds -> capabilities.
 KIND_TO_CAPABILITY = {
+    "actor": ["actor_staging"],
     "ui": ["umg_widget_authoring"],
     "sequencer": ["sequencer_cinematic", "camera_framing"],
     "environment": ["environment_composition"],
@@ -242,6 +243,18 @@ class UniversalPlanner:
             kind = req.get("kind")
             if kind in {"answer", "validation"}:
                 continue
+            if kind == "actor":
+                # Precise single-actor placement: spawn honoring an explicit
+                # location, then an independent get_actor read-back step so
+                # the mission only passes after the actor exists in the level
+                # actor list.
+                actor_steps = self._actor_placement_steps(
+                    plan.objective, skipped, prev_id,
+                    base=len(plan.steps) + len(work_steps))
+                work_steps.extend(actor_steps)
+                if actor_steps:
+                    prev_id = actor_steps[-1].step_id
+                continue
             if kind == "safety":
                 # Explicit checkpoint before destructive work.
                 work_steps.append(PlanStep(
@@ -331,6 +344,56 @@ class UniversalPlanner:
     def _primary_tool(self, capability_name: str) -> Optional[str]:
         cap = self._cap(capability_name)
         return cap.spec.tools[0] if cap and cap.spec.tools else None
+
+    def _actor_placement_steps(
+        self, objective: str, skipped: Dict[str, str],
+        prev_id: Optional[str], base: int,
+    ) -> List[PlanStep]:
+        """Spawn a StaticMeshActor cube + independent get_actor read-back.
+
+        Honours an explicit "location (x, y, z)" (or bare coordinate triple)
+        in the request and a "named X"/"called X" label; otherwise a unique
+        UA_ actor label is generated so the read-back is never ambiguous.
+        """
+        cap_name = "actor_staging"
+        chosen = self._select(cap_name, skipped)
+        if not chosen:
+            return []
+        spawn_tool = self._tool_for(chosen, "spawn_actor")
+        if not spawn_tool:
+            skipped[chosen] = "spawn_actor tool unavailable"
+            return []
+        text = str(objective or "")
+        m = re.search(r"(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,"
+                      r"\s*(-?\d+(?:\.\d+)?)", text)
+        location = [float(m.group(1)), float(m.group(2)),
+                    float(m.group(3))] if m else [0.0, 0.0, 0.0]
+        nm = re.search(r"(?:named|called)\s+([A-Za-z_][A-Za-z0-9_]*)", text)
+        label = (nm.group(1) if nm
+                 else f"UA_E2E_{uuid.uuid4().hex[:6]}")
+        spawn_id = f"actor_spawn_{base}"
+        steps = [PlanStep(
+            step_id=spawn_id, phase="EDIT", intent="actor_staging",
+            preferred_tool=spawn_tool, capability=chosen,
+            parameters={
+                "class_name": "StaticMeshActor",
+                "actor_name": label,
+                "location": location,
+                "scale": [1.0, 1.0, 1.0],
+                "mesh_asset": "/Engine/BasicShapes/Cube.Cube",
+            },
+            depends_on=[prev_id] if prev_id else [],
+            stop_condition=(f"StaticMeshActor {label} spawned at {location}"),
+        )]
+        if "get_actor" in self.capabilities._tool_registry:
+            steps.append(PlanStep(
+                step_id=f"actor_verify_{base}", phase="VALIDATE",
+                intent="actor_verify", preferred_tool="get_actor",
+                capability=chosen, parameters={"actor_name": label},
+                depends_on=[spawn_id],
+                stop_condition=(f"actor {label} found in the level actor list"),
+            ))
+        return steps
 
     def _phase_for(self, capability_name: str) -> str:
         cap = self._cap(capability_name)

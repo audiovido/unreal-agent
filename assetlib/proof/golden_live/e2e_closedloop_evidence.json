@@ -1,0 +1,94 @@
+{
+  "task": "AIVIDO_REAL_E2E_CLOSED_LOOP",
+  "status": "PASS",
+  "date": "2026-09-04T05:35:39",
+  "mission_id": "mission_65dfba323bdd",
+  "prompt": "Spawn a StaticMeshActor using a basic cube mesh at location (200, 200, 50), then verify that the actor actually exists in the Unreal level actor list.",
+  "backend": {
+    "api": "http://127.0.0.1:8765/api/unreal-coder",
+    "bridge": "127.0.0.1:6766"
+  },
+  "plan_steps": [
+    {
+      "step_id": "resolve_project",
+      "phase": "INSPECT",
+      "tool": "inspect_project",
+      "parameters": {},
+      "result_ok": true
+    },
+    {
+      "step_id": "bridge_health",
+      "phase": "INSPECT",
+      "tool": "unreal_ping",
+      "parameters": {},
+      "result_ok": true
+    },
+    {
+      "step_id": "actor_spawn_2",
+      "phase": "EDIT",
+      "tool": "spawn_actor",
+      "parameters": {
+        "class_name": "StaticMeshActor",
+        "actor_name": "UA_E2E_0fd2df",
+        "location": [
+          200.0,
+          200.0,
+          50.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "mesh_asset": "/Engine/BasicShapes/Cube.Cube"
+      },
+      "result_ok": true
+    },
+    {
+      "step_id": "actor_verify_2",
+      "phase": "VALIDATE",
+      "tool": "get_actor",
+      "parameters": {
+        "actor_name": "UA_E2E_0fd2df"
+      },
+      "result_ok": true
+    }
+  ],
+  "engine_internal_verification": {
+    "spawn_result": {
+      "ok": true,
+      "label": null,
+      "class": null,
+      "mesh_loaded": null
+    },
+    "readback_get_actor_result": {
+      "ok": true,
+      "label": null,
+      "class": null,
+      "location": null
+    }
+  },
+  "independent_unreal_readback": {
+    "actor_name": "StaticMeshActor_5",
+    "label": "UA_E2E_0fd2df",
+    "class": "StaticMeshActor",
+    "mesh": "Cube",
+    "location": [
+      200.0,
+      200.0,
+      50.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "source": "EditorLevelLibrary.get_all_level_actors()"
+  },
+  "evidence_frame": "assetlib\\proof\\golden_live\\e2e_actor_frame.png",
+  "requested_location": [
+    200,
+    200,
+    50
+  ]
+}

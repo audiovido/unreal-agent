@@ -123,5 +123,35 @@ class TestRequirementExpander:
         assert any(r["kind"] == "validation" for r in spec.requirements)
 
 
+class TestActorPlacementRouting:
+    """A precise single-actor placement request must route to execute and
+    expand to exactly one spawn + read-back requirement (regression: it was
+    classified as chat because 'spawn' was not an execute marker, and the
+    general-unreal fallback invented unrelated env polish steps)."""
+
+    E2E_PROMPT = (
+        "Spawn a StaticMeshActor using a basic cube mesh at location "
+        "(200, 200, 50), then verify that the actor actually exists "
+        "in the Unreal level actor list."
+    )
+
+    def test_spawn_actor_routes_to_execute(self):
+        intent = interpret_intent(self.E2E_PROMPT)
+        assert intent.mode == "execute"
+        assert not intent.read_only
+
+    def test_precise_actor_expands_single_spawn_requirement(self):
+        intent, spec = interpret_and_expand(self.E2E_PROMPT)
+        assert [(r["id"], r["kind"]) for r in spec.requirements] == [
+            ("actor_place", "actor")]
+
+    def test_generic_env_prompt_unaffected(self):
+        intent, spec = interpret_and_expand(
+            "Make my scene nicer with props and mood lighting")
+        kinds = [r["kind"] for r in spec.requirements]
+        assert "actor" not in kinds
+        assert "environment" in kinds or "lighting" in kinds
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))

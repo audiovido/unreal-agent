@@ -130,6 +130,10 @@ NEGATION_MARKERS = (
 EXECUTE_MARKERS = (
     "create", "make", "build", "generate", "add", "import", "fix", "improve",
     "optimize", "repair", "design", "construct", "convert", "prepare",
+    "spawn",
+    # ^ imperative Unreal verb (spawn an actor/cube/character): without it a
+    # concrete actor task like "Spawn a StaticMeshActor at (200, 200, 50)"
+    # fell through to chat instead of execute.
     "render", "record", "set up", "setup", "polish", "turn this", "turn my",
     "block out", "blockout", "greybox", "graybox", "delete", "remove",
     "clean up", "cleanup", "replace", "wire", "stage",
@@ -614,12 +618,39 @@ def expand_requirements(intent: UniversalIntent) -> RequirementSpec:
                     spec.requirements.append(dict(req))
                     seen.add(req["id"])
         if not spec.requirements:
-            for req in DOMAIN_REQUIREMENTS["environment_art"]:
-                spec.requirements.append(dict(req))
-            spec.defaults_applied.append(
-                "No domain requirements matched; applied the general "
-                "environment default with visual validation."
+            lowered = intent.prompt.lower()
+            precise_actor = (
+                _has(lowered, "actor", "staticmeshactor", "cube", "prop")
+                and (_has(lowered, "spawn", "place", "put", "create")
+                     or re.search(r"-?\d+[\s,]+-?\d+[\s,]+-?\d+", lowered))
             )
+            if precise_actor:
+                # A concrete single-actor placement request (e.g. "Spawn a
+                # StaticMeshActor using a basic cube mesh at location
+                # (200, 200, 50), then verify that the actor actually exists
+                # in the level actor list") is NOT a generic environment
+                # polish task: expand it to exactly one spawn + one actor
+                # read-back requirement.  The planner honors the requested
+                # coordinates and adds an independent get_actor verify step,
+                # so a PASS verdict is only produced after the actor exists.
+                spec.requirements.append({
+                    "id": "actor_place", "kind": "actor",
+                    "desc": "Spawn the requested StaticMeshActor at the "
+                            "given location and verify it exists in the "
+                            "level actor list",
+                    "ops": ["spawn", "verify"],
+                })
+                spec.defaults_applied.append(
+                    "Precise actor placement request: single spawn + "
+                    "read-back verification (no invented env polish)."
+                )
+            else:
+                for req in DOMAIN_REQUIREMENTS["environment_art"]:
+                    spec.requirements.append(dict(req))
+                spec.defaults_applied.append(
+                    "No domain requirements matched; applied the general "
+                    "environment default with visual validation."
+                )
 
     # Cross-domain expansion driven by intent flags.
     if intent.quality in {"production", "cinematic", "photoreal"}:
