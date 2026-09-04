@@ -64,6 +64,31 @@ def payload(result) -> dict:
     return {}
 
 
+def build_evidence(checks, session, widget_asset, evidence_paths,
+                   task="AIVIDO_UI_DETECTOR_GRADUATION_LIVE"):
+    """Pure verdict/evidence assembly (unit-testable, no bridge).
+
+    Returns (verdict, evidence_dict): verdict is PASS when no check FAILed
+    (BLOCKED sub-checks are recorded, not failures); evidence carries the
+    check list, blocked_notes and the evidence frame paths.
+    """
+    checks = list(checks)
+    failures = [r for r in checks if r.get("status") == "FAIL"]
+    blocked = [r for r in checks if r.get("status") == "BLOCKED"]
+    verdict = "PASS" if not failures else "FAIL"
+    evidence = {
+        "task": task,
+        "status": verdict,
+        "date": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "session": dict(session or {}),
+        "widget_asset": widget_asset,
+        "checks": checks,
+        "blocked_notes": [r["detail"] for r in blocked],
+        "evidence": dict(evidence_paths or {}),
+    }
+    return verdict, evidence
+
+
 def main() -> int:
     EVIDENCE_DIR = ROOT / "assetlib" / "proof" / "golden_live"
     EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
@@ -176,28 +201,21 @@ __bridge_result__ = {"ok": True}
               "PASS" if cleanup.get("ok") and gone.get("gone") else "FAIL",
               f"deleted={cleanup.get('deleted')} gone={gone.get('gone')}")
 
-        failures = [r for r in RESULTS if r["status"] == "FAIL"]
-        blocked = [r for r in RESULTS if r["status"] == "BLOCKED"]
-        verdict = "PASS" if not failures else "FAIL"
-        evidence = {
-            "task": "AIVIDO_UI_DETECTOR_GRADUATION_LIVE",
-            "status": verdict,
-            "date": time.strftime("%Y-%m-%dT%H:%M:%S"),
-            "session": {"project": project, "map": map_name,
-                        "engine": ping.get("engine", "?")},
-            "widget_asset": wpath,
-            "checks": RESULTS,
-            "blocked_notes": [r["detail"] for r in blocked],
-            "evidence": {
+        verdict, evidence = build_evidence(
+            RESULTS,
+            session={"project": project, "map": map_name,
+                     "engine": ping.get("engine", "?")},
+            widget_asset=wpath,
+            evidence_paths={
                 "editor_frame": str(EVIDENCE_DIR / "live_editor_frame.png"),
                 "pie_frame": str(EVIDENCE_DIR / "live_pie_frame.png"),
-            },
-        }
+            })
         (EVIDENCE_DIR / "live_ui_detector_graduation.json").write_text(
             json.dumps(evidence, indent=2), encoding="utf-8")
         print(json.dumps(evidence, indent=2))
         print(f"UI_DETECTOR_GRADUATION_LIVE: {verdict}"
-              + (f" ({len(blocked)} blocked sub-check)" if blocked else ""))
+              + (f" ({len(evidence['blocked_notes'])} blocked sub-check)"
+                 if evidence["blocked_notes"] else ""))
         return 0 if verdict == "PASS" else 1
     except Exception as exc:
         # best-effort cleanup on crash
