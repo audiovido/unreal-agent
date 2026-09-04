@@ -293,13 +293,108 @@ def find_subject_bbox(
             min(ry1, ry0 + (mxy + 1) * step + pad)]
 
 
+# --------------------------------------------------------------------------
+# UI panel detection
+# --------------------------------------------------------------------------
+
+# Structural-evidence thresholds for the generic UI detector.  Low luminance
+# is necessary but never sufficient: a dawn sky, a silhouette or a shadowed
+# region is dark yet is not a UI panel.  A real overlay panel is a slab that
+# is darker than the scene it covers (local contrast, so detection survives
+# time-of-day lighting changes) and carries crisp spatial boundaries: a sharp
+# top and bottom edge plus a sharp left edge or viewport-edge anchoring.
+# Smooth gradients (sky / light falloff) and silhouettes that fade into the
+# scene produce no crisp slab boundary and are never counted as UI.
+_UI_CTX_FRAC = 0.10           # scene-context band width (left of the ROI)
+_UI_LOCAL_MARGIN = 6          # luma a candidate must be darker than its context
+_UI_CRISP_STEP = 10           # luma jump a real panel boundary must show
+_UI_EDGE_SCAN_FRAC = 0.25     # how deep into the region the top/bottom scan looks
+_UI_SIDE_SCAN_FRAC = 0.10     # how far right of the left edge the side scan looks
+_UI_MIN_HEIGHT_FRAC = 0.15    # solid-block floor: reject speckle
+_UI_MIN_WIDTH_FRAC = 0.10
+_UI_ANCHOR_FRAC = 0.12        # right-side panels reach within this of the ROI edge
+_UI_INTERIOR_TOL = 10         # interior median must be dark, not mid-tone texture
+
+
+def _max_step_h(px, y, xa, xb) -> int:
+    """Max |luma(x+1)-luma(x)| along row ``y`` over x in [xa, xb)."""
+    xa = max(0, xa)
+    best = 0
+    for x in range(xa, xb):
+        best = max(best, abs(px[x, y] - px[x + 1, y]))
+    return best
+
+
+def _max_step_v(px, x, ya, yb) -> int:
+    """Max |luma(y+1)-luma(y)| down column ``x`` over y in [ya, yb)."""
+    ya = max(0, ya)
+    best = 0
+    for y in range(ya, yb):
+        best = max(best, abs(px[x, y] - px[x, y + 1]))
+    return best
+
+
+def _ui_panel_structure_gate(px, w, h, bbox, roi, dark_threshold) -> bool:
+    """Structural/spatial evidence that a dark region is a real UI panel.
+
+    A UI panel is a rectangular slab: it must show a crisp top boundary and a
+    crisp bottom boundary (a luminance step, not a fade), and on the sides it
+    must be anchored to the viewport/ROI edge or show a crisp inner boundary.
+    Its interior must actually be dark (not a mid-tone texture that merely
+    reads darker than its context).  Smooth sky gradients and silhouettes
+    that fade into the scene fail these checks regardless of how dark they
+    are.
+    """
+    x0, y0, x1, y1 = roi
+    bx0, by0, bx1, by1 = bbox
+    roi_w = max(1, x1 - x0)
+    roi_h = max(1, y1 - y0)
+    if (by1 - by0) < roi_h * _UI_MIN_HEIGHT_FRAC or \
+            (bx1 - bx0) < roi_w * _UI_MIN_WIDTH_FRAC:
+        return False
+    cx = (bx0 + bx1) // 2
+    cy = (by0 + by1) // 2
+    top = _max_step_v(px, cx, max(0, by0 - 4),
+                      min(h - 1, by0 + int(roi_h * _UI_EDGE_SCAN_FRAC)))
+    bottom = _max_step_v(px, cx, max(0, by1 - int(roi_h * _UI_EDGE_SCAN_FRAC)),
+                         min(h - 1, by1 + 4))
+    left = _max_step_h(px, cy, max(0, bx0 - 4),
+                       min(w - 1, bx0 + int(roi_w * _UI_SIDE_SCAN_FRAC)))
+    right = _max_step_h(px, cy, max(0, bx1 - int(roi_w * _UI_SIDE_SCAN_FRAC)),
+                        min(w - 1, bx1 + 4))
+    if top < _UI_CRISP_STEP or bottom < _UI_CRISP_STEP:
+        return False
+    # interior must be a genuinely dark slab, not busy mid-tone texture
+    pad = max(4, int(min(roi_w, roi_h) * 0.02))
+    if bx1 - bx0 > pad * 2 and by1 - by0 > pad * 2:
+        total = n = 0
+        for y in range(by0 + pad, by1 - pad, 4):
+            for x in range(bx0 + pad, bx1 - pad, 4):
+                total += px[x, y]
+                n += 1
+        if n and total / n > dark_threshold + _UI_INTERIOR_TOL:
+            return False
+    anchored = (x1 - bx1) <= roi_w * _UI_ANCHOR_FRAC
+    return left >= _UI_CRISP_STEP or anchored or right >= _UI_CRISP_STEP
+
+
 def find_ui_bbox(
     image: Image.Image,
     ui_roi: Optional[List[float]] = None,
     dark_threshold: int = 70,
 ) -> Optional[List[int]]:
-    """Detect a dark UI panel on the right side (fractions). Uses the region
-    that is consistently darker than the scene average."""
+    """Detect a dark UI panel on the right side (fractions).
+
+    Low luminance alone is never treated as UI.  Candidate rows/columns are
+    found against the scene the overlay would cover (the band immediately
+    left of the ROI — local contrast, so a genuine panel keeps being found
+    as lighting changes with time of day — combined with the absolute
+    ``dark_threshold``), and the resulting dark region must pass the
+    panel-structure gate: crisp top/bottom boundaries plus a crisp left
+    boundary or viewport-edge anchoring.  A dawn sky, a silhouette or a
+    shadowed region is dark but smooth or fading, so it fails the gate and
+    is never counted as a UI panel.
+    """
     w, h = image.size
     if ui_roi is None:
         ui_roi = [0.55, 0.05, 0.99, 0.97]
@@ -307,13 +402,24 @@ def find_ui_bbox(
     x1, y1 = int(w * ui_roi[2]), int(h * ui_roi[3])
     gray = image.convert("L")
     px = gray.load()
-    # scene baseline brightness from the left side
-    base_sum = base_n = 0
-    for y in range(0, h, 3):
-        for x in range(int(w * 0.02), int(w * 0.4), 3):
-            base_sum += px[x, y]
-            base_n += 1
-    baseline = base_sum / max(base_n, 1)
+    # scene-context band immediately left of the ROI
+    ctx_x0 = max(int(w * 0.02), x0 - int(w * _UI_CTX_FRAC))
+    ctx_x1 = x0
+
+    def _row_cut(y: int) -> float:
+        s = n = 0
+        for x in range(ctx_x0, ctx_x1, 2):
+            s += px[x, y]
+            n += 1
+        return max(dark_threshold, s / max(n, 1) - _UI_LOCAL_MARGIN)
+
+    def _col_cut(x: int) -> float:
+        s = n = 0
+        for y in range(y0, y1, 2):
+            s += px[x, y]
+            n += 1
+        return max(dark_threshold, s / max(n, 1) - _UI_LOCAL_MARGIN)
+
     xs, ys = [], []
     for y in range(y0, y1, 2):
         row_sum = 0
@@ -321,8 +427,7 @@ def find_ui_bbox(
         for x in range(x0, x1, 2):
             row_sum += px[x, y]
             row_n += 1
-        row_mean = row_sum / max(row_n, 1)
-        if row_mean < min(baseline - 18, dark_threshold):
+        if row_sum / max(row_n, 1) < _row_cut(y):
             ys.append(y)
     for x in range(x0, x1, 2):
         col_sum = 0
@@ -330,12 +435,15 @@ def find_ui_bbox(
         for y in range(y0, y1, 2):
             col_sum += px[x, y]
             col_n += 1
-        col_mean = col_sum / max(col_n, 1)
-        if col_mean < min(baseline - 18, dark_threshold):
+        if col_sum / max(col_n, 1) < _col_cut(x):
             xs.append(x)
     if not xs or not ys:
         return None
-    return [min(xs), min(ys), max(xs), max(ys)]
+    bbox = [min(xs), min(ys), max(xs), max(ys)]
+    if not _ui_panel_structure_gate(px, w, h, bbox,
+                                    (x0, y0, x1, y1), dark_threshold):
+        return None
+    return bbox
 
 
 def detect_camera_roll(image: Image.Image, threshold_deg: float = 4.0) -> float:
