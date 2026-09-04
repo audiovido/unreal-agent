@@ -222,6 +222,76 @@ def _engine(dispatch=None, capture=None, evaluate=None, repair=None):
     )
 
 
+class TestDiagnosticMission:
+    """Regression: status/health diagnostic missions must execute real
+    read-only probes and emit evidence; they can never finish as a verified
+    PASS from 0 executed steps / no evidence (the ClickUp blocker)."""
+
+    PROMPT = (
+        "Check the Aivido backend health and the Unreal bridge readiness "
+        "as a status-only diagnostic. Run real probes and only PASS when "
+        "both explicitly report READY."
+    )
+
+    @staticmethod
+    def _diag_engine(dispatch=None):
+        from core.capability_registry import build_capability_registry
+        tools = {"inspect_project": object(), "unreal_ping": object(),
+                 "unreal_coder_doctor": object(),
+                 "capture_unreal_viewport": object(), "spawn_actor": object(),
+                 "save_level": object(), "create_widget_blueprint": object(),
+                 "add_text_widget": object()}
+        caps = build_capability_registry(tools)
+        return MissionEngine(
+            tool_registry=tools, capabilities=caps,
+            dispatch=dispatch or _fake_dispatch_ok,
+            capture=lambda: {"path": "x.png"},
+            evaluate=lambda _: {"score": 9.0, "defects": []},
+        )
+
+    def test_status_mission_executes_probes_and_passes_with_evidence(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.setattr(mission_mod, "CHECKPOINT_DIR", tmp_path / "cp")
+        engine = self._diag_engine()
+        state = engine.start_mission(self.PROMPT)
+        state = engine.interpret(state)
+        state = engine.plan(state)
+        result = engine.run(state)
+        assert result.completed_step_ids            # > 0 executed steps
+        tools = {s["preferred_tool"] for s in result.plan["steps"]}
+        assert "unreal_ping" in tools
+        assert "unreal_coder_doctor" in tools
+        assert result.verdict == "PASS"
+        assert result.status == "complete"
+        assert result.evidence                       # non-empty real evidence
+
+    def test_status_mission_fails_when_probe_does_not_pass(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.setattr(mission_mod, "CHECKPOINT_DIR", tmp_path / "cp")
+        engine = self._diag_engine(dispatch=_fake_dispatch_fail)
+        state = engine.start_mission(self.PROMPT)
+        state = engine.interpret(state)
+        state = engine.plan(state)
+        result = engine.run(state)
+        # A down bridge must yield an honest FAIL, never a fabricated PASS.
+        assert result.verdict == "FAIL"
+
+    def test_zero_step_diagnostic_mission_never_passes(
+        self, tmp_path, monkeypatch
+    ): 
+        monkeypatch.setattr(mission_mod, "CHECKPOINT_DIR", tmp_path / "cp")
+        engine = self._diag_engine()
+        state = engine.start_mission(self.PROMPT)
+        state = engine.interpret(state)
+        state = engine.plan(state)
+        # Simulate the historical 0-step chat collapse reaching execution.
+        state.plan["steps"] = []
+        result = engine.run(state)
+        assert result.verdict != "PASS"
+
+
 class TestMissionEngine:
     def test_full_mission_pass(self, tmp_path, monkeypatch):
         monkeypatch.setattr(mission_mod, "CHECKPOINT_DIR",

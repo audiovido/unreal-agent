@@ -400,19 +400,38 @@ class MissionEngine:
         floor = (state.plan.get("visual_gate") or {}).get("score_floor", 6.0)
         score = float(visual.get("score", 0.0))
         gate_needed = bool((state.plan.get("visual_gate") or {}).get("enabled"))
+        diagnostic = bool((state.intent or {}).get("diagnostic"))
+        if diagnostic:
+            # Diagnostics only PASS with real probe evidence;
+            # get_evidence must never come back empty for them.
+            self._emit_diagnostic_evidence(state)
 
         if state.blockers:
             state.status = "blocked"
             state.verdict = "BLOCKED"
             state.why = "; ".join(state.blockers)
+        elif diagnostic:
+            diagnosis = self._diagnostic_verdict(state, technical_ok)
+            state.status = diagnosis["status"]
+            state.verdict = diagnosis["verdict"]
+            state.why = diagnosis["why"]
         elif technical_ok and (not gate_needed or score >= floor):
-            state.status = "complete"
-            state.verdict = "PASS"
-            state.why = (
-                f"All {len(state.completed_step_ids)} steps verified; visual "
-                f"score {score:.2f} >= floor {floor:.2f}."
-                if gate_needed else
-                f"All {len(state.completed_step_ids)} steps verified.")
+            if not state.completed_step_ids:
+                # 0 executed steps + no work can never become verified PASS
+                # (e.g. an empty chat-mode plan that reached execution).
+                state.status = "failed"
+                state.verdict = "FAIL"
+                state.why = (
+                    "Mission executed 0 steps; PASS requires real verified "
+                    "work (0-step empty-plan PASS blocked).")
+            else:
+                state.status = "complete"
+                state.verdict = "PASS"
+                state.why = (
+                    f"All {len(state.completed_step_ids)} steps verified; visual "
+                    f"score {score:.2f} >= floor {floor:.2f}."
+                    if gate_needed else
+                    f"All {len(state.completed_step_ids)} steps verified.")
         elif technical_ok and gate_needed:
             # A visual rejection is deliberately resumable: technical work is
             # preserved while a later repaired capture can be revalidated.
@@ -438,6 +457,91 @@ class MissionEngine:
             not in {"VISUAL", "ANSWER"}
         ]
         return all(sid in set(state.completed_step_ids) for sid in required)
+
+    def _emit_diagnostic_evidence(self, state: MissionState) -> None:
+        """Append one real evidence entry per completed diagnostic probe.
+
+        A status/health mission must never finish with empty evidence: every
+        INSPECT probe that actually executed contributes its real result (and
+        a real report path when the tool wrote one) to `state.evidence`, so
+        the gateway's get_evidence returns non-empty, real evidence.
+        """
+        steps = state.plan.get("steps") or []
+        completed = set(state.completed_step_ids)
+        existing = {
+            ev.get("step_id")
+            for ev in state.evidence
+            if ev.get("kind") == "diagnostic_probe"
+        }
+        for step in steps:
+            sid = step.get("step_id")
+            if sid in existing or sid not in completed:
+                continue
+            if str(step.get("phase", "")).upper() != "INSPECT":
+                continue
+            result = state.step_results.get(sid) or {}
+            inner = (result.get("result")
+                     if isinstance(result.get("result"), dict) else {})
+            entry = {
+                "kind": "diagnostic_probe",
+                "step_id": sid,
+                "probe": step.get("intent"),
+                "tool": step.get("preferred_tool"),
+                "ok": bool(result.get("ok") or inner.get("ok")),
+                "detail": str(result.get("error")
+                              or inner.get("error") or "")[:400],
+            }
+            path = (result.get("path") or result.get("resource_path")
+                    or inner.get("path") or inner.get("resource_path"))
+            if path:
+                entry["path"] = str(path)
+            state.evidence.append(entry)
+
+    def _diagnostic_verdict(
+        self, state: MissionState, technical_ok: bool,
+    ) -> Dict[str, str]:
+        """Diagnostic missions PASS only after real probes ran AND passed.
+
+        Enforces the invariant that a status/health mission can never report
+        verified PASS from 0 executed steps / no evidence: the backend health
+        probe and the Unreal bridge readiness probe must both be planned,
+        executed and pass, the technical gate must hold, and evidence must
+        exist.
+        """
+        steps = state.plan.get("steps") or []
+        results = state.step_results
+        problems: List[str] = []
+        probe_steps = [
+            s for s in steps
+            if s.get("intent") in ("backend_health", "bridge_health")
+        ]
+        if len(probe_steps) < 2:
+            problems.append(
+                "required backend/bridge probes were not planned")
+        for step in probe_steps:
+            res = results.get(step.get("step_id")) or {}
+            if not res.get("ok"):
+                problems.append(
+                    f"{step.get('intent')} probe did not pass: "
+                    f"{str(res.get('error') or '')[:160]}")
+        if not technical_ok:
+            problems.append(
+                "not all planned diagnostic steps were verified")
+        if not state.evidence:
+            problems.append("no diagnostic evidence was emitted")
+        if problems:
+            return {
+                "status": "failed", "verdict": "FAIL",
+                "why": "Diagnostic verification incomplete: "
+                        + "; ".join(problems),
+            }
+        return {
+            "status": "complete", "verdict": "PASS",
+            "why": (
+                "Backend and Unreal bridge probes executed and passed "
+                f"({len(state.completed_step_ids)} steps) with real "
+                f"evidence ({len(state.evidence)} item(s))."),
+        }
 
     def _visual_loop(self, state: MissionState) -> Dict[str, Any]:
         """Bounded EXECUTE->CAPTURE->EVALUATE->REPAIR loop via injected

@@ -119,6 +119,31 @@ READ_ONLY_MARKERS = (
     "how many", "check the current", "check if", "is the bridge",
 )
 
+# Status/health DIAGNOSTIC missions are NOT chat: they must run real
+# read-only verification probes through the pipeline (backend health + Unreal
+# bridge readiness) and emit evidence, never answer with a 0-step "PASS".
+# These markers are specific to system/bridge/pipeline readiness checks so
+# ordinary "what is X" questions stay chat.
+DIAGNOSTIC_MARKERS = (
+    "health check", "check health", "health of", "health probe",
+    "backend health", "bridge health", "system health", "pipeline health",
+    "service health", "is healthy", "are healthy",
+    "diagnostic", "diagnose",
+    "readiness", "ready check", "readiness check", "is ready",
+    "report ready", "reports ready",
+    "is the bridge", "is the backend", "is the pipeline",
+    "backend ready", "bridge ready", "unreal bridge ready",
+    "bridge status", "backend status", "status of the backend",
+    "status of the bridge", "status of the pipeline",
+    "check the backend", "check the bridge", "check backend",
+    "check bridge", "verify the backend", "verify the bridge",
+    "verify backend", "verify bridge", "check whether the backend",
+    "check whether the bridge", "check if the backend",
+    "check if the bridge", "probe the backend", "probe the bridge",
+    "backend probe", "bridge probe", "run a health", "mcp status",
+    "status only", "status-only",
+)
+
 # Negation markers: when a domain trigger word appears only after one of
 # these, the user EXCLUDED that scope ("don't touch gameplay").
 NEGATION_MARKERS = (
@@ -180,6 +205,8 @@ class UniversalIntent:
     destructive: bool = False
     read_only: bool = False
     mixed: bool = False                   # e.g. UI + cinematic + materials
+    diagnostic: bool = False              # status/health check: run REAL
+                                          # read-only probes (never chat)
     warnings: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -203,6 +230,7 @@ class UniversalIntent:
             "destructive": self.destructive,
             "read_only": self.read_only,
             "mixed": self.mixed,
+            "diagnostic": self.diagnostic,
             "warnings": list(self.warnings),
         }
 
@@ -318,7 +346,18 @@ def interpret_intent(prompt: str) -> UniversalIntent:
     intent = UniversalIntent(prompt=text)
 
     # ---- mode -----------------------------------------------------------
-    if _has(lowered, *READ_ONLY_MARKERS) and not _has(
+    if _has(lowered, *DIAGNOSTIC_MARKERS):
+        # Status/health diagnostics are READ-ONLY but must EXECUTE real
+        # probes: planning/answering chat style previously produced
+        # "complete/PASS with 0 executed steps and no evidence".
+        intent.mode = "execute"
+        intent.read_only = True
+        intent.diagnostic = True
+        intent.warnings.append(
+            "Diagnostic request: planned as read-only health probes "
+            "(backend + Unreal bridge) with real evidence, not chat."
+        )
+    elif _has(lowered, *READ_ONLY_MARKERS) and not _has(
         lowered, *EXECUTE_MARKERS
     ):
         intent.mode = "chat"
@@ -404,8 +443,9 @@ def interpret_intent(prompt: str) -> UniversalIntent:
             "Request contains destructive markers; the planner will require "
             "explicit backup/checkpoint steps before any deletion."
         )
-    if intent.mode == "execute" and intent.read_only:
-        intent.mode = "execute"
+    if intent.mode == "execute" and intent.read_only\
+            and not intent.diagnostic:
+        # Diagnostics intentionally stay read_only while executing probes.
         intent.read_only = False
     return intent
 
@@ -596,6 +636,24 @@ def expand_requirements(intent: UniversalIntent) -> RequirementSpec:
             "desc": "Produce a direct answer/plan for the request",
             "ops": ["answer"],
         })
+        return spec
+
+    if intent.diagnostic:
+        # Diagnostic status/health checks are read-only by design: plan only
+        # the real verification probes (backend + Unreal bridge). Never
+        # expand into the generic environment-polish default, which would
+        # mutate the scene.
+        spec.requirements.append({
+            "id": "diagnostic_probe", "kind": "diagnostic",
+            "desc": "Run read-only backend health and Unreal bridge "
+                    "readiness probes through the real pipeline and emit "
+                    "evidence for each result",
+            "ops": ["probe", "verify"],
+        })
+        spec.defaults_applied.append(
+            "Diagnostic request expanded to read-only backend + bridge "
+            "probes only (no scene mutation)."
+        )
         return spec
 
     seen = set()

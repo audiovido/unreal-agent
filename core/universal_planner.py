@@ -234,6 +234,27 @@ class UniversalPlanner:
                 stop_condition="bridge responds; wrong project is a "
                                "structured blocker",
             ))
+        if intent.diagnostic:
+            # Status/health missions MUST probe the Aivido backend as a real
+            # registered-tool step (never a 0-step "answer" plan). The
+            # bridge_health probe above covers Unreal readiness; this step
+            # covers backend readiness and writes evidence.
+            backend = self._select("backend_health", skipped)
+            if backend:
+                plan.selected_capabilities.append(backend)
+                tool = self._tool_for(backend, "unreal_coder_doctor")
+                if tool:
+                    ground_steps.append(PlanStep(
+                        step_id="backend_health", phase="INSPECT",
+                        intent="backend_health", preferred_tool=tool,
+                        capability=backend,
+                        depends_on=([ground_steps[-1].step_id]
+                                    if ground_steps else []),
+                        stop_condition="backend doctor probe passes with "
+                                       "real evidence report",
+                    ))
+                else:
+                    skipped[backend] = "unreal_coder_doctor tool unavailable"
         plan.steps.extend(ground_steps)
 
         # ---- Phase 1..n: capability-driven work --------------------------

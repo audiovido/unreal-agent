@@ -162,6 +162,37 @@ class TestUniversalPlanner:
         assert plan.warnings  # visual gate availability warning
 
 
+class TestStatusDiagnosticPlan:
+    """Regression: a status/health diagnostic mission must be EXECUTED as
+    real read-only probes, never planned as a 0-step chat "answer" that
+    used to return complete/PASS with 0 executed steps and no evidence."""
+
+    PROMPT = (
+        "Check the Aivido backend health and the Unreal bridge readiness "
+        "as a status-only diagnostic. Run real probes and only PASS when "
+        "both explicitly report READY."
+    )
+
+    def test_status_mission_is_executed_not_chat(self, planner):
+        intent = interpret_intent(self.PROMPT)
+        assert intent.mode == "execute"
+        assert intent.diagnostic is True
+        assert intent.read_only is True
+
+    def test_status_plan_has_real_probe_steps(self, planner):
+        intent = interpret_intent(self.PROMPT)
+        spec = expand_requirements(intent)
+        plan = planner.build_plan(intent, spec, None)
+        steps = plan.normalized_steps()
+        # Never an empty 0-step plan (the historical fake-PASS shape).
+        assert steps
+        tools = [s["preferred_tool"] for s in steps]
+        assert "unreal_ping" in tools            # Unreal bridge readiness probe
+        assert "unreal_coder_doctor" in tools    # Aivido backend health probe
+        assert all(s["phase"] == "INSPECT" for s in steps)
+        assert plan.phases[0]["phase"] != "ANSWER"
+
+
 class TestActorPlacementPlan:
     """spawn -> get_actor read-back at the requested coordinates (regression:
     planner dropped the requested location and never verified existence)."""

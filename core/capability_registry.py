@@ -99,6 +99,14 @@ CAPABILITY_CATALOG: List[CapabilitySpec] = [
         mutates_project=False, recovery=RECOVERY_BRIDGE,
     ),
     CapabilitySpec(
+        name="backend_health", domain="general_unreal",
+        description="Probe the Aivido backend health (python env, config, "
+                    "API boot, writable dirs) read-only via the canonical "
+                    "doctor and emit a real evidence report.",
+        tools=["unreal_coder_doctor"], mutates_project=False,
+        requires_editor=False, recovery=RECOVERY_NONE,
+    ),
+    CapabilitySpec(
         name="level_inspection", domain="level_design",
         description="Inspect the open level's actors and state.",
         tools=["list_level_actors"], optional_tools=["get_current_level"],

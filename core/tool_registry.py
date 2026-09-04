@@ -1,6 +1,12 @@
 import inspect
+import json
+import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable, Dict, Any, List
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 @dataclass
@@ -10,6 +16,50 @@ class ToolSpec:
     args: Dict[str, str]
     func: Callable
     destructive: bool = False
+
+
+def _unreal_coder_doctor_probe():
+    """Read-only Aivido backend health probe (canonical doctor, Phase D).
+
+    Runs `core.doctor.run_doctor()` — the same deterministic checks behind
+    GET /api/unreal-coder/doctor — and returns an ok/not-ok verdict for the
+    BACKEND-critical checks only (python env, config, API boot, writable
+    dirs, secrets hygiene). Unreal editor/bridge/Ollama/Blender findings are
+    reported but probed by their own dedicated steps, so one optional system
+    (e.g. a closed editor) can never fail the backend-READY probe.
+
+    Writes the full report to memory/diagnostics/<ts>.json so the mission
+    has a real, inspectable evidence artifact (path returned for the
+    gateway's get_evidence).
+    """
+    from core.doctor import run_doctor
+    report = run_doctor()
+    backend_critical = (
+        lambda name: name in ("python_version", "config_file", "api_boot",
+                              "secrets_not_in_config_file")
+        or name.startswith("python:") or name.startswith("writable:")
+    )
+    failures = [
+        {"name": c.get("name"), "detail": c.get("detail")}
+        for c in (report.get("checks") or [])
+        if c.get("status") == "FAIL" and backend_critical(str(c.get("name")))
+    ]
+    ok = not failures
+    out_dir = ROOT / "memory" / "diagnostics"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"backend_doctor_{int(time.time())}.json"
+    path.write_text(json.dumps(report, indent=2, default=str),
+                    encoding="utf-8")
+    return {
+        "ok": ok,
+        "path": str(path),
+        "backend_ready": bool(ok),
+        "overall": report.get("overall"),
+        "summary": report.get("summary"),
+        "failures": failures,
+        "note": "backend-critical doctor checks only; bridge readiness is "
+                "a separate unreal_ping probe",
+    }
 
 
 def build_registry(
@@ -96,6 +146,19 @@ def build_registry(
             description="Check Unreal Engine installation and editor availability.",
             args={},
             func=unreal_status,
+        ),
+
+        "unreal_coder_doctor": ToolSpec(
+            name="unreal_coder_doctor",
+            description=(
+                "Run the canonical Aivido backend health doctor (read-only): "
+                "python deps, config file, API boot, writable dirs. Returns "
+                "the backend-READY verdict and writes a real report file used "
+                "as mission evidence. Unreal editor/bridge readiness is a "
+                "separate probe (unreal_ping)."
+            ),
+            args={},
+            func=_unreal_coder_doctor_probe,
         ),
     }
 
