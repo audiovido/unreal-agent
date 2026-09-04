@@ -26,7 +26,42 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from core.visual_acceptance import SCORE_CATEGORIES, measure, score
-from tests.test_visual_acceptance_synth import H, W, _save, framed_subject_img
+
+# Hermetic synthetic-scene helpers (kept local so this suite is fully
+# self-contained at HEAD — it must not depend on any untracked module).
+W, H = 800, 450
+
+
+def _noise(draw, box, base, amp, seed):
+    r2 = random.Random(seed)
+    for y in range(box[1], box[3]):
+        for x in range(box[0], box[2]):
+            v = max(0, min(255, base + r2.randint(-amp, amp)))
+            draw.point((x, y), fill=(v, v, v))
+
+
+def _subject(img, cx, cy, r, base, amp, seed):
+    """Textured circular subject centred at (cx, cy) with radius r."""
+    d = ImageDraw.Draw(img)
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(base, base, base))
+    _noise(d, [cx - r + 5, cy - r + 5, cx + r - 5, cy + r - 5], base, amp, seed)
+    return d
+
+
+def _save(tmp_path, name, img):
+    p = tmp_path / f"{name}.png"
+    img.save(str(p))
+    return str(p)
+
+
+def framed_subject_img():
+    """Textured darker subject mid-frame on a flat mid-grey background. The
+    subject's top is far below the frame margin — never HEAD_CROPPED."""
+    img = Image.new("RGB", (W, H), (0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, 0, W, H], fill=(150, 150, 150))
+    _subject(img, W // 2, int(H * 0.55), int(H * 0.36), 90, 16, 11)
+    return img
 
 # Non-UI actor-task scope (must mirror product_core.ACTOR_TASK_CATEGORIES).
 ACTOR_TASK_CATEGORIES = ["composition", "subject_framing", "lighting",
@@ -42,15 +77,21 @@ def _clean_scene_no_ui(tmp_path, name="scene_plain") -> str:
 
 
 def _clean_scene_with_ui_panel(tmp_path, name="scene_ui") -> str:
-    """The same clean scene PLUS a genuine crisp dark UI panel on the right
-    band (dark slab, bright text rows) — a real UI-overlay composition."""
-    img = framed_subject_img()
+    """A clean, well-lit scene PLUS a genuine crisp dark UI panel on the
+    right band (dark slab, bright text rows) — a real UI-overlay
+    composition.  The subject sits LEFT of the slab so the panel keeps a
+    crisp unoccluded edge — detectable by the committed luminance detector
+    AND the structural gate (interior stays dark with sparse text rows)."""
+    img = Image.new("RGB", (W, H), (0, 0, 0))
     d = ImageDraw.Draw(img)
-    x0, x1 = int(W * 0.80), int(W * 0.965)
-    y0, y1 = int(H * 0.08), int(H * 0.72)
+    d.rectangle([0, 0, W, H], fill=(150, 150, 150))
+    _subject(img, int(W * 0.32), int(H * 0.55), int(H * 0.36), 90, 16, 11)
+    d = ImageDraw.Draw(img)
+    x0, x1 = int(W * 0.55), int(W * 0.99)
+    y0, y1 = int(H * 0.08), int(H * 0.92)
     d.rectangle([x0, y0, x1, y1], fill=(26, 26, 30))
-    for yy in range(y0 + int(H * 0.05), y1, int(H * 0.09)):
-        d.rectangle([x0 + 12, yy, x1 - 12, yy + int(H * 0.022)],
+    for yy in range(y0 + int(H * 0.05), y1, int(H * 0.20)):
+        d.rectangle([x0 + 12, yy, x1 - 12, yy + int(H * 0.02)],
                     fill=(210, 214, 220))
     return _save(tmp_path, name, img)
 
