@@ -31,10 +31,11 @@ returns the canonical response envelope from core/mission.mission_response.
 from __future__ import annotations
 
 import json
+import threading
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -50,6 +51,14 @@ from core.observability import MissionLogger, user_result_contract
 from core.universal_intent import expand_requirements, interpret_intent
 from core.universal_planner import build_universal_planner
 from tools.unreal.asset_intake import analyze_asset
+
+# --------------------------------------------------------------------------
+# Async mission registry (lifecycle metadata only; real state lives in the
+# durable MissionState checkpoints under memory/checkpoints/unreal_coder/)
+# --------------------------------------------------------------------------
+
+_ASYNC_RUNS: Dict[str, Dict[str, Any]] = {}
+
 
 # --------------------------------------------------------------------------
 # Request / response models
@@ -268,6 +277,105 @@ def _default_visual_adapters(tool_registry, scene_locators=None):
     return capture, evaluate, repair
 
 
+# ---------------------------------------------------------------------------
+# Shared execute-mode tail (ONE execution path for sync + async entry points)
+# ---------------------------------------------------------------------------
+
+def _execute_mission_state(
+    state: MissionState,
+    request: "UnrealCoderRequest",
+    tool_registry,
+    dispatch_bridge=None,
+    capture=None,
+    evaluate=None,
+    repair=None,
+    scene_locators=None,
+    cancel_provider: Optional[Callable[[], bool]] = None,
+) -> Dict[str, Any]:
+    """Run an interpreted/planned mission through the EXISTING machinery.
+
+    Exactly one execution path exists: project safety guard -> engine.run
+    (real registered-tool dispatch with hard timeouts) -> technical +
+    visual validation -> canonical mission_response envelope. Both the
+    synchronous POST /api/unreal-coder and the asynchronous variant call
+    this function, so there is no parallel execution engine.
+
+    cancel_provider: optional zero-arg callable returning True when the
+    mission must stop at the next step boundary (used by async cancel).
+    """
+    run_capture, run_evaluate, run_repair = (
+        (capture, evaluate, repair) if capture is not None
+        else _default_visual_adapters(tool_registry,
+                                       scene_locators=scene_locators))
+
+    def production_dispatch(step, _registry=_tool_registry_value(
+            tool_registry)):
+        tool = step.get("preferred_tool")
+        spec = _registry.get(tool)
+        if spec is None:
+            return {"ok": False, "error": f"Unknown tool {tool}"}
+        args = dict(step.get("parameters") or {})
+        from app.api import call_tool_hard_timeout, _tool_success
+        try:
+            raw = call_tool_hard_timeout(spec, args)
+        except Exception as exc:
+            return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+        return {"ok": _tool_success(raw), "result": raw, "tool": tool}
+
+    dispatch_target = dispatch_bridge or production_dispatch
+
+    if cancel_provider is not None:
+        def cancellable_dispatch(step, _inner=dispatch_target):
+            if cancel_provider():
+                raise RuntimeError("MISSION_CANCELLED_BY_USER")
+            return _inner(step)
+        dispatch_target = cancellable_dispatch
+
+    # -- project safety guard (Phase C) ---------------------------------
+    # Every MUTATING step re-validates the live editor session: project
+    # identity, editor PID, active map, PIE state. Cross-project mutation
+    # is blocked with a structured WRONG_PROJECT error, never executed.
+    mission_log = MissionLogger(state.mission_id)
+    try:
+        from core.project_safety import ProjectMutationGuard, guard_dispatch
+        bridge = _resolve_live_bridge(_tool_registry_value(tool_registry))
+        guard = ProjectMutationGuard(bridge=bridge)
+        identity = guard.capture_identity()
+        if identity.uproject_path:
+            mission_log.project = identity.to_dict()
+            dispatch_base = guard_dispatch(dispatch_target, guard)
+        else:
+            # No live editor: dry-run/planning style missions still work;
+            # mutating steps will fail at dispatch with a bridge error.
+            dispatch_base = dispatch_target
+            mission_log.warning(
+                "no live editor session; project guard passive")
+    except Exception as guard_exc:
+        dispatch_base = dispatch_target
+        mission_log.warning(
+            f"project guard unavailable: {type(guard_exc).__name__}")
+
+    engine = build_mission_engine(
+        _tool_registry_value(tool_registry),
+        dispatch=dispatch_base,
+        capture=run_capture,
+        evaluate=run_evaluate,
+        repair=run_repair,
+    )
+    state = engine.run(state)
+    mission_log.event(
+        "mission_finished", phase="validate", result=state.verdict or "",
+        detail={"completed": len(state.completed_step_ids)})
+    mission_log.save()
+    response = mission_response(state)
+    # Phase T: simple user contract alongside the machine envelope.
+    response["user_result"] = user_result_contract(state, mission_log)
+    response["mission_log"] = str(
+        (Path(__file__).resolve().parents[1] / "memory" / "mission_logs"
+         / f"{state.mission_id}.json"))
+    return response
+
+
 def register_unreal_coder_api(
     app,
     tool_registry,
@@ -354,74 +462,223 @@ def register_unreal_coder_api(
             return mission_response(state)
 
         # -- execute (existing dispatcher) ---------------------------------
-        # Execute-mode missions run through the production dispatcher:
-        # capability-selected steps call real registered tools (the same
-        # hard-timeout machinery as /api/chat execute mode); visual evidence
-        # comes from the deterministic adapters above.
+        # Runs through the single shared execution path (project guard +
+        # real tool dispatch + validation); see _execute_mission_state.
+        return _execute_mission_state(
+            state, request, tool_registry,
+            dispatch_bridge=dispatch_bridge,
+            capture=capture, evaluate=evaluate, repair=repair,
+            scene_locators=scene_locators,
+        )
+
+    # ------------------------------------------------------------------
+    # ASYNC / VALIDATE / RETRY / CANCEL — the ClickUp MCP gateway surface.
+    # No second execution engine: every handler reuses the mission pipeline
+    # above (interpret -> plan -> _execute_mission_state -> validation), and
+    # the Unreal bridge stays the only execution layer.
+    # ------------------------------------------------------------------
+
+    @app.post("/api/unreal-coder/async")
+    def unreal_coder_async(request: UnrealCoderRequest):
+        """Start a mission in the background and return its id immediately.
+
+        The worker thread runs the exact same pipeline as POST /api/unreal-coder
+        (same dispatcher, guard and validation). Real progress is readable at
+        any time from GET /api/unreal-coder/mission/{mission_id} because every
+        state transition is checkpointed by MissionState.save().
+        """
+        prompt = request.prompt.strip()
+        if not prompt:
+            from fastapi import HTTPException
+            raise HTTPException(400, "prompt cannot be empty")
+
+        state = MissionState(
+            mission_id=f"mission_{uuid.uuid4().hex[:12]}",
+            prompt=prompt,
+        )
+        state.started_at = time.time()
+
+        interpretation = interpret_request(request.model_dump())
+        state.intent = interpretation["intent"]
+        state.requirements = interpretation["requirements"]
+        state.status = "planning"
+        state.save()
+
+        # -- plan (same as the synchronous endpoint) ----------------------
+        planner = build_universal_planner(_tool_registry_value(tool_registry))
+        intent_obj = interpret_intent(prompt)
+        if request.quality:
+            intent_obj.quality = str(request.quality).lower()
+            intent_obj.quality_source = "user"
+        requirements_obj = expand_requirements(intent_obj)
+        mission_plan = planner.build_plan(
+            intent_obj, requirements_obj, None)
+        state.plan = mission_plan.to_dict()
+        state.status = "executing"
+        state.save()
+
+        _ASYNC_RUNS[state.mission_id] = {
+            "running": True,
+            "cancel_flag": False,
+            "error": None,
+        }
+
+        def worker():
+            try:
+                _execute_mission_state(
+                    state, request, tool_registry,
+                    dispatch_bridge=dispatch_bridge,
+                    capture=capture, evaluate=evaluate, repair=repair,
+                    scene_locators=scene_locators,
+                    cancel_provider=lambda: bool(
+                        _ASYNC_RUNS.get(state.mission_id, {}).get(
+                            "cancel_flag")),
+                )
+            except Exception as exc:
+                entry = _ASYNC_RUNS.get(state.mission_id)
+                current = MissionState.load(state.mission_id) or state
+                if entry and entry.get("cancel_flag"):
+                    current.status = "blocked"
+                    current.verdict = "CANCELLED"
+                    current.why = (
+                        "Mission cancelled by user request "
+                        "(ClickUp MCP gateway).")
+                    current.finished_at = time.time()
+                    current.save()
+                else:
+                    if entry is not None:
+                        entry["error"] = f"{type(exc).__name__}: {exc}"
+            finally:
+                entry = _ASYNC_RUNS.get(state.mission_id)
+                if entry is not None:
+                    entry["running"] = False
+
+        threading.Thread(
+            target=worker,
+            name=f"unreal-coder-async-{state.mission_id}",
+            daemon=True,
+        ).start()
+
+        return {
+            "ok": True,
+            "mission_id": state.mission_id,
+            "status": "accepted",
+            "message": (
+                "Mission accepted; poll "
+                f"GET /api/unreal-coder/mission/{state.mission_id} "
+                "for real state."
+            ),
+        }
+
+    @app.post("/api/unreal-coder/mission/{mission_id}/validate")
+    def unreal_coder_validate(mission_id: str):
+        """Re-run REAL validation (technical gate + fresh visual acceptance
+        capture/score through the existing visual machinery) on a mission."""
+        from fastapi import HTTPException
+        state = MissionState.load(mission_id)
+        if state is None:
+            raise HTTPException(404, f"Unknown mission {mission_id}")
+        if (
+            state.status in ("interpreting", "planning", "executing")
+            or not (state.plan or {}).get("steps")
+        ):
+            raise HTTPException(
+                409,
+                "Mission has no completed steps to validate yet; "
+                "poll get_task_status until execution finishes.",
+            )
         run_capture, run_evaluate, run_repair = (
             (capture, evaluate, repair) if capture is not None
             else _default_visual_adapters(tool_registry,
                                            scene_locators=scene_locators))
-
-        def production_dispatch(step, _registry=_tool_registry_value(
-                tool_registry)):
-            tool = step.get("preferred_tool")
-            spec = _registry.get(tool)
-            if spec is None:
-                return {"ok": False, "error": f"Unknown tool {tool}"}
-            args = dict(step.get("parameters") or {})
-            from app.api import call_tool_hard_timeout, _tool_success
-            try:
-                raw = call_tool_hard_timeout(spec, args)
-            except Exception as exc:
-                return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
-            return {"ok": _tool_success(raw), "result": raw, "tool": tool}
-
-        # -- project safety guard (Phase C) ---------------------------------
-        # Every MUTATING step re-validates the live editor session: project
-        # identity, editor PID, active map, PIE state. Cross-project mutation
-        # is blocked with a structured WRONG_PROJECT error, never executed.
-        guard = None
-        mission_log = MissionLogger(state.mission_id)
-        try:
-            from core.project_safety import ProjectMutationGuard, guard_dispatch
-            bridge = _resolve_live_bridge(_tool_registry_value(tool_registry))
-            guard = ProjectMutationGuard(bridge=bridge)
-            identity = guard.capture_identity()
-            if identity.uproject_path:
-                mission_log.project = identity.to_dict()
-                dispatch_base = guard_dispatch(
-                    dispatch_bridge or production_dispatch, guard)
-            else:
-                # No live editor: dry-run/planning style missions still work;
-                # mutating steps will fail at dispatch with a bridge error.
-                dispatch_base = dispatch_bridge or production_dispatch
-                mission_log.warning(
-                    "no live editor session; project guard passive")
-        except Exception as guard_exc:
-            dispatch_base = dispatch_bridge or production_dispatch
-            mission_log.warning(
-                f"project guard unavailable: {type(guard_exc).__name__}")
-
         engine = build_mission_engine(
             _tool_registry_value(tool_registry),
-            dispatch=dispatch_base,
+            dispatch=dispatch_bridge or (
+                lambda step: {"ok": False, "error": "validation-only mode"}),
             capture=run_capture,
             evaluate=run_evaluate,
             repair=run_repair,
         )
+        state = engine.validate(state)
+        return mission_response(state)
+
+    @app.post("/api/unreal-coder/mission/{mission_id}/resume")
+    def unreal_coder_resume_by_id(mission_id: str):
+        """Retry/resume ONE mission by id through the real engine.
+
+        Completed steps are skipped from the checkpoint; failed/pending
+        steps re-dispatch through the existing executor, then validation
+        runs again. A previously CANCELLED mission is retried too.
+        """
+        from fastapi import HTTPException
+        state = MissionState.load(mission_id)
+        if state is None:
+            raise HTTPException(404, f"Unknown mission {mission_id}")
+        entry = _ASYNC_RUNS.get(mission_id)
+        if entry is not None and entry.get("running"):
+            raise HTTPException(
+                409,
+                "Mission is still executing in this process; wait for it to "
+                "stop (cancel it first) before retrying.",
+            )
+        if entry is not None and entry.get("cancel_flag"):
+            entry["cancel_flag"] = False
+        run_capture, run_evaluate, run_repair = (
+            (capture, evaluate, repair) if capture is not None
+            else _default_visual_adapters(tool_registry,
+                                           scene_locators=scene_locators))
+        registry = _tool_registry_value(tool_registry)
+
+        def production_dispatch(step):
+            tool = step.get("preferred_tool")
+            spec = registry.get(tool)
+            if spec is None:
+                return {"ok": False, "error": f"Unknown tool {tool}"}
+            from app.api import call_tool_hard_timeout, _tool_success
+            try:
+                raw = call_tool_hard_timeout(
+                    spec, dict(step.get("parameters") or {}))
+            except Exception as exc:
+                return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+            return {"ok": _tool_success(raw), "result": raw, "tool": tool}
+
+        engine = build_mission_engine(
+            registry, dispatch=dispatch_bridge or production_dispatch,
+            capture=run_capture, evaluate=run_evaluate, repair=run_repair)
         state = engine.run(state)
-        mission_log.event(
-            "mission_finished", phase="validate", result=state.verdict or "",
-            detail={"completed": len(state.completed_step_ids)})
-        mission_log.save()
-        response = mission_response(state)
-        # Phase T: simple user contract alongside the machine envelope.
-        response["user_result"] = user_result_contract(state, mission_log)
-        response["mission_log"] = str(
-            (Path(__file__).resolve().parents[1] / "memory" / "mission_logs"
-             / f"{state.mission_id}.json"))
-        return response
+        return mission_response(state)
+
+    @app.post("/api/unreal-coder/mission/{mission_id}/cancel")
+    def unreal_coder_cancel(mission_id: str):
+        """Cancel a running mission. The async worker stops at the next step
+        boundary and the checkpoint is finalized as CANCELLED (never a fake
+        SUCCESS). Missions not running in this process are marked directly.
+        """
+        from fastapi import HTTPException
+        state = MissionState.load(mission_id)
+        if state is None:
+            raise HTTPException(404, f"Unknown mission {mission_id}")
+        entry = _ASYNC_RUNS.get(mission_id)
+        if entry is not None:
+            entry["cancel_flag"] = True
+            # Wait (bounded) for the worker to stop at the next step
+            # boundary and finalize the checkpoint, so the caller sees the
+            # real terminal state instead of a mid-flight snapshot.
+            deadline = time.time() + 30.0
+            while time.time() < deadline:
+                current = MissionState.load(mission_id)
+                running = bool(entry.get("running"))
+                if not running or current is None \
+                        or current.status != "executing":
+                    break
+                time.sleep(0.5)
+        else:
+            state.status = "blocked"
+            state.verdict = "CANCELLED"
+            state.why = "Mission cancelled by user request (ClickUp MCP gateway)."
+            state.finished_at = time.time()
+            state.save()
+        return mission_response(MissionState.load(mission_id) or state)
 
     @app.get("/api/unreal-coder/capabilities")
     def unreal_coder_capabilities():
@@ -433,7 +690,14 @@ def register_unreal_coder_api(
         if state is None:
             from fastapi import HTTPException
             raise HTTPException(404, f"Unknown mission {mission_id}")
-        return mission_response(state)
+        response = mission_response(state)
+        # Same evidence-locator fields the execution response carries, so
+        # external consumers (e.g. the ClickUp MCP gateway) can find the
+        # real mission log for evidence retrieval.
+        response["mission_log"] = str(
+            Path(__file__).resolve().parents[1] / "memory" / "mission_logs"
+            / f"{mission_id}.json")
+        return response
 
     @app.get("/api/unreal-coder/doctor")
     def unreal_coder_doctor():

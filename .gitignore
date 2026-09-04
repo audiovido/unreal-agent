@@ -29,6 +29,14 @@ ui/*.agentboard_backup
 dist/
 build/
 
+# MCP gateway API key (auto-generated on first run; never commit)
+config/mcp_gateway.key
+config/mcp_gateway.key.*
+
+# Locally-downloaded tunnel binary (never commit)
+tools/bin/
+tools/cloudflared*
+
 # Local workspace / recovery artifacts (not product code)
 .freebuff/
 .tmp-browser/
