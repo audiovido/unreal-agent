@@ -17,4 +17,9 @@ __bridge_result__ = {
 }
 '''
 
-pprint.pp(UnrealBridge().execute_python(code))
+# Manual live-editor probe, NOT a pytest test.  The spawn must only run when
+# executed directly as a script: pytest imports this module during collection,
+# and module-level bridge calls would mutate the live editor with no isolation
+# guard coverage (the guard patches _send at test-execution time, after import).
+if __name__ == "__main__":
+    pprint.pp(UnrealBridge().execute_python(code))
