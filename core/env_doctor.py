@@ -80,6 +80,48 @@ def check_dependencies() -> List[Dict[str, Any]]:
     return out
 
 
+def check_product_deps() -> List[Dict[str, Any]]:
+    """Product‑specific dependency checks: Unreal, Blender, Ollama.
+
+    These are informational (WARN) unless a mission requires them; they
+    do not become FAIL on their own to keep the doctor lightweight."""
+    out: List[Dict[str, Any]] = []
+    # Unreal
+    unreal_builds = app_config.detect_unreal_builds()
+    usable = [b for b in unreal_builds if b.get("editor_exe")]
+    if usable:
+        out.append(_mk("unreal_installed", PASS,
+                       f"{len(usable)} build(s): {usable[0]['label']}"))
+    elif unreal_builds:
+        out.append(_mk("unreal_installed", WARN,
+                       "launcher builds found but no editor exe resolved"))
+    else:
+        out.append(_mk("unreal_installed", WARN,
+                       "no Epic build registry found (usable when an editor "
+                       "is already open on the bridge)"))
+    # Blender
+    try:
+        from blender_agent.config import discover_blender
+        blender_exe = discover_blender()
+        if blender_exe is None:
+            out.append(_mk("blender", WARN, "Blender executable not found"))
+        else:
+            out.append(_mk("blender", PASS, f"found at {blender_exe}"))
+    except Exception as exc:
+        out.append(_mk("blender", WARN, f"probe failed: {exc}"))
+    # Ollama / local models
+    try:
+        from core.vision_provider import ollama_models
+        models = ollama_models()
+        if models:
+            out.append(_mk("ollama_local", PASS, f"{len(models)} local model(s) available"))
+        else:
+            out.append(_mk("ollama_local", WARN, "Ollama not reachable"))
+    except Exception as exc:
+        out.append(_mk("ollama_local", WARN, f"Ollama probe error: {exc}"))
+    return out
+
+
 def check_dirs_and_space() -> List[Dict[str, Any]]:
     out = []
     for label, p in (("config_dir", app_config.CONFIG_DIR),
@@ -179,6 +221,7 @@ def run(probe_backend: bool = True,
     checks: List[Dict[str, Any]] = []
     checks += check_python()
     checks += check_dependencies()
+    checks += check_product_deps()
     checks += check_config(cfg)
     checks += check_dirs_and_space()
     if probe_ports:
