@@ -1,13 +1,13 @@
 {
   "task": "AIVIDO_UI_DETECTOR_GRADUATION_LIVE",
   "status": "PASS",
-  "date": "2026-09-04T05:08:51",
+  "date": "2026-09-04T05:13:50",
   "session": {
     "project": "ASSET_Showcase2",
     "map": "ShowcaseMap",
     "engine": "5.8.2-56702186+++UE5+Release-5.8"
   },
-  "widget_asset": "/Game/ReleaseMissions/UA_Det_Grad_45ee8d",
+  "widget_asset": "/Game/ReleaseMissions/UA_Det_Grad_0e30b4",
   "checks": [
     {
       "name": "live bridge ping",
@@ -19,7 +19,7 @@
       "name": "real UMG widget asset created+compiled+saved+verified",
       "ok": true,
       "status": "PASS",
-      "detail": "{\"path\": \"/Game/ReleaseMissions/UA_Det_Grad_45ee8d\", \"compiled\": true, \"saved\": true, \"verified\": true}"
+      "detail": "{\"path\": \"/Game/ReleaseMissions/UA_Det_Grad_0e30b4\", \"compiled\": true, \"saved\": true, \"verified\": true}"
     },
     {
       "name": "real editor frame: scene without panel earns no UI bonus",
