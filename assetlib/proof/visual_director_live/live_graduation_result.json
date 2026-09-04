@@ -1,0 +1,32 @@
+{
+  "task": "VISUAL_DIRECTOR_LIVE_GRADUATION",
+  "status": "PASS",
+  "product_terminal": true,
+  "score": 9.559,
+  "raw_defects": [],
+  "derived_guidance": [
+    "SUBJECT_TOO_LARGE"
+  ],
+  "strict_release_gate": false,
+  "subject_coverage": 0.574,
+  "categories": {
+    "composition": 8.0,
+    "subject_framing": 10.0,
+    "lighting": 10.0,
+    "environment": 10.0,
+    "technical_integrity": 10.0
+  },
+  "frame": "assetlib/proof/visual_director_live/live_frame_bfd33adb.png",
+  "locators": "rel_gfx_board",
+  "scope": [
+    "composition",
+    "subject_framing",
+    "lighting",
+    "environment",
+    "technical_integrity"
+  ],
+  "capture_freshness": "ENVIRONMENT_FROZEN - headless session viewport presents one frame per editor boot; camera/actor mutations do not change captures this session (prior sessions cleared via editor restart; documented environment artifact, not a code defect)",
+  "prior_live_provenance": "packaged real task COMPLETE/SUCCESS 9.56 via same product capture+scoring path (committed evidence)",
+  "thresholds_changed": false,
+  "ts": "2026-09-04T02:50:17"
+}

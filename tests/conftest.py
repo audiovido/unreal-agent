@@ -58,3 +58,35 @@ def _block_live_unreal_bridge(request, monkeypatch):
     if request.node.get_closest_marker(LIVE_UNREAL_MARKER):
         return
     monkeypatch.setattr(UnrealBridge, "_send", _blocked_send)
+
+
+MODEL_BLOCKED_ERROR = (
+    "REGRESSION_ISOLATION: live Ollama model call blocked while pytest is "
+    "running (would load a 20GB model / block on a wedged server). Opt in "
+    "explicitly with @pytest.mark.live_unreal on the test or mock the model "
+    "call yourself."
+)
+
+
+@pytest.fixture(autouse=True)
+def _block_live_model_calls(request, monkeypatch):
+    """Hermetic regression guard: no unmarked test may make a real Ollama
+    model call.
+
+    core.orchestrator.call_model is the single transport choke point for LLM
+    I/O (requests.post to Ollama with a 600s socket timeout). Without this
+    guard, any test that routes through planning (e.g. api.new_execution) hits
+    the real server: it can load the 20GB coder model (multi-minute wedge) or
+    block for 10 minutes on a wedged Ollama. Planning callers already carry a
+    real fallback plan on exception, so a fast refusal keeps them functional
+    and bounded. Production behavior is untouched (this fixture only exists
+    under pytest)."""
+    from core import orchestrator
+
+    if request.node.get_closest_marker(LIVE_UNREAL_MARKER):
+        return
+
+    def _blocked_model(*args, **kwargs):
+        raise RuntimeError(MODEL_BLOCKED_ERROR)
+
+    monkeypatch.setattr(orchestrator, "call_model", _blocked_model)

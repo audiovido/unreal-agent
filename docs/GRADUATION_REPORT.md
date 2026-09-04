@@ -68,3 +68,41 @@ Date: 2026-08-31 · Engine: UE 5.8.2 · Machine-readable matrix: `memory/graduat
 ## NOTES
 - AvaLive was restored after the audit: bridge up, identity `AvaLive`, `open_project` verified (its first boot after project switching is slow — ~10 min — but completes).
 - Disposable graduation projects remain under `C:\Users\Shadow\Desktop\UnrealAgentGraduation\` as evidence; no AvaLive content was modified or destroyed.
+
+---
+
+## RELEASE STATUS UPDATE (2026-09-04) — FINAL COMMITTED BASELINE
+
+Supersedes the branch/commit/numbers above. The committed release baseline
+(`unreal-coder-universal`, HEAD `74c6b75` at the time of writing) is
+release-consistent from a fresh checkout:
+
+- **Final release audit: PASS** — fresh-checkout imports 35/35, focused
+  release tests 338/338, full supported regression 528/528 (0 failures),
+  package build + source-repo isolation PASS, committed blockers NONE,
+  release-ready to push YES. Pushed at `a3123b3` (fast-forward, no force).
+- **Task-aware visual acceptance** (`9b64e50`): non-UI actor tasks no longer
+  require UI categories; real UI tasks keep the strict 8.5 gate. Packaged
+  real task terminal **COMPLETE / SUCCESS / 9.56**; UI-required negative
+  case still fails honestly at 7.64. Global thresholds unchanged.
+- **Structural UI detection** (`74c6b75`): crisp structured panels detected;
+  washed/random dark geometry and time-of-day skies rejected; UI strictness
+  preserved.
+- **Recovery torture: 8/8 PASS** (`da34dbd`) — backend restart, bridge
+  interruption, editor restart, model timeout, malformed response, missing
+  asset (truthful mesh_loaded=false fix), interrupted-task resume,
+  application restart. Zero collaborator content damage (ShowcaseMap 107
+  actors preserved).
+- **Live-Unreal isolation** (`a3123b3`): no committed test can dispatch
+  through a live bridge/editor; probe scripts are `__main__`-guarded;
+  pytest.ini ignores live-UE files.
+- **Gap-closure tool coverage**: Blueprint graphs, world/actors, materials,
+  MetaHuman, Niagara/VFX, Sequencer/cameras, terrain/foliage/PCG,
+  animation — all committed with hermetic regression tests (truthful-error
+  passthrough + code-emission + result-parsing contracts).
+- **Desktop package**: `dist/unreal-agent-0.1.0` — runtime closure PASS,
+  source-repo isolation PASS, smoke suite PASS (version/doctor/selfcheck/
+  backend/duplicate-protection/UI/clean-stop).
+
+Test counts are recorded in `assetlib/proof/` (supported-suite baseline
+JSONs) and the pytest.ini in this repository.

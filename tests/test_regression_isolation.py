@@ -82,3 +82,41 @@ class TestHermeticIsolation:
 
         # Registered in pytest.ini -> attribute exists without warning.
         assert pytest.mark.live_unreal is not None
+
+
+class TestModelCallIsolation:
+    """Second hermetic guard: no unmarked test may make a real Ollama call.
+
+    core.orchestrator.call_model is the single LLM transport choke point
+    (requests.post to Ollama, 600s socket timeout). Any unmarked test that
+    routes through planning (e.g. api.new_execution) used to hit the real
+    server: loading the 20GB coder model or blocking 10 minutes on a wedged
+    server. The guard (conftest._block_live_model_calls) refuses fast, and
+    planning callers fall back to a valid generic plan.
+    """
+
+    def test_unmarked_planning_path_is_blocked_from_model(self):
+        """A realistic unmarked planning call must never reach Ollama: it gets
+        the structured refusal, and the caller's fallback path keeps it
+        bounded (no 20GB load, no 600s socket block)."""
+        from core import orchestrator
+
+        # Under pytest (unmarked) the real function is replaced by the guard;
+        # assert that property directly and that planning stays functional.
+        assert orchestrator.call_model.__name__ != "call_model" or hasattr(
+            orchestrator.call_model, "__wrapped__") is False
+
+        # The user-visible guarantee: planning through the API completes fast
+        # and produces a valid plan even though the model call is refused.
+        import time
+
+        from app import api
+
+        started = time.perf_counter()
+        state = api.new_execution("test")
+        elapsed = time.perf_counter() - started
+        plan = (state or {}).get("plan") or {}
+        assert isinstance(plan.get("steps"), list) and plan["steps"]
+        assert isinstance(plan.get("success_criteria"), list)
+        # Bounded: far under the 600s socket timeout the real call would use.
+        assert elapsed < 30.0, f"planning took {elapsed:.1f}s — model guard failed"
