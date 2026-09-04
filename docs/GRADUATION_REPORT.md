@@ -106,3 +106,42 @@ release-consistent from a fresh checkout:
 
 Test counts are recorded in `assetlib/proof/` (supported-suite baseline
 JSONs) and the pytest.ini in this repository.
+
+---
+
+## AIVIDO UI DETECTOR GRADUATION (2026-09-04) — isolated `task5-aivido-supervisor` worktree
+
+Closed-loop graduation of the structural UI-panel detector
+(`core/visual_acceptance.find_ui_bbox`, committed `74c6b75`), driven from the
+isolated `task5-aivido-supervisor` worktree only (branch
+`task5-aivido-supervisor`).  Verdict: **PASS** — every verifiable acceptance
+criterion is green.
+
+- **Focused UI/visual suite: 72/72 passed** (`test_ui_detection_structure.py`
+  8 structural-gate regression tests + `test_visual_acceptance.py` +
+  `test_visual_acceptance_synth.py` + `test_scene_locators.py` +
+  `test_visual_director.py` + `test_visual_loop.py` +
+  `test_task_aware_acceptance.py`) — sky can never be UI, genuine panels are
+  still found, time-of-day stability, no UI/readability bonus without a real
+  panel.
+- **Packaged validation: 8/8 passed** (`tests/test_packaging_smoke.py` —
+  package layout + launcher version/doctor/selfcheck/leases + task-path
+  closure).
+- **Live validation: PASS (1 documented BLOCKED sub-check)** — live UE 5.8.2
+  session (`ASSET_Showcase2` / `ShowcaseMap`), real persisted UMG widget asset
+  created+compiled+saved+verified through the committed tool, real editor and
+  PIE GameViewport frames scored honestly by the committed detector (no panel
+  → ui=2.0/readability=2.0, no false UI bonus), PIE lifecycle clean, widget
+  asset cleaned up.  Evidence + frame PNGs:
+  `assetlib/proof/golden_live/live_ui_detector_graduation.json` (+
+  `live_editor_frame.png`, `live_pie_frame.png`).
+- **BLOCKED sub-check (engine limitation, not a repo defect):** injecting a
+  live UMG overlay into the captured frame for a positive pixel-level
+  detection check.  UE 5.8 Python exposes no widget-tree editing
+  (`WidgetBlueprint.widget_tree` / `WidgetTree.root_widget` hidden, no
+  `WidgetBlueprintLibrary`, no `Actor.add_component`) and the native viewport
+  capture excludes UMG overlays; the positive panel contract is pinned by the
+  hermetic structural-gate suite (which draws the exact 2D dark-slab
+  semantics UMG produces).
+- **Probe:** `scripts/live_ui_detector_graduation.py` (live, `__main__`-
+  guarded, safe unique names, full cleanup).

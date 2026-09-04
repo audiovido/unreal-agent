@@ -1,0 +1,62 @@
+{
+  "task": "AIVIDO_UI_DETECTOR_GRADUATION_LIVE",
+  "status": "PASS",
+  "date": "2026-09-04T05:08:51",
+  "session": {
+    "project": "ASSET_Showcase2",
+    "map": "ShowcaseMap",
+    "engine": "5.8.2-56702186+++UE5+Release-5.8"
+  },
+  "widget_asset": "/Game/ReleaseMissions/UA_Det_Grad_45ee8d",
+  "checks": [
+    {
+      "name": "live bridge ping",
+      "ok": true,
+      "status": "PASS",
+      "detail": "UNREAL_BRIDGE_READY"
+    },
+    {
+      "name": "real UMG widget asset created+compiled+saved+verified",
+      "ok": true,
+      "status": "PASS",
+      "detail": "{\"path\": \"/Game/ReleaseMissions/UA_Det_Grad_45ee8d\", \"compiled\": true, \"saved\": true, \"verified\": true}"
+    },
+    {
+      "name": "real editor frame: scene without panel earns no UI bonus",
+      "ok": true,
+      "status": "PASS",
+      "detail": "bbox=None ui=2.00 readability=2.00 overall=6.17"
+    },
+    {
+      "name": "PIE started (game world live)",
+      "ok": true,
+      "status": "PASS",
+      "detail": "ShowcaseMap"
+    },
+    {
+      "name": "PIE GameViewport capture ok + detector honest on it",
+      "ok": true,
+      "status": "PASS",
+      "detail": "source_game_viewport=True bbox=None ui=2.00 overall=5.34"
+    },
+    {
+      "name": "UMG overlay panel pixels in captured frame (positive case)",
+      "ok": false,
+      "status": "BLOCKED",
+      "detail": "UE 5.8 Python exposes no widget-tree/component-creation API (widget_tree/root_widget hidden, no WidgetBlueprintLibrary, no Actor.add_component) and the native viewport capture excludes UMG overlays; positive panel contract pinned by hermetic suite"
+    },
+    {
+      "name": "cleanup: PIE ended + widget asset removed",
+      "ok": true,
+      "status": "PASS",
+      "detail": "deleted=True gone=True"
+    }
+  ],
+  "blocked_notes": [
+    "UE 5.8 Python exposes no widget-tree/component-creation API (widget_tree/root_widget hidden, no WidgetBlueprintLibrary, no Actor.add_component) and the native viewport capture excludes UMG overlays; positive panel contract pinned by hermetic suite"
+  ],
+  "evidence": {
+    "editor_frame": "C:\\Users\\Shadow\\AppData\\Local\\Temp\\ua-task5-supervisor\\assetlib\\proof\\golden_live\\live_editor_frame.png",
+    "pie_frame": "C:\\Users\\Shadow\\AppData\\Local\\Temp\\ua-task5-supervisor\\assetlib\\proof\\golden_live\\live_pie_frame.png"
+  }
+}
