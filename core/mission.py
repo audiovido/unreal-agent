@@ -26,6 +26,12 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from core.capability_registry import CapabilityRegistry
+from core.mission_policy import (
+    MODE_READ_ONLY,
+    MODE_MUTATING,
+    plan_steps_summary,
+    policy_block_payload,
+)
 from core.universal_intent import UniversalIntent, expand_requirements, interpret_intent
 from core.universal_planner import MissionPlan, UniversalPlanner
 
@@ -115,6 +121,8 @@ class MissionState:
     finished_at: Optional[float] = None
     verdict: Optional[str] = None          # PASS / PARTIAL / FAIL / BLOCKED
     why: str = ""
+    read_only: bool = False                # canonical execution mode (policy)
+    policy: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -138,6 +146,8 @@ class MissionState:
             "finished_at": self.finished_at,
             "verdict": self.verdict,
             "why": self.why,
+            "read_only": self.read_only,
+            "policy": dict(self.policy),
         }
 
     # -- persistence --------------------------------------------------------
@@ -624,7 +634,12 @@ def mission_response(state: MissionState) -> Dict[str, Any]:
             "selected_capabilities": (state.plan or {}).get(
                 "selected_capabilities"),
             "visual_gate": (state.plan or {}).get("visual_gate"),
+            "steps": plan_steps_summary(state),
         },
+        "policy": policy_block_payload(state, terminal=(
+            state.status in {"complete", "failed", "blocked"}
+            and bool(state.policy)
+            and (state.policy or {}).get("verdict") == "PLAN_REJECTED")),
         "completed_work": {
             "steps_total": len(steps),
             "steps_completed": len(state.completed_step_ids),
@@ -639,7 +654,8 @@ def mission_response(state: MissionState) -> Dict[str, Any]:
             ) if isinstance(r, dict) and (r.get("resource_path") or r.get("path"))
         ],
         "resumable": state.status in {"executing", "validating", "repairing",
-                                      "blocked", "failed"},
+                                      "blocked", "failed"}
+                     and (state.policy or {}).get("verdict") != "PLAN_REJECTED",
     }
 
 

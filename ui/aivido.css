@@ -1208,3 +1208,12 @@ input { font: inherit; }
   .sys-strip { gap: 8px; }
   .pv-viewport { height: 44vh; }
 }
+/* ---- mission inspector: canonical execution policy (backend-rendered) ---- */
+.mc-policy { margin-top: 14px; border: 1px solid rgba(94,180,255,.22); background: rgba(10,16,24,.55); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.mc-policy-row { display: flex; gap: 10px; align-items: baseline; font-size: 12px; }
+.mc-policy-k { color: var(--ink-dim, #8fa3b8); min-width: 120px; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+.mc-policy-v { color: var(--ink, #e8eef5); font-weight: 600; }
+.mc-policy-v.ro { color: #ffd08a; }
+.mc-policy-v.mut { color: #ff9d8a; }
+.mc-policy-v.bad { color: #ff8a7a; }
+.mc-policy-v.good { color: #7fe0a8; }

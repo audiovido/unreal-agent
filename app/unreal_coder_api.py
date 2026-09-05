@@ -47,6 +47,13 @@ from core.mission import (
     mission_response,
     resume_latest_mission,
 )
+from core.mission_policy import (
+    MODE_READ_ONLY,
+    classify_tool,
+    plan_violations,
+    policy_snapshot,
+    resolve_mission_mode,
+)
 from core.observability import MissionLogger, user_result_contract
 from core.universal_intent import expand_requirements, interpret_intent
 from core.universal_planner import build_universal_planner
@@ -58,6 +65,94 @@ from tools.unreal.asset_intake import analyze_asset
 # --------------------------------------------------------------------------
 
 _ASYNC_RUNS: Dict[str, Dict[str, Any]] = {}
+
+
+# ---------------------------------------------------------------------------
+# Canonical execution policy (READ_ONLY / MUTATING) — see core/mission_policy.
+# ---------------------------------------------------------------------------
+
+
+def _apply_mission_mode(state: MissionState, request: "UnrealCoderRequest") -> None:
+    """Resolve and persist the canonical execution mode for this mission.
+
+    Explicit request.read_only wins; then request mode, diagnostic intent,
+    conservative read-only prompt markers, and intent classification. The
+    LLM alone can never flip a read-only request into a mutating mission.
+    """
+    intent = state.intent or {}
+    state.read_only = resolve_mission_mode(
+        state.prompt,
+        explicit_read_only=request.read_only,
+        request_mode=request.mode,
+        intent_read_only=bool(intent.get("read_only")),
+        intent_mode=intent.get("mode"),
+        diagnostic=bool(intent.get("diagnostic")),
+    ) == MODE_READ_ONLY
+
+
+def _refresh_policy(state: MissionState) -> None:
+    """Recompute the policy snapshot (mode + plan violations) and persist it."""
+    state.policy = policy_snapshot(state)
+    state.save()
+
+
+def _apply_plan_gate(state: MissionState) -> Optional[Dict[str, Any]]:
+    """Phase 3 — validate the plan BEFORE any step executes.
+
+    A READ_ONLY mission whose plan contains any MUTATING or UNKNOWN step is
+    rejected up front: terminal status BLOCKED, verdict PLAN_REJECTED, the
+    exact offending tools reported, ZERO steps executed. MUTATING missions
+    are never gated here (the project mutation guard protects the editor at
+    the execution boundary instead). Idempotent — safe to call from every
+    entry point (sync, async, resume, validate).
+    """
+    _refresh_policy(state)
+    if not state.read_only:
+        return None
+    if (state.policy or {}).get("verdict") != "PLAN_REJECTED":
+        return None
+    tools = (state.policy or {}).get("blocked_tools") or []
+    state.status = "blocked"
+    state.verdict = "PLAN_REJECTED"
+    state.why = (
+        "Plan rejected by read-only execution policy; blocked tools: "
+        + ", ".join(tools)
+        + ". Read-only missions never execute non-read-only tools; "
+        "zero steps ran."
+    )
+    state.finished_at = time.time()
+    state.save()
+    return mission_response(state)
+
+
+def policy_guarded_dispatch(
+    read_only: bool,
+    dispatch: Callable[[Dict[str, Any]], Dict[str, Any]],
+) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
+    """Final execution boundary: refuse non-READ_ONLY tools for read-only
+    missions, no matter where the step came from (planner, recovery,
+    self-fix, resume, injected steps). UNKNOWN tools are denied by default."""
+    if not read_only:
+        return dispatch
+
+    def _guarded(step: Dict[str, Any]) -> Dict[str, Any]:
+        tool = str(step.get("preferred_tool") or "")
+        safety = classify_tool(tool)
+        if safety != "READ_ONLY":
+            return {
+                "ok": False,
+                "policy_blocked": True,
+                "tool": tool,
+                "safety": safety,
+                "error": (
+                    "POLICY_BLOCKED: read-only mission attempted tool "
+                    f"'{tool}' (class {safety}). Read-only missions may only "
+                    "run READ_ONLY tools."
+                ),
+            }
+        return dispatch(step)
+
+    return _guarded
 
 
 # --------------------------------------------------------------------------
@@ -76,6 +171,7 @@ class UnrealCoderRequest(BaseModel):
     constraints: Optional[Dict[str, Any]] = None
     preferences: Optional[Dict[str, Any]] = None
     mode: Optional[str] = None               # force chat|plan|execute
+    read_only: Optional[bool] = None         # canonical execution mode override
     mission_id: Optional[str] = None         # resume an existing mission
     dry_run: bool = False                    # plan only, no execution
 
@@ -303,10 +399,22 @@ def _execute_mission_state(
     cancel_provider: optional zero-arg callable returning True when the
     mission must stop at the next step boundary (used by async cancel).
     """
+    # Phase 3 — plan validation before any step executes (single choke
+    # point; also reached by the sync/async/resume entry points).
+    rejected = _apply_plan_gate(state)
+    if rejected is not None:
+        return rejected
+
     run_capture, run_evaluate, run_repair = (
         (capture, evaluate, repair) if capture is not None
         else _default_visual_adapters(tool_registry,
                                        scene_locators=scene_locators))
+
+    # Canonical policy: READ_ONLY missions never self-repair (the default
+    # repair rotates/reframes the camera — a mutation). Capture/evaluate
+    # stay active (screenshot + scoring are read-only measurements).
+    if state.read_only:
+        run_repair = None
 
     def production_dispatch(step, _registry=_tool_registry_value(
             tool_registry)):
@@ -330,6 +438,13 @@ def _execute_mission_state(
                 raise RuntimeError("MISSION_CANCELLED_BY_USER")
             return _inner(step)
         dispatch_target = cancellable_dispatch
+
+    # -- canonical execution policy boundary (Phase 2/4) ------------------
+    # READ_ONLY missions can never invoke a MUTATING or UNKNOWN tool, no
+    # matter where the step came from (planner, recovery, self-fix, resume,
+    # injected steps). Enforced at the final execution boundary — the same
+    # layer the project mutation guard wraps dispatch.
+    dispatch_target = policy_guarded_dispatch(state.read_only, dispatch_target)
 
     # -- project safety guard (Phase C) ---------------------------------
     # Every MUTATING step re-validates the live editor session: project
@@ -435,6 +550,7 @@ def register_unreal_coder_api(
 
         state.intent = interpretation["intent"]
         state.requirements = interpretation["requirements"]
+        _apply_mission_mode(state, request)
         state.status = "planning"
         state.save()
 
@@ -455,6 +571,9 @@ def register_unreal_coder_api(
         mission_plan = planner.build_plan(
             intent_obj, requirements_obj, None)
         state.plan = mission_plan.to_dict()
+        rejected = _apply_plan_gate(state)
+        if rejected is not None:
+            return rejected
         state.status = "executing" if not request.dry_run else "planning"
         state.save()
 
@@ -501,6 +620,7 @@ def register_unreal_coder_api(
         interpretation = interpret_request(request.model_dump())
         state.intent = interpretation["intent"]
         state.requirements = interpretation["requirements"]
+        _apply_mission_mode(state, request)
         state.status = "planning"
         state.save()
 
@@ -514,6 +634,24 @@ def register_unreal_coder_api(
         mission_plan = planner.build_plan(
             intent_obj, requirements_obj, None)
         state.plan = mission_plan.to_dict()
+        rejected = _apply_plan_gate(state)
+        if rejected is not None:
+            _ASYNC_RUNS[state.mission_id] = {
+                "running": False,
+                "cancel_flag": False,
+                "error": None,
+            }
+            return {
+                "ok": True,
+                "mission_id": state.mission_id,
+                "status": "blocked",
+                "message": (
+                    "Plan rejected by read-only execution policy; "
+                    "no steps executed. See GET "
+                    f"/api/unreal-coder/mission/{state.mission_id} "
+                    "for the policy verdict."
+                ),
+            }
         state.status = "executing"
         state.save()
 
@@ -587,14 +725,31 @@ def register_unreal_coder_api(
                 "Mission has no completed steps to validate yet; "
                 "poll get_task_status until execution finishes.",
             )
+        # Canonical policy: a read-only mission whose plan was rejected has
+        # nothing to validate — validation would only re-run capture/score
+        # and (worse) the repair loop, which is a mutation.
+        _refresh_policy(state)
+        if state.read_only and (state.policy or {}).get(
+                "verdict") == "PLAN_REJECTED":
+            raise HTTPException(
+                409,
+                "Plan rejected by read-only execution policy; "
+                "nothing to validate.",
+            )
         run_capture, run_evaluate, run_repair = (
             (capture, evaluate, repair) if capture is not None
             else _default_visual_adapters(tool_registry,
                                            scene_locators=scene_locators))
+        if state.read_only:
+            run_repair = None
         engine = build_mission_engine(
             _tool_registry_value(tool_registry),
-            dispatch=dispatch_bridge or (
-                lambda step: {"ok": False, "error": "validation-only mode"}),
+            dispatch=policy_guarded_dispatch(
+                state.read_only,
+                dispatch_bridge or (
+                    lambda step: {
+                        "ok": False, "error": "validation-only mode"}),
+            ),
             capture=run_capture,
             evaluate=run_evaluate,
             repair=run_repair,
@@ -623,10 +778,19 @@ def register_unreal_coder_api(
             )
         if entry is not None and entry.get("cancel_flag"):
             entry["cancel_flag"] = False
+        # Canonical policy on resume: READ_ONLY missions reject non-read-only
+        # plans up front and never self-repair; the dispatch boundary stays
+        # guarded so injected/recovery steps cannot mutate either.
+        _refresh_policy(state)
+        rejected = _apply_plan_gate(state)
+        if rejected is not None:
+            return rejected
         run_capture, run_evaluate, run_repair = (
             (capture, evaluate, repair) if capture is not None
             else _default_visual_adapters(tool_registry,
                                            scene_locators=scene_locators))
+        if state.read_only:
+            run_repair = None
         registry = _tool_registry_value(tool_registry)
 
         def production_dispatch(step):
@@ -643,7 +807,9 @@ def register_unreal_coder_api(
             return {"ok": _tool_success(raw), "result": raw, "tool": tool}
 
         engine = build_mission_engine(
-            registry, dispatch=dispatch_bridge or production_dispatch,
+            registry,
+            dispatch=policy_guarded_dispatch(
+                state.read_only, dispatch_bridge or production_dispatch),
             capture=run_capture, evaluate=run_evaluate, repair=run_repair)
         state = engine.run(state)
         return mission_response(state)
@@ -725,6 +891,14 @@ def register_unreal_coder_api(
             (capture, evaluate, repair) if capture is not None
             else _default_visual_adapters(tool_registry,
                                            scene_locators=scene_locators))
+        # Canonical policy on resume: rejected read-only plans stay rejected;
+        # READ_ONLY missions never self-repair; dispatch stays guarded.
+        _refresh_policy(latest)
+        rejected = _apply_plan_gate(latest)
+        if rejected is not None:
+            return rejected
+        if latest.read_only:
+            run_repair = None
         registry = _tool_registry_value(tool_registry)
 
         def production_dispatch(step):
@@ -740,7 +914,9 @@ def register_unreal_coder_api(
             return {"ok": _tool_success(raw), "result": raw, "tool": tool}
 
         engine = build_mission_engine(
-            registry, dispatch=dispatch_bridge or production_dispatch,
+            registry,
+            dispatch=policy_guarded_dispatch(
+                latest.read_only, dispatch_bridge or production_dispatch),
             capture=run_capture, evaluate=run_evaluate, repair=run_repair)
         latest = engine.run(latest)
         return mission_response(latest)

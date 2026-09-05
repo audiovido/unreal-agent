@@ -861,6 +861,27 @@
       el.mcDetail.appendChild(v);
     }
     if (r.why) { const p = document.createElement("p"); p.className = "mc-prompt"; p.textContent = r.why; el.mcDetail.appendChild(p); }
+    // Canonical execution policy — rendered verbatim from the backend
+    // (mode / verdict / blocked tools / reason); the frontend never
+    // calculates policy.
+    const pol = r.policy || {};
+    if (pol.mode) {
+      const pb = document.createElement("div");
+      pb.className = "mc-policy";
+      pb.innerHTML =
+        `<div class="mc-policy-row"><span class="mc-policy-k">Execution mode</span><span class="mc-policy-v ${pol.mode === "READ_ONLY" ? "ro" : "mut"}">${esc(pol.mode)}</span></div>` +
+        (pol.verdict ? `<div class="mc-policy-row"><span class="mc-policy-k">Policy verdict</span><span class="mc-policy-v ${String(pol.verdict).toLowerCase() === "plan_rejected" ? "bad" : "good"}">${esc(pol.verdict)}</span></div>` : "") +
+        ((pol.blocked_tools || []).length ? `<div class="mc-policy-row"><span class="mc-policy-k">Blocked tools</span><span class="mc-policy-v bad">${(pol.blocked_tools || []).map(esc).join(", ")}</span></div>` : "") +
+        (pol.reason ? `<div class="mc-policy-row"><span class="mc-policy-k">Reason</span><span class="mc-policy-v">${esc(pol.reason)}</span></div>` : "");
+      el.mcDetail.appendChild(pb);
+    }
+    const psteps = (r.plan && r.plan.steps) || [];
+    if (psteps.length) {
+      const ps = document.createElement("div"); ps.className = "mc-evidence";
+      ps.innerHTML = "<b>Plan steps (backend safety classification)</b><ul class=\"mc-warn\">" +
+        psteps.map((s) => `<li>${esc(s.step_id || "")} · ${esc(s.tool || "")} · ${esc(s.safety || "")}${s.blocked ? " · BLOCKED" : ""}</li>`).join("") + "</ul>";
+      el.mcDetail.appendChild(ps);
+    }
     const cw = r.completed_work || {};
     const total = cw.steps_total || 0, doneN = cw.steps_completed || 0;
     if (total) {
