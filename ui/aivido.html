@@ -59,6 +59,7 @@
         <span id="hudMode" class="hud-mode pill-sm">SIMULATION</span>
         <span id="hudCredits" class="hud-credits pill-sm">◈ 0</span>
         <span id="hudClock" class="hud-clock">--:--</span>
+        <button id="hudSnd" class="hud-snd" title="Toggle sound">♪</button>
         <button id="hudAvatar" class="hud-avatar" title="Creator profile">D</button>
       </div>
     </header>
@@ -166,6 +167,7 @@
             <div class="holo-frame">
               <div class="holo-line"></div><div class="holo-line"></div><div class="holo-line"></div>
               <div class="holo-core"></div>
+              <div class="holo-data" id="holoData">LINKING…</div>
             </div>
             <div class="holo-label">AIVIDO·CORE <span class="holo-dot"></span></div>
           </div>
@@ -194,6 +196,7 @@
 
           <div class="room-floor"></div>
           <div class="room-rug"></div>
+          <div class="room-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <div class="vignette"></div>
           <div class="grain"></div>
         </div>
@@ -222,6 +225,11 @@
               <p>No proof in the vault yet.</p>
               <p class="muted">Capture a fresh frame from the live engine — or run the demo capture.</p>
             </div>
+            <span id="pvBadge" class="pv-badge hidden"></span>
+            <button id="pvFull" class="pv-full" title="Fullscreen">⤢</button>
+            <button id="pvPrev" class="pv-nav pv-prev" title="Previous frame">‹</button>
+            <button id="pvNext" class="pv-nav pv-next" title="Next frame">›</button>
+            <span id="pvIdx" class="pv-idx"></span>
           </div>
           <div class="pv-meta">
             <div><span class="pv-k">VERDICT</span><b id="pvVerdict" class="pv-v">—</b></div>
@@ -229,7 +237,13 @@
             <div><span class="pv-k">CAPTURE</span><b id="pvTime">—</b></div>
             <div><span class="pv-k">SOURCE</span><b id="pvSource">—</b></div>
           </div>
-          <div id="pvDefects" class="pv-defects"></div>
+          <div class="pv-foot">
+            <div id="pvDefects" class="pv-defects"></div>
+            <div class="pv-actions">
+              <button id="pvApprove" class="btn small">✓ Approve</button>
+              <button id="pvChange" class="btn small ghost">✗ Request change</button>
+            </div>
+          </div>
         </div>
         <div class="pv-thumbs-head"><h2>Gallery</h2><span class="card-sub">recent frames</span></div>
         <div id="pvGallery" class="pv-gallery"></div>
@@ -291,6 +305,16 @@
           <label class="toggle"><input type="checkbox" id="setAutoProof" checked><span>Auto-refresh proof in the vault</span></label>
           <label class="toggle"><input type="checkbox" id="setCinematic" checked><span>Cinematic transitions (letterbox)</span></label>
           <label class="toggle"><input type="checkbox" id="setIdle" checked><span>Workers idle naturally when unassigned</span></label>
+          <label class="toggle"><input type="checkbox" id="setSound" checked><span>UI sound feedback (soft, synthesized)</span></label>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Live Integrations</h2><span class="card-sub">read-only links to the running engine</span></div>
+          <div id="liRows" class="li-rows">
+            <div class="li-row"><span>Engine gateway</span><b id="liEngine" class="li-v">probing…</b></div>
+            <div class="li-row"><span>Code task store</span><b id="liCode" class="li-v">probing…</b></div>
+            <div class="li-row"><span>Workboard</span><b id="liWb" class="li-v">probing…</b></div>
+            <div class="li-row"><span>ClickUp sync</span><b id="liClickup" class="li-v">no credentials</b></div>
+          </div>
         </div>
         <div class="card">
           <div class="card-head"><h2>About</h2></div>

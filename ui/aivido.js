@@ -19,6 +19,7 @@
     autoProof: true,
     cinematic: true,
     idle: true,
+    sound: true,
     workspace: "AvaLive Living City",
     balance: 120,
     spent: [4, 2, 7, 3, 5, 2, 6],
@@ -65,6 +66,10 @@
     { id: "veil", name: "Veil", role: "Metahuman", color: "#b98ae0", ic: "♜" },
     { id: "stride", name: "Stride", role: "Animation", color: "#3d9a6b", ic: "➶" },
   ];
+
+  // station tool glyphs — ready-made props, no bespoke modeling
+  const TOOLS = { mason: "🧱", patina: "🎨", reel: "🎥", volt: "🔌", ember: "✨", veil: "🪞", stride: "🎞" };
+
   // worker state: IDLE ASSIGNED THINKING WORKING WAITING ERROR DONE
   let W = WORKERS.map((w) => ({ ...w, state: "IDLE", task: null, err: null, bubble: null, speaking: false }));
 
@@ -91,13 +96,14 @@
 
   /* ---------------- dom refs ---------------- */
   const el = {};
-  const REFS = ["app","sting","letterbox","modalRoot","toastRoot","rail","hudScreen","hudWorkspace","hudMode","hudCredits","hudClock","hudAvatar",
+  const REFS = ["app","sting","letterbox","modalRoot","toastRoot","rail","hudScreen","hudWorkspace","hudMode","hudCredits","hudClock","hudSnd","hudAvatar",
     "homeName","homeEnterRoom","homeNewMission","homeCrew","homeCrewState","homeQuote","homeProof","homeMissionPill","homeMission","ledgerFree","ledgerCredits","ledgerQuests",
     "wsGrid","wsNew","mcList","mcDetail","mcNew","roomStage","workersRow","roomDispatch","roomReset","roomSub","roomModePill",
     "foreman","foremanBar","fbLine","fbName","pvStage","pvViewport","pvImg","pvEmpty","pvVerdict","pvScore","pvTime","pvSource","pvDefects","pvGallery","pvCapture","pvAuto",
     "questActive","questDone","finBalance","finPacks","finChart","finLedger",
     "profAvatar","profName","profXpFill","profXpTxt","stMissions","stSuccess","stHours","profSkills","profAch",
-    "setBase","setName","setSave","setSaved","setAutoProof","setCinematic","setIdle","setVersion","railDot","railBackendTxt","homeEnterRoom"];
+    "setBase","setName","setSave","setSaved","setAutoProof","setCinematic","setIdle","setSound","setVersion","railDot","railBackendTxt","homeEnterRoom",
+    "holoData","pvPrev","pvNext","pvFull","pvIdx","pvBadge","pvApprove","pvChange","liEngine","liCode","liWb","liClickup"];
   REFS.forEach((r) => (el[r] = $(r)));
 
   /* ---------------- helpers ---------------- */
@@ -106,11 +112,47 @@
   const workerById = (id) => W.find((w) => w.id === id);
   const persist = () => localStorage.setItem(LS, JSON.stringify(S));
 
+  /* ---------------- sound (lightweight WebAudio, no assets) ---------------- */
+  const SFX = (() => {
+    let ctx = null, enabled = true;
+    function ac() {
+      if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {} }
+      if (ctx && ctx.state === "suspended") ctx.resume().catch(() => {});
+      return ctx;
+    }
+    function tone(f, dur = .08, type = "sine", vol = .04, slide = 0) {
+      if (!enabled) return;
+      const c = ac(); if (!c) return;
+      try {
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(f, c.currentTime);
+        if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), c.currentTime + dur);
+        g.gain.setValueAtTime(vol, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(.0001, c.currentTime + dur);
+        o.connect(g).connect(c.destination);
+        o.start(); o.stop(c.currentTime + dur + .02);
+      } catch (_) {}
+    }
+    return {
+      set(v) { enabled = v; },
+      on() { ac(); },
+      click() { tone(520, .05, "triangle", .028); },
+      hover() { tone(760, .04, "sine", .01); },
+      confirm() { tone(392, .1, "triangle", .035); setTimeout(() => tone(587, .12, "triangle", .035), 90); },
+      error() { tone(220, .18, "sawtooth", .026, -60); },
+      success() { tone(523, .09, "triangle", .035); setTimeout(() => tone(659, .09, "triangle", .035), 80); setTimeout(() => tone(784, .14, "triangle", .035), 160); },
+      open() { tone(330, .12, "sine", .028, 120); },
+      capture() { tone(880, .07, "sine", .03); setTimeout(() => tone(660, .1, "sine", .028, -120), 60); },
+    };
+  })();
+
   function toast(title, msg, kind = "info") {
     const t = document.createElement("div");
     t.className = "toast " + kind;
     t.innerHTML = `<div class="t-title">${esc(title)}</div>${msg ? `<div>${esc(msg)}</div>` : ""}`;
     el.toastRoot.appendChild(t);
+    ({ good: SFX.success, bad: SFX.error, info: SFX.open }[kind] || SFX.click)();
     setTimeout(() => { t.style.transition = "opacity .4s"; t.style.opacity = "0"; setTimeout(() => t.remove(), 420); }, 3800);
   }
 
@@ -124,6 +166,7 @@
   }
 
   function show(nav, opts = {}) {
+    SFX.click();
     const cur = route();
     Object.keys(SCREENS).forEach((k) => $(SCREENS[k]).classList.remove("on"));
     document.querySelectorAll(".rail-item").forEach((b) => b.classList.toggle("active", b.dataset.nav === nav));
@@ -152,6 +195,7 @@
   /* ---------------- backend ---------------- */
   const apiBase = () => S.base.replace(/\/+$/, "");
   let backend = { online: false, busy: false, mode: "SIMULATION", last: null };
+  let live = { session: null, ws: null, tasks: [], wb: null };
 
   async function api(path, opts = {}) {
     const r = await fetch(apiBase() + path, { headers: { "Content-Type": "application/json" }, ...opts });
@@ -180,6 +224,41 @@
     el.roomModePill.textContent = backend.mode === "LIVE" ? "LIVE ENGINE" : "SIMULATION";
     el.roomModePill.style.cssText = backend.mode === "LIVE" ? "color:var(--ok);border-color:rgba(110,207,142,.4)" : "";
     if (backend.online) refreshBackendProof(false);
+    if (backend.online) pollLive();
+  }
+
+  /* ---------------- live engine data (read-only) ---------------- */
+  async function pollLive() {
+    if (!backend.online) return;
+    try { const r = await api("/api/unreal-coder/session"); live.session = (r && r.session) || null; } catch (_) {}
+    try { live.ws = await api("/api/workspace"); } catch (_) {}
+    try { const r = await api("/api/code/tasks"); live.tasks = (r && r.tasks) || []; } catch (_) {}
+    try { const r = await api("/api/workboard/state"); live.wb = (r && r.data) || null; } catch (_) {}
+    if (route() === "room") renderHoloData();
+    if (route() === "mission") renderMission();
+    if (route() === "workspaces") renderWorkspaces();
+    if (route() === "settings") renderLiveIntegrations();
+  }
+
+  function renderHoloData() {
+    const d = el.holoData; if (!d) return;
+    if (backend.online && live.session) {
+      d.innerHTML = `${esc(live.session.project_name || "—")}<br>${esc(live.session.active_map || "no map loaded")}<br>UE ${esc(String(live.session.engine_version || "").split("+")[0])}`;
+    } else if (backend.online) {
+      d.innerHTML = `ENGINE LINKED<br>SESSION …<br>AWAITING MAP`;
+    } else {
+      d.innerHTML = `SIMULATION<br>NO ENGINE LINK<br>CREW AT REST`;
+    }
+  }
+
+  function renderLiveIntegrations() {
+    const set = (id, txt, cls) => { const e = $(id); if (e) { e.textContent = txt; e.className = "li-v " + cls; } };
+    set("liEngine", backend.online ? (backend.busy ? "LIVE · engine busy" : "LIVE · engine ready") : "SIMULATION · offline", backend.online ? "ok" : "off");
+    const nCode = live.tasks.length;
+    set("liCode", backend.online ? (nCode ? nCode + " real task" + (nCode > 1 ? "s" : "") + " on file" : "LIVE · empty store") : "offline", backend.online ? (nCode ? "ok" : "warn") : "off");
+    const wb = live.wb; const nWb = wb ? (wb.tasks || []).length + (wb.sprints || []).length : 0;
+    set("liWb", backend.online ? (nWb ? nWb + " workboard entries" : "LIVE · empty board") : "offline", backend.online ? (nWb ? "ok" : "warn") : "off");
+    set("liClickup", "blocked — no API credentials in this environment", "blocked");
   }
 
   /* ---------------- proof ---------------- */
@@ -256,11 +335,15 @@
       if (st && st.ok && st.path) {
         const entry = { src: apiBase() + "/api/proof/latest?t=" + Date.now(), verdict: st.verdict || "—", score: st.score != null ? Number(st.score).toFixed(1) : "—", at: new Date().toISOString(), source: "LIVE", defects: st.defects || [], meta: st.path };
         showProofEntry(entry);
-      }
-    } catch (_) { /* engine proof not ready yet */ }
+      }      } catch (_) { /* engine proof not ready yet */ }
   }
 
-  function showProofEntry(entry) {
+  function showProofEntry(entry, idx) {
+    if (idx != null) { S._pvIdx = idx; }
+    else if (S.gallery.length) {
+      const found = S.gallery.indexOf(entry);
+      S._pvIdx = found >= 0 ? found : 0;
+    }
     const img = el.pvImg;
     img.onload = () => { el.pvEmpty.hidden = true; img.hidden = false; };
     img.src = entry.src;
@@ -268,9 +351,39 @@
     el.pvVerdict.className = "pv-v " + String(entry.verdict || "").toLowerCase();
     el.pvScore.textContent = entry.score || "—";
     el.pvTime.textContent = entry.at ? new Date(entry.at).toLocaleTimeString() : "—";
-    el.pvSource.textContent = entry.source || "—";
+    el.pvSource.textContent = (entry.source || "—") + (entry.approved ? " · approved ✓" : "");
     el.pvDefects.innerHTML = (entry.defects && entry.defects.length)
       ? "<b>Notes:</b> " + entry.defects.map(esc).join(" · ") : "<i>No blocking defects.</i>";
+    const isLive = entry.source === "LIVE";
+    el.pvBadge.textContent = isLive ? "LIVE FRAME" : "DEMO FRAME";
+    el.pvBadge.className = "pv-badge " + (isLive ? "live" : "demo");
+    el.pvIdx.textContent = S.gallery.length ? (S._pvIdx + 1) + " / " + S.gallery.length : "";
+  }
+
+  function proofStep(dir) {
+    if (!S.gallery.length) return;
+    const n = S.gallery.length;
+    const i = ((S._pvIdx == null ? 0 : S._pvIdx) + dir + n) % n;
+    showProofEntry(S.gallery[i], i);
+    SFX.click();
+  }
+
+  function approveProof() {
+    const i = S._pvIdx == null ? 0 : S._pvIdx;
+    const e = S.gallery[i];
+    if (!e) return;
+    e.approved = true;
+    persist(); renderGallery(); showProofEntry(e, i);
+    toast("Proof approved", "Reviewed and kept for the record.", "good");
+  }
+
+  function requestChange() {
+    const i = S._pvIdx == null ? 0 : S._pvIdx;
+    const e = S.gallery[i];
+    if (!e) return;
+    e.approved = false;
+    persist(); renderGallery(); showProofEntry(e, i);
+    toast("Change requested", "Rework flag set — noted on the mission board.", "info");
   }
 
   function renderGallery() {
@@ -286,8 +399,8 @@
     S.gallery.forEach((g, i) => {
       const t = document.createElement("div");
       t.className = "pv-thumb" + (i === 0 ? " sel" : "");
-      t.innerHTML = `<img src="${g.src}" alt="proof ${i + 1}"><div class="pv-cap">${esc(g.source)} · ${esc(g.score)}</div>`;
-      t.onclick = () => { showProofEntry(g); document.querySelectorAll(".pv-thumb").forEach((x) => x.classList.remove("sel")); t.classList.add("sel"); };
+      t.innerHTML = `<img src="${g.src}" alt="proof ${i + 1}"><div class="pv-cap">${g.approved ? "✓ " : ""}${esc(g.source)} · ${esc(g.score)}</div>`;
+      t.onclick = () => { showProofEntry(g, i); document.querySelectorAll(".pv-thumb").forEach((x) => x.classList.remove("sel")); t.classList.add("sel"); };
       el.pvGallery.appendChild(t);
     });
     const add = document.createElement("div");
@@ -312,7 +425,7 @@
     W.forEach((w) => {
       const st = stClass(w.state);
       const stn = document.createElement("div");
-      stn.className = "worker-station wk " + st + (st === "WORKING" ? " striking" : "");
+      stn.className = "worker-station wk p-" + w.id + " " + st + (st === "WORKING" ? " striking" : "");
       stn.id = "wk-" + w.id;
       stn.style.setProperty("--wk-c", w.color);
       stn.innerHTML = `
@@ -323,9 +436,12 @@
           ${st === "DONE" ? '<div class="wk-done">✓</div>' : ""}
           ${st === "WORKING" ? '<div class="wk-spark">✦</div>' : ""}
           <div class="head"></div>
+          <div class="wk-hair"></div>
+          <div class="wk-cap"></div>
           <div class="wk-band"></div>
           <div class="body"></div>
           <div class="arm a-l"></div><div class="arm a-r"></div>
+          <div class="wk-tool">${TOOLS[w.id] || ""}</div>
         </div>
         <div class="worker-name"><b>${w.name}</b></div>
         <div class="worker-role">${w.role}</div>
@@ -355,9 +471,11 @@
 
   function setState(w, state, task, err) {
     w.state = state; w.task = task || null; w.err = err || null;
+    if (state === "ERROR") SFX.error();
+    if (state === "DONE") SFX.success();
     const node = document.getElementById("wk-" + w.id);
     if (node) {
-      node.className = "worker-station wk " + stClass(state) + (state === "WORKING" ? " striking" : "");
+      node.className = "worker-station wk p-" + w.id + " " + stClass(state) + (state === "WORKING" ? " striking" : "");
       const badge = node.querySelector(".wk-badge");
       if (badge) badge.textContent = state + (task ? " · " + task : "");
       // swap status glyphs
@@ -523,12 +641,28 @@
 
   function renderWorkspaces() {
     const WS = [
-      { name: "AvaLive Living City", art: "linear-gradient(135deg,#3a2412,#140e08)", meta: "UE 5.8 · last open 12m ago", status: "ACTIVE", up: "C:/Users/Shadow/Desktop/AvaLive/AvaLive.uproject" },
-      { name: "ASSET_Showcase2", art: "linear-gradient(135deg,#241c10,#0e0a06)", meta: "UE 5.8 · last open 2h ago", status: "READY", up: "ASSET_Showcase2" },
-      { name: "UA_GradAudit", art: "linear-gradient(135deg,#331f10,#120c06)", meta: "UE 5.8 · graduation rig", status: "READY", up: "UA_GradAudit" },
-      { name: "Desert Studio (scratch)", art: "linear-gradient(135deg,#4a2e18,#1a1008)", meta: "Blank · not opened yet", status: "NEW", up: "" },
+      { name: "AvaLive Living City", art: "linear-gradient(135deg,#3a2412,#140e08)", meta: "UE 5.8 · last open 12m ago · DEMO", status: "ACTIVE", up: "C:/Users/Shadow/Desktop/AvaLive/AvaLive.uproject" },
+      { name: "ASSET_Showcase2", art: "linear-gradient(135deg,#241c10,#0e0a06)", meta: "UE 5.8 · last open 2h ago · DEMO", status: "READY", up: "ASSET_Showcase2" },
+      { name: "UA_GradAudit", art: "linear-gradient(135deg,#331f10,#120c06)", meta: "UE 5.8 · graduation rig · DEMO", status: "READY", up: "UA_GradAudit" },
+      { name: "Desert Studio (scratch)", art: "linear-gradient(135deg,#4a2e18,#1a1008)", meta: "Blank · not opened yet · DEMO", status: "NEW", up: "" },
     ];
     el.wsGrid.innerHTML = "";
+    if (backend.online && live.ws) {
+      const lc = document.createElement("div");
+      lc.className = "ws-card live";
+      const proj = (live.session && live.session.project_name) || live.ws.project || "Engine project";
+      const branch = live.ws.branch || "";
+      const commit = String(live.ws.commit || "").slice(0, 7);
+      const eng = live.session && live.session.engine_version ? "UE " + String(live.session.engine_version).split("+")[0] : "";
+      const map = live.session && live.session.active_map ? " · " + live.session.active_map : "";
+      lc.innerHTML = `<div class="ws-art" style="background:linear-gradient(135deg,#12302c,#0a1a17)"></div>
+        <div class="ws-body"><h3>${esc(proj)} <span class="mc-tag live">LIVE</span></h3>
+        <div class="ws-meta">${esc(branch)} · ${esc(commit)}${eng ? " · " + esc(eng) : ""}${esc(map)}</div>
+        <div class="ws-foot"><span class="pill-sm">ENGINE-LINKED</span><button class="btn small primary">Active Now</button></div></div>`;
+      lc.querySelector(".btn").onclick = (e) => { e.stopPropagation(); toast("Engine project", proj + " is already selected in the running session.", "info"); };
+      lc.onclick = () => { S.workspace = proj; persist(); el.hudWorkspace.textContent = proj; toast("Workspace selected", proj + " (live engine project)", "good"); };
+      el.wsGrid.appendChild(lc);
+    }
     WS.forEach((w) => {
       const c = document.createElement("div");
       c.className = "ws-card";
@@ -549,21 +683,89 @@
 
   function renderMission() {
     renderMissionList();
+    const liveTasks = backend.online ? live.tasks.filter((t) => t && t.id) : [];
+    const wbTasks = (live.wb && live.wb.tasks) || [];
+    const lt = liveTasks.find((t) => t.id === S._selLive) || wbTasks.find((t) => t.id === S._selLive);
+    if (lt) { renderLiveDetail(lt); return; }
     const sel = S.missions.find((m) => m.id === S._selMission) || S.missions.find((m) => m.id === "m1");
     renderMissionDetail(sel);
   }
 
   function renderMissionList() {
     el.mcList.innerHTML = "";
+    const laneH = (t) => { const h = document.createElement("div"); h.className = "mc-lane-h"; h.textContent = t; return h; };
+    const liveTasks = backend.online ? live.tasks.filter((t) => t && t.id) : [];
+    const wbTasks = ((live.wb && live.wb.tasks) || []).map((t) => ({ ...t, _wb: true }));
+    const allLive = [...liveTasks, ...wbTasks];
+    if (allLive.length) {
+      el.mcList.appendChild(laneH("Live engine lane"));
+      allLive.forEach((t) => {
+        const it = document.createElement("div");
+        it.className = "mc-item live" + (S._selLive === t.id ? " sel" : "");
+        const pct = t.status === "passed" || t.verdict === "PASS" ? 100 : t.status === "running" ? 45 : 12;
+        it.innerHTML = `<div class="mc-t"><h3>${esc(t.title)}</h3><span class="mc-tag live">LIVE</span></div>
+          <div class="mc-d">${esc(t._wb ? "workboard" : t.routing || "engine")} · ${esc(t.status || "—")}${t.verdict ? " · " + esc(t.verdict) : ""}${t.priority != null ? " · p" + t.priority : ""}</div>
+          <div class="mc-bar"><i style="width:${pct}%"></i></div>`;
+        it.onclick = () => { S._selLive = t.id; S._selMission = null; renderMissionList(); renderLiveDetail(t); };
+        el.mcList.appendChild(it);
+      });
+    }
+    el.mcList.appendChild(laneH("Demo lane · simulation"));
     S.missions.forEach((m) => {
       const it = document.createElement("div");
-      it.className = "mc-item" + (m.id === (S._selMission || "m1") ? " sel" : "");
-      it.innerHTML = `<div class="mc-t"><h3>${esc(m.title)}</h3><span class="pill-sm">${m.status}</span></div>
+      it.className = "mc-item demo" + (S._selMission === m.id && !S._selLive ? " sel" : "");
+      it.innerHTML = `<div class="mc-t"><h3>${esc(m.title)}</h3><span class="mc-tag demo">DEMO</span></div>
         <div class="mc-d">${esc(m.ws)} · crew ${m.crew.length} · ${m.verdict ? "verdict " + m.verdict : "stage " + m.stages[Math.max(0, m.cur - 1)]}</div>
         <div class="mc-bar"><i style="width:${Math.round(m.progress * 100)}%"></i></div>`;
-      it.onclick = () => { S._selMission = m.id; renderMissionList(); renderMissionDetail(m); };
+      it.onclick = () => { S._selLive = null; S._selMission = m.id; renderMissionList(); renderMissionDetail(m); };
       el.mcList.appendChild(it);
     });
+  }
+
+  async function renderLiveDetail(t) {
+    el.mcDetail.innerHTML = "";
+    const h = document.createElement("div");
+    h.className = "mc-head";
+    h.innerHTML = `<div><h2>${esc(t.title)}</h2><div class="ws-meta">LIVE · ${esc(t.routing || "engine")} task ${esc(t.id)}${t.priority != null ? " · priority " + t.priority : ""}</div></div>
+      <span class="pill-sm">${esc(t.status || "—")}</span>`;
+    el.mcDetail.appendChild(h);
+    if (t.verdict) {
+      const v = document.createElement("div");
+      v.className = "mc-verdict " + String(t.verdict).toLowerCase();
+      v.textContent = "VERDICT " + t.verdict;
+      el.mcDetail.appendChild(v);
+    }
+    if (t.prompt) { const p = document.createElement("p"); p.className = "mc-prompt"; p.textContent = t.prompt; el.mcDetail.appendChild(p); }
+    if (t.steps && t.steps.length) {
+      const st = document.createElement("div"); st.className = "mc-steps";
+      t.steps.forEach((s) => {
+        const d = document.createElement("div"); d.className = "mc-step";
+        d.innerHTML = `<span class="st-ic">✓</span><span>${esc(s.op || "")}${s.path ? " " + esc(s.path) : ""}</span>`;
+        st.appendChild(d);
+      });
+      el.mcDetail.appendChild(st);
+    }
+    const ev = document.createElement("div"); ev.className = "mc-evidence";
+    if (t.status === "passed" || t.verdict === "PASS") {
+      ev.innerHTML = `<b>Evidence</b>${t.result && t.result.commit ? " — commit <span class=\"mono\">" + esc(String(t.result.commit).slice(0, 12)) + "</span>" : ""}${t.result && t.result.branch ? " · branch " + esc(t.result.branch) : ""}`;
+    } else {
+      ev.innerHTML = "<b>No completed evidence on file yet.</b>";
+    }
+    el.mcDetail.appendChild(ev);
+    try {
+      const e = await api("/api/code/tasks/" + t.id + "/evidence");
+      const ef = e && e.evidence && e.evidence.evidence_files;
+      if (ef && ef.length) {
+        const l = document.createElement("div");
+        l.className = "mc-evidence";
+        l.innerHTML = "<b>Evidence files</b><ul>" + ef.map((f) => `<li>${esc(String(f).split(/[\\/]/).pop())}</li>`).join("") + "</ul>";
+        el.mcDetail.appendChild(l);
+      }
+    } catch (_) {}
+    const note = document.createElement("p");
+    note.className = "muted mc-note";
+    note.textContent = "Read-only view of the live task store. Live dispatch from this screen lands in Phase 2 — no fake success states here.";
+    el.mcDetail.appendChild(note);
   }
 
   function renderMissionDetail(m) {
@@ -604,14 +806,16 @@
 
   function renderRoomScreen() {
     renderRoom();
-    el.roomSub.textContent = backend.mode === "LIVE" ? "prestige western workshop · live engine linked" : "prestige western workshop · simulation mode";
+    renderHoloData();
+    const eng = live.session && live.session.project_name ? " · " + live.session.project_name : "";
+    el.roomSub.textContent = backend.mode === "LIVE" ? "prestige western workshop · live engine linked" + eng : "prestige western workshop · simulation mode";
     el.hudWorkspace.textContent = S.workspace;
     if (!ambientTimer) startAmbient();
   }
 
   function renderProofScreen() {
     renderGallery();
-    if (S.gallery[0]) showProofEntry(S.gallery[0]);
+    if (S.gallery[0]) showProofEntry(S.gallery[0], S._pvIdx != null && S._pvIdx < S.gallery.length ? S._pvIdx : 0);
     el.pvAuto.checked = S.autoProof;
     el.pvCapture.onclick = captureProof;
     if (backend.online) refreshBackendProof(true);
@@ -710,7 +914,9 @@
     el.setAutoProof.checked = S.autoProof;
     el.setCinematic.checked = S.cinematic;
     el.setIdle.checked = S.idle;
+    el.setSound.checked = S.sound;
     el.setVersion.textContent = "aivido-uiux-phase1 · branch aivido-uiux-phase1";
+    renderLiveIntegrations();
   }
 
   /* ---------------- wire up ---------------- */
@@ -721,6 +927,40 @@
 
     el.hudAvatar.addEventListener("click", () => show("profile"));
     document.querySelectorAll("[data-nav]").forEach((b) => b.addEventListener("click", () => navWithCinematic(b.dataset.nav)));
+
+    // sound
+    SFX.set(S.sound);
+    el.hudSnd.classList.toggle("off", !S.sound);
+    el.hudSnd.addEventListener("click", () => {
+      S.sound = !S.sound; SFX.set(S.sound); persist();
+      el.hudSnd.classList.toggle("off", !S.sound);
+      if (S.sound) SFX.confirm();
+      toast("Sound " + (S.sound ? "on" : "off"), S.sound ? "Feedback rearmed." : "Booth muted — the crew keeps talkin' regardless.", "info");
+    });
+    el.setSound.addEventListener("change", () => { S.sound = el.setSound.checked; SFX.set(S.sound); persist(); el.hudSnd.classList.toggle("off", !S.sound); if (S.sound) SFX.confirm(); });
+    document.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (["pvCapture", "pvApprove", "pvChange", "hudSnd"].includes(b.id)) return;
+      if (b.closest(".choice-card")) return;
+      SFX.click();
+    });
+
+    // proof vault controls
+    el.pvPrev.addEventListener("click", () => proofStep(-1));
+    el.pvNext.addEventListener("click", () => proofStep(1));
+    el.pvFull.addEventListener("click", () => { el.pvStage.classList.toggle("full"); SFX.click(); });
+    el.pvApprove.addEventListener("click", approveProof);
+    el.pvChange.addEventListener("click", requestChange);
+
+    // keyboard: Escape closes modals, arrows walk the vault
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !el.modalRoot.classList.contains("hidden")) { el.modalRoot.classList.add("hidden"); SFX.click(); }
+      if (route() === "proof" && S.gallery.length) {
+        if (e.key === "ArrowLeft") { e.preventDefault(); proofStep(-1); }
+        if (e.key === "ArrowRight") { e.preventDefault(); proofStep(1); }
+      }
+    });
 
     el.homeEnterRoom.addEventListener("click", () => navWithCinematic("room"));
     el.homeNewMission.addEventListener("click", () => { startDemoMission(); show("room"); });
@@ -764,6 +1004,7 @@
       show(route());
       pollHealth();
       setInterval(pollHealth, 12000);
+      setInterval(pollLive, 20000);
     }, 3100);
   }
 
