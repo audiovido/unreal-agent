@@ -843,10 +843,26 @@ def gh_ready(cfg: Dict[str, Any]) -> bool:
 
 def gh_release_publish(cfg: Dict[str, Any], *, tag: str, title: str, notes: str,
                        assets: Sequence[Path]) -> Tuple[bool, str]:
+    """Create the GitHub release, or update it in place if it already exists
+    (idempotent — allows a corrected artifact to replace the first upload)."""
     repo = cfg["release"]["github_repo"]
     notes_file = ROOT / cfg["release"]["release_root"] / f"{tag}-notes.md"
     notes_file.parent.mkdir(parents=True, exist_ok=True)
     notes_file.write_text(notes, encoding="utf-8")
+    view = subprocess.run(["gh", "release", "view", tag, "--repo", repo],
+                          capture_output=True, text=True, timeout=120)
+    if view.returncode == 0:
+        r = subprocess.run(["gh", "release", "edit", tag, "--repo", repo,
+                            "--title", title, "--notes-file", str(notes_file)],
+                           capture_output=True, text=True, timeout=300)
+        if r.returncode != 0:
+            return False, (r.stderr or r.stdout).strip()
+        for a in assets:
+            u = subprocess.run(["gh", "release", "upload", tag, "--repo", repo,
+                                str(a), "--clobber"], capture_output=True, text=True, timeout=600)
+            if u.returncode != 0:
+                return False, (u.stderr or u.stdout).strip()
+        return True, f"updated existing release {tag}"
     cmd = ["gh", "release", "create", tag, "--repo", repo, "--latest",
            "--title", title, "--notes-file", str(notes_file)]
     for a in assets:
@@ -1284,7 +1300,9 @@ def runtime_pass(cfg: Dict[str, Any], build_id: str, *, dry_run: bool = False) -
 
 
 def _write_release_identity(build_dir: Path, cfg: Dict[str, Any], aivido_version: str) -> Dict[str, Any]:
-    """FREEZE: write the full release identity into the frozen build."""
+    """FREEZE: write the full release identity into the frozen build.
+    ui-version.json is rewritten too so the SAME identity is visible on every
+    target (ui-version.json / release-manifest.json / GitHub tag agree)."""
     manifest = json.loads((build_dir / "build-manifest.json").read_text(encoding="utf-8"))
     identity = {
         "aivido_version": aivido_version,
@@ -1296,6 +1314,14 @@ def _write_release_identity(build_dir: Path, cfg: Dict[str, Any], aivido_version
     }
     (build_dir / "release-manifest.json").write_text(
         json.dumps(identity, indent=2) + "\n", encoding="utf-8")
+    vpath = build_dir / "ui-version.json"
+    if vpath.is_file():
+        try:
+            version = json.loads(vpath.read_text(encoding="utf-8"))
+        except Exception:
+            version = {}
+        version["aivido_version"] = aivido_version
+        vpath.write_text(json.dumps(version, indent=2) + "\n", encoding="utf-8")
     return identity
 
 
