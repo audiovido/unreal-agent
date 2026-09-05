@@ -30,6 +30,12 @@ def index() -> FileResponse:
     return FileResponse(UI_DIR / "aivido.html")
 
 
+@app.get("/app", include_in_schema=False)
+def booth() -> FileResponse:
+    """Parity with the product backend's additive /app route."""
+    return FileResponse(UI_DIR / "aivido.html")
+
+
 app.mount("/static", StaticFiles(directory=str(UI_DIR)), name="static")
 
 

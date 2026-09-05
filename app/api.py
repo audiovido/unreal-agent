@@ -4520,6 +4520,19 @@ def dev_console():
     )
 
 
+@app.get("/app")
+def director_booth():
+    """Aivido Director's Booth (UI/UX Phase 1 + 2).
+
+    Additive product route. Static assets resolve from the existing
+    /static mount (ui/), and all /api/* calls are same-origin — the Booth
+    reuses the canonical engine surface with no backend behavior change.
+    """
+    return FileResponse(
+        UI_DIR / "aivido.html"
+    )
+
+
 @app.get("/api/execution/{task_id}")
 def execution_detail(task_id: str):
     """Read-only canonical execution/evidence projection for Devboard."""

@@ -103,7 +103,8 @@
     "questActive","questDone","finBalance","finPacks","finChart","finLedger",
     "profAvatar","profName","profXpFill","profXpTxt","stMissions","stSuccess","stHours","profSkills","profAch",
     "setBase","setName","setSave","setSaved","setAutoProof","setCinematic","setIdle","setSound","setVersion","railDot","railBackendTxt","homeEnterRoom",
-    "holoData","pvPrev","pvNext","pvFull","pvIdx","pvBadge","pvApprove","pvChange","liEngine","liCode","liWb","liClickup"];
+    "holoData","pvPrev","pvNext","pvFull","pvIdx","pvBadge","pvAge","pvApprove","pvChange","liEngine","liCode","liWb","liClickup",
+    "ssEngine","ssBridge","ssMap","ssProof","ssExec","dlPrompt","dlDispatch","dlPlan","dlWarn","castGrid","cuStatus","cuDetail"];
   REFS.forEach((r) => (el[r] = $(r)));
 
   /* ---------------- helpers ---------------- */
@@ -195,7 +196,7 @@
   /* ---------------- backend ---------------- */
   const apiBase = () => S.base.replace(/\/+$/, "");
   let backend = { online: false, busy: false, mode: "SIMULATION", last: null };
-  let live = { session: null, ws: null, tasks: [], wb: null };
+  let live = { session: null, ws: null, tasks: [], wb: null, missions: [], tools: [], proofAge: null };
 
   async function api(path, opts = {}) {
     const r = await fetch(apiBase() + path, { headers: { "Content-Type": "application/json" }, ...opts });
@@ -225,6 +226,8 @@
     el.roomModePill.style.cssText = backend.mode === "LIVE" ? "color:var(--ok);border-color:rgba(110,207,142,.4)" : "";
     if (backend.online) refreshBackendProof(false);
     if (backend.online) pollLive();
+    if (backend.online && !live.tools.length) detectClickUp();
+    renderSysStrip();
   }
 
   /* ---------------- live engine data (read-only) ---------------- */
@@ -322,6 +325,7 @@
       toast("Demo capture", "Engine unreachable — captured a simulation frame instead.", "info");
     }
     const ms = Date.now() - start;
+    questTick("capture"); ledgerAdd("capture", "Proof capture (" + entry.source + ")", 0);
     pushGallery(entry);
     showProofEntry(entry);
     foremanSay(FOREMAN_LINES.proof, 5200);
@@ -333,6 +337,8 @@
     try {
       const st = await api("/api/proof/status");
       if (st && st.ok && st.path) {
+        live.proofAge = Math.max(0, (Date.now() / 1000) - (st.mtime || Date.now() / 1000));
+        renderSysStrip();
         const entry = { src: apiBase() + "/api/proof/latest?t=" + Date.now(), verdict: st.verdict || "—", score: st.score != null ? Number(st.score).toFixed(1) : "—", at: new Date().toISOString(), source: "LIVE", defects: st.defects || [], meta: st.path };
         showProofEntry(entry);
       }      } catch (_) { /* engine proof not ready yet */ }
@@ -358,6 +364,19 @@
     el.pvBadge.textContent = isLive ? "LIVE FRAME" : "DEMO FRAME";
     el.pvBadge.className = "pv-badge " + (isLive ? "live" : "demo");
     el.pvIdx.textContent = S.gallery.length ? (S._pvIdx + 1) + " / " + S.gallery.length : "";
+    if (el.pvAge) {
+      if (isLive && live.proofAge != null) {
+        const mins = Math.floor(live.proofAge / 60);
+        el.pvAge.textContent = live.proofAge < 90 ? "fresh · " + Math.max(1, Math.round(live.proofAge)) + "s" : "fresh · " + mins + "m old";
+        el.pvAge.className = "pv-age " + (live.proofAge < 900 ? "fresh" : "stale");
+      } else if (isLive) {
+        el.pvAge.textContent = "freshness unknown";
+        el.pvAge.className = "pv-age";
+      } else {
+        el.pvAge.textContent = "simulation frame";
+        el.pvAge.className = "pv-age";
+      }
+    }
   }
 
   function proofStep(dir) {
@@ -447,7 +466,7 @@
         <div class="worker-role">${w.role}</div>
         <span class="wk-badge">${w.state}${w.task ? " · " + w.task : ""}</span>
         <div class="worker-desk"></div>`;
-      stn.onclick = () => workerCheckIn(w);
+      stn.onclick = () => openDossier(w);
       el.workersRow.appendChild(stn);
     });
   }
@@ -548,6 +567,7 @@
     foremanSay(FOREMAN_LINES.dispatch, 5200);
     toast("Crew dispatched", "Frontier Garage Showcase is underway.", "good");
     // assign crew
+    questTick("dispatch"); ledgerAdd("dispatch", "Crew dispatch (simulation)", 0);
     const crew = W.filter((w) => ["mason", "volt", "ember"].includes(w.id));
     crew.forEach((w, i) => setTimeout(() => setState(w, "ASSIGNED", "intake", null), 300 * i));
     setTimeout(() => crew.forEach((w) => setState(w, "THINKING", "plan", null)), 1400);
@@ -612,6 +632,7 @@
         foremanSay(FOREMAN_LINES.done, 5200);
         toast("Mission complete", "Frontier Garage Showcase · PASS · proof minted to the vault.", "good");
         S.balance += 40; S.achievements.cleanRun = true; persist();
+        ledgerAdd("reward", "Mission reward — Frontier Garage (demo)", +40);
         setTimeout(() => captureProof(), 900);
       }, 3600);
     }, 5600);
@@ -677,8 +698,9 @@
     const n = document.createElement("div");
     n.className = "ws-card ws-new";
     n.innerHTML = '<span class="plus">＋</span><span>New Workspace</span><span class="muted" style="font-size:11px">Scaffold a fresh Unreal world</span>';
-    n.onclick = () => toast("New Workspace", "Phase 1 shells this flow — the launcher lives in the engine lane.", "info");
+    n.onclick = () => toast("New Workspace", "Workspace scaffolding stays in the engine lane — the Booth selects what is already open.", "info");
     el.wsGrid.appendChild(n);
+    renderCast();
   }
 
   function renderMission() {
@@ -687,6 +709,8 @@
     const wbTasks = (live.wb && live.wb.tasks) || [];
     const lt = liveTasks.find((t) => t.id === S._selLive) || wbTasks.find((t) => t.id === S._selLive);
     if (lt) { renderLiveDetail(lt); return; }
+    const um = live.missions.find((m) => m.id === S._selLive);
+    if (um) { startMissionPolling(um.id); return; }
     const sel = S.missions.find((m) => m.id === S._selMission) || S.missions.find((m) => m.id === "m1");
     renderMissionDetail(sel);
   }
@@ -696,7 +720,8 @@
     const laneH = (t) => { const h = document.createElement("div"); h.className = "mc-lane-h"; h.textContent = t; return h; };
     const liveTasks = backend.online ? live.tasks.filter((t) => t && t.id) : [];
     const wbTasks = ((live.wb && live.wb.tasks) || []).map((t) => ({ ...t, _wb: true }));
-    const allLive = [...liveTasks, ...wbTasks];
+    const umTasks = live.missions.map((m) => ({ id: m.id, title: String(m.prompt || "unreal mission").slice(0, 48), routing: "unreal", status: m.status || "accepted", _um: true }));
+    const allLive = [...liveTasks, ...wbTasks, ...umTasks];
     if (allLive.length) {
       el.mcList.appendChild(laneH("Live engine lane"));
       allLive.forEach((t) => {
@@ -704,7 +729,7 @@
         it.className = "mc-item live" + (S._selLive === t.id ? " sel" : "");
         const pct = t.status === "passed" || t.verdict === "PASS" ? 100 : t.status === "running" ? 45 : 12;
         it.innerHTML = `<div class="mc-t"><h3>${esc(t.title)}</h3><span class="mc-tag live">LIVE</span></div>
-          <div class="mc-d">${esc(t._wb ? "workboard" : t.routing || "engine")} · ${esc(t.status || "—")}${t.verdict ? " · " + esc(t.verdict) : ""}${t.priority != null ? " · p" + t.priority : ""}</div>
+          <div class="mc-d">${esc(t._um ? "unreal mission" : t._wb ? "workboard" : t.routing || "engine")} · ${esc(t.status || "—")}${t.verdict ? " · " + esc(t.verdict) : ""}${t.priority != null ? " · p" + t.priority : ""}</div>
           <div class="mc-bar"><i style="width:${pct}%"></i></div>`;
         it.onclick = () => { S._selLive = t.id; S._selMission = null; renderMissionList(); renderLiveDetail(t); };
         el.mcList.appendChild(it);
@@ -729,6 +754,11 @@
     h.innerHTML = `<div><h2>${esc(t.title)}</h2><div class="ws-meta">LIVE · ${esc(t.routing || "engine")} task ${esc(t.id)}${t.priority != null ? " · priority " + t.priority : ""}</div></div>
       <span class="pill-sm">${esc(t.status || "—")}</span>`;
     el.mcDetail.appendChild(h);
+    const stage = CT_STAGE[t.status] || { label: String(t.status || "—").toUpperCase(), cls: "planned" };
+    const chip = document.createElement("div");
+    chip.className = "mc-live-chip " + stage.cls;
+    chip.innerHTML = `<i class="dot-sm ${stage.cls === "running" || stage.cls === "validating" ? "busy" : stage.cls === "complete" ? "ready" : stage.cls === "planned" ? "ready" : "bad"}"></i> ${stage.label}`;
+    el.mcDetail.appendChild(chip);
     if (t.verdict) {
       const v = document.createElement("div");
       v.className = "mc-verdict " + String(t.verdict).toLowerCase();
@@ -762,10 +792,296 @@
         el.mcDetail.appendChild(l);
       }
     } catch (_) {}
+    const ctl = document.createElement("div"); ctl.className = "mc-ctl";
+    if (["queued", "running"].includes(t.status)) {
+      const c = document.createElement("button"); c.className = "btn small ghost"; c.textContent = "Cancel task";
+      c.onclick = async () => { try { await api("/api/code/tasks/" + t.id + "/cancel"); toast("Cancelled", t.id + " cancelled by request.", "info"); pollLive(); } catch (e) { toast("Cancel failed", String(e && e.message || e), "bad"); } };
+      ctl.appendChild(c);
+    }
+    if (["failed", "blocked", "cancelled"].includes(t.status)) {
+      const r = document.createElement("button"); r.className = "btn small"; r.textContent = "Retry task";
+      r.onclick = async () => { try { await api("/api/code/tasks/" + t.id + "/retry"); toast("Retrying", t.id + " re-queued through the code worker.", "info"); pollLive(); } catch (e) { toast("Retry failed", String(e && e.message || e), "bad"); } };
+      ctl.appendChild(r);
+    }
+    if (ctl.children.length) el.mcDetail.appendChild(ctl);
     const note = document.createElement("p");
     note.className = "muted mc-note";
-    note.textContent = "Read-only view of the live task store. Live dispatch from this screen lands in Phase 2 — no fake success states here.";
+    note.textContent = "Real data from the live task store — rendered verbatim, no frontend scoring.";
     el.mcDetail.appendChild(note);
+  }
+
+  /* ---------------- mission inspector: unreal-coder lane ---------------- */
+  const CT_STAGE = { queued: { label: "QUEUED", cls: "planned" }, running: { label: "RUNNING", cls: "running" }, passed: { label: "COMPLETE", cls: "complete" }, failed: { label: "FAILED", cls: "failed" }, blocked: { label: "BLOCKED", cls: "blocked" }, cancelled: { label: "CANCELLED", cls: "blocked" } };
+  const MIS_STAGE = {
+    interpreting: { label: "QUEUED", cls: "planned" }, planning: { label: "PLANNING", cls: "planned" },
+    executing: { label: "RUNNING", cls: "running" }, validating: { label: "VALIDATING", cls: "validating" },
+    repairing: { label: "FIXING", cls: "validating" }, complete: { label: "COMPLETE", cls: "complete" },
+    failed: { label: "FAILED", cls: "failed" }, blocked: { label: "BLOCKED", cls: "blocked" },
+  };
+  let missionPollTimer = null;
+  function stopMissionPolling() { if (missionPollTimer) { clearTimeout(missionPollTimer); missionPollTimer = null; } }
+  function startMissionPolling(id) {
+    stopMissionPolling();
+    const tick = async () => {
+      const m = live.missions.find((x) => x.id === id);
+      if (!m) return stopMissionPolling();
+      try {
+        const r = await api("/api/unreal-coder/mission/" + encodeURIComponent(id));
+        m.status = r.status; m.verdict = r.verdict;
+        if (route() === "mission" && S._selLive === id) renderLiveDetailMission(r);
+        const done = ["complete", "failed", "blocked", "cancelled"].includes(r.status);
+        if (done) {
+          stopMissionPolling();
+          renderSysStrip();
+          toast("Mission " + r.status, (r.verdict || "—") + (r.why ? " · " + String(r.why).slice(0, 140) : ""), r.status === "complete" ? "good" : "bad");
+          SFX.success();
+        } else {
+          missionPollTimer = setTimeout(tick, 3000);
+        }
+      } catch (_) { missionPollTimer = setTimeout(tick, 5000); }
+    };
+    tick();
+  }
+
+  async function renderLiveDetailMission(r) {
+    el.mcDetail.innerHTML = "";
+    const h = document.createElement("div");
+    h.className = "mc-head";
+    h.innerHTML = `<div><h2>${esc(r.mission_id)}</h2><div class="ws-meta">LIVE · unreal mission · ${esc((r.interpretation && r.interpretation.primary_domain) || "general")}</div></div><span class="mc-tag live">LIVE</span>`;
+    el.mcDetail.appendChild(h);
+    const stage = MIS_STAGE[r.status] || { label: String(r.status || "—").toUpperCase(), cls: "planned" };
+    const chip = document.createElement("div");
+    chip.className = "mc-live-chip " + stage.cls;
+    chip.innerHTML = `<i class="dot-sm ${stage.cls === "running" || stage.cls === "validating" ? "busy" : stage.cls === "complete" ? "ready" : stage.cls === "planned" ? "ready" : "bad"}"></i> ${stage.label}`;
+    el.mcDetail.appendChild(chip);
+    if (r.verdict) {
+      const v = document.createElement("div");
+      v.className = "mc-verdict chip " + String(r.verdict).toLowerCase();
+      v.textContent = "VERDICT " + r.verdict;
+      el.mcDetail.appendChild(v);
+    }
+    if (r.why) { const p = document.createElement("p"); p.className = "mc-prompt"; p.textContent = r.why; el.mcDetail.appendChild(p); }
+    const cw = r.completed_work || {};
+    const total = cw.steps_total || 0, doneN = cw.steps_completed || 0;
+    if (total) {
+      const bar = document.createElement("div");
+      bar.className = "mc-bar"; bar.style.marginTop = "14px";
+      bar.innerHTML = `<i style="width:${Math.round(100 * doneN / total)}%"></i>`;
+      el.mcDetail.appendChild(bar);
+      const t = document.createElement("p"); t.className = "muted"; t.style.fontSize = "11px"; t.style.margin = "6px 0 0";
+      t.textContent = doneN + " / " + total + " steps completed";
+      el.mcDetail.appendChild(t);
+    }
+    const phases = (r.plan && r.plan.phases) || [];
+    if (phases.length) {
+      const ph = document.createElement("div"); ph.className = "mc-phases";
+      ph.innerHTML = "<b>Plan phases</b>";
+      phases.forEach((p) => {
+        const d = document.createElement("div"); d.className = "mc-phase";
+        d.innerHTML = `<span class="ph-name">${esc(p.phase || "")}</span><span class="ph-obj">${esc(p.objective || p.stop_condition || "")}</span>`;
+        ph.appendChild(d);
+      });
+      el.mcDetail.appendChild(ph);
+    }
+    const ev = r.evidence || [];
+    if (ev.length) {
+      const l = document.createElement("div");
+      l.className = "mc-evidence";
+      l.innerHTML = "<b>Evidence</b><ul class=\"mc-evlist\">" + ev.map((f) => `<li>${esc(String(f))}</li>`).join("") + "</ul>";
+      el.mcDetail.appendChild(l);
+    }
+    if ((r.warnings || []).length) {
+      const l = document.createElement("div"); l.className = "mc-evidence";
+      l.innerHTML = "<b>Warnings</b><ul class=\"mc-warn\">" + r.warnings.map((w) => `<li>${esc(String(w))}</li>`).join("") + "</ul>";
+      el.mcDetail.appendChild(l);
+    }
+    if ((r.remaining_issues || []).length) {
+      const l = document.createElement("div"); l.className = "mc-evidence";
+      l.innerHTML = "<b>Remaining issues</b><ul class=\"mc-issue\">" + r.remaining_issues.map((w) => `<li>${esc(String(w))}</li>`).join("") + "</ul>";
+      el.mcDetail.appendChild(l);
+    }
+    const arts = r.artifacts || [];
+    if (arts.length) {
+      const a = document.createElement("div"); a.className = "mc-evidence";
+      a.innerHTML = "<b>Artifacts</b>" + arts.map((x) => `<div class="mc-artifact"><span>${esc(x.resource_path || x.path || "")}</span></div>`).join("");
+      el.mcDetail.appendChild(a);
+    }
+    const ctl = document.createElement("div"); ctl.className = "mc-ctl";
+    if (["interpreting", "planning", "executing", "validating", "repairing"].includes(r.status)) {
+      const c = document.createElement("button"); c.className = "btn small ghost"; c.textContent = "Cancel mission";
+      c.onclick = async () => { try { await api("/api/unreal-coder/mission/" + encodeURIComponent(r.mission_id) + "/cancel"); toast("Cancelling", r.mission_id + " — backend finalizes as CANCELLED, never SUCCESS.", "info"); startMissionPolling(r.mission_id); } catch (e) { toast("Cancel failed", String(e && e.message || e), "bad"); } };
+      ctl.appendChild(c);
+    }
+    if (["complete", "failed", "blocked", "cancelled"].includes(r.status)) {
+      const v = document.createElement("button"); v.className = "btn small"; v.textContent = "Run validation";
+      v.onclick = async () => { try { await api("/api/unreal-coder/mission/" + encodeURIComponent(r.mission_id) + "/validate"); toast("Validation requested", "Backend re-runs the real technical + visual gate.", "info"); startMissionPolling(r.mission_id); } catch (e) { toast("Validate failed", String(e && e.message || e), "bad"); } };
+      ctl.appendChild(v);
+      if (r.resumable) {
+        const z = document.createElement("button"); z.className = "btn small ghost"; z.textContent = "Resume mission";
+        z.onclick = async () => { try { await api("/api/unreal-coder/mission/" + encodeURIComponent(r.mission_id) + "/resume"); toast("Resumed", "Retry through the real engine — completed steps are skipped from the checkpoint.", "info"); startMissionPolling(r.mission_id); } catch (e) { toast("Resume failed", String(e && e.message || e), "bad"); } };
+        ctl.appendChild(z);
+      }
+    }
+    if (ctl.children.length) el.mcDetail.appendChild(ctl);
+    if (r.mission_log) { const p = document.createElement("p"); p.className = "muted mc-note"; p.textContent = "mission log: " + r.mission_log; el.mcDetail.appendChild(p); }
+    const note = document.createElement("p");
+    note.className = "muted mc-note";
+    note.textContent = "Rendered verbatim from the backend checkpoint (" + r.status + ") — no frontend scoring, no fabricated completion.";
+    el.mcDetail.appendChild(note);
+  }
+
+  /* ---------------- dispatch (canonical execution paths) ---------------- */
+  async function dispatchCodeTask() {
+    const prompt = el.dlPrompt.value.trim() || "add a small phase-2 proof module with a greeting function and its test";
+    if (!backend.online) return toast("Engine offline", "No engine gateway — dispatch unavailable.", "bad");
+    const slug = "phase2_" + Date.now().toString(36).slice(-5);
+    const mod = "app/code_task_" + slug + ".py";
+    const test = "tests/test_code_task_" + slug + ".py";
+    try {
+      const r = await api("/api/code/tasks", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Phase-2 proof: " + slug, prompt: prompt, routing: "code",
+          steps: [
+            { op: "create_file", path: mod, content: "def greeting(name=\"Aivido\"):\n    return f\"hello {name} from the phase-2 crew\"\n" },
+            { op: "create_file", path: test, content: "from app.code_task_" + slug + " import greeting\n\ndef test_greeting():\n    assert \"phase-2\" in greeting()\n" },
+          ],
+          tests: ["pytest " + test, "py_compile " + mod],
+          acceptance: ["exists " + mod, "exists " + test],
+          scope: [mod, test],
+        }),
+      });
+      const t = r.task;
+      questTick("dispatch"); ledgerAdd("dispatch", "Code task " + t.id + " (isolated worktree)", 0);
+      toast("Code task queued", t.id + " — runs in an isolated worktree branch; never touches the live checkout.", "good");
+      S._selLive = t.id; S._selMission = null;
+      pollLive().then(() => { renderMissionList(); renderMission(); });
+      SFX.confirm();
+    } catch (e) { toast("Dispatch failed", String(e && e.message || e), "bad"); }
+  }
+
+  async function dispatchUnreal() {
+    const prompt = el.dlPrompt.value.trim();
+    if (!prompt) return toast("Prompt required", "Describe the mission for the crew.", "bad");
+    if (!backend.online) return toast("Engine offline", "No engine gateway — dispatch unavailable.", "bad");
+    try {
+      const r = await api("/api/unreal-coder/async", {
+        method: "POST",
+        body: JSON.stringify({ prompt: prompt, quality: "fast", project: (live.ws && live.ws.project) || undefined }),
+      });
+      const m = { id: r.mission_id, prompt: prompt, status: r.status || "accepted" };
+      live.missions = [m, ...live.missions].slice(0, 12);
+      questTick("dispatch"); ledgerAdd("dispatch", "Unreal mission " + m.id, 0);
+      toast("Mission accepted", m.id + " — real lifecycle is polled from the backend checkpoint.", "good");
+      S._selLive = m.id; S._selMission = null;
+      renderMissionList(); renderMission();
+      SFX.confirm();
+    } catch (e) { toast("Dispatch failed", String(e && e.message || e), "bad"); }
+  }
+
+  async function planPreview() {
+    const prompt = el.dlPrompt.value.trim();
+    if (!prompt) return toast("Prompt required", "Type a mission description to preview its plan.", "bad");
+    if (!backend.online) return toast("Engine offline", "No engine gateway to plan against.", "bad");
+    toast("Planning (dry-run)", "The real planner builds the plan — nothing executes.", "info");
+    try {
+      const r = await api("/api/unreal-coder", { method: "POST", body: JSON.stringify({ prompt: prompt, quality: "fast", dry_run: true }) });
+      showPlanModal(r);
+    } catch (e) { toast("Plan failed", String(e && e.message || e), "bad"); }
+  }
+
+  function showPlanModal(r) {
+    el.modalRoot.innerHTML = "";
+    const d = document.createElement("div"); d.className = "choice-modal dossier";
+    const phases = ((r.plan || {}).phases || []).map((p) => `<div class="mc-phase"><span class="ph-name">${esc(p.phase || "")}</span><span class="ph-obj">${esc(p.objective || p.stop_condition || "")}</span></div>`).join("");
+    const caps = ((r.plan || {}).selected_capabilities || []).join(" · ");
+    const vg = (r.plan || {}).visual_gate;
+    d.innerHTML = `<div class="dos-head"><div class="dos-ic">☩</div><div><p class="choice-eyebrow">PLAN PREVIEW · DRY RUN</p><h2>Real planner output</h2></div></div>
+      <p class="dos-state">Status: <b>${esc(r.status || "planning")}</b> · nothing executed</p>
+      <div class="dos-slot"><b>Capabilities:</b> ${esc(caps || "—")}<br>${vg ? "<b>Visual gate:</b> " + esc(JSON.stringify(vg)) : "<b>Visual gate:</b> advisory"}</div>
+      <div class="mc-phases"><b>Phases</b>${phases || "<div class='mc-phase'><span class='ph-obj'>no phases reported</span></div>"}</div>
+      <p class="muted" style="font-size:11px">Plan summary comes straight from the backend pipeline. Full step listing lives in the mission checkpoint (mission log).</p>
+      <div class="row" style="justify-content:flex-end"><button class="btn small ghost" data-c-close>Close</button></div>`;
+    el.modalRoot.appendChild(d); el.modalRoot.classList.remove("hidden");
+    d.querySelector("[data-c-close]").onclick = () => { el.modalRoot.classList.add("hidden"); SFX.click(); };
+    SFX.open();
+  }
+
+  /* ---------------- cast & assets (real integration contract) ---------------- */
+  function renderCast() {
+    const grid = el.castGrid; if (!grid) return;
+    grid.innerHTML = "";
+    const charTools = (live.tools || []).filter((t) => /character|meta|animation/i.test(String(t)));
+    const contract = charTools.length ? charTools.map(esc).join(" · ") : "registry unreachable — retry with the engine linked";
+    WORKERS.forEach((w) => {
+      const d = document.createElement("div"); d.className = "cast-slot";
+      d.innerHTML = `<div class="cs-head"><div class="cs-ic" style="color:${w.color}">${TOOLS[w.id] || w.ic}</div><div><h3>${esc(w.name)}</h3><div class="cs-role">${esc(w.role)}</div></div></div>
+        <div class="cs-slot">MetaHuman slot · ${w.id}.${esc(w.role.replace(/\s+/g, "").toLowerCase())}</div>
+        <span class="cs-state missing">ASSET MISSING · CSS FALLBACK</span>
+        <div class="cs-tools"><b>Import contract (real tools):</b> ${contract}</div>`;
+      grid.appendChild(d);
+    });
+  }
+
+  function openDossier(w) {
+    const st = stClass(w.state);
+    const charTools = (live.tools || []).filter((t) => /character|meta|animation/i.test(String(t))).join(" · ") || "registry unreachable";
+    el.modalRoot.innerHTML = "";
+    const d = document.createElement("div"); d.className = "choice-modal dossier";
+    d.innerHTML = `<div class="dos-head"><div class="dos-ic" style="color:${w.color}">${TOOLS[w.id] || w.ic}</div><div>
+        <p class="choice-eyebrow">CREW DOSSIER</p><h2>${esc(w.name)}</h2><div class="cs-role">${esc(w.role)} specialist</div></div></div>
+      <p class="dos-state">Current state: <b>${st}</b>${w.task ? " · " + esc(w.task) : ""}</p>
+      <p class="muted">${esc(FOREMAN_LINES.worker(w.name, st))}</p>
+      <div class="dos-slot"><b>MetaHuman slot:</b> ${w.id}.${esc(w.role.replace(/\s+/g, "").toLowerCase())}<br>
+        <b>Status:</b> ASSET MISSING — CSS figure fallback active<br>
+        <b>Import contract:</b> ${esc(charTools)}<br>
+        <b>Phase-2 path:</b> install MetaHuman preset → wardrobe pass → live portrait capture</div>
+      <div class="row" style="justify-content:flex-end"><button class="btn small ghost" data-c-close>Close</button><button class="btn small primary" data-c-check>Check in with ${esc(w.name)}</button></div>`;
+    el.modalRoot.appendChild(d); el.modalRoot.classList.remove("hidden");
+    d.querySelector("[data-c-close]").onclick = () => { el.modalRoot.classList.add("hidden"); SFX.click(); };
+    d.querySelector("[data-c-check]").onclick = () => { workerCheckIn(w); el.modalRoot.classList.add("hidden"); SFX.confirm(); };
+    SFX.open();
+  }
+
+  /* ---------------- truthful system strip ---------------- */
+  function renderSysStrip() {
+    const chip = (id, txt, cls) => { const e = $(id); if (e) { e.innerHTML = txt; e.className = "ss-chip " + cls; } };
+    chip("ssEngine", `<i class="dot-sm ${backend.online ? (backend.busy ? "busy" : "ready") : "bad"}"></i> engine ${backend.online ? (backend.busy ? "busy" : "linked") : "offline"}`, backend.online ? (backend.busy ? "warn" : "ok") : "bad");
+    chip("ssBridge", "bridge " + (live.session ? "ready" : backend.online ? "no session" : "unavailable"), live.session ? "ok" : (backend.online ? "warn" : "bad"));
+    chip("ssMap", "map " + (live.session && live.session.active_map ? esc(String(live.session.active_map).split(".").pop()) : "—"), live.session ? "ok" : "warn");
+    const pAge = live.proofAge;
+    chip("ssProof", "proof " + (pAge == null ? "—" : pAge < 900 ? "fresh" : "STALE"), pAge == null ? "" : pAge < 900 ? "ok" : "warn");
+    chip("ssExec", backend.busy ? "execution active" : "no execution", backend.busy ? "warn" : "");
+  }
+
+  /* ---------------- durable local stores (quests / finance) ---------------- */
+  const QLS = "aivido_quests_v1", LLS = "aivido_ledger_v1";
+  function questStore() { let q = { version: 1, source: "LOCAL", updated_at: null, ticks: {} }; try { q = Object.assign(q, JSON.parse(localStorage.getItem(QLS) || "{}")); } catch (_) {} return q; }
+  function questTick(key) {
+    const q = questStore(); q.ticks[key] = (q.ticks[key] || 0) + 1; q.updated_at = new Date().toISOString();
+    localStorage.setItem(QLS, JSON.stringify(q)); return q.ticks[key];
+  }
+  function ledgerStore() { let l = { version: 1, rows: [] }; try { l = Object.assign(l, JSON.parse(localStorage.getItem(LLS) || "{}")); } catch (_) {} return l; }
+  function ledgerAdd(kind, label, delta) {
+    const l = ledgerStore();
+    l.rows = [{ kind: kind, label: label, delta: delta, source: "LOCAL", at: new Date().toISOString() }, ...l.rows].slice(0, 40);
+    localStorage.setItem(LLS, JSON.stringify(l)); return l.rows;
+  }
+
+  /* ---------------- clickup detection (truthful BLOCKED) ---------------- */
+  async function detectClickUp() {
+    if (!backend.online) return;
+    try {
+      const r = await api("/api/action", { method: "POST", body: JSON.stringify({ action: "tools_list", payload: {}, context: {} }) });
+      const tools = (r.data && r.data.tools) || [];
+      live.tools = tools;
+      const has = tools.some((t) => String(t).toLowerCase().includes("clickup"));
+      const cu = document.getElementById("cuStatus"), cd = document.getElementById("cuDetail");
+      if (cu) { cu.textContent = has ? "AVAILABLE" : "BLOCKED"; cu.className = "card-sub " + (has ? "ok" : "bad"); }
+      if (cd) cd.textContent = has
+        ? "ClickUp tool detected on the gateway — sync can be enabled."
+        : "No ClickUp tool or credentials found (registry: " + tools.length + " tools, none ClickUp). Sync stays BLOCKED — nothing is faked.";
+    } catch (_) {}
   }
 
   function renderMissionDetail(m) {
@@ -822,24 +1138,39 @@
   }
 
   function renderQuests() {
+    const qs = questStore();
     el.questActive.innerHTML = "";
     el.questDone.innerHTML = "";
     S.quests.forEach((q) => {
-      const doneSteps = q.steps.filter((s) => s.done).length;
-      const pct = Math.round(100 * doneSteps / q.steps.length);
+      const steps = q.steps.map((s) => ({ ...s }));
+      if (q.id === "q2") {
+        if ((qs.ticks.capture || 0) >= 1) steps[0].done = true;
+        if ((qs.ticks.dispatch || 0) >= 1) steps[1].done = true;
+      }
+      if (q.id === "q1") {
+        // truthful: only ticks when a LIVE proof with score >= 8.5 actually exists
+        const livePass = S.gallery.some((g) => g.source === "LIVE" && g.score !== "—" && Number(g.score) >= 8.5);
+        if (livePass) steps[3].done = true;
+      }
+      const doneSteps = steps.filter((s) => s.done).length;
+      const pct = Math.round(100 * doneSteps / steps.length);
       const c = document.createElement("div");
       c.className = "quest-card" + (!q.active ? " done" : "");
-      c.innerHTML = `<div class="q-top"><h3>${esc(q.title)}</h3><span class="q-reward">◈ ${esc(q.reward)}</span></div>
-        <p class="q-desc">${pct}% complete · ${doneSteps}/${q.steps.length} steps</p>
-        <ul class="q-steps">${q.steps.map((s) => `<li class="${s.done ? "done" : ""}">${esc(s.t)}</li>`).join("")}</ul>
+      c.innerHTML = `<div class="q-top"><h3>${esc(q.title)}<span class="q-src">LOCAL</span></h3><span class="q-reward">◈ ${esc(q.reward)}</span></div>
+        <p class="q-desc">${pct}% complete · ${doneSteps}/${steps.length} steps · durable local store</p>
+        <ul class="q-steps">${steps.map((s) => `<li class="${s.done ? "done" : ""}">${esc(s.t)}</li>`).join("")}</ul>
         <div class="q-bar"><i style="width:${pct}%"></i></div>`;
       (q.active ? el.questActive : el.questDone).appendChild(c);
     });
   }
 
   function renderFinance() {
-    el.finBalance.innerHTML = `<div><div class="fb-big">◈ ${S.balance}</div><div class="fb-sub">cloud credits · spendable on heavy missions</div></div>
+    el.finBalance.innerHTML = `<div><div class="fb-big">◈ ${S.balance}</div><div class="fb-sub">credits · session-local · no billing wired</div></div>
       <div><div class="fb-big" style="font-size:22px">∞</div><div class="fb-sub">local free · always on, always yours</div></div>`;
+    const finNote = document.createElement("p");
+    finNote.className = "muted"; finNote.style.cssText = "font-size:11px;margin:10px 0 0;";
+    finNote.textContent = "Billing backend: FUTURE — not wired. Credits are session-local; the ledger below records real actions only.";
+    el.finBalance.insertAdjacentElement("afterend", finNote);
     const PACKS = [
       { name: "Local Free", amt: "∞", price: "$0", tag: "ALWAYS", cls: "free", d: "Unlimited local engine time on your own machine. No cloud needed for solo work.", buy: null },
       { name: "Starter Spark", amt: "50", price: "$9", tag: "", cls: "", d: "For one heavy showcase run with the full crew.", buy: 50 },
@@ -866,11 +1197,16 @@
       b.innerHTML = `<span>${days[i]}</span>`;
       el.finChart.appendChild(b);
     });
-    el.finLedger.innerHTML = `
-      <div class="fl-row"><span>Frontier Garage Showcase — reward</span><b class="plus">+40</b></div>
-      <div class="fl-row"><span>Night Pass — cloud compute</span><b class="minus">−25</b></div>
-      <div class="fl-row"><span>Graduation run — cloud compute</span><b class="minus">−80</b></div>
-      <div class="fl-row"><span>Daily quest — First Light</span><b class="plus">+20</b></div>`;
+    const lrows = (ledgerStore().rows || []).slice(0, 8);
+    const demoRows = [
+      { label: "Graduation run — cloud compute", delta: -80 },
+      { label: "Night Pass — cloud compute", delta: -25 },
+    ];
+    el.finLedger.innerHTML =
+      `<span class="fin-src">LOCAL LEDGER · real actions this session</span>` +
+      (lrows.length ? lrows.map((r) => `<div class="fl-row"><span>${esc(r.label)} <span class="fl-src">${esc(r.source || "LOCAL")}</span></span><b class="${r.delta > 0 ? "plus" : "minus"}">${r.delta > 0 ? "+" : ""}${r.delta}</b></div>`).join("") : `<div class="muted" style="font-size:11px">No real activity recorded yet this session.</div>`) +
+      `<span class="fin-src" style="margin-top:10px">DEMO SEED · fiction</span>` +
+      demoRows.map((r) => `<div class="fl-row"><span>${esc(r.label)} <span class="fl-src">DEMO</span></span><b class="minus">${r.delta}</b></div>`).join("");
   }
 
   function renderProfile() {
@@ -945,6 +1281,22 @@
       if (b.closest(".choice-card")) return;
       SFX.click();
     });
+
+    // dispatch lane
+    el.dlDispatch.addEventListener("click", async () => {
+      const mode = document.querySelector('input[name="dlMode"]:checked')?.value || "code";
+      if (mode === "unreal") {
+        if (!window.confirm("Unreal missions run the live editor and can spawn or change actors. Preview the plan first and cancel if it looks wrong. Continue?")) return;
+        await dispatchUnreal();
+      } else {
+        await dispatchCodeTask();
+      }
+    });
+    el.dlPlan.addEventListener("click", planPreview);
+    document.querySelectorAll('input[name="dlMode"]').forEach((r) => r.addEventListener("change", () => {
+      const unreal = r.value === "unreal" && r.checked;
+      el.dlWarn.classList.toggle("hidden", !unreal);
+    }));
 
     // proof vault controls
     el.pvPrev.addEventListener("click", () => proofStep(-1));

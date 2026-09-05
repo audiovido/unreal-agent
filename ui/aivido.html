@@ -50,6 +50,14 @@
 
   <!-- main -->
   <div class="stage-wrap">
+    <div id="sysStrip" class="sys-strip">
+      <span class="ss-chip" id="ssEngine"><i class="dot-sm bad"></i> engine probing…</span>
+      <span class="ss-chip" id="ssBridge">bridge —</span>
+      <span class="ss-chip" id="ssMap">map —</span>
+      <span class="ss-chip" id="ssProof">proof —</span>
+      <span class="ss-grow"></span>
+      <span class="ss-chip" id="ssExec">no execution</span>
+    </div>
     <header id="hud" class="hud">
       <div class="hud-left">
         <span id="hudScreen" class="hud-screen">BOOTH</span>
@@ -121,6 +129,9 @@
           <button id="wsNew" class="btn primary">＋ New Workspace</button>
         </div>
         <div id="wsGrid" class="ws-grid"></div>
+        <h2 class="block-h">Cast &amp; Assets</h2>
+        <p class="muted" style="font-size:12px;margin-top:-8px">Seven specialist slots. Ready-made MetaHuman presets land in Phase 2 — the import contract and fallback are live below.</p>
+        <div id="castGrid" class="cast-grid"></div>
       </section>
 
       <!-- ===== MISSION CONTROL ===== -->
@@ -134,6 +145,21 @@
           <aside id="mcDetail" class="mc-detail">
             <div class="mc-empty">Select a mission to inspect its stages, crew and evidence.</div>
           </aside>
+        </div>
+        <div id="mcDispatch" class="mc-dispatch card">
+          <div class="card-head"><h2>Dispatch Lane</h2><span class="card-sub">real engine execution · no fake states</span></div>
+          <div class="dl-modes">
+            <label class="dl-mode"><input type="radio" name="dlMode" value="code" checked><b>Code task</b><span>safe · isolated worktree · repo only</span></label>
+            <label class="dl-mode"><input type="radio" name="dlMode" value="unreal"><b>Unreal mission</b><span>live editor · may mutate the scene</span></label>
+          </div>
+          <div class="dl-fields">
+            <input id="dlPrompt" class="textinput" placeholder="Describe the work for the crew…">
+            <div class="row">
+              <button id="dlDispatch" class="btn primary">⚡ Dispatch via Engine</button>
+              <button id="dlPlan" class="btn ghost">Preview plan · no changes</button>
+              <span id="dlWarn" class="dl-warn hidden">⚠ Unreal missions run the live editor and can spawn or change actors. Preview the plan first, and cancel if it looks wrong.</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -226,6 +252,7 @@
               <p class="muted">Capture a fresh frame from the live engine — or run the demo capture.</p>
             </div>
             <span id="pvBadge" class="pv-badge hidden"></span>
+            <span id="pvAge" class="pv-age"></span>
             <button id="pvFull" class="pv-full" title="Fullscreen">⤢</button>
             <button id="pvPrev" class="pv-nav pv-prev" title="Previous frame">‹</button>
             <button id="pvNext" class="pv-nav pv-next" title="Next frame">›</button>
@@ -301,6 +328,11 @@
           <div class="row"><button id="setSave" class="btn primary">Save Settings</button><span id="setSaved" class="note hidden">Saved ✓</span></div>
         </div>
         <div class="card">
+          <div class="card-head"><h2>ClickUp Sync</h2><span class="card-sub" id="cuStatus">BLOCKED</span></div>
+          <p class="muted" id="cuDetail">No ClickUp credentials or integration tool were found in this environment. Sync stays BLOCKED — nothing is faked.</p>
+          <div class="mono cu-contract">Contract: set env <b>CLICKUP_API_TOKEN</b> + <b>CLICKUP_LIST_ID</b> (or expose a ClickUp tool on the gateway), then this screen flips to LIVE. Never hardcode tokens in the repo.</div>
+        </div>
+        <div class="card">
           <div class="card-head"><h2>Preferences</h2></div>
           <label class="toggle"><input type="checkbox" id="setAutoProof" checked><span>Auto-refresh proof in the vault</span></label>
           <label class="toggle"><input type="checkbox" id="setCinematic" checked><span>Cinematic transitions (letterbox)</span></label>
@@ -318,9 +350,9 @@
         </div>
         <div class="card">
           <div class="card-head"><h2>About</h2></div>
-          <p class="muted">Aivido Director's Booth · UI/UX Phase 1<br>
-          Shell, navigation, room, crew states, proof vault, quests, finance and profile — built on the existing engine. No backend behavior changed.</p>
-          <p class="mono" id="setVersion">aivido-uiux-phase1 · 9ba87da+</p>
+          <p class="muted">Aivido Director's Booth · UI/UX Phase 1 + Phase 2<br>
+          Shell, navigation, room, crew states, proof vault, quests, finance, profile, live mission dispatch, cast &amp; asset contracts — built on the existing engine. No backend behavior changed.</p>
+          <p class="mono" id="setVersion">aivido-uiux-phase1 · bfc6700+ · Phase 2</p>
         </div>
       </section>
 

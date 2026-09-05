@@ -1060,3 +1060,151 @@ input { font: inherit; }
   .workers-row { left: 2%; right: 2%; }
   .pv-stage.full { position: fixed; }
 }
+
+/* ============================================================
+   PHASE 2 — live dispatch, mission inspector, cast contract,
+   system strip, truthful states. Presentation only.
+   ============================================================ */
+
+/* ---- system strip (truthful engine/bridge/map/proof state) ---- */
+.sys-strip {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 6px 22px; border-bottom: 1px solid var(--line-soft);
+  background: linear-gradient(180deg, rgba(13,10,7,.9), rgba(16,11,7,.7));
+  font-family: var(--font-mono); font-size: 10px; color: var(--muted);
+}
+.ss-chip { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.ss-chip .dot-sm { width: 6px; height: 6px; }
+.ss-grow { flex: 1; }
+.ss-chip.ok { color: var(--ok); }
+.ss-chip.warn { color: var(--warn); }
+.ss-chip.bad { color: var(--bad); }
+
+/* ---- dispatch lane ---- */
+.mc-dispatch { margin-top: 16px; }
+.dl-modes { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.dl-mode {
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  border: 1px solid var(--line); border-radius: 10px; cursor: pointer;
+  background: var(--panel2); transition: border-color .12s, box-shadow .12s;
+  font-size: 12px;
+}
+.dl-mode:has(input:checked) { border-color: var(--brass); box-shadow: 0 0 0 1px rgba(201,162,75,.3); }
+.dl-mode input { accent-color: var(--brass); }
+.dl-mode b { display: block; color: var(--text); }
+.dl-mode span { font-size: 10px; color: var(--muted); }
+.dl-fields .row { margin-top: 10px; flex-wrap: wrap; }
+.dl-warn { font-size: 11px; color: var(--warn); max-width: 420px; }
+
+/* ---- mission inspector ---- */
+.mc-live-chip {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em;
+  padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--panel2);
+}
+.mc-live-chip .dot-sm { width: 7px; height: 7px; }
+.mc-live-chip.planned { color: var(--brass); border-color: rgba(201,162,75,.45); }
+.mc-live-chip.running { color: var(--holo); border-color: rgba(95,212,200,.5); animation: pulse 1.4s infinite; }
+.mc-live-chip.validating { color: #b98ae0; border-color: rgba(185,138,224,.5); animation: pulse 1.4s infinite; }
+.mc-live-chip.complete { color: var(--ok); border-color: rgba(110,207,142,.5); }
+.mc-live-chip.failed { color: var(--bad); border-color: rgba(226,85,85,.6); }
+.mc-live-chip.blocked { color: var(--warn); border-color: rgba(232,182,76,.55); }
+.mc-phases { margin-top: 14px; }
+.mc-phase {
+  display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--line-soft);
+  font-size: 12px; color: var(--text-dim);
+}
+.mc-phase .ph-name { font-family: var(--font-mono); color: var(--brass-dim); letter-spacing: .1em; flex: none; width: 90px; }
+.mc-phase .ph-obj { color: var(--muted); }
+.mc-evlist { margin-top: 10px; font-size: 11px; font-family: var(--font-mono); }
+.mc-evlist li { padding: 2px 0; word-break: break-all; }
+.mc-warn li, .mc-issue li { font-size: 11px; padding: 2px 0; color: var(--muted); }
+.mc-ctl { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.mc-verdict.chip { margin-top: 12px; }
+.mc-artifact {
+  display: flex; justify-content: space-between; gap: 10px; padding: 7px 0;
+  border-bottom: 1px dashed var(--line-soft); font-size: 12px;
+  font-family: var(--font-mono); color: var(--muted); word-break: break-all;
+}
+
+/* ---- cast & assets ---- */
+.cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+.cast-slot {
+  border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+  background: linear-gradient(160deg, var(--panel), var(--bg1));
+}
+.cast-slot .cs-head { display: flex; align-items: center; gap: 10px; }
+.cast-slot .cs-ic {
+  width: 38px; height: 38px; border-radius: 10px; flex: none;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.14), rgba(255,255,255,.04));
+  border: 1px solid var(--line); display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.cast-slot h3 { margin: 0; font-size: 14px; }
+.cast-slot .cs-role { font-size: 10px; font-family: var(--font-mono); color: var(--brass-dim); text-transform: uppercase; letter-spacing: .1em; }
+.cast-slot .cs-slot {
+  margin-top: 10px; font-size: 10px; font-family: var(--font-mono); color: var(--muted);
+  background: var(--panel2); border: 1px dashed var(--line-soft); border-radius: 6px;
+  padding: 6px 8px; word-break: break-all;
+}
+.cs-state {
+  display: inline-block; margin-top: 10px; font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: .12em; padding: 3px 8px; border-radius: 999px; border: 1px solid;
+}
+.cs-state.missing { color: var(--warn); border-color: rgba(232,182,76,.45); }
+.cs-state.live { color: var(--ok); border-color: rgba(110,207,142,.5); }
+.cs-tools { margin-top: 10px; font-size: 10px; color: var(--muted); line-height: 1.7; }
+.cs-tools b { color: var(--text-dim); }
+
+/* ---- worker dossier modal ---- */
+.dossier { width: min(640px, 92vw); }
+.dossier .dos-head { display: flex; gap: 16px; align-items: center; }
+.dossier .dos-ic {
+  width: 64px; height: 64px; border-radius: 14px; flex: none;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.16), rgba(255,255,255,.04));
+  border: 1px solid var(--line); display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+}
+.dossier .dos-state { margin-top: 8px; }
+.dossier .dos-slot {
+  margin-top: 12px; font-size: 11px; font-family: var(--font-mono); color: var(--muted);
+  background: var(--panel2); border: 1px dashed var(--line-soft); border-radius: 8px;
+  padding: 10px; line-height: 1.7; word-break: break-all;
+}
+
+/* ---- proof age chip ---- */
+.pv-age {
+  position: absolute; top: 52px; left: 14px; z-index: 3;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em;
+  padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line);
+  background: rgba(10,7,5,.7); color: var(--muted);
+}
+.pv-age.fresh { color: var(--ok); border-color: rgba(110,207,142,.4); }
+.pv-age.stale { color: var(--warn); border-color: rgba(232,182,76,.45); }
+
+/* ---- settings: clickup contract ---- */
+.cu-contract {
+  margin-top: 12px; background: var(--panel2); border: 1px dashed var(--line-soft);
+  border-radius: 8px; padding: 10px 12px; line-height: 1.8; font-size: 11px;
+}
+.cu-contract b { color: var(--brass-hi); }
+
+/* ---- finance truthfulness ---- */
+.fin-src { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); margin-bottom: 8px; }
+.fl-row .fl-src { font-size: 9px; color: var(--muted); font-family: var(--font-mono); }
+
+/* ---- quest truthfulness ---- */
+.q-src { font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); margin-left: 8px; }
+
+@media (max-width: 1250px) {
+  .mc-layout { grid-template-columns: 300px 1fr; }
+  .pv-viewport { height: 52vh; }
+  .dl-modes { flex-direction: column; }
+  .dl-mode { width: 100%; }
+}
+@media (max-width: 900px) {
+  .mc-layout { grid-template-columns: 1fr; }
+  .sys-strip { gap: 8px; }
+  .pv-viewport { height: 44vh; }
+}
