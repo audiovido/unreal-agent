@@ -32,6 +32,7 @@ build/
 # MCP gateway API key (auto-generated on first run; never commit)
 config/mcp_gateway.key
 config/mcp_gateway.key.*
+config/mcp_gateway.public_host
 
 # Locally-downloaded tunnel binary (never commit)
 tools/bin/
@@ -57,4 +58,23 @@ assetlib/tests/ue/*/Intermediate/
 assetlib/tests/ue/*/Saved/
 assetlib/tests/ue/*/DerivedDataCache/
 assetlib/proof/*.png
-assetlib/proof/screens/*.png
+vendor/
+
+# Generated proof/report evidence (tracked historical evidence remains tracked)
+assetlib/proof/**
+assetlib/reports/*.json
+assetlib/reports/*.md
+
+# Local runtime state and downloaded workspace artifacts
+config/leases/
+config/first_run.json
+config/product.json
+config/product_state.json
+downloads/
+workspace/
+memory/checkpoints/
+memory/code_tasks/
+memory/diagnostics/
+memory/mission_logs/
+*.pid
+*.err
