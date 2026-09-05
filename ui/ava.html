@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Unreal Agent — Ava</title>
-<meta name="description" content="Unreal Agent — a living AI companion that can control Unreal Engine for you.">
-<meta name="theme-color" content="#05070d">
+<title>Aivido — Ava, your living AI companion</title>
+<meta name="description" content="Aivido — a living AI companion that can control Unreal Engine for you.">
+<meta name="theme-color" content="#04060d">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><radialGradient id='g' cx='35%' cy='30%'><stop offset='0%' stop-color='%23bdf3ff'/><stop offset='45%' stop-color='%2338bdf8'/><stop offset='100%' stop-color='%2310367c'/></radialGradient></defs><circle cx='32' cy='32' r='26' fill='url(%23g)'/><circle cx='26' cy='28' r='4' fill='%23eafcff'/><circle cx='38' cy='28' r='4' fill='%23eafcff'/><path d='M25 38 q7 5 14 0' stroke='%237dd3fc' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
-<link rel="stylesheet" href="/static/ava.css?v=11">
+<link rel="stylesheet" href="/static/ava.css?v=3a95fb53">
 </head>
-<body data-state="idle" data-voice="off">
+<body data-state="idle" data-mode="idle" data-voice="off" data-tc="off">
 
   <!-- ============ LIVING ENVIRONMENT ============ -->
   <canvas id="scene" aria-hidden="true"></canvas>
@@ -19,22 +19,26 @@
     <div class="blob b3"></div>
     <div class="fog f1"></div>
     <div class="fog f2"></div>
+    <div class="horizon-glow"></div>
     <div class="grid-floor"></div>
     <div class="hud-ring r1"></div>
     <div class="hud-ring r2"></div>
     <div class="hud-ring r3"></div>
   </div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
 
   <!-- ============ TOP BAR ============ -->
   <header class="topbar">
     <div class="brand">
-      <div class="brand-orb" aria-hidden="true"><i></i></div>
+      <div class="brand-orb" aria-hidden="true"><i></i><i></i></div>
       <div class="brand-text">
-        <strong>Unreal Agent</strong>
+        <strong class="wordmark">Aivido</strong>
         <span id="brandSub">Ava · living AI companion</span>
       </div>
     </div>
     <div class="top-right">
+      <button id="updateChip" class="update-chip hidden" title="A newer Aivido UI is available — click to download">Update available</button>
       <button id="statusPill" class="status-pill" title="Backend status">
         <span id="statusDot" class="dot"></span><span id="statusText">Connecting…</span>
       </button>
@@ -46,7 +50,7 @@
   <main class="stage">
 
     <section class="avatar-scene" id="avatarScene">
-      <div class="avatar" id="avatar" role="img" aria-label="Unreal Agent avatar">
+      <div class="avatar" id="avatar" role="img" aria-label="Aivido avatar">
         <div class="aura"></div>
         <div class="ring ring-orb"></div>
         <div class="ring ring-spin"></div>
@@ -73,7 +77,8 @@
       </div>
 
       <div class="caption">
-        <h1 id="captionTitle">Unreal Agent</h1>
+        <span id="modeTag" class="mode-tag" aria-hidden="true"></span>
+        <h1 id="captionTitle">Aivido</h1>
         <p id="statusLine">Ready. What should we build?</p>
       </div>
     </section>
@@ -84,20 +89,21 @@
 
   </main>
 
-  <!-- ============ DOCK : TASK CARD + COMPOSER ============ -->
+  <!-- ============ DOCK : MISSION STRIP + COMPOSER ============ -->
   <footer class="dock" id="dock">
 
     <div id="taskCard" class="task-card hidden" data-tc="working">
+      <div class="tc-accent" aria-hidden="true"></div>
       <div class="tc-head">
         <span class="tc-icon" id="tcIcon" aria-hidden="true"></span>
-        <span class="tc-title" id="tcTitle">Building Unreal project</span>
+        <div class="tc-titles">
+          <span class="tc-title" id="tcTitle">Building your scene</span>
+          <span class="tc-step" id="tcStep">Working…</span>
+        </div>
+        <span class="tc-pct" id="tcPct">0%</span>
         <span class="tc-badge" id="tcBadge">working</span>
       </div>
       <div class="tc-progress"><i id="tcBar"></i></div>
-      <div class="tc-meta">
-        <span id="tcStep">Connecting to Unreal…</span>
-        <span id="tcPct">0%</span>
-      </div>
       <div class="tc-actions" id="tcActions">
         <button id="tcExpand" class="tc-btn">Details</button>
         <button id="tcCancel" class="tc-btn danger">Cancel</button>
@@ -111,8 +117,10 @@
       <div id="attachChips" class="attach-chips"></div>
       <div class="composer-bar">
         <div class="composer-wave" id="composerWave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-        <button id="attachBtn" class="c-btn" title="Attach files" aria-label="Attach files">+</button>
-        <textarea id="input" rows="1" placeholder="Ask Unreal Agent anything…" enterkeyhint="send" autocomplete="off"></textarea>
+        <button id="attachBtn" class="c-btn" title="Attach files" aria-label="Attach files">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <textarea id="input" rows="1" placeholder="Ask Aivido anything…" enterkeyhint="send" autocomplete="off"></textarea>
         <button id="micBtn" class="c-btn mic" title="Voice input" aria-label="Voice input">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21.5"/></svg>
         </button>
@@ -129,13 +137,14 @@
 
   </footer>
 
-  <!-- ============ LIVE METAHUMAN PIP ============ -->
+  <!-- ============ LIVE EVIDENCE FRAME ============ -->
   <aside id="pip" class="pip hidden" aria-hidden="true">
     <div class="pip-head">
       <span class="pip-badge" id="pipBadge">CAPTURE</span>
-      <span class="pip-label">MetaHuman viewport</span>
+      <span class="pip-label">Live viewport evidence</span>
     </div>
-    <img id="pipImg" alt="Live MetaHuman viewport capture" draggable="false">
+    <img id="pipImg" alt="Live viewport capture" draggable="false">
+    <div class="pip-foot">Aivido proof · fresh capture</div>
   </aside>
 
   <!-- completion flash -->
@@ -149,7 +158,7 @@
   <aside id="drawer" class="drawer" aria-hidden="true">
     <div class="drawer-head">
       <div class="drawer-title">
-        <strong>Advanced</strong>
+        <strong>AIVIDO · Advanced</strong>
         <span>Developer console · live backend</span>
       </div>
       <div class="drawer-actions">
@@ -163,7 +172,7 @@
   <div id="toast" role="status"></div>
   <input type="file" id="fileInput" class="hidden" multiple>
 
-<script src="/static/ava_widget.js?v=11"></script>
-<script src="/static/ava.js?v=11"></script>
+<script src="/static/ava_widget.js?v=8a45e149"></script>
+<script src="/static/ava.js?v=870767b5"></script>
 </body>
 </html>

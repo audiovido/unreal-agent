@@ -1,5 +1,5 @@
 /* ============================================================
-   Unreal Agent — Ava · living AI companion
+   Aivido — Ava · living AI companion
    Wired to the real backend on the same origin:
      GET  /api/status                       health + models + busy state
      POST /api/action  {action:"prompt"}    start a real agent task → task_id
@@ -86,6 +86,33 @@
     widgetPost("height", { height: h });
   }
 
+  /* ============================================================
+     PUBLIC UPDATE CHECK
+     Compares the local ui-version.json against the canonical public
+     GitHub branch. Shows an "Update available" chip only when the
+     public build is NEWER (build_id compare) with a DIFFERENT content
+     hash. Purely additive; every failure path stays silent. Never in
+     embed/widget mode. Release tooling: scripts/ui_release.py.
+     ============================================================ */
+  var PUBLIC_VERSION_URL = "https://raw.githubusercontent.com/audiovido/unreal-agent/main/ui-version.json";
+  var PUBLIC_LATEST_URL = "https://github.com/audiovido/unreal-agent/releases/latest";
+
+  function updateCheck() {
+    if (window.parent !== window || !window.fetch) return;
+    Promise.all([
+      fetch("/static/ui-version.json").then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch(PUBLIC_VERSION_URL, { mode: "cors" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+    ]).then(function (pair) {
+      var chip = $("updateChip");
+      if (!chip) return;
+      var local = pair[0], pub = pair[1];
+      if (!local || !pub || !pub.content_hash || !local.content_hash) return;
+      if (pub.content_hash === local.content_hash) return;
+      if (String(pub.build_id || "").localeCompare(String(local.build_id || "")) <= 0) return;
+      chip.classList.remove("hidden");
+    });
+  }
+
   function hostSend(message) {
     if (!S.online) { widgetPost("error", { text: "Companion is offline — message not sent." }); return; }
     if (S.running) { widgetPost("error", { text: "Companion is busy — message not sent." }); return; }
@@ -105,6 +132,7 @@
     renderAttachChips();
     if (S.es) { S.es.close(); S.es = null; }
     S.running = false; S.taskId = null;
+    setMode("idle");
     setState("idle");
     widgetPost("cleared", {});
   }
@@ -146,6 +174,14 @@
       $("statusLine").textContent = STATE_LABELS[st] || "";
     }
     if (st === "success") fireBurst();
+  }
+
+  /* Richer assistant modes: an additive visual channel driven by the same
+     backend stage classifier. body[data-mode] gives the CSS distinct
+     PLANNING / BUILDING / CHECKING / FIXING / APPROVAL / COMPLETE / ERROR
+     presentations on top of body[data-state]. Never changes backend calls. */
+  function setMode(mode) {
+    body.dataset.mode = mode || "idle";
   }
 
   function fireBurst() {
@@ -486,11 +522,12 @@
 
   function enterApprovalMode() {
     if (!S.running) return;
+    setMode("approval");
     setState("idle", "Waiting for your confirmation…");
     setTaskCard({
       tc: "approval",
       badge: "confirmation",
-      title: S.lastPrompt ? S.lastPrompt.slice(0, 60) : "Unreal Agent",
+      title: S.lastPrompt ? S.lastPrompt.slice(0, 60) : "Aivido",
       pct: 100,
       step: "The agent needs your confirmation to continue."
     });
@@ -501,12 +538,12 @@
      STAGE / PROGRESS MAPPING
      ============================================================ */
   var STAGES = [
-    { key: "understand", keys: ["understanding"], label: "Understanding" },
-    { key: "plan", keys: ["planning", "planned", "plan_generated", "execution_plan"], label: "Planning" },
-    { key: "edit", keys: ["editing", "dispatch", "tool", "spawn", "create_", "set_", "delete_"], label: "Building scene" },
-    { key: "build", keys: ["building", "compile", "save_level", "save", "import_"], label: "Building" },
-    { key: "validate", keys: ["validating", "validation", "verify", "get_", "list_", "inspect", "capture"], label: "Testing" },
-    { key: "fix", keys: ["fixing", "fix", "retry", "replan"], label: "Fixing issue" }
+    { key: "understand", keys: ["understanding"], label: "Reading your request" },
+    { key: "plan", keys: ["planning", "planned", "plan_generated", "execution_plan"], label: "Planning the approach" },
+    { key: "edit", keys: ["editing", "dispatch", "tool", "spawn", "create_", "set_", "delete_"], label: "Building your scene" },
+    { key: "build", keys: ["building", "compile", "save_level", "save", "import_"], label: "Compiling assets" },
+    { key: "validate", keys: ["validating", "validation", "verify", "get_", "list_", "inspect", "capture"], label: "Checking the result" },
+    { key: "fix", keys: ["fixing", "fix", "retry", "replan"], label: "Repairing the issue" }
   ];
   var STAGE_ORDER = ["understand", "plan", "edit", "build", "validate", "fix"];
 
@@ -553,6 +590,7 @@
 
     var st = stageOf(type, title, tool);
     if (st) {
+      setMode(st);
       var idx = STAGE_ORDER.indexOf(st);
       if (idx > S.stageIdx) {
         S.stageIdx = idx;
@@ -566,6 +604,7 @@
         S.planSteps = detail.steps.length;
         S.doneSteps = 0;
       }
+      setMode("plan");
       setState("working", "Planning…");
       showTaskCard();
       setTaskCard({ tc: "working", badge: "planning", title: S.lastPrompt ? S.lastPrompt.slice(0, 64) : "Planning", pct: 6, step: "Planning the approach…" });
@@ -675,6 +714,7 @@
     S.taskId = null;
 
     if (ok) {
+      setMode("complete");
       setState("success");
       showCompletion("Complete", summarize(text));
       widgetPost("typing", { state: "end" });
@@ -687,6 +727,7 @@
         step: "Done — the task completed successfully."
       });
     } else {
+      setMode("error");
       setState("error");
       showCompletion("Attention", "The task didn't complete. See the response below.", true);
       setTaskCard({
@@ -764,6 +805,7 @@
 
     S.running = true;
     S.planSteps = 0; S.doneSteps = 0; S.stageIdx = -1;
+    setMode("thinking");
     setState("thinking", "Thinking…");
     widgetPost("typing", { state: "start" });
 
@@ -804,6 +846,7 @@
   }
 
   function failLocal(title, msg) {
+    setMode("error");
     setState("error");
     showCompletion("Attention", msg, true);
     if (currentAiHandle) currentAiHandle.setPlain(msg);
@@ -876,6 +919,7 @@
     S.taskId = null;
     hideTaskCard();
     updateSend();
+    setMode("idle");
     setState("idle", "Cancelled. Ready when you are.");
   }
 
@@ -1110,6 +1154,12 @@
     $("tcReject").addEventListener("click", function () { resolveApproval(false); });
     $("tcDismiss").addEventListener("click", hideTaskCard);
 
+    // update chip → public latest release
+    var upd = $("updateChip");
+    if (upd) upd.addEventListener("click", function () {
+      window.open(PUBLIC_LATEST_URL, "_blank", "noopener");
+    });
+
     // status pill → advanced
     $("statusPill").addEventListener("click", openDrawer);
     $("advancedBtn").addEventListener("click", openDrawer);
@@ -1134,11 +1184,14 @@
     }
     pollStatus();
     setInterval(pollStatus, 5000);
+    updateCheck();
+    setInterval(updateCheck, 15 * 60 * 1000);
     setInterval(function () {
       // if running and approvals pending, surface the confirmation card
       if (S.running && S.approvals > 0) enterApprovalMode();
     }, 2500);
 
+    setMode("idle");
     setState("idle");
   }
 

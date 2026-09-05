@@ -1,0 +1,32 @@
+{
+  "build_id": "20260905-224406",
+  "aivido_version": "0.1.0",
+  "ui_version": "1.0.0",
+  "product": "Aivido",
+  "git_sha": "57e9896cd323",
+  "git_dirty": true,
+  "timestamp": "2026-09-05T22:44:06Z",
+  "content_hash": "f89fb40589910e98f46fa4ca9f32aebd8f1d091cc4b74e215e7e768eb6028c10",
+  "routes": {
+    "": "ava.html",
+    "app": "aivido.html",
+    "dev": "index.html"
+  },
+  "files": {
+    "aivido.css": "03c8c5f4ab5b75d26b4fe1713bee62d0709ba59220c4a2ea50bc16c3e95bc9ad",
+    "aivido.html": "bd7a779c356d72bae682f25ba2eb2d5e17d2dc67264d7d84168c7885735ad1e3",
+    "aivido.js": "c8104be9085099bdfc33269c38840372cfb24977c95e299d5e607c3158409dba",
+    "app.js": "26e97a5c7663df1091b5bd16d03893b56b63e18325659f4f8fb338f1c60826c5",
+    "ava.css": "d6fb022a1953494a642095da78bfee0bb790060545e7e2fb7a39b67d429278f6",
+    "ava.html": "92281b214d11db9dd351cdcf00b14be2c4708e9b62be208a254e2d21d629599a",
+    "ava.js": "870767b5ddcc406b7847e150d2f84f5d118dcd9707367188fe76db7a4c9d7219",
+    "ava_widget.js": "8a45e149c7e7413882de961d73f1c71f0984df075ce859ee1d2eccb924d13229",
+    "devboard.html": "efbc2e09563b54fd5f2485415bba4f8d2a549840fa2107bb0bc1435e7f84dbc6",
+    "index.html": "85bc7163a27dbdf0565f4404d796254f261b1b4603ca9974a183a6c24d8da394",
+    "product.css": "61ac34d4fe2b88baadc2ccf07cb0ca30e6b9b9a523caa90a662bf00904adb3d3",
+    "product.html": "b9b7445014e5757d0084a0f20459fc97c8f52a4a04e872283647a33313559691",
+    "product.js": "15accd5a87f60983962c94db13b890aff846ec588e20efa7d53d6c9ea95fd0ec",
+    "styles.css": "77cdf611e95632486bbfe51f05b2abd0c3adccf32f1ff6fc159312410d677dfc",
+    "widget_harness.html": "86a9fcdd21682cac6cfe26db8f4185775926ab8875f247f69a64476c8cc68bea"
+  }
+}

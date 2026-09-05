@@ -1,0 +1,46 @@
+{
+  "product": "Aivido",
+  "product_label": "Unreal Agent \u2014 Ava \u00b7 living AI companion",
+  "aivido_version": "0.1.1",
+  "ui_version": "1.0.0",
+  "canonical_ui_dir": "ui",
+  "build_root": "dist/ui-builds",
+  "staging": {
+    "dir": "dist/ui-staging",
+    "port": 8890,
+    "backend": "http://127.0.0.1:8765"
+  },
+  "backup_root": "backup/ui",
+  "release": {
+    "github_repo": "audiovido/unreal-agent",
+    "github_branch": "main",
+    "public_base": "https://github.com/audiovido/unreal-agent",
+    "latest_url": "https://github.com/audiovido/unreal-agent/releases/latest",
+    "raw_ui_version_url": "https://raw.githubusercontent.com/audiovido/unreal-agent/main/ui-version.json",
+    "commit_paths": [
+      "ui",
+      "scripts/ui_release.py",
+      "scripts/ui_staging_server.py",
+      "scripts/aivido_update.py",
+      "config/ui_release.json",
+      "tests/test_ui_release.py"
+    ],
+    "release_root": "dist/ui-releases",
+    "package_root": "dist/releases",
+    "update_check_enabled": true
+  },
+  "targets": {
+    "shadow": {
+      "type": "local",
+      "ui_dir": "ui",
+      "base_url": "http://127.0.0.1:8765"
+    },
+    "mac": {
+      "type": "ssh",
+      "host": "100.98.38.52",
+      "user": "",
+      "ui_dir": "",
+      "base_url": "http://127.0.0.1:8765"
+    }
+  }
+}
