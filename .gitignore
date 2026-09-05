@@ -78,3 +78,9 @@ memory/diagnostics/
 memory/mission_logs/
 *.pid
 *.err
+
+# Multi-client runtime state (generated per machine — never committed)
+memory/sessions/
+config/runtime/
+config/project_registry.json
+assetlib/proof/product/

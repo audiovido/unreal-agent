@@ -104,7 +104,8 @@
     "profAvatar","profName","profXpFill","profXpTxt","stMissions","stSuccess","stHours","profSkills","profAch",
     "setBase","setName","setSave","setSaved","setAutoProof","setCinematic","setIdle","setSound","setVersion","railDot","railBackendTxt","homeEnterRoom",
     "holoData","pvPrev","pvNext","pvFull","pvIdx","pvBadge","pvAge","pvApprove","pvChange","liEngine","liCode","liWb","liClickup",
-    "ssEngine","ssBridge","ssMap","ssProof","ssExec","dlPrompt","dlDispatch","dlPlan","dlWarn","castGrid","cuStatus","cuDetail"];
+    "ssEngine","ssBridge","ssMap","ssProof","ssExec","dlPrompt","dlDispatch","dlPlan","dlWarn","castGrid","cuStatus","cuDetail",
+    "ssList","ssDetail","ssRegPath","ssRegBtn","ssProjSel","ssConnectBtn","ssRefresh"];
   REFS.forEach((r) => (el[r] = $(r)));
 
   /* ---------------- helpers ---------------- */
@@ -158,8 +159,8 @@
   }
 
   /* ---------------- router ---------------- */
-  const SCREENS = { home: "scr-home", workspaces: "scr-workspaces", mission: "scr-mission", room: "scr-room", proof: "scr-proof", quests: "scr-quests", finance: "scr-finance", profile: "scr-profile", settings: "scr-settings" };
-  const TITLES = { home: "BOOTH", workspaces: "WORKSPACES", mission: "MISSION CONTROL", room: "AGENT ROOM", proof: "PROOF VAULT", quests: "QUESTS", finance: "FINANCE", profile: "CREATOR PROFILE", settings: "SETTINGS" };
+  const SCREENS = { home: "scr-home", workspaces: "scr-workspaces", sessions: "scr-sessions", mission: "scr-mission", room: "scr-room", proof: "scr-proof", quests: "scr-quests", finance: "scr-finance", profile: "scr-profile", settings: "scr-settings" };
+  const TITLES = { home: "BOOTH", workspaces: "WORKSPACES", sessions: "SESSIONS", mission: "MISSION CONTROL", room: "AGENT ROOM", proof: "PROOF VAULT", quests: "QUESTS", finance: "FINANCE", profile: "CREATOR PROFILE", settings: "SETTINGS" };
 
   function route() {
     const nav = (location.hash || "#/home").replace(/^#\/?/, "").split("?")[0];
@@ -196,7 +197,8 @@
   /* ---------------- backend ---------------- */
   const apiBase = () => S.base.replace(/\/+$/, "");
   let backend = { online: false, busy: false, mode: "SIMULATION", last: null };
-  let live = { session: null, ws: null, tasks: [], wb: null, missions: [], tools: [], proofAge: null };
+  let live = { session: null, ws: null, tasks: [], wb: null, missions: [], tools: [], proofAge: null, sessions: [], projects: [], resources: null };
+  const SESS = { selected: null, timer: null };
 
   async function api(path, opts = {}) {
     const r = await fetch(apiBase() + path, { headers: { "Content-Type": "application/json" }, ...opts });
@@ -237,10 +239,12 @@
     try { live.ws = await api("/api/workspace"); } catch (_) {}
     try { const r = await api("/api/code/tasks"); live.tasks = (r && r.tasks) || []; } catch (_) {}
     try { const r = await api("/api/workboard/state"); live.wb = (r && r.data) || null; } catch (_) {}
+    try { const m = await api("/api/multiclient/status"); live.sessions = (m && m.sessions) || []; live.projects = (m && m.projects) || []; live.resources = (m && m.resources) || null; } catch (_) {}
     if (route() === "room") renderHoloData();
     if (route() === "mission") renderMission();
     if (route() === "workspaces") renderWorkspaces();
     if (route() === "settings") renderLiveIntegrations();
+    if (route() === "sessions") renderSessions();
   }
 
   function renderHoloData() {
@@ -640,7 +644,7 @@
 
   /* ---------------- screen renders ---------------- */
   function render(nav) {
-    ({ home: renderHome, workspaces: renderWorkspaces, mission: renderMission, room: renderRoomScreen, proof: renderProofScreen, quests: renderQuests, finance: renderFinance, profile: renderProfile, settings: renderSettings }[nav] || (() => {}))();
+    ({ home: renderHome, workspaces: renderWorkspaces, sessions: renderSessions, mission: renderMission, room: renderRoomScreen, proof: renderProofScreen, quests: renderQuests, finance: renderFinance, profile: renderProfile, settings: renderSettings }[nav] || (() => {}))();
   }
 
   function renderHome() {
@@ -1276,6 +1280,139 @@
     renderLiveIntegrations();
   }
 
+  /* ---------------- multi-client sessions (Phase 5) ---------------- */
+  function renderSessions() {
+    if (!el.ssList) return;
+    if (SESS.timer) { clearInterval(SESS.timer); SESS.timer = null; }
+    renderProjectSelect();
+    renderSessionList();
+    renderSessionDetail();
+    renderResourcesStrip();
+    const sel = live.sessions.find((s) => s.session_id === SESS.selected);
+    if (sel && ["STARTING", "BUSY", "VALIDATING"].includes(sel.status)) {
+      SESS.timer = setInterval(() => { renderSessionList(); renderSessionDetail(); renderResourcesStrip(); }, 5000);
+    }
+  }
+
+  function renderProjectSelect() {
+    const sel = el.ssProjSel; if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = live.projects.length
+      ? live.projects.map((p) => `<option value="${esc(p.project_id)}">${esc(p.display_name)} — ${esc(p.uproject_path)}</option>`).join("")
+      : `<option value="">No registered projects — register one below</option>`;
+    if (prev && live.projects.some((p) => p.project_id === prev)) sel.value = prev;
+  }
+
+  function renderSessionList() {
+    const list = el.ssList; if (!list) return;
+    if (!live.sessions.length) {
+      list.innerHTML = `<div class="mc-empty">No sessions yet. Register a project below, then “＋ New Session”.</div>`;
+      return;
+    }
+    list.innerHTML = live.sessions.map((s) => {
+      const st = String(s.status || "").toLowerCase();
+      return `<div class="ss-card${s.session_id === SESS.selected ? " active" : ""}" data-ss="select" data-sid="${esc(s.session_id)}">
+        <div class="ss-top"><span class="ss-name">${esc(s.project_name || s.project_id)}</span><span class="ss-chip st-${esc(st)}">${esc(s.status || "—")}</span></div>
+        <div class="ss-sub">${esc(s.session_id)} · ${esc(s.client_id)}</div>
+        <div class="ss-meta">
+          <span class="ss-chip">bridge ${esc(s.bridge || "—")}</span>
+          <span class="ss-chip">pid ${esc(s.unreal_pid != null ? s.unreal_pid : "—")}</span>
+          <span class="ss-chip">${esc(s.task_count || 0)} tasks</span>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  async function renderSessionDetail() {
+    const d = el.ssDetail; if (!d) return;
+    if (!SESS.selected) {
+      d.innerHTML = `<div class="mc-empty">Select a session to drive it — prompt, task history, proofs and live identity.</div>`;
+      return;
+    }
+    let detail = null, proof = { proof: [] }, tasks = { tasks: [] };
+    try {
+      const [r1, r2, r3] = await Promise.all([
+        api("/api/sessions/" + encodeURIComponent(SESS.selected)),
+        api("/api/sessions/" + encodeURIComponent(SESS.selected) + "/proof"),
+        api("/api/sessions/" + encodeURIComponent(SESS.selected) + "/tasks"),
+      ]);
+      detail = (r1 && r1.session) || null; proof = r2 || proof; tasks = r3 || tasks;
+    } catch (e) {
+      d.innerHTML = `<div class="mc-empty">Session detail unavailable: ${esc(String(e && e.message || e))}</div>`;
+      return;
+    }
+    if (!detail) { d.innerHTML = `<div class="mc-empty">Session not found.</div>`; return; }
+    const st = String(detail.status || "").toLowerCase();
+    const busy = ["STARTING", "BUSY", "VALIDATING"].includes(String(detail.status || ""));
+    const cells = [
+      ["project", detail.project_name], ["bridge", detail.bridge], ["unreal pid", detail.unreal_pid],
+      ["engine", String(detail.engine_version || "").split("+")[0] || "—"], ["map", detail.active_map || "—"],
+      ["execution", detail.current_execution_id || "—"],
+    ].map(([k, v]) => `<div class="ss-cell"><b>${esc(k)}</b><span>${esc(v != null ? v : "—")}</span></div>`).join("");
+    const proofs = (proof.proof || []).slice(0, 4).map((m) => (m.files || []).map((f) =>
+      `<img src="${esc(f.url)}" alt="proof" title="${esc(m.execution_id)}">`).join("")).join("");
+    const taskHtml = (tasks.tasks || []).slice(0, 8).map((t) =>
+      `<div class="ss-task"><div class="t-row"><span class="t-prompt">${esc(t.prompt)}</span><span class="t-state ${esc(t.status)}">${esc(t.status)} · ${esc(t.verdict || "")}</span></div>${t.why ? `<div class="t-why">${esc(t.why)}</div>` : ""}</div>`
+    ).join("");
+    d.innerHTML = `<div class="ss-detail-head">
+        <div><h3>${esc(detail.project_name || detail.project_id)}</h3>
+        <div class="ss-meta"><span class="ss-chip st-${esc(st)}">${esc(detail.status || "—")}</span>
+        <span class="ss-chip">${esc(detail.session_id)}</span><span class="ss-chip">${esc(detail.client_id)}</span></div></div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          ${busy ? `<button class="btn small ghost" data-ss="cancel" data-sid="${esc(detail.session_id)}">✕ Cancel</button>` : ""}
+          <button class="btn small" data-ss="restart" data-sid="${esc(detail.session_id)}">⟳ Restart</button>
+          <button class="btn small ghost" data-ss="disconnect" data-sid="${esc(detail.session_id)}">Disconnect</button>
+        </div>
+      </div>
+      <div class="ss-grid">${cells}</div>
+      <div class="ss-composer">
+        <input id="ssPrompt" class="textinput" placeholder="Prompt this project's session… (e.g. “read only: inspect the current project”)">
+        <button id="ssSend" class="btn primary" ${busy ? "disabled" : ""}>⚡ Run</button>
+      </div>
+      ${proofs ? `<div class="ss-proofs">${proofs}</div>` : ""}
+      <div class="ss-tasks">${taskHtml || `<div class="mc-empty" style="padding:8px">No tasks in this session yet.</div>`}</div>
+      <div id="ssResLine" class="ss-res"></div>`;
+    const promptEl = d.querySelector("#ssPrompt");
+    const sendEl = d.querySelector("#ssSend");
+    const run = async () => {
+      const text = (promptEl.value || "").trim();
+      if (!text) return toast("Prompt required", "Describe what this project should do.", "bad");
+      try {
+        await api("/api/sessions/" + encodeURIComponent(detail.session_id) + "/async", {
+          method: "POST", body: JSON.stringify({ prompt: text }),
+        });
+        toast("Session task accepted", "Running inside session " + detail.session_id + " — the project's own editor and bridge.", "good");
+        promptEl.value = "";
+        renderSessions();
+      } catch (e) { toast("Dispatch failed", String(e && e.message || e), "bad"); }
+    };
+    sendEl.addEventListener("click", run);
+    promptEl.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+    renderResourcesStrip();
+  }
+
+  function renderResourcesStrip() {
+    const line = document.querySelector("#ssResLine");
+    if (!line) return;
+    const r = live.resources || {};
+    const gpu = r.gpu ? `gpu ${Math.round(r.gpu.used_mb || 0)}/${Math.round(r.gpu.total_mb || 0)} MB` : "gpu n/a";
+    target.innerHTML = [
+      `cpu ${r.cpu_percent != null ? r.cpu_percent + "%" : "n/a"}`,
+      `ram ${r.ram_used_mb != null ? Math.round(r.ram_used_mb / 1024) + " GB" : "n/a"}`,
+      gpu,
+      `unreal pids ${(r.unreal_processes || []).length}`,
+      `heavy ${r.active_heavy_tasks || 0}`,
+    ].map((x) => `<span>${esc(x)}</span>`).join("");
+  }
+
+  async function ssAction(sid, action) {
+    try {
+      await api("/api/sessions/" + encodeURIComponent(sid) + "/" + action, { method: "POST", body: JSON.stringify({}) });
+      toast("Session " + action, sid + " — " + action + " requested.", "good");
+      renderSessions();
+    } catch (e) { toast(action + " failed", String(e && e.message || e), "bad"); }
+  }
+
   /* ---------------- wire up ---------------- */
   function boot() {
     el.hudWorkspace.textContent = S.workspace;
@@ -1301,6 +1438,38 @@
       if (["pvCapture", "pvApprove", "pvChange", "hudSnd"].includes(b.id)) return;
       if (b.closest(".choice-card")) return;
       SFX.click();
+    });
+
+    // multi-client sessions rail
+    el.ssRefresh.addEventListener("click", () => { renderSessions(); toast("Sessions refreshed", "Live session + project state reloaded.", "info"); });
+    el.ssRegBtn.addEventListener("click", async () => {
+      const path = (el.ssRegPath.value || "").trim();
+      if (!path) return toast("Path required", "Paste the absolute .uproject path.", "bad");
+      try {
+        const r = await api("/api/projects/register", { method: "POST", body: JSON.stringify({ uproject_path: path }) });
+        if (!r.ok) throw new Error(r.error || "register failed");
+        toast("Project registered", r.project.display_name + " → " + r.project.project_id, "good");
+        el.ssRegPath.value = "";
+        renderSessions();
+      } catch (e) { toast("Register failed", String(e && e.message || e), "bad"); }
+    });
+    el.ssConnectBtn.addEventListener("click", async () => {
+      const pid = el.ssProjSel.value;
+      if (!pid) return toast("No project selected", "Register a project first, then pick it in the list.", "bad");
+      try {
+        const r = await api("/api/sessions", { method: "POST", body: JSON.stringify({ project_id: pid, client_id: "browser" }) });
+        SESS.selected = r.session.session_id;
+        await api("/api/sessions/" + encodeURIComponent(SESS.selected) + "/start", { method: "POST", body: JSON.stringify({}) });
+        toast("Session started", SESS.selected + " — bridge + editor resolved for this project.", "good");
+        renderSessions();
+      } catch (e) { toast("Session failed", String(e && e.message || e), "bad"); }
+    });
+    document.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-ss]");
+      if (!b) return;
+      const act = b.dataset.ss, sid = b.dataset.sid;
+      if (act === "select") { SESS.selected = sid; renderSessions(); SFX.click(); }
+      if (["restart", "disconnect", "cancel"].includes(act) && sid) ssAction(sid, act);
     });
 
     // dispatch lane

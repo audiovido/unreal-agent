@@ -34,6 +34,7 @@
     <div class="rail-sep"></div>
     <button class="rail-item" data-nav="home"><span class="ri-ic">⌂</span><span class="ri-lb">Booth</span></button>
     <button class="rail-item" data-nav="workspaces"><span class="ri-ic">▦</span><span class="ri-lb">Workspaces</span></button>
+    <button class="rail-item" data-nav="sessions"><span class="ri-ic">◫</span><span class="ri-lb">Sessions</span></button>
     <button class="rail-item" data-nav="mission"><span class="ri-ic">☩</span><span class="ri-lb">Mission Control</span></button>
     <button class="rail-item" data-nav="room"><span class="ri-ic">✪</span><span class="ri-lb">Agent Room</span></button>
     <button class="rail-item" data-nav="proof"><span class="ri-ic">▣</span><span class="ri-lb">Proof Vault</span></button>
@@ -132,6 +133,27 @@
         <h2 class="block-h">Cast &amp; Assets</h2>
         <p class="muted" style="font-size:12px;margin-top:-8px">Seven specialist slots. Ready-made MetaHuman presets land in Phase 2 — the import contract and fallback are live below.</p>
         <div id="castGrid" class="cast-grid"></div>
+      </section>
+
+      <!-- ===== MULTI-CLIENT SESSIONS ===== -->
+      <section id="scr-sessions" class="screen">
+        <div class="screen-head">
+          <div><h1>Sessions</h1><p class="screen-sub">One browser client · one Unreal project — isolated editors, bridges, proofs and task queues.</p></div>
+          <button id="ssRefresh" class="btn ghost small">⟳ Refresh</button>
+        </div>
+        <div class="ss-layout">
+          <div id="ssList" class="ss-list"></div>
+          <aside id="ssDetail" class="ss-detail"><div class="mc-empty">Select a session to drive it — prompt, task history, proofs and live identity.</div></aside>
+        </div>
+        <div id="ssReg" class="card" style="margin-top:16px">
+          <div class="card-head"><h2>Project Registry</h2><span class="card-sub">persistent · validated .uproject paths only</span></div>
+          <div class="row" style="gap:10px;flex-wrap:wrap">
+            <input id="ssRegPath" class="textinput" style="flex:1;min-width:300px" placeholder="C:/path/to/YourProject.uproject">
+            <button id="ssRegBtn" class="btn primary">Register</button>
+            <select id="ssProjSel" class="textinput" style="flex:1;min-width:220px"></select>
+            <button id="ssConnectBtn" class="btn">＋ New Session</button>
+          </div>
+        </div>
       </section>
 
       <!-- ===== MISSION CONTROL ===== -->

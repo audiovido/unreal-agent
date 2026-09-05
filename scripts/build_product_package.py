@@ -47,7 +47,8 @@ MODULES_CORE = [
     "universal_intent.py", "visual_acceptance.py", "visual_loop.py",
     "visual_director.py", "release_director.py", "unreal_fix_adapter.py",
     "scene_locators.py", "vision_provider.py", "mission.py",
-    "universal_planner.py", "capability_registry.py", "tool_registry.py",
+    "mission_policy.py", "universal_planner.py", "capability_registry.py",
+    "tool_registry.py",
 ]
 MODULES_APP = ["product_app.py"]
 # tools/ and assetlib/ packages pulled in by the real-task path:

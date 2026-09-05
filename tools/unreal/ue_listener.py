@@ -5,10 +5,14 @@ import json
 import queue
 import traceback
 import io
+import os
 import contextlib
 
 HOST = "127.0.0.1"
-PORT = 6766
+# Per-session bridge ports: the multi-client runtime launches each editor
+# with UA_BRIDGE_PORT set so every project instance owns a unique endpoint.
+# The default (6766) preserves the legacy single-project behavior exactly.
+PORT = int(os.getenv("UA_BRIDGE_PORT", "6766"))
 REQUEST_TIMEOUT_SECONDS = 180
 
 request_queue = queue.Queue()

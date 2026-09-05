@@ -1,9 +1,21 @@
 from __future__ import annotations
 
+import os
 import threading
 import time
 import uuid
 from app import api
+
+# ---------------------------------------------------------------------------
+# MULTI-CLIENT INSTANCE GUARD
+# ---------------------------------------------------------------------------
+# The canonical single-project backend owns ONE workboard queue on disk. When
+# a second Aivido instance runs on the same host (e.g. a validation instance
+# while the production backend is live), the workboard autopilot must stay
+# disabled so two processes never fight over the same cards.
+# UA_DISABLE_WORKBOARD_AUTOPILOT=1 -> this instance serves the multi-client
+# sessions/projects surface only.
+_WORKBOARD_AUTOPILOT = os.getenv("UA_DISABLE_WORKBOARD_AUTOPILOT") != "1"
 
 # ============================================================
 # WORKBOARD PERSISTENCE HARDENING
@@ -652,7 +664,8 @@ def _recover_reload_orphans():
     if changed:
         wb._save(data)
 
-_recover_reload_orphans()
+if _WORKBOARD_AUTOPILOT:
+    _recover_reload_orphans()
 
 
 
@@ -1006,14 +1019,17 @@ def _final_autopilot_watchdog():
 
 
 # Recover immediately at boot.
-_recover_deadlocked_tasks()
+if _WORKBOARD_AUTOPILOT:
+    _recover_deadlocked_tasks()
 
 # And guarantee progress even if the older watchdog misses a state change.
-threading.Thread(
-    target=_final_autopilot_watchdog,
-    name="unreal-agent-final-autopilot",
-    daemon=True,
-).start()
+# Skipped on multi-client-only instances (see _WORKBOARD_AUTOPILOT).
+if _WORKBOARD_AUTOPILOT:
+    threading.Thread(
+        target=_final_autopilot_watchdog,
+        name="unreal-agent-final-autopilot",
+        daemon=True,
+    ).start()
 
 
 
@@ -1165,14 +1181,25 @@ def _watchdog():
         time.sleep(5)
 
 
-_recover_all_recoverable_blocked()
+if _WORKBOARD_AUTOPILOT:
+    _recover_all_recoverable_blocked()
 
-threading.Thread(
-    target=_watchdog,
-    daemon=True,
-    name="final-autonomy-watchdog-v2",
-).start()
+if _WORKBOARD_AUTOPILOT:
+    threading.Thread(
+        target=_watchdog,
+        daemon=True,
+        name="final-autonomy-watchdog-v2",
+    ).start()
 
 
 
 from app import final_recovery  # FINAL RECOVERY V3
+
+
+# ============================================================
+# MULTI-CLIENT SESSIONS / PROJECTS RUNTIME (Phases 1-10)
+# Additive surface: canonical execution machinery is untouched; session
+# work reuses the mission engine through core.session_execution.
+# ============================================================
+from app.session_api import register_session_api
+register_session_api(app)

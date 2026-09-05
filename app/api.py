@@ -4535,11 +4535,31 @@ def director_booth():
 
 @app.get("/api/execution/{task_id}")
 def execution_detail(task_id: str):
-    """Read-only canonical execution/evidence projection for Devboard."""
+    """Read-only canonical execution/evidence projection for Devboard.
+
+    Session-scoped executions resolve through the session store as well, so
+    an execution id from any project session is addressable (session-bound,
+    never leaking between projects).
+    """
     if execution_state is not None and str(execution_state.get("id")) == str(task_id):
         return {"ok": True, "execution": _execution_detail(execution_state)}
     if last_execution_snapshot is not None and str(last_execution_snapshot.get("task_id")) == str(task_id):
         return {"ok": True, "execution": last_execution_snapshot}
+    from core.session_model import SessionStore
+    from core.mission import MissionState
+    for session in SessionStore().list():
+        task = session.get_task(str(task_id))
+        if task is None:
+            continue
+        checkpoint = MissionState.load(f"mission_{task_id}")
+        return {
+            "ok": True,
+            "session_id": session.session_id,
+            "project_id": session.project_id,
+            "execution": task.to_dict(),
+            "checkpoint": checkpoint.to_dict() if checkpoint else None,
+            "proof": [],
+        }
     raise HTTPException(404, "Execution detail not found.")
 
 
@@ -5342,6 +5362,40 @@ def unified_action(request: dict):
 
     if not action:
         raise HTTPException(400, "action is required.")
+
+    # ----------------------------------------------------------------
+    # MULTI-CLIENT SESSION ROUTING (Phase 4): when the caller supplies a
+    # session_id, the action runs inside that session's project context
+    # through the canonical mission machinery (core.session_execution).
+    # Ambiguous identity (no session, or an unknown session) fails closed
+    # instead of falling back to the global single-project executor.
+    # ----------------------------------------------------------------
+    session_id = (context or {}).get("session_id") \
+        or (payload or {}).get("session_id")
+    if session_id and action in ("prompt", "build", "execute", "run"):
+        prompt = str((payload or {}).get("prompt")
+                     or (payload or {}).get("message") or "").strip()
+        if not prompt:
+            raise HTTPException(400,
+                                "payload.prompt is required for session "
+                                "actions")
+        from core.session_execution import get_default_runner
+        from core.session_model import SessionStore
+        if SessionStore().get(str(session_id)) is None:
+            raise HTTPException(
+                404,
+                f"unknown session {session_id}; fail-closed: refusing to "
+                "run an un-scoped action",
+            )
+        read_only_value = (payload or {}).get("read_only")
+        result = get_default_runner().run_prompt(
+            str(session_id), prompt,
+            read_only=(None if read_only_value is None
+                       else bool(read_only_value)),
+            mode=(payload or {}).get("mode"),
+            execution_id=(payload or {}).get("execution_id"),
+        )
+        return result
 
     emit(
         "ui",
