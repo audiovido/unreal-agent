@@ -1203,3 +1203,15 @@ from app import final_recovery  # FINAL RECOVERY V3
 # ============================================================
 from app.session_api import register_session_api
 register_session_api(app)
+
+# Construct the session runner when the server actually starts (not at import
+# time) so persisted sessions are re-bound to their allocator ports and
+# relinked into the project registry immediately after a restart (health
+# sweeper + resource supervisor also start here).
+@app.on_event("startup")
+def _start_session_runner() -> None:
+    try:
+        from core.session_execution import get_default_runner
+        get_default_runner().start()
+    except Exception:  # pragma: no cover - startup must not take the app down
+        pass

@@ -336,14 +336,29 @@ class SessionRunner:
                 continue
             if not session.bridge_port:
                 continue
-            if self.allocator.binding_for(session.project_id) is not None:
-                continue
+            if self.allocator.binding_for(session.project_id) is None:
+                try:
+                    self.allocator.allocate(
+                        session.project_id,
+                        preferred=int(session.bridge_port),
+                        force=True,
+                    )
+                except Exception:
+                    pass
+            # Relink the project registry so /api/projects reflects the
+            # restored live session (health, bridge, last map) right away
+            # instead of only after the next connect/start call.
             try:
-                self.allocator.allocate(
-                    session.project_id,
-                    preferred=int(session.bridge_port),
-                    force=True,
-                )
+                from core.project_registry import get_default_registry
+                reg = get_default_registry()
+                rec = reg.get(session.project_id)
+                if rec is not None and rec.get("connected_session_id") \
+                        != session.session_id:
+                    reg.connect(
+                        session.project_id, session_id=session.session_id,
+                        bridge_config={"host": session.bridge_host or
+                                       "127.0.0.1",
+                                       "port": session.bridge_port})
             except Exception:
                 pass
 
@@ -459,6 +474,21 @@ class SessionRunner:
             s.last_error = ""
             s.resource_state = {"bridge_ok": True}
         self.store.update(session.session_id, _apply)
+        # Keep the project registry linked to its live session so
+        # /api/projects reflects who is connected (health, bridge, last map).
+        try:
+            from core.project_registry import get_default_registry
+            reg = get_default_registry()
+            rec = reg.get(session.project_id)
+            if rec is not None:
+                reg.connect(
+                    session.project_id, session_id=session.session_id,
+                    bridge_config={"host": "127.0.0.1", "port": port})
+                reg.update(
+                    session.project_id,
+                    last_map=str(identity.get("active_map") or "") or None)
+        except Exception:
+            pass
         return {
             "ok": True,
             "session_id": session.session_id,
