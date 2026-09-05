@@ -193,6 +193,159 @@
   }
 
   /* ============================================================
+     WORKSPACE CONTEXT + VISUAL DIRECTOR (additive)
+     Drives the context rail, mission banner plan trail, live-work
+     status and director lifecycle from the SAME backend events —
+     never invents data. Every access is null-guarded so older
+     HTML (without these elements) keeps working untouched.
+     ============================================================ */
+  var ctx = { plan: [] };
+
+  function updateMissionUI(state, title, text) {
+    var card = $("ctxMission");
+    if (!card) return;
+    card.dataset.mc = state || "idle";
+    var t = $("ctxMissionTitle"), b = $("ctxMissionText"), st = $("ctxMissionState");
+    if (title != null && t) t.textContent = title;
+    if (text != null && b) b.textContent = text;
+    if (st) st.textContent = ({
+      idle: "idle", running: "in progress", complete: "complete",
+      error: "attention", cancelled: "cancelled"
+    }[state] || state || "idle");
+  }
+
+  function addRecentMission(prompt) {
+    var list = $("ctxRecentList");
+    if (!list) return;
+    var t = String(prompt || "").trim();
+    if (!t) return;
+    var empty = list.querySelector(".rail-empty");
+    if (empty) empty.remove();
+    var li = document.createElement("li");
+    li.textContent = t.length > 58 ? t.slice(0, 58) + "…" : t;
+    li.title = t;
+    list.insertBefore(li, list.firstChild);
+    while (list.children.length > 6) list.removeChild(list.lastChild);
+  }
+
+  function renderPlan(steps) {
+    var trail = $("planTrail");
+    if (trail) trail.innerHTML = "";
+    ctx.plan = [];
+    if (Array.isArray(steps)) {
+      steps.forEach(function (s) {
+        if (s == null) return;
+        var t = (typeof s === "string") ? s : (s.title || s.step || s.name || JSON.stringify(s));
+        ctx.plan.push(String(t));
+      });
+    }
+    if (!trail) return;
+    ctx.plan.slice(0, 5).forEach(function (t, i) {
+      var li = document.createElement("li");
+      li.textContent = t.length > 44 ? t.slice(0, 44) + "…" : t;
+      li.title = t;
+      if (i === 0) li.classList.add("now");
+      trail.appendChild(li);
+    });
+  }
+
+  function advancePlan(doneCount) {
+    var trail = $("planTrail");
+    if (!trail || !trail.children.length) return;
+    for (var i = 0; i < Math.min(doneCount, trail.children.length); i++) {
+      trail.children[i].classList.remove("now");
+      trail.children[i].classList.add("done");
+    }
+    if (doneCount < trail.children.length) trail.children[doneCount].classList.add("now");
+  }
+
+  var REVIEW_ROWS = [["visual", "Visual"], ["composition", "Composition"], ["lighting", "Lighting"], ["materials", "Materials"], ["framing", "Framing"]];
+
+  function renderReview(s) {
+    var wrap = $("reviewMetrics");
+    if (!wrap) return;
+    var metrics = null;
+    if (s) {
+      var cand = s.metrics || s.scorecard || s.analysis || (s.vision_review && s.vision_review.metrics) || null;
+      if (cand && typeof cand === "object") metrics = cand;
+    }
+    if (!metrics) {
+      wrap.dataset.ready = "0";
+      REVIEW_ROWS.forEach(function (row) {
+        var k = row[0];
+        var bar = $("rmBar" + k[0].toUpperCase() + k.slice(1));
+        var val = $("rmVal" + k[0].toUpperCase() + k.slice(1));
+        if (bar) bar.style.width = "0";
+        if (val) val.textContent = "—";
+      });
+      return;
+    }
+    wrap.dataset.ready = "1";
+    REVIEW_ROWS.forEach(function (row) {
+      var k = row[0];
+      var raw = metrics[k] != null ? metrics[k] : (metrics.overall != null ? metrics.overall : null);
+      if (raw == null) return;
+      var v = Math.max(0, Math.min(10, Number(raw) || 0));
+      var bar = $("rmBar" + k[0].toUpperCase() + k.slice(1));
+      var val = $("rmVal" + k[0].toUpperCase() + k.slice(1));
+      if (bar) bar.style.width = (v * 10) + "%";
+      if (val) val.textContent = v.toFixed(1);
+    });
+    if (s.diagnosis) { var dg = $("reviewDiagnosis"); if (dg) dg.textContent = String(s.diagnosis); }
+    if (s.action) { var ac = $("reviewAction"); if (ac) ac.textContent = String(s.action); }
+  }
+
+  function applyPipFrame() {
+    var pipEl = $("pip");
+    if (!pipEl) return;
+    var ph = $("directorStrip") ? ($("directorStrip").dataset.phase || "") : "";
+    var frame = "captured";
+    if (ph === "review" || ph === "repair") frame = "reviewing";
+    else if (ph === "verified") frame = "complete";
+    else if (ph === "failed") frame = "captured";
+    else if (pip.fresh) frame = "live";
+    pipEl.dataset.frame = frame;
+  }
+
+  function setDirectorPhase(phase) {
+    var strip = $("directorStrip");
+    if (strip) strip.dataset.phase = phase || "";
+    var ph = $("reviewPhase");
+    var map = { capture: "capturing", review: "reviewing", repair: "repairing", recapture: "recapturing", verified: "verified", failed: "attention" };
+    if (ph) ph.textContent = map[phase] || "idle";
+    var dg = $("reviewDiagnosis"), ac = $("reviewAction");
+    var text = {
+      capture: ["Capturing the viewport…", "recording proof from Unreal"],
+      review: ["Analyzing composition, lighting and framing…", ""],
+      repair: ["Diagnosing the result", "adjusting and recapturing"],
+      verified: ["Visual review passed", ""],
+      failed: ["Visual review failed", "see the response below"]
+    };
+    if (!phase) { if (dg) dg.textContent = "Awaiting capture analysis"; if (ac) ac.textContent = ""; }
+    else if (text[phase]) { if (dg) dg.textContent = text[phase][0]; if (ac) ac.textContent = text[phase][1]; }
+    applyPipFrame();
+  }
+
+  function setWorkStatus(text) {
+    var el = $("workStatus");
+    if (el) el.textContent = text || "";
+  }
+
+  function setRuntimeInfo(s) {
+    if (!s) return;
+    var eng = s.unreal && s.unreal.engine;
+    var bridge = s.unreal && s.unreal.message;
+    var ver = String(eng || "").match(/^(\d+\.\d+)/);
+    if (eng) { var e = $("runtimeEngine"); if (e) e.textContent = ver ? "Unreal " + ver[1] : eng; }
+    if (bridge) { var b = $("runtimeBridge"); if (b) { b.textContent = bridge === "UNREAL_BRIDGE_READY" ? "ready" : bridge; b.className = bridge === "UNREAL_BRIDGE_READY" ? "ok" : "off"; } }
+    if (s.models && s.models.coder) { var m = $("runtimeModel"); if (m) m.textContent = String(s.models.coder).replace(/:latest$/, ""); }
+    var dot = $("envDot");
+    if (dot) dot.className = "env-dot" + (bridge === "UNREAL_BRIDGE_READY" ? "" : " off");
+    var tx = $("envText");
+    if (tx) tx.textContent = "Unreal " + (ver ? ver[1] : "") + " · " + (bridge === "UNREAL_BRIDGE_READY" ? "bridge ready" : "bridge offline");
+  }
+
+  /* ============================================================
      BACKGROUND: PARTICLE NETWORK
      ============================================================ */
   var canvas = $("scene"), ctx = canvas.getContext("2d");
@@ -283,6 +436,7 @@
   function pollStatus() {
     api("/api/status").then(function (r) { return r.json(); }).then(function (s) {
       setOnline(true, !!(s.execution_active), (s.pending_approvals || 0));
+      setRuntimeInfo(s);
     }).catch(function () {
       setOnline(false, false, 0);
     });
@@ -293,25 +447,42 @@
      Polls /api/proof/live/status and shows the freshest AvaLive viewport
      capture (speaking MetaHuman during PIE runs, scene otherwise).
      ============================================================ */
-  var pip = { img: null, lastM: 0, visible: false };
+  var pip = { img: null, lastM: 0, visible: false, fresh: false };
 
   function pipTick() {
     api("/api/proof/live/status").then(function (r) { return r.json(); }).then(function (s) {
       if (!s || s.ok !== true || !s.size || !s.mtime) {
         if (pip.visible) { pip.visible = false; $("pip").classList.add("hidden"); }
+        var g0 = $("pipGhost");
+        if (g0) g0.classList.remove("hidden");
+        setWorkStatus("awaiting capture");
         return;
       }
       pip.visible = true;
+      var ghost = $("pipGhost");
+      if (ghost) ghost.classList.add("hidden");
       $("pip").classList.remove("hidden");
       var fresh = (Date.now() / 1000) - s.mtime < 6;
+      pip.fresh = fresh;
       $("pipBadge").textContent = fresh ? "LIVE" : "CAPTURE";
       $("pipBadge").className = "pip-badge" + (fresh ? " live" : "");
+      var cm = $("captureMeta");
+      if (cm) cm.textContent = fresh ? "live · just now" : "capture on file";
+      setWorkStatus(fresh ? "live capture" : "capture on file");
+      applyPipFrame();
+      renderReview(s);
       if (s.mtime !== pip.lastM) {
         pip.lastM = s.mtime;
         pip.img.src = "/api/proof/live?t=" + Math.round(s.mtime * 1000);
+        pip.img.classList.remove("fresh");
+        void pip.img.offsetWidth;
+        pip.img.classList.add("fresh");
       }
     }).catch(function () {
       if (pip.visible) { pip.visible = false; $("pip").classList.add("hidden"); }
+      var g = $("pipGhost");
+      if (g) g.classList.remove("hidden");
+      setWorkStatus("awaiting capture");
     });
   }
 
@@ -492,6 +663,7 @@
 
   function showTaskCard() {
     body.dataset.tc = "on";
+    body.classList.add("work-open");
     $("taskCard").classList.remove("hidden");
   }
   function hideTaskCard() {
@@ -596,6 +768,7 @@
         S.stageIdx = idx;
         setState("working", stageLabel(st) + "…");
       }
+      setDirectorPhase(st === "validate" ? "review" : (st === "fix" ? "repair" : (st === "edit" || st === "build" ? "capture" : "")));
     }
 
     if (type === "planning") {
@@ -603,6 +776,7 @@
       if (detail && Array.isArray(detail.steps)) {
         S.planSteps = detail.steps.length;
         S.doneSteps = 0;
+        renderPlan(detail.steps);
       }
       setMode("plan");
       setState("working", "Planning…");
@@ -614,12 +788,14 @@
     if (type === "tool" && e.status === "running") {
       showTaskCard();
       setTaskCard({ tc: "working", badge: "working", title: S.lastPrompt ? S.lastPrompt.slice(0, 64) : "Building", step: humanTool(tool) + "…" });
+      setWorkStatus(humanTool(tool));
       refreshTaskProgress();
       return;
     }
 
     if (type === "tool_result") {
       S.doneSteps++;
+      advancePlan(S.doneSteps);
       if (e.status === "success" || (detail && detail.ok === true)) {
         setTaskCard({ tc: "working", badge: "working", title: S.lastPrompt ? S.lastPrompt.slice(0, 64) : "Building", step: "✓ " + humanTool(tool) });
       } else {
@@ -716,6 +892,9 @@
     if (ok) {
       setMode("complete");
       setState("success");
+      setDirectorPhase("verified");
+      setWorkStatus("verified");
+      updateMissionUI("complete", S.lastPrompt ? S.lastPrompt.slice(0, 64) + "…" : "Mission complete", "The mission completed and the result was verified in the live surface.");
       showCompletion("Complete", summarize(text));
       widgetPost("typing", { state: "end" });
       widgetPost("reply", { text: text, mode: "task" });
@@ -729,6 +908,9 @@
     } else {
       setMode("error");
       setState("error");
+      setDirectorPhase("failed");
+      setWorkStatus("attention needed");
+      updateMissionUI("error", S.lastPrompt ? S.lastPrompt.slice(0, 64) + "…" : "Mission", "The mission did not complete — see the response below.");
       showCompletion("Attention", "The task didn't complete. See the response below.", true);
       setTaskCard({
         tc: "error", badge: "attention",
@@ -760,6 +942,7 @@
     var c = $("completionCard");
     $("completionTitle").textContent = title;
     $("completionMsg").textContent = msg;
+    c.classList.toggle("warn", !!warn);
     c.classList.remove("out", "hidden");
     clearTimeout(showCompletion._t);
     showCompletion._t = setTimeout(function () {
@@ -787,6 +970,10 @@
     if (S.listening) stopListening();
 
     S.lastPrompt = text;
+    updateMissionUI("running", text.length > 64 ? text.slice(0, 64) + "…" : text, "Planning, building and verifying in Unreal — watch the live surface.");
+    addRecentMission(text);
+    setWorkStatus("mission running");
+    renderPlan([]);
     input.value = "";
     autoGrow();
     updateSend();
@@ -848,6 +1035,9 @@
   function failLocal(title, msg) {
     setMode("error");
     setState("error");
+    setDirectorPhase("failed");
+    setWorkStatus("attention needed");
+    updateMissionUI("error", S.lastPrompt ? S.lastPrompt.slice(0, 64) + "…" : "Mission", "The mission could not start — see the response below.");
     showCompletion("Attention", msg, true);
     if (currentAiHandle) currentAiHandle.setPlain(msg);
     widgetPost("typing", { state: "end" });
@@ -917,10 +1107,14 @@
     S.running = false;
     if (S.es) { S.es.close(); S.es = null; }
     S.taskId = null;
+    body.classList.remove("work-open");
     hideTaskCard();
     updateSend();
     setMode("idle");
     setState("idle", "Cancelled. Ready when you are.");
+    setDirectorPhase("");
+    setWorkStatus("awaiting capture");
+    updateMissionUI("cancelled", S.lastPrompt ? S.lastPrompt.slice(0, 64) + "…" : "Mission", "Mission cancelled. Describe what to build next.");
   }
 
   function resolveApproval(approved) {
@@ -1159,6 +1353,19 @@
     if (upd) upd.addEventListener("click", function () {
       window.open(PUBLIC_LATEST_URL, "_blank", "noopener");
     });
+
+    // context rail toggle
+    var railBtn = $("railToggle");
+    if (railBtn) railBtn.addEventListener("click", function () {
+      var closed = body.classList.toggle("rail-closed");
+      railBtn.setAttribute("aria-label", closed ? "Open context panel" : "Collapse context panel");
+    });
+
+    // live-work sheet (narrow layout): header or chevron toggles expansion
+    var workBtn = $("workToggle");
+    if (workBtn) workBtn.addEventListener("click", function (ev) { ev.stopPropagation(); body.classList.toggle("work-open"); });
+    var workHead = $("workHead");
+    if (workHead) workHead.addEventListener("click", function () { body.classList.toggle("work-open"); });
 
     // status pill → advanced
     $("statusPill").addEventListener("click", openDrawer);

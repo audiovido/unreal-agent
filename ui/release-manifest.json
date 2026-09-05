@@ -1,8 +1,8 @@
 {
   "aivido_version": "0.1.1",
   "ui_version": "1.0.0",
-  "build_id": "20260905-230348",
-  "git_sha": "e67a0ab3ce98",
-  "build_timestamp": "2026-09-05T23:03:48Z",
-  "content_hash_sha256": "eb16e427c63248b9175fc4834bcefaf849f7976ae927a352e17e24b99ee5959f"
+  "build_id": "20260905-232841",
+  "git_sha": "33ab5beca44e",
+  "build_timestamp": "2026-09-05T23:28:41Z",
+  "content_hash_sha256": "4f26a37b570d83e71c555f402af60faccc4cdee07aa5b5b87ea492b1495c1910"
 }

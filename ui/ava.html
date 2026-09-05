@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Aivido — Ava, your living AI companion</title>
-<meta name="description" content="Aivido — a living AI companion that can control Unreal Engine for you.">
+<title>Aivido — Autonomous creation OS</title>
+<meta name="description" content="Aivido — an autonomous AI creation operating system that plans, builds, and verifies inside Unreal Engine.">
 <meta name="theme-color" content="#04060d">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><radialGradient id='g' cx='35%' cy='30%'><stop offset='0%' stop-color='%23bdf3ff'/><stop offset='45%' stop-color='%2338bdf8'/><stop offset='100%' stop-color='%2310367c'/></radialGradient></defs><circle cx='32' cy='32' r='26' fill='url(%23g)'/><circle cx='26' cy='28' r='4' fill='%23eafcff'/><circle cx='38' cy='28' r='4' fill='%23eafcff'/><path d='M25 38 q7 5 14 0' stroke='%237dd3fc' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
-<link rel="stylesheet" href="/static/ava.css?v=3a95fb53">
+<link rel="stylesheet" href="/static/ava.css?v=a3254955">
 </head>
 <body data-state="idle" data-mode="idle" data-voice="off" data-tc="off">
 
@@ -34,8 +34,12 @@
       <div class="brand-orb" aria-hidden="true"><i></i><i></i></div>
       <div class="brand-text">
         <strong class="wordmark">Aivido</strong>
-        <span id="brandSub">Ava · living AI companion</span>
+        <span id="brandSub">Autonomous creation OS</span>
       </div>
+    </div>
+    <div class="top-center" id="envChip" title="Runtime environment">
+      <span class="env-dot" id="envDot"></span>
+      <span id="envText">Unreal · connecting…</span>
     </div>
     <div class="top-right">
       <button id="updateChip" class="update-chip hidden" title="A newer Aivido UI is available — click to download">Update available</button>
@@ -46,73 +50,165 @@
     </div>
   </header>
 
-  <!-- ============ STAGE ============ -->
-  <main class="stage">
+  <!-- ============ THREE-ZONE WORKSPACE ============ -->
+  <div class="appgrid">
 
-    <section class="avatar-scene" id="avatarScene">
-      <div class="avatar" id="avatar" role="img" aria-label="Aivido avatar">
-        <div class="aura"></div>
-        <div class="ring ring-orb"></div>
-        <div class="ring ring-spin"></div>
+    <!-- LEFT / CONTEXT -->
+    <aside class="rail" id="rail" aria-label="Workspace context">
+      <div class="rail-head">
+        <span class="rail-kicker">Workspace</span>
+        <button id="railToggle" class="rail-toggle" title="Collapse context panel" aria-label="Toggle context panel">‹</button>
+      </div>
 
-        <div class="orbit orbit-a" id="orbitA"></div>
-        <div class="orbit orbit-b" id="orbitB"></div>
+      <section class="rail-section mission" id="ctxMission">
+        <span class="rail-label">Current mission</span>
+        <div class="mission-body">
+          <strong id="ctxMissionTitle">Awaiting your direction</strong>
+          <span class="rail-state" id="ctxMissionState">idle</span>
+        </div>
+        <p id="ctxMissionText">Describe what you want to build. Aivido will plan it, build it in Unreal, and verify the result — here in the live surface.</p>
+      </section>
 
-        <div class="think" id="think"><div class="think-ring"></div><div class="sweep"></div></div>
+      <section class="rail-section recent" id="ctxRecent">
+        <span class="rail-label">Recent</span>
+        <ul id="ctxRecentList"><li class="rail-empty">No missions yet</li></ul>
+      </section>
 
-        <div class="wave" id="wave"></div>
+      <section class="rail-section runtime" id="ctxRuntime">
+        <span class="rail-label">Runtime</span>
+        <dl>
+          <div><dt>Engine</dt><dd id="runtimeEngine">—</dd></div>
+          <div><dt>Bridge</dt><dd id="runtimeBridge">—</dd></div>
+          <div><dt>Model</dt><dd id="runtimeModel">—</dd></div>
+        </dl>
+      </section>
+    </aside>
 
-        <div class="core" id="core">
-          <div class="core-shine"></div>
-          <div class="face" id="face">
-            <div class="eye eye-l"></div>
-            <div class="eye eye-r"></div>
-            <div class="mouth"></div>
+    <!-- CENTER / LIVING AIVIDO -->
+    <main class="center">
+
+      <!-- MISSION BANNER (task card, redesigned) -->
+      <div id="taskCard" class="task-card hidden" data-tc="working">
+        <div class="tc-accent" aria-hidden="true"></div>
+        <div class="tc-head">
+          <span class="tc-icon" id="tcIcon" aria-hidden="true"></span>
+          <div class="tc-titles">
+            <span class="tc-kicker" id="tcKicker">Mission in progress</span>
+            <span class="tc-title" id="tcTitle">Building your scene</span>
+            <span class="tc-step" id="tcStep">Working…</span>
+          </div>
+          <div class="tc-metrics">
+            <span class="tc-pct" id="tcPct">0%</span>
+            <span class="tc-badge" id="tcBadge">working</span>
           </div>
         </div>
-
-        <div class="burst" id="burst"><i></i><i></i><i></i></div>
-        <div class="streams" id="streams"></div>
-        <div class="specks" id="specks"></div>
-      </div>
-
-      <div class="caption">
-        <span id="modeTag" class="mode-tag" aria-hidden="true"></span>
-        <h1 id="captionTitle">Aivido</h1>
-        <p id="statusLine">Ready. What should we build?</p>
-      </div>
-    </section>
-
-    <section class="chat" id="chat" aria-live="polite">
-      <div id="messages" class="messages"></div>
-    </section>
-
-  </main>
-
-  <!-- ============ DOCK : MISSION STRIP + COMPOSER ============ -->
-  <footer class="dock" id="dock">
-
-    <div id="taskCard" class="task-card hidden" data-tc="working">
-      <div class="tc-accent" aria-hidden="true"></div>
-      <div class="tc-head">
-        <span class="tc-icon" id="tcIcon" aria-hidden="true"></span>
-        <div class="tc-titles">
-          <span class="tc-title" id="tcTitle">Building your scene</span>
-          <span class="tc-step" id="tcStep">Working…</span>
+        <div class="tc-plan"><ol id="planTrail"></ol></div>
+        <div class="tc-progress"><i id="tcBar"></i></div>
+        <div class="tc-actions" id="tcActions">
+          <button id="tcExpand" class="tc-btn">Details</button>
+          <button id="tcCancel" class="tc-btn danger">Cancel</button>
+          <button id="tcApprove" class="tc-btn approve hidden">Approve</button>
+          <button id="tcReject" class="tc-btn danger hidden">Reject</button>
+          <button id="tcDismiss" class="tc-btn hidden">Dismiss</button>
         </div>
-        <span class="tc-pct" id="tcPct">0%</span>
-        <span class="tc-badge" id="tcBadge">working</span>
       </div>
-      <div class="tc-progress"><i id="tcBar"></i></div>
-      <div class="tc-actions" id="tcActions">
-        <button id="tcExpand" class="tc-btn">Details</button>
-        <button id="tcCancel" class="tc-btn danger">Cancel</button>
-        <button id="tcApprove" class="tc-btn approve hidden">Approve</button>
-        <button id="tcReject" class="tc-btn danger hidden">Reject</button>
-        <button id="tcDismiss" class="tc-btn hidden">Dismiss</button>
-      </div>
-    </div>
 
+      <!-- LIVING AVIDO HEADER -->
+      <section class="avatar-hdr">
+        <div class="avatar-stage" id="avatarScene">
+          <div class="avatar" id="avatar" role="img" aria-label="Aivido avatar">
+            <div class="aura"></div>
+            <div class="ring ring-orb"></div>
+            <div class="ring ring-spin"></div>
+
+            <div class="orbit orbit-a" id="orbitA"></div>
+            <div class="orbit orbit-b" id="orbitB"></div>
+
+            <div class="think" id="think"><div class="think-ring"></div><div class="sweep"></div></div>
+
+            <div class="wave" id="wave"></div>
+
+            <div class="core" id="core">
+              <div class="core-shine"></div>
+              <div class="face" id="face">
+                <div class="eye eye-l"></div>
+                <div class="eye eye-r"></div>
+                <div class="mouth"></div>
+              </div>
+            </div>
+
+            <div class="burst" id="burst"><i></i><i></i><i></i></div>
+            <div class="streams" id="streams"></div>
+            <div class="specks" id="specks"></div>
+          </div>
+        </div>
+        <div class="caption">
+          <span id="modeTag" class="mode-tag" aria-hidden="true"></span>
+          <h1 id="captionTitle">Aivido</h1>
+          <p id="statusLine">Ready. What should we build?</p>
+        </div>
+      </section>
+
+      <!-- CONVERSATION -->
+      <section class="chat" id="chat" aria-live="polite">
+        <div id="messages" class="messages"></div>
+      </section>
+
+    </main>
+
+    <!-- RIGHT / LIVE WORK -->
+    <aside class="work" id="work" aria-label="Live work surface">
+      <div class="work-head" id="workHead">
+        <span class="work-kicker">Live work</span>
+        <span class="work-status" id="workStatus">awaiting capture</span>
+        <button id="workToggle" class="work-toggle" title="Expand or collapse live work" aria-label="Expand or collapse live work">‹</button>
+      </div>
+
+      <div id="pipGhost" class="live-ghost">
+        <div class="ghost-core" aria-hidden="true"></div>
+        <strong>Ready when you are</strong>
+        <p>The Unreal viewport appears here while Aivido builds — live captures, proof and visual review all live in this surface.</p>
+      </div>
+
+      <div id="pip" class="pip hidden">
+        <div class="pip-head">
+          <span class="pip-badge" id="pipBadge">CAPTURE</span>
+          <span class="pip-label">Viewport evidence</span>
+          <span class="pip-live-tag" aria-hidden="true">Live from Unreal</span>
+          <span class="pip-fresh" id="captureMeta">fresh</span>
+        </div>
+        <div class="pip-frame"><img id="pipImg" alt="Live viewport capture" draggable="false"></div>
+        <div class="pip-foot">Aivido proof · live from Unreal</div>
+      </div>
+
+      <div class="director" id="directorStrip">
+        <div class="director-top">
+          <span class="director-label">Visual review</span>
+          <span class="director-phase" id="reviewPhase">idle</span>
+        </div>
+        <div class="review-metrics" id="reviewMetrics">
+          <div class="rm-row" data-rm="visual"><span class="rm-name">Visual</span><span class="rm-bar"><i id="rmBarVisual"></i></span><span class="rm-val" id="rmValVisual">—</span></div>
+          <div class="rm-row" data-rm="composition"><span class="rm-name">Composition</span><span class="rm-bar"><i id="rmBarComposition"></i></span><span class="rm-val" id="rmValComposition">—</span></div>
+          <div class="rm-row" data-rm="lighting"><span class="rm-name">Lighting</span><span class="rm-bar"><i id="rmBarLighting"></i></span><span class="rm-val" id="rmValLighting">—</span></div>
+          <div class="rm-row" data-rm="materials"><span class="rm-name">Materials</span><span class="rm-bar"><i id="rmBarMaterials"></i></span><span class="rm-val" id="rmValMaterials">—</span></div>
+          <div class="rm-row" data-rm="framing"><span class="rm-name">Framing</span><span class="rm-bar"><i id="rmBarFraming"></i></span><span class="rm-val" id="rmValFraming">—</span></div>
+        </div>
+        <div class="review-note"><span id="reviewDiagnosis">Awaiting capture analysis</span><span id="reviewAction"></span></div>
+        <div class="director-phases" id="directorPhases">
+          <span data-dp="capture">Capture</span><i></i>
+          <span data-dp="analyze">Analyze</span><i></i>
+          <span data-dp="score">Score</span><i></i>
+          <span data-dp="diagnose">Diagnose</span><i></i>
+          <span data-dp="improve">Improve</span><i></i>
+          <span data-dp="recapture">Recapture</span>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ============ DOCK : COMMAND ============ -->
+  <footer class="dock" id="dock">
     <div class="composer" id="composer">
       <div id="attachChips" class="attach-chips"></div>
       <div class="composer-bar">
@@ -120,7 +216,7 @@
         <button id="attachBtn" class="c-btn" title="Attach files" aria-label="Attach files">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <textarea id="input" rows="1" placeholder="Ask Aivido anything…" enterkeyhint="send" autocomplete="off"></textarea>
+        <textarea id="input" rows="1" placeholder="Describe what to build — Aivido plans, builds and verifies…" enterkeyhint="send" autocomplete="off"></textarea>
         <button id="micBtn" class="c-btn mic" title="Voice input" aria-label="Voice input">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21.5"/></svg>
         </button>
@@ -134,18 +230,7 @@
         <span id="voiceHint" class="voice-hint"></span>
       </div>
     </div>
-
   </footer>
-
-  <!-- ============ LIVE EVIDENCE FRAME ============ -->
-  <aside id="pip" class="pip hidden" aria-hidden="true">
-    <div class="pip-head">
-      <span class="pip-badge" id="pipBadge">CAPTURE</span>
-      <span class="pip-label">Live viewport evidence</span>
-    </div>
-    <img id="pipImg" alt="Live viewport capture" draggable="false">
-    <div class="pip-foot">Aivido proof · fresh capture</div>
-  </aside>
 
   <!-- completion flash -->
   <div id="completionCard" class="completion hidden" role="status">
@@ -173,6 +258,6 @@
   <input type="file" id="fileInput" class="hidden" multiple>
 
 <script src="/static/ava_widget.js?v=8a45e149"></script>
-<script src="/static/ava.js?v=828c0765"></script>
+<script src="/static/ava.js?v=f798bbc2"></script>
 </body>
 </html>
