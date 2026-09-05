@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aivido — Director's Booth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/aivido.css">
+</head>
+<body>
+
+<!-- ============ CINEMATIC INTRO ============ -->
+<div id="sting" class="sting" aria-hidden="true">
+  <div class="sting-letterbox top"></div>
+  <div class="sting-letterbox bottom"></div>
+  <div class="sting-core">
+    <div class="sting-mark">◈</div>
+    <h1 class="sting-name">A I V I D O</h1>
+    <p class="sting-tag">DIRECTOR'S BOOTH · PHASE 1</p>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app" class="app hidden">
+
+  <!-- left rail -->
+  <nav id="rail" class="rail">
+    <div class="rail-brand" data-nav="home" title="Aivido">
+      <span class="rail-logo">◈</span>
+      <span class="rail-name">AIVIDO</span>
+    </div>
+    <div class="rail-sep"></div>
+    <button class="rail-item" data-nav="home"><span class="ri-ic">⌂</span><span class="ri-lb">Booth</span></button>
+    <button class="rail-item" data-nav="workspaces"><span class="ri-ic">▦</span><span class="ri-lb">Workspaces</span></button>
+    <button class="rail-item" data-nav="mission"><span class="ri-ic">☩</span><span class="ri-lb">Mission Control</span></button>
+    <button class="rail-item" data-nav="room"><span class="ri-ic">✪</span><span class="ri-lb">Agent Room</span></button>
+    <button class="rail-item" data-nav="proof"><span class="ri-ic">▣</span><span class="ri-lb">Proof Vault</span></button>
+    <button class="rail-item" data-nav="quests"><span class="ri-ic">⚑</span><span class="ri-lb">Quests</span></button>
+    <button class="rail-item" data-nav="finance"><span class="ri-ic">◈</span><span class="ri-lb">Finance</span></button>
+    <button class="rail-item" data-nav="profile"><span class="ri-ic">♜</span><span class="ri-lb">Profile</span></button>
+    <div class="rail-grow"></div>
+    <button class="rail-item" data-nav="settings"><span class="ri-ic">⚙</span><span class="ri-lb">Settings</span></button>
+    <div id="railBackend" class="rail-backend" title="Backend status">
+      <span id="railDot" class="dot-sm"></span>
+      <span id="railBackendTxt">Linking…</span>
+    </div>
+  </nav>
+
+  <!-- main -->
+  <div class="stage-wrap">
+    <header id="hud" class="hud">
+      <div class="hud-left">
+        <span id="hudScreen" class="hud-screen">BOOTH</span>
+        <span id="hudWorkspace" class="hud-ws">—</span>
+      </div>
+      <div class="hud-right">
+        <span id="hudMode" class="hud-mode pill-sm">SIMULATION</span>
+        <span id="hudCredits" class="hud-credits pill-sm">◈ 0</span>
+        <span id="hudClock" class="hud-clock">--:--</span>
+        <button id="hudAvatar" class="hud-avatar" title="Creator profile">D</button>
+      </div>
+    </header>
+
+    <main id="view" class="view">
+
+      <!-- ===== HOME / BOOTH ===== -->
+      <section id="scr-home" class="screen">
+        <div class="hero">
+          <div class="hero-art">
+            <div class="hero-sun"></div>
+            <div class="hero-mesas m1"></div><div class="hero-mesas m2"></div><div class="hero-mesas m3"></div>
+            <div class="hero-cabin"></div>
+            <div class="hero-title">
+              <p class="hero-eyebrow">DIRECTOR'S BOOTH</p>
+              <h1>Welcome back, <span id="homeName">Director</span></h1>
+              <p class="hero-sub">The crew is ready. The engine is warm. One word from you and the workshop lights up.</p>
+            </div>
+          </div>
+          <div class="hero-cta">
+            <button id="homeEnterRoom" class="btn-hero">Enter the Agent Room <span class="btn-arrow">➜</span></button>
+            <button id="homeNewMission" class="btn-hero ghost">Start a Mission</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2>Crew Status</h2><span class="card-sub" id="homeCrewState">—</span></div>
+            <div id="homeCrew" class="crew-strip"></div>
+            <p class="foreman-quote" id="homeQuote">“Every shot is a promise. We aim to keep it.”</p>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Latest Proof</h2><span class="card-sub">fresh from the viewport</span></div>
+            <div id="homeProof" class="proof-thumb"><div class="proof-thumb-empty">No capture yet — run a mission to mint fresh proof.</div></div>
+            <div class="card-foot"><button class="btn small ghost" data-nav="proof">Open Proof Vault →</button></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2>Active Mission</h2><span id="homeMissionPill" class="pill-sm">—</span></div>
+            <div id="homeMission" class="mission-snap">No mission running. The crew awaits orders.</div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Ledger</h2><span class="card-sub">credits &amp; quests</span></div>
+            <div id="homeLedger" class="ledger">
+              <div class="ledger-row"><span>Local Free balance</span><b id="ledgerFree">∞</b></div>
+              <div class="ledger-row"><span>Cloud credits</span><b id="ledgerCredits">0</b></div>
+              <div class="ledger-row"><span>Quests active</span><b id="ledgerQuests">0</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== WORKSPACES ===== -->
+      <section id="scr-workspaces" class="screen">
+        <div class="screen-head">
+          <div><h1>Workspaces</h1><p class="screen-sub">Projects your crew can walk into. One engine, many worlds.</p></div>
+          <button id="wsNew" class="btn primary">＋ New Workspace</button>
+        </div>
+        <div id="wsGrid" class="ws-grid"></div>
+      </section>
+
+      <!-- ===== MISSION CONTROL ===== -->
+      <section id="scr-mission" class="screen">
+        <div class="screen-head">
+          <div><h1>Mission Control</h1><p class="screen-sub">Dispatch work, watch the crew, read the verdicts.</p></div>
+          <button id="mcNew" class="btn primary">＋ Dispatch Mission</button>
+        </div>
+        <div class="mc-layout">
+          <div id="mcList" class="mc-list"></div>
+          <aside id="mcDetail" class="mc-detail">
+            <div class="mc-empty">Select a mission to inspect its stages, crew and evidence.</div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ===== AGENT ROOM ===== -->
+      <section id="scr-room" class="screen room-screen">
+        <div class="room-toolbar">
+          <div>
+            <h1 class="room-title">The Workshop</h1>
+            <p class="room-sub" id="roomSub">Prestige western workshop · hidden tech awake</p>
+          </div>
+          <div class="room-actions">
+            <span id="roomModePill" class="pill-sm">SIMULATION</span>
+            <button id="roomDispatch" class="btn primary">Dispatch Crew</button>
+            <button id="roomReset" class="btn ghost">Reset Stations</button>
+          </div>
+        </div>
+
+        <div id="roomStage" class="room-stage">
+          <div class="room-window">
+            <div class="window-sky"></div>
+            <div class="window-sun"></div>
+            <div class="window-mesas wm1"></div><div class="window-mesas wm2"></div>
+          </div>
+          <div class="room-shelf">
+            <div class="shelf-plank"></div>
+            <div class="prop book b1"></div><div class="prop book b2"></div><div class="prop book b3"></div>
+            <div class="prop lantern"></div><div class="prop cactus"></div><div class="prop gear g1"></div><div class="prop gear g2"></div>
+            <div class="prop pot"></div>
+          </div>
+          <div class="room-holo">
+            <div class="holo-frame">
+              <div class="holo-line"></div><div class="holo-line"></div><div class="holo-line"></div>
+              <div class="holo-core"></div>
+            </div>
+            <div class="holo-label">AIVIDO·CORE <span class="holo-dot"></span></div>
+          </div>
+          <div class="room-poster p-left"></div>
+          <div class="room-poster p-right"></div>
+          <div class="room-lamp lamp-l"></div>
+          <div class="room-lamp lamp-r"></div>
+
+          <!-- foreman -->
+          <div class="foreman-zone">
+            <div class="foreman-desk"></div>
+            <div id="foreman" class="person foreman" data-state="IDLE">
+              <div class="person-bubble"></div>
+              <div class="hat"></div>
+              <div class="head"></div>
+              <div class="body fore-body"></div>
+              <div class="arm a-l"></div><div class="arm a-r"></div>
+              <div class="desk-mug"></div>
+              <div class="steam"></div>
+            </div>
+            <div class="foreman-name"><b>The Foreman</b><span>— crew boss &amp; your voice in the room</span></div>
+          </div>
+
+          <!-- workers -->
+          <div id="workersRow" class="workers-row"></div>
+
+          <div class="room-floor"></div>
+          <div class="room-rug"></div>
+          <div class="vignette"></div>
+          <div class="grain"></div>
+        </div>
+
+        <div id="foremanBar" class="foreman-bar">
+          <span class="fb-portrait">☺</span>
+          <div class="fb-text"><span id="fbName">The Foreman</span><span id="fbLine" class="fb-line">…</span></div>
+          <span class="fb-keys">click a worker to check in</span>
+        </div>
+      </section>
+
+      <!-- ===== PROOF VAULT ===== -->
+      <section id="scr-proof" class="screen">
+        <div class="screen-head">
+          <div><h1>Proof Vault</h1><p class="screen-sub">Game-quality screenshots. Every claim backed by a frame.</p></div>
+          <div class="proof-actions">
+            <label class="auto"><input type="checkbox" id="pvAuto" checked> auto-refresh</label>
+            <button id="pvCapture" class="btn primary">◉ Capture Fresh Proof</button>
+          </div>
+        </div>
+        <div id="pvStage" class="pv-stage">
+          <div id="pvViewport" class="pv-viewport">
+            <img id="pvImg" alt="Latest proof frame" hidden>
+            <div id="pvEmpty" class="pv-empty">
+              <div class="pv-empty-art">▣</div>
+              <p>No proof in the vault yet.</p>
+              <p class="muted">Capture a fresh frame from the live engine — or run the demo capture.</p>
+            </div>
+          </div>
+          <div class="pv-meta">
+            <div><span class="pv-k">VERDICT</span><b id="pvVerdict" class="pv-v">—</b></div>
+            <div><span class="pv-k">SCORE</span><b id="pvScore">—</b></div>
+            <div><span class="pv-k">CAPTURE</span><b id="pvTime">—</b></div>
+            <div><span class="pv-k">SOURCE</span><b id="pvSource">—</b></div>
+          </div>
+          <div id="pvDefects" class="pv-defects"></div>
+        </div>
+        <div class="pv-thumbs-head"><h2>Gallery</h2><span class="card-sub">recent frames</span></div>
+        <div id="pvGallery" class="pv-gallery"></div>
+      </section>
+
+      <!-- ===== QUESTS ===== -->
+      <section id="scr-quests" class="screen">
+        <div class="screen-head"><div><h1>Quests</h1><p class="screen-sub">Long roads worth walking. Rewards in credits and craft.</p></div></div>
+        <div id="questActive" class="quest-active"></div>
+        <h2 class="block-h">Completed</h2>
+        <div id="questDone" class="quest-done"></div>
+      </section>
+
+      <!-- ===== FINANCE ===== -->
+      <section id="scr-finance" class="screen">
+        <div class="screen-head"><div><h1>Finance</h1><p class="screen-sub">Local free power, or cloud firepower. Your call.</p></div></div>
+        <div id="finBalance" class="fin-balance"></div>
+        <h2 class="block-h">Credit Packs</h2>
+        <div id="finPacks" class="fin-packs"></div>
+        <div class="grid-2">
+          <div class="card"><div class="card-head"><h2>Spend this week</h2></div><div id="finChart" class="fin-chart"></div></div>
+          <div class="card"><div class="card-head"><h2>Ledger</h2></div><div id="finLedger" class="fin-ledger"></div></div>
+        </div>
+      </section>
+
+      <!-- ===== PROFILE ===== -->
+      <section id="scr-profile" class="screen">
+        <div class="prof-hero card">
+          <div id="profAvatar" class="prof-avatar">D</div>
+          <div class="prof-info">
+            <h1 id="profName">Director</h1>
+            <p class="prof-title">Director of Unreal Operations</p>
+            <div class="prof-xp"><div class="prof-xp-fill" id="profXpFill"></div></div>
+            <p class="muted" id="profXpTxt">Level 7 · 640 / 900 XP</p>
+          </div>
+          <div class="prof-stats">
+            <div class="stat"><b id="stMissions">0</b><span>Missions</span></div>
+            <div class="stat"><b id="stSuccess">0%</b><span>Success</span></div>
+            <div class="stat"><b id="stHours">0</b><span>Hours</span></div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><div class="card-head"><h2>Specializations</h2></div><div id="profSkills" class="prof-skills"></div></div>
+          <div class="card"><div class="card-head"><h2>Achievements</h2></div><div id="profAch" class="prof-ach"></div></div>
+        </div>
+      </section>
+
+      <!-- ===== SETTINGS ===== -->
+      <section id="scr-settings" class="screen">
+        <div class="screen-head"><div><h1>Settings</h1><p class="screen-sub">Tune the booth. Nothing here touches the engine core.</p></div></div>
+        <div class="card">
+          <div class="field"><label for="setBase">Engine base URL</label>
+            <input id="setBase" class="textinput" autocomplete="off" placeholder="http://127.0.0.1:8765 (empty = same origin)"></div>
+          <div class="field"><label for="setName">Your name</label><input id="setName" class="textinput" autocomplete="off" placeholder="Director"></div>
+          <div class="row"><button id="setSave" class="btn primary">Save Settings</button><span id="setSaved" class="note hidden">Saved ✓</span></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Preferences</h2></div>
+          <label class="toggle"><input type="checkbox" id="setAutoProof" checked><span>Auto-refresh proof in the vault</span></label>
+          <label class="toggle"><input type="checkbox" id="setCinematic" checked><span>Cinematic transitions (letterbox)</span></label>
+          <label class="toggle"><input type="checkbox" id="setIdle" checked><span>Workers idle naturally when unassigned</span></label>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>About</h2></div>
+          <p class="muted">Aivido Director's Booth · UI/UX Phase 1<br>
+          Shell, navigation, room, crew states, proof vault, quests, finance and profile — built on the existing engine. No backend behavior changed.</p>
+          <p class="mono" id="setVersion">aivido-uiux-phase1 · 9ba87da+</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ OVERLAYS ============ -->
+<div id="letterbox" class="letterbox hidden"><div class="lb-bar top"></div><div class="lb-bar bottom"></div></div>
+<div id="modalRoot" class="modal-root hidden"></div>
+<div id="toastRoot" class="toast-root"></div>
+
+<!-- ===== CHOICE CARD MODAL (AAA choice) ===== -->
+<template id="tplChoice">
+  <div class="choice-modal">
+    <p class="choice-eyebrow" data-c="eyebrow">THE FOREMAN ASKS</p>
+    <h2 data-c="title">How do we play this?</h2>
+    <div class="choice-grid" data-c="grid"></div>
+  </div>
+</template>
+
+<script src="/static/aivido.js"></script>
+</body>
+</html>
