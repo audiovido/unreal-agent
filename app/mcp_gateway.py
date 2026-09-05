@@ -12,7 +12,9 @@ real backend checkpoints, so the gateway can never report SUCCESS that
 the pipeline did not validate.
 
 Tools: get_status, start_task, get_task_status, run_validation,
-get_evidence, retry_task, cancel_task.
+get_evidence, retry_task, cancel_task (Unreal missions), plus the
+code-task supervisor tools: start_code_task, get_code_task_status,
+get_code_evidence, retry_code_task, cancel_code_task, route_prompt.
 
 Security:
 - Binds to 127.0.0.1 by default; expose via the local HTTPS tunnel
@@ -44,9 +46,27 @@ BACKEND_URL = os.environ.get(
     "AIVIDO_BACKEND_URL", "http://127.0.0.1:8765")
 KEY_FILE = Path(os.environ.get(
     "AIVIDO_MCP_KEY_FILE", str(ROOT / "config" / "mcp_gateway.key")))
+# Public HTTPS hostname allowed through DNS-rebinding protection. Read from
+# $AIVIDO_MCP_PUBLIC_HOST or a gitignored config file so the setting survives
+# restarts regardless of how the gateway is launched.
+PUBLIC_HOST_FILE = Path(os.environ.get(
+    "AIVIDO_MCP_PUBLIC_HOST_FILE",
+    str(ROOT / "config" / "mcp_gateway.public_host")))
 
 GATEWAY_NAME = "Aivido MCP Gateway"
 GATEWAY_VERSION = "1.0.0"
+
+# Browser origins ClickUp's app uses when it connects MCP servers from the
+# ClickUp browser app (help.clickup.com: "currently, you can only connect MCP
+# servers from the ClickUp browser app"). Server-side fetches (the common
+# path) send no Origin header and are unaffected; these entries only matter
+# when a real browser page at app.clickup.com talks to the endpoint, and they
+# keep the SDK's DNS-rebinding origin check from rejecting that traffic.
+CLICKUP_ORIGINS = (
+    "https://app.clickup.com",
+    "https://clickup.com",
+    "https://search.clickup-prod.com",
+)
 
 # Mission status -> coarse ClickUp-friendly stage.
 MISSION_STAGES = {
@@ -89,6 +109,19 @@ def api_key_location() -> str:
     if os.environ.get("AIVIDO_MCP_API_KEY", "").strip():
         return "environment variable AIVIDO_MCP_API_KEY"
     return str(KEY_FILE)
+
+
+def load_public_host() -> str:
+    """Public HTTPS hostname for DNS-rebinding allow-listing: env var wins,
+    otherwise a gitignored config file (config/mcp_gateway.public_host)."""
+    env_host = os.environ.get("AIVIDO_MCP_PUBLIC_HOST", "").strip()
+    if env_host:
+        return env_host
+    if PUBLIC_HOST_FILE.exists():
+        host = PUBLIC_HOST_FILE.read_text(encoding="utf-8").strip()
+        if host:
+            return host
+    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -350,6 +383,223 @@ def tool_cancel_task(task_id: str) -> Dict[str, Any]:
     return _mission_envelope(task_id, payload)
 
 
+# ===========================================================================
+# CODE-TASK tools (autonomous supervisor: repo/code work, isolated worker)
+# ===========================================================================
+# These forward to the backend's /api/code/* domain (app/code_tasks.py). The
+# backend is still the ONLY execution layer: it owns the durable queue, the
+# single-flight worker and the isolated git worktree. The gateway never
+# reports PASS itself — it relays the backend's verdict/evidence.
+# ===========================================================================
+
+CODE_STAGES = {
+    "queued": "queued",
+    "running": "running",
+    "passed": "complete",
+    "failed": "failed",
+    "blocked": "blocked",
+    "cancelled": "cancelled",
+}
+
+
+def _code_error(task_id: Optional[str], exc: Exception) -> Dict[str, Any]:
+    detail = ""
+    if isinstance(exc, requests.exceptions.HTTPError) and exc.response is not None:
+        try:
+            body = exc.response.json()
+            detail = str(body.get("detail") or body)[:500]
+        except Exception:
+            detail = exc.response.text[:500]
+    return {
+        "ok": False,
+        "task_id": task_id,
+        "status": "error",
+        "stage": "error",
+        "result": None,
+        "errors": [detail or f"backend {exc}"],
+        "evidence": [],
+    }
+
+
+def _code_call(method: str, path: str, payload: Optional[dict] = None,
+               timeout: float = 30.0):
+    backend = AividoBackend()
+    if method == "GET":
+        return backend._get(path, timeout=timeout)
+    return backend._post(path, payload, timeout=timeout)
+
+
+def _code_envelope(task: Dict[str, Any]) -> Dict[str, Any]:
+    status = str(task.get("status") or "queued")
+    verdict = task.get("verdict")
+    return {
+        "ok": True,
+        "task_id": task.get("id"),
+        "status": status,
+        "stage": CODE_STAGES.get(status, status),
+        "result": {
+            "title": task.get("title"),
+            "routing": task.get("routing"),
+            "priority": task.get("priority"),
+            "verdict": verdict,
+            "attempt": task.get("attempt"),
+            "max_attempts": task.get("max_attempts"),
+            "depends_on": task.get("depends_on"),
+            "summary": (task.get("result") or {}).get("summary")
+            if isinstance(task.get("result"), dict) else None,
+            "branch": (task.get("result") or {}).get("branch")
+            if isinstance(task.get("result"), dict) else None,
+            "commit": (task.get("result") or {}).get("commit")
+            if isinstance(task.get("result"), dict) else None,
+            "finished": verdict is not None,
+            "prompt": task.get("prompt"),
+        },
+        "errors": [task["error"]] if task.get("error") else
+                  ([task["blocked_reason"]] if task.get("blocked_reason") else None),
+        "evidence": {
+            "paths": list(task.get("evidence") or []),
+            "files": None,
+        },
+    }
+
+
+def tool_start_code_task(
+    prompt: str,
+    title: str = "",
+    routing: str = "auto",
+    priority: int = 50,
+    depends_on: Optional[List[str]] = None,
+    steps: Optional[List[Dict[str, Any]]] = None,
+    tests: Optional[List[str]] = None,
+    acceptance: Optional[List[str]] = None,
+    scope: Optional[List[str]] = None,
+    unreal_prompt: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Start a CODE task on the autonomous supervisor (repo/code/test work).
+
+    Machine-readable contract (natural-language-only prompts are BLOCKED,
+    never guessed):
+      steps:      [{"op": "create_file", "path": "app/x.py",
+                    "content": "..."}]   (new files only, isolated worktree)
+      tests:      ["pytest tests/test_x.py", "py_compile app/x.py"]
+      acceptance: ["exists app/x.py", "contains tests/test_x.py|assert"]
+      scope:      [allowed relative paths]
+      unreal_prompt: (mixed tasks only) prompt for the Unreal mission stage,
+                    run AFTER the code stage passes, in dependency order.
+    Unreal/editor/content prompts are routed away (use start_task). Returns
+    task_id immediately; poll get_code_task_status."""
+    prompt = str(prompt or "").strip()
+    if not prompt:
+        return {
+            "ok": False, "task_id": None, "status": "error",
+            "stage": "error", "result": None,
+            "errors": ["prompt is required"], "evidence": [],
+        }
+    body: Dict[str, Any] = {"prompt": prompt, "routing": routing or "auto"}
+    if title:
+        body["title"] = str(title)
+    if priority:
+        body["priority"] = int(priority)
+    for key, value in (("depends_on", depends_on), ("steps", steps),
+                       ("tests", tests), ("acceptance", acceptance),
+                       ("scope", scope), ("unreal_prompt", unreal_prompt)):
+        if value:
+            body[key] = value
+    try:
+        payload = _code_call("POST", "/api/code/tasks", body, timeout=30)
+    except Exception as exc:
+        return _code_error(None, exc)
+    task = payload.get("task") or {}
+    return _code_envelope(task)
+
+
+def tool_get_code_task_status(task_id: str) -> Dict[str, Any]:
+    """Real code-task state from the backend's durable queue
+    (GET /api/code/tasks/{task_id}). Returns status, verdict, attempts,
+    summary, error/blocked reason and evidence paths."""
+    try:
+        payload = _code_call("GET", f"/api/code/tasks/{task_id}", timeout=20)
+    except Exception as exc:
+        return _code_error(task_id, exc)
+    return _code_envelope(payload.get("task") or {})
+
+
+def tool_get_code_evidence(task_id: str) -> Dict[str, Any]:
+    """Full evidence bundle for a code task (GET
+    /api/code/tasks/{task_id}/evidence): the evidence.json with the
+    verified commit, per-check logs, acceptance results and the change
+    patch, plus inline file contents."""
+    try:
+        payload = _code_call(
+            "GET", f"/api/code/tasks/{task_id}/evidence", timeout=20)
+    except Exception as exc:
+        return _code_error(task_id, exc)
+    evidence = payload.get("evidence") or {}
+    return {
+        "ok": bool(payload.get("ok")),
+        "task_id": evidence.get("task_id") or task_id,
+        "status": evidence.get("status"),
+        "stage": "evidence",
+        "result": {
+            "verdict": evidence.get("verdict"),
+            "title": evidence.get("title"),
+            "result": evidence.get("result"),
+            "blocked_reason": evidence.get("blocked_reason"),
+            "error": evidence.get("error"),
+        },
+        "errors": [evidence.get("blocked_reason") or evidence.get("error")]
+        if evidence.get("blocked_reason") or evidence.get("error") else None,
+        "evidence": {
+            "paths": list(evidence.get("evidence_files") or []),
+            "files": evidence.get("files"),
+        },
+    }
+
+
+def tool_retry_code_task(task_id: str) -> Dict[str, Any]:
+    """Re-queue a failed/blocked/cancelled code task for another bounded
+    attempt (POST /api/code/tasks/{task_id}/retry). The worker re-runs and
+    re-validates from scratch inside a fresh isolated worktree."""
+    try:
+        payload = _code_call(
+            "POST", f"/api/code/tasks/{task_id}/retry", {}, timeout=30)
+    except Exception as exc:
+        return _code_error(task_id, exc)
+    return _code_envelope(payload.get("task") or {})
+
+
+def tool_cancel_code_task(task_id: str) -> Dict[str, Any]:
+    """Cancel a queued/running code task; the backend records verdict
+    CANCELLED, never PASS (POST /api/code/tasks/{task_id}/cancel)."""
+    try:
+        payload = _code_call(
+            "POST", f"/api/code/tasks/{task_id}/cancel", {}, timeout=30)
+    except Exception as exc:
+        return _code_error(task_id, exc)
+    return _code_envelope(payload.get("task") or {})
+
+
+def tool_route_prompt(prompt: str) -> Dict[str, Any]:
+    """Routing decision for a task prompt: 'code' (repo/code/test work),
+    'unreal' (existing mission pipeline via start_task) or 'mixed'.
+    The supervisor uses this to pick the owning pipeline."""
+    try:
+        payload = _code_call(
+            "POST", "/api/code/classify", {"prompt": str(prompt or "")},
+            timeout=20)
+    except Exception as exc:
+        return _code_error(None, exc)
+    return {
+        "ok": bool(payload.get("ok")),
+        "task_id": None,
+        "status": "ready",
+        "stage": "routing",
+        "result": {"routing": payload.get("routing")},
+        "errors": None,
+        "evidence": [],
+    }
+
+
 # ---------------------------------------------------------------------------
 # App assembly: Bearer-auth FastAPI app + mounted MCP Streamable HTTP server
 # ---------------------------------------------------------------------------
@@ -361,13 +611,15 @@ def build_mcp_server(api_key: str):
         GATEWAY_NAME,
         version=GATEWAY_VERSION,
         instructions=(
-            "Aivido MCP gateway: run real Unreal-Engine missions through the "
-            "existing Aivido backend pipeline. start_task returns a task_id "
-            "immediately; poll get_task_status for real state; run_validation "
-            "re-runs the pipeline's technical + visual validation; "
-            "get_evidence returns real evidence paths; retry_task resumes a "
-            "mission; cancel_task stops it. Never assume SUCCESS — read "
-            "status/verdict from get_task_status."
+            "Aivido MCP gateway for the autonomous supervisor. Two owning "
+            "pipelines: (1) Unreal/editor/content tasks -> start_task (mission "
+            "pipeline, unchanged); (2) repository/code/test/cleanup tasks -> "
+            "start_code_task (isolated code worker). start_code_task needs a "
+            "machine-readable spec (steps/tests/acceptance/scope) and returns "
+            "a task_id immediately; poll get_code_task_status; get_code_evidence "
+            "returns the verified commit + evidence; retry_code_task re-queues; "
+            "cancel_code_task stops. route_prompt tells you the owner for a "
+            "prompt. Never assume PASS/SUCCESS — read the real verdict."
         ),
     )
 
@@ -399,6 +651,28 @@ def build_mcp_server(api_key: str):
         (tool_cancel_task, "cancel_task",
          "Cancel a running mission; the backend finalizes the checkpoint as "
          "CANCELLED, never SUCCESS. Args: task_id."),
+        (tool_start_code_task, "start_code_task",
+         "Start a CODE task on the autonomous supervisor (repo/code/test "
+         "work, isolated git worktree + branch, verified commit only). "
+         "Args: prompt (required), title, routing ('auto'/'code'), priority, "
+         "steps (create_file ops: path + content), tests (pytest/py_compile), "
+         "acceptance (exists/contains/imports), scope. Natural-language-only "
+         "prompts are BLOCKED, never guessed. Unreal tasks are rejected here "
+         "(use start_task). Returns task_id immediately."),
+        (tool_get_code_task_status, "get_code_task_status",
+         "Real code-task state from the durable backend queue. Args: task_id. "
+         "Returns status, verdict, attempts, summary, error/blocked reason."),
+        (tool_get_code_evidence, "get_code_evidence",
+         "Full evidence bundle for a code task: evidence.json (verified "
+         "commit, checks, acceptance results) + change patch. Args: task_id."),
+        (tool_retry_code_task, "retry_code_task",
+         "Re-queue a failed/blocked/cancelled code task for another bounded "
+         "attempt in a fresh worktree. Args: task_id."),
+        (tool_cancel_code_task, "cancel_code_task",
+         "Cancel a queued/running code task; verdict CANCELLED, never PASS. "
+         "Args: task_id."),
+        (tool_route_prompt, "route_prompt",
+         "Routing decision for a prompt: code | unreal | mixed. Args: prompt."),
     ]
 
     for fn, name, description in tools:
@@ -417,25 +691,89 @@ def create_gateway_app(api_key: str):
     from mcp.server.transport_security import TransportSecuritySettings
 
     mcp_server = build_mcp_server(api_key)
-    # Keep the SDK's DNS-rebinding protection ON, scoped to loopback PLUS the
-    # public HTTPS tunnel host (AIVIDO_MCP_PUBLIC_HOST, e.g. the Cloudflare
-    # quick-tunnel hostname). Host matching is exact or "host:*" only, so the
-    # tunnel hostname must be listed verbatim; loopback keeps local use safe.
-    allowed_hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*"]
-    public_host = os.environ.get("AIVIDO_MCP_PUBLIC_HOST", "").strip()
+    # Keep the SDK's DNS-rebinding protection ON: allow the loopback hosts
+    # (local use) plus the public HTTPS tunnel hostname
+    # (AIVIDO_MCP_PUBLIC_HOST, e.g. <something>.trycloudflare.com) that
+    # Cloudflare's edge presents as the Host header. Both plain and ":*"
+    # forms are listed so exact-match and port-suffixed Hosts both pass.
+    allowed_hosts = [
+        "127.0.0.1", "127.0.0.1:*",
+        "localhost", "localhost:*",
+        "[::1]", "[::1]:*",
+    ]
+    public_host = load_public_host()
     if public_host:
         allowed_hosts.append(public_host)
-    app = mcp_server.streamable_http_app(
-        streamable_http_path="/mcp",
-        transport_security=TransportSecuritySettings(
-            enable_dns_rebinding_protection=True,
-            allowed_hosts=allowed_hosts,
-            allowed_origins=[
-                "http://127.0.0.1:*", "http://localhost:*",
-                "http://[::1]:*",
-            ],
-        ),
+        allowed_hosts.append(public_host + ":*")
+    security = TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=allowed_hosts,
+        # Loopback dev/test origins plus the ClickUp browser-app origins.
+        # API-key auth is still enforced on every POST; this only relaxes the
+        # SDK's Origin-header check for ClickUp's documented connect flow.
+        allowed_origins=list(CLICKUP_ORIGINS) + [
+            "http://127.0.0.1:*", "http://localhost:*",
+            "http://[::1]:*",
+        ],
     )
+    app = mcp_server.streamable_http_app(
+        host="127.0.0.1",
+        streamable_http_path="/mcp",
+        # ClickUp-compatible response mode: every POST is answered with ONE
+        # complete application/json response instead of an open-ended
+        # text/event-stream. SSE streams are correct for streaming-capable
+        # clients, but ClickUp's connection-validation HTTP layer buffers
+        # until the stream ends and therefore spins forever. JSON responses
+        # stay fully Streamable-HTTP compliant (the spec mandates JSON when
+        # the client does not ask for SSE) and keep Bearer auth intact.
+        json_response=True,
+        transport_security=security,
+    )
+
+    # CORS for the ClickUp browser-app connect flow. The browser needs an
+    # explicit preflight answer (OPTIONS) plus response headers; without them
+    # a cross-origin POST from app.clickup.com is blocked before it reaches
+    # the MCP handler (and the browser hides the mcp-session-id header, which
+    # breaks sessioned clients). Only known ClickUp / loopback origins get
+    # CORS headers; everyone else sees a plain response with no ACAO, so the
+    # browser still enforces same-origin policy. Bearer auth is untouched.
+    class CorsMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request, call_next):
+            origin = request.headers.get("origin", "")
+            allowed = (
+                origin in CLICKUP_ORIGINS
+                or origin.startswith("http://localhost")
+                or origin.startswith("http://127.0.0.1")
+            )
+
+            if request.method == "OPTIONS":
+                headers = {} if not allowed else {
+                    "Access-Control-Allow-Origin": origin,
+                    "Access-Control-Allow-Methods":
+                        "GET, POST, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": (
+                        "Authorization, Content-Type, Accept, "
+                        "Mcp-Session-Id, Mcp-Protocol-Version, "
+                        "Last-Event-ID, X-Api-Key"
+                    ),
+                    "Access-Control-Max-Age": "86400",
+                    "Vary": "Origin",
+                }
+                # Bodyless 204: a JSONResponse with content=None would render
+                # a "null" body + Content-Length on a no-body status, which
+                # h11 rejects mid-write and proxies surface as 502.
+                from starlette.responses import Response as StarletteResponse
+                return StarletteResponse(status_code=204, headers=headers)
+
+            response = await call_next(request)
+            if allowed:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Access-Control-Expose-Headers"] = (
+                    "Mcp-Session-Id, Mcp-Protocol-Version, "
+                    "WWW-Authenticate, Content-Type"
+                )
+                response.headers.setdefault("Vary", "Origin")
+            return response
 
     class AuthMiddleware(BaseHTTPMiddleware):
         async def dispatch(self, request, call_next):
@@ -482,6 +820,7 @@ def create_gateway_app(api_key: str):
         })
 
     app.add_middleware(AuthMiddleware)
+    app.add_middleware(CorsMiddleware)
     app.add_route("/health", health, methods=["GET"])
     return app
 

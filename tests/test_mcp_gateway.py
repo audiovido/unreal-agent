@@ -17,6 +17,9 @@ if str(ROOT) not in sys.path:
 REQUIRED_TOOLS = {
     "get_status", "start_task", "get_task_status", "run_validation",
     "get_evidence", "retry_task", "cancel_task",
+    # autonomous supervisor code-task tools
+    "start_code_task", "get_code_task_status", "get_code_evidence",
+    "retry_code_task", "cancel_code_task", "route_prompt",
 }
 
 
