@@ -80,7 +80,7 @@ Total test files: 74
 | test_task_goal.py | UNIT/INTEGRATION |
 | test_terminal_state.py | INTEGRATION (mocked bridge) |
 | test_tool_registry_validation.py | UNIT/INTEGRATION |
-| test_umg_menu.py | UNIT/INTEGRATION |
+| test_umg_menu.py | LIVE UE |
 | viewport_capture_test_v3.py | LIVE UE |
 
 ## Summary
@@ -88,15 +88,32 @@ Total test files: 74
 | kind | count |
 |---|---|
 | INTEGRATION (mocked bridge) | 8 |
-| LEGACY SCRIPT | 3 |
-| LIVE UE | 10 |
+| LEGACY SCRIPT | 14 |
+| LIVE UE | 11 |
 | PATCH/INSTALL SCRIPT | 11 |
 | PROBE | 34 |
 | UNIT/INTEGRATION | 8 |
 
+## Repo-root legacy one-shot scripts (superseded; excluded via pytest.ini `--ignore`)
+
+| file | kind |
+|---|---|
+| final_test.py | LEGACY SCRIPT |
+| final_corrected_test.py | LEGACY SCRIPT |
+| final_verification_simple.py | LEGACY SCRIPT |
+| phase2_verification.py | LEGACY SCRIPT |
+| simple_test.py | LEGACY SCRIPT |
+| test_capture.py | LEGACY SCRIPT |
+| test_memory_integration.py | LEGACY SCRIPT |
+| test_persistence_simple.py | LEGACY SCRIPT |
+| test_pipeline.py | LEGACY SCRIPT |
+| status_check.py | LEGACY SCRIPT |
+| debug_actor_classes.py | LEGACY SCRIPT |
+
 ## Notes
 
-- UNIT/INTEGRATION files under `tests/test_*.py` are the regression suite (105 tests collected).
+- UNIT/INTEGRATION files under `tests/test_*.py` are the regression suite (686 tests collected as of 2026-09-03).
+- test_umg_menu.py performs real editor work (creates a WidgetComponent via the live bridge on 6766, writes to Saved/UnrealAgent) without assertions; it is a LIVE UE probe and is excluded from the automated suite via pytest.ini `--ignore` like the other LIVE UE probes, rather than passing vacuously when the bridge is down.
 - LIVE UE probes (spawn_cube.py, save_level.py, viewport_capture_test_v3.py, etc.) connect to the real editor; they are kept as manual live probes, not part of the automated suite.
 - PATCH/INSTALL scripts are one-shot dev tools, superseded by the current toolchain.
 - New live graduation probes live in `scripts/live_*.py` (excluded from pytest via norecursedirs).
