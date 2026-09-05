@@ -13,9 +13,22 @@ from pydantic import BaseModel
 
 ROOT = Path(__file__).resolve().parents[1]
 
-PROJECT = Path(
-    r"C:\Users\Shadow\Desktop\app\AudioVidoLivingCity"
-)
+
+def _active_project_root():
+    """Resolve the active project root through the standard priority chain
+    instead of a baked-in legacy demo path. Falls back to the repo workspace
+    dir so the workboard keeps working on machines with no Unreal project yet."""
+    try:
+        from tools.unreal import project_context as _pc
+        resolved = _pc.resolve_active_project()
+        if resolved and resolved.get("ok") and resolved.get("uproject_path"):
+            return Path(resolved["uproject_path"]).resolve().parent
+    except Exception:
+        pass
+    return ROOT / "workspace"
+
+
+PROJECT = _active_project_root()
 
 DATA_DIR = PROJECT / "Saved" / "UnrealAgent" / "Workboard"
 DATA_FILE = DATA_DIR / "workboard.json"
