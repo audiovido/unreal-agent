@@ -1,6 +1,6 @@
 <!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unreal Agent Complete Frontend</title>
 <style>
-:root{--bg:#07090d;--panel:#0e1219;--line:#202632;--text:#f5f7fb;--muted:#7f8997;--cyan:#72e6ff;--green:#56e39d;--amber:#ffc56e;--red:#ff7180}*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,Segoe UI,sans-serif;background:radial-gradient(circle at 50% -10%,#18223b 0,#07090d 34%);color:var(--text)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}.glass{background:linear-gradient(145deg,#111722ee,#0a0e14ee);border:1px solid var(--line);box-shadow:0 22px 60px #0008}.shell{height:100%;display:grid;grid-template-columns:88px 1fr;gap:10px;padding:10px}.rail{border-radius:22px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:7px}.brand{width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#7de8ff,#8172ff);display:grid;place-items:center;color:#071018;font-weight:900;margin-bottom:8px}.nav{width:60px;height:52px;border:1px solid transparent;border-radius:14px;background:transparent;color:var(--muted);font-size:9px}.nav b{display:block;font-size:16px}.nav.active,.nav:hover{background:#7fa8ff12;border-color:#7fa8ff28;color:#eaf1ff}.spacer{flex:1}.app{min-width:0;min-height:0;display:grid;grid-template-rows:66px 1fr;gap:10px}.top{border-radius:20px;padding:0 15px;display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px;align-items:center}.kicker{font-size:9px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}.title{font-weight:700;margin-top:3px}.command{height:40px;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;padding:0 10px}.command input{width:100%;background:transparent;border:0;outline:0}.topactions{display:flex;gap:6px}.btn,.select,.action{border:1px solid var(--line);background:#ffffff08;border-radius:10px;height:34px;padding:0 10px}.main{min-height:0;display:grid;grid-template-columns:1fr 340px;gap:10px}.center{min-height:0;display:grid;grid-template-rows:auto 1fr auto;gap:10px}.taskbar,.execution,.inspector,.workspace{border-radius:20px}.taskbar{padding:13px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px}.taskbar small{display:block;color:var(--muted);margin-top:4px}.controls{display:flex;gap:5px;flex-wrap:wrap}.workspace{overflow:hidden;display:grid;grid-template-rows:43px 1fr}.tabs{display:flex;align-items:center;gap:5px;padding:0 10px;border-bottom:1px solid var(--line)}.tab{border:0;background:transparent;color:var(--muted);height:29px;border-radius:9px;padding:0 9px}.tab.active{background:#7fa8ff12;color:#e6edff}.stage{overflow:auto;padding:16px}.view{display:none}.view.active{display:block}.hero{display:grid;grid-template-columns:1fr 240px;gap:15px}.hero h1{font-size:42px;line-height:1.02;letter-spacing:-.04em;margin:8px 0 11px}.hero p{color:#929baa;line-height:1.7;font-size:12px}.orb{height:190px;border:1px solid var(--line);border-radius:19px;display:grid;place-items:center;background:radial-gradient(circle,#72e6ff18,transparent 40%)}.core{width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,#7de8ff,#8172ff);color:#071018;display:grid;place-items:center;font-weight:900}.grid4,.cards{display:grid;gap:8px}.grid4{grid-template-columns:repeat(4,1fr);margin-top:15px}.cards{grid-template-columns:repeat(3,1fr)}.card,.quick,.block{border:1px solid var(--line);background:#ffffff05;border-radius:13px;padding:11px}.quick{text-align:start;min-height:70px}.quick small,.sub{display:block;color:var(--muted);font-size:9px;margin-top:5px}.label{color:var(--muted);font-size:8px;letter-spacing:.1em;text-transform:uppercase}.value{font-size:12px;margin-top:6px}.section{margin-top:15px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.actions{display:flex;gap:6px;flex-wrap:wrap}.good{color:#a8edc8}.danger{color:#ffbcc4}.primary{color:#dffaff}.inspector{overflow:hidden;display:grid;grid-template-rows:45px 1fr}.sidehead{padding:0 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.sidebody{overflow:auto;padding:9px}.block h4{margin:0 0 7px;color:var(--muted);font-size:9px;text-transform:uppercase}.execution{padding:10px 12px}.steps{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px}.step{height:29px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:8px;display:grid;place-items:center}.step.active{border-color:#72e6ff55;color:#dffaff;background:#72e6ff0d}.modalbg{position:fixed;inset:0;background:#020407c8;display:grid;place-items:center;z-index:20;padding:16px}.modal{width:min(760px,95vw);max-height:88vh;overflow:auto;border-radius:20px;padding:16px}.hidden{display:none!important}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}.field label{font-size:8px;color:var(--muted);text-transform:uppercase}.field input,.field select,.field textarea{background:#0003;border:1px solid var(--line);border-radius:10px;padding:9px;outline:0}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;right:16px;bottom:16px;z-index:30;background:#111722;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:240px}.toast span{display:block;color:var(--muted);font-size:9px;margin-top:3px}pre{white-space:pre-wrap}#SELF_TEST_RESULT{display:none}@media(max-width:1000px){.main{grid-template-columns:1fr}.inspector{display:none}.grid4{grid-template-columns:repeat(2,1fr)}}
+:root{--bg:#07090d;--panel:#0e1219;--line:#202632;--text:#f5f7fb;--muted:#7f8997;--cyan:#72e6ff;--green:#56e39d;--amber:#ffc56e;--red:#ff7180}*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,Segoe UI,sans-serif;background:radial-gradient(circle at 50% -10%,#18223b 0,#07090d 34%);color:var(--text)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}.glass{background:linear-gradient(145deg,#111722ee,#0a0e14ee);border:1px solid var(--line);box-shadow:0 22px 60px #0008}.shell{height:100%;display:grid;grid-template-columns:88px 1fr;gap:10px;padding:10px}.rail{border-radius:22px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:7px}.brand{width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#7de8ff,#8172ff);display:grid;place-items:center;color:#071018;font-weight:900;margin-bottom:8px}.nav{width:60px;height:52px;border:1px solid transparent;border-radius:14px;background:transparent;color:var(--muted);font-size:9px}.nav b{display:block;font-size:16px}.nav.active,.nav:hover{background:#7fa8ff12;border-color:#7fa8ff28;color:#eaf1ff}.spacer{flex:1}.app{min-width:0;min-height:0;display:grid;grid-template-rows:66px 1fr;gap:10px}.top{border-radius:20px;padding:0 15px;display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px;align-items:center}.kicker{font-size:9px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}.title{font-weight:700;margin-top:3px}.command{height:40px;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;padding:0 10px}.command input{width:100%;background:transparent;border:0;outline:0}.topactions{display:flex;gap:6px}.btn,.select,.action{border:1px solid var(--line);background:#ffffff08;border-radius:10px;height:34px;padding:0 10px}.main{min-height:0;display:grid;grid-template-columns:1fr 340px;gap:10px}.center{min-height:0;display:grid;grid-template-rows:auto 1fr auto;gap:10px}.taskbar,.execution,.inspector,.workspace{border-radius:20px}.taskbar{padding:13px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px}.taskbar small{display:block;color:var(--muted);margin-top:4px}.controls{display:flex;gap:5px;flex-wrap:wrap}.workspace{overflow:hidden;display:grid;grid-template-rows:43px 1fr}.tabs{display:flex;align-items:center;gap:5px;padding:0 10px;border-bottom:1px solid var(--line)}.tab{border:0;background:transparent;color:var(--muted);height:29px;border-radius:9px;padding:0 9px}.tab.active{background:#7fa8ff12;color:#e6edff}.stage{overflow:auto;padding:16px}.view{display:none}.view.active{display:block}.hero{display:grid;grid-template-columns:1fr 240px;gap:15px}.hero h1{font-size:42px;line-height:1.02;letter-spacing:-.04em;margin:8px 0 11px}.hero p{color:#929baa;line-height:1.7;font-size:12px}.orb{height:190px;border:1px solid var(--line);border-radius:19px;display:grid;place-items:center;background:radial-gradient(circle,#72e6ff18,transparent 40%)}.core{width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,#7de8ff,#8172ff);color:#071018;display:grid;place-items:center;font-weight:900}.grid4,.cards{display:grid;gap:8px}.grid4{grid-template-columns:repeat(4,1fr);margin-top:15px}.cards{grid-template-columns:repeat(3,1fr)}.card,.quick,.block{border:1px solid var(--line);background:#ffffff05;border-radius:13px;padding:11px}.quick{text-align:start;min-height:70px}.quick small,.sub{display:block;color:var(--muted);font-size:9px;margin-top:5px}.label{color:var(--muted);font-size:8px;letter-spacing:.1em;text-transform:uppercase}.value{font-size:12px;margin-top:6px}.section{margin-top:15px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.actions{display:flex;gap:6px;flex-wrap:wrap}.good{color:#a8edc8}.danger{color:#ffbcc4}.primary{color:#dffaff}.visual-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.visual-grid .value{font-size:11px;word-break:break-word;direction:ltr;unicode-bidi:isolate}.visual-proof-preview img{width:100%;max-height:180px;object-fit:contain;border-radius:9px;border:1px solid var(--line);margin-top:8px}.visual-inspector .sub{line-height:1.45;word-break:break-word}.inspector{overflow:hidden;display:grid;grid-template-rows:45px 1fr}.sidehead{padding:0 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.sidebody{overflow:auto;padding:9px}.block h4{margin:0 0 7px;color:var(--muted);font-size:9px;text-transform:uppercase}.execution{padding:10px 12px}.steps{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px}.step{height:29px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:8px;display:grid;place-items:center}.step.active{border-color:#72e6ff55;color:#dffaff;background:#72e6ff0d}.modalbg{position:fixed;inset:0;background:#020407c8;display:grid;place-items:center;z-index:20;padding:16px}.modal{width:min(760px,95vw);max-height:88vh;overflow:auto;border-radius:20px;padding:16px}.hidden{display:none!important}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}.field label{font-size:8px;color:var(--muted);text-transform:uppercase}.field input,.field select,.field textarea{background:#0003;border:1px solid var(--line);border-radius:10px;padding:9px;outline:0}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;right:16px;bottom:16px;z-index:30;background:#111722;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:240px}.toast span{display:block;color:var(--muted);font-size:9px;margin-top:3px}pre{white-space:pre-wrap}#SELF_TEST_RESULT{display:none}@media(max-width:1000px){.main{grid-template-columns:1fr}.inspector{display:grid;grid-template-rows:45px minmax(360px,auto);min-height:405px}.grid4{grid-template-columns:repeat(2,1fr)}}
 .chat-wrap{height:100%;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px}.chat-list{min-height:320px;max-height:56vh;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}.msg{max-width:78%;padding:10px 12px;border-radius:14px;border:1px solid var(--line);font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-word}.msg.user{align-self:flex-end;background:rgba(114,230,255,.07);border-color:rgba(114,230,255,.18)}.msg.assistant{align-self:flex-start;background:rgba(255,255,255,.025)}.msg.system{align-self:center;color:var(--muted);background:transparent}.msgmeta{display:block;margin-top:6px;font-size:8px;color:var(--muted)}.chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.chat-compose textarea{min-height:62px;max-height:120px;resize:vertical;border:1px solid var(--line);background:rgba(0,0,0,.22);border-radius:12px;padding:10px;outline:0}.chat-buttons{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}.chat-empty{color:var(--muted);font-size:10px;text-align:center;padding:32px}
 .workboard-shell{display:grid;grid-template-rows:auto auto 1fr;gap:12px;min-height:580px}
 .workboard-top{display:grid;grid-template-columns:1fr auto;gap:10px}
@@ -629,7 +629,7 @@
 </div>
 
 <section class="execution glass"><div class="sectionhead"><div><div class="kicker">Task Timeline</div><div id="liveLine">Idle</div></div><div id="taskCounter">0 / 7</div></div><div class="steps"><div class="step">PLAN</div><div class="step">INSPECT</div><div class="step">READ</div><div class="step">EDIT</div><div class="step">BUILD</div><div class="step">VERIFY</div><div class="step">REVIEW</div></div></section></main>
-<aside class="inspector glass"><div class="sidehead"><strong>Mission Inspector</strong><span id="connectionBadge" style="color:var(--amber)">● MOCK</span></div><div class="sidebody"><div class="block"><h4>Current Action</h4><div id="currentAction">Idle</div></div><div class="block"><h4>Provider</h4><div id="providerSummary">Ollama · qwen3:8b</div></div><div class="block"><h4>Git</h4><div id="gitSummary">main · clean</div></div><div class="block"><h4>Approval</h4><div id="approvalSummary">No approval pending</div><div class="actions" style="margin-top:7px"><button class="action good" data-action="approval_approve">Approve</button><button class="action danger" data-action="approval_reject">Reject</button></div></div><div class="block"><h4>Last Result</h4><div id="lastResult">Idle</div></div></div></aside></div></div></div>
+<aside class="inspector glass"><div class="sidehead"><strong>Mission Inspector</strong><span id="connectionBadge" style="color:var(--amber)">● MOCK</span></div><div class="sidebody"><div class="block"><h4>Current Action</h4><div id="currentAction">Idle</div></div><div class="block"><h4>Provider</h4><div id="providerSummary">Ollama · qwen3:8b</div></div><div class="block"><h4>Git</h4><div id="gitSummary">main · clean</div></div><div class="block"><h4>Approval</h4><div id="approvalSummary">No approval pending</div><div class="actions" style="margin-top:7px"><button class="action good" data-action="approval_approve">Approve</button><button class="action danger" data-action="approval_reject">Reject</button></div></div><div class="block"><h4>Last Result</h4><div id="lastResult">Idle</div></div><div class="block visual-inspector" id="visualInspector"><h4>Visual Director</h4><div class="visual-grid"><div><span class="label">Profile</span><div class="value" id="visualProfile">Not evaluated</div></div><div><span class="label">Score</span><div class="value" id="visualScore">Not evaluated</div></div><div><span class="label">Required floor</span><div class="value" id="visualFloor">Not evaluated</div></div><div><span class="label">Acceptance</span><div class="value" id="visualVerdict">Not evaluated</div></div><div><span class="label">Subject bbox</span><div class="value" id="visualBbox">Not evaluated</div></div><div><span class="label">Coverage</span><div class="value" id="visualCoverage">Not evaluated</div></div></div><div class="sub" id="visualIssues">Issues: Not evaluated</div><div class="sub" id="visualEnvironment">Environment requirement: Not evaluated</div><div class="sub" id="visualFreshness">Proof freshness: Not evaluated</div><div class="sub" id="visualProofHashes">Proof hashes: Not evaluated</div><div class="sub" id="visualProofPath">Proof path: Not evaluated</div><div id="visualProofPreview" class="visual-proof-preview"></div><div class="sub" id="visualPasses">Correction passes: Not evaluated</div><div class="sub" id="visualTerminal">Terminal state: Not evaluated</div></div></div></aside></div></div></div></div></div></div>
 <div class="modalbg hidden" id="panelModal"><div class="modal glass"><div class="sectionhead"><div><h2 id="panelTitle">Panel</h2><div class="sub">Unified action panel</div></div><button class="btn" data-close="panelModal">×</button></div><div id="panelContent"></div></div></div>
 <div class="modalbg hidden" id="settingsModal"><div class="modal glass"><div class="sectionhead"><div><h2>Settings</h2><div class="sub">One transport for every action</div></div><button class="btn" data-close="settingsModal">×</button></div><div class="formrow"><div class="field"><label>Mode</label><select id="modeSelect"><option value="api" selected>Real API</option></select></div><div class="field"><label>Base URL</label><input id="baseUrlInput" value=""></div></div><div class="field"><label>Action Endpoint</label><input id="endpointInput" value="/api/action"></div><div class="formrow"><div class="field"><label>Provider</label><select id="providerSelect"><option>Ollama</option><option>OpenRouter</option><option>OpenAI</option><option>Anthropic</option><option>Gemini</option></select></div><div class="field"><label>Model</label><select id="modelSelect"></select></div></div><div class="field"><label>API Token</label><input id="tokenInput" type="password" placeholder="Never returned to UI logs"></div><div class="actions"><button class="action primary" id="saveSettings">Save</button><button class="action" id="pingAction">Test Unified API</button></div></div></div>
 <div class="toast hidden" id="toast"><strong id="toastTitle"></strong><span id="toastText"></span></div><div id="SELF_TEST_RESULT"></div>
@@ -665,6 +665,44 @@ function pushChatEvent(ev){
   STATE.chat.push({role,text,at:new Date().toLocaleTimeString()});
   renderChat();
 }
+async function refreshExecutionDetail(taskId){
+  if(!taskId)return null;
+  try{
+    const res=await chatApi('/api/execution/'+encodeURIComponent(taskId));
+    if(!res.ok)return null;
+    const body=await res.json();
+    const e=body&&body.execution||{};
+    const v=e.visual||{};
+    const text=(value)=>value===null||value===undefined||value===''?'Not evaluated':String(value);
+    const score=v.score===null||v.score===undefined?'Not evaluated':(String(v.score)+' / 10');
+    const floor=v.required_floor===null||v.required_floor===undefined?'Not evaluated':text(v.required_floor);
+    const bbox=Array.isArray(v.subject_bbox)?JSON.stringify(v.subject_bbox):text(v.subject_bbox);
+    const coverage=v.subject_coverage===null||v.subject_coverage===undefined?'Not evaluated':String(v.subject_coverage);
+    const issues=Array.isArray(v.issues)?(v.issues.length?v.issues.join(', '):'None'):text(v.issues);
+    const proof=v.proof||{}, previous=proof.previous||{}, final=proof.final||{};
+    $('#visualProfile').textContent=text(v.profile); $('#visualScore').textContent=score;
+    $('#visualFloor').textContent=floor; $('#visualVerdict').textContent=text(v.acceptance_verdict);
+    $('#visualBbox').textContent=bbox; $('#visualCoverage').textContent=coverage;
+    $('#visualIssues').textContent='Issues: '+issues;
+    const env=v.environment_requirement||{};
+    const envStatus=text(env.status);
+    const envBlocking=env.blocking===null||env.blocking===undefined?'Not evaluated':String(!!env.blocking);
+    $('#visualEnvironment').textContent='Environment requirement: '+envStatus+' · blocking: '+envBlocking;
+    $('#visualFreshness').textContent='Proof freshness: '+(proof.fresh===null||proof.fresh===undefined?'Not evaluated':String(!!proof.fresh));
+    $('#visualProofHashes').textContent='Proof hashes: '+text(previous.sha256)+' → '+text(final.sha256);
+    $('#visualProofPath').textContent='Proof path: '+text(final.path);
+    $('#visualTerminal').textContent='Terminal state: '+text(v.terminal_state||e.terminal_state);
+    const passes=Array.isArray(v.passes)?v.passes:[];
+    $('#visualPasses').textContent='Correction passes: '+(passes.length?passes.map(p=>{
+      const s=p.score===null||p.score===undefined?'Not evaluated':String(p.score);
+      const kept=p.kept===true?'kept':p.reverted===true?'reverted':'Not evaluated';
+      return '#'+text(p.index)+' '+s+' · '+text(p.strategy)+' · '+kept+' · '+text(p.proof_hash);
+    }).join(' | '):'Not evaluated');
+    const preview=$('#visualProofPreview'); preview.innerHTML='';
+    if(v.proof_preview_url){ const img=document.createElement('img'); img.alt='Canonical final visual proof'; img.src=v.proof_preview_url+'?t='+Date.now(); preview.appendChild(img); }
+    return e;
+  }catch(e){ return null; }
+}
 function attachTaskStream(taskId){
   if(!taskId)return;
   if(activeEventSource){try{activeEventSource.close()}catch(e){} activeEventSource=null}
@@ -683,6 +721,7 @@ function attachTaskStream(taskId){
     const title=ev?.title||ev?.type||"Agent event";
     $("#currentAction").textContent=title;
     $("#lastResult").textContent=eventText(ev)||title;
+    refreshExecutionDetail(taskId);
     log("SSE "+JSON.stringify(ev));
     pushChatEvent(ev);
     const type=String(ev?.type||"").toLowerCase();
@@ -716,7 +755,181 @@ function chatHtml(){if(!STATE.chat.length)return '<div class="chat-empty">No mes
 function wirePanel(){if($('#chatSend')){$('#chatSend').onclick=async()=>{const v=$('#chatInput').value;$('#chatInput').value='';await sendChat(v)};$('#chatInput').onkeydown=async e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const v=e.currentTarget.value;e.currentTarget.value='';await sendChat(v)}};$('#chatRetry').onclick=async()=>{const last=[...STATE.chat].reverse().find(m=>m.role==='user');if(last)await sendChat(last.text);else toast('Retry','No previous user message')};$('#chatStop').onclick=()=>runAction('stop',{source:'chat'});$('#chatClear').onclick=()=>{STATE.chat=[];renderChat();toast('Chat cleared','')}} $('#configureModels')?.addEventListener('click',()=>{$('#panelModal').classList.add('hidden');$('#settingsModal').classList.remove('hidden')});$$('[data-panel-action]').forEach(b=>b.onclick=async()=>{const a=b.dataset.panelAction;if(a==='tasks_refresh'){ $('#taskCards').innerHTML=tasksHtml();return}const p={};if(a==='project_select')p.path=$('#projectInput')?.value||'';if(a==='project_clone')p.url=$('#gitUrlInput')?.value||'';if(a.startsWith('git_'))p.branch=$('#branchSelect')?.value||STATE.git.branch;if(a==='git_commit')p.message=$('#commitMsg')?.value||'';if(a==='provider_models')p.provider=CONFIG.provider;if(a==='memory_add')p.content=$('#memoryInput')?.value||'';if(a==='memory_search')p.query=$('#memorySearch')?.value||'';if(a==='approval_request')p.reason='Frontend approval test';const r=await runAction(a,p);if(a.startsWith('memory_')&&r?.data?.memory&&$('#memoryCards'))$('#memoryCards').innerHTML=memHtml(r.data.memory)})}
 $$('[data-action]').forEach(b=>b.onclick=()=>runAction(b.dataset.action));$$('.tab').forEach(t=>t.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');$$('.view').forEach(v=>v.classList.remove('active'));$('#view-'+t.dataset.view).classList.add('active')});$$('.nav').forEach(n=>n.onclick=()=>{$$('.nav').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.panel==='mission'){ $('#panelModal').classList.add('hidden');return}$('#panelTitle').textContent=n.querySelector('span').textContent;$('#panelContent').innerHTML=panelHtml(n.dataset.panel);$('#panelModal').classList.remove('hidden');wirePanel()});
 function populateModels(){const p=$('#providerSelect').value,l=STATE.models[p]||[];$('#modelSelect').innerHTML=l.map(x=>`<option>${esc(x)}</option>`).join('');if(l.includes(CONFIG.model))$('#modelSelect').value=CONFIG.model}$('#providerSelect').onchange=populateModels;populateModels();$('#settingsButton').onclick=$('#modelButton').onclick=()=>{$('#modeSelect').value=CONFIG.mode;$('#baseUrlInput').value=CONFIG.baseUrl;$('#endpointInput').value=CONFIG.actionEndpoint;$('#providerSelect').value=CONFIG.provider;populateModels();$('#modelSelect').value=CONFIG.model;$('#settingsModal').classList.remove('hidden')};$('#saveSettings').onclick=()=>{CONFIG.mode=$('#modeSelect').value;CONFIG.baseUrl=$('#baseUrlInput').value.replace(/\/$/,'');CONFIG.actionEndpoint=$('#endpointInput').value.startsWith('/')?$('#endpointInput').value:'/'+$('#endpointInput').value;CONFIG.provider=$('#providerSelect').value;CONFIG.model=$('#modelSelect').value;CONFIG.token=$('#tokenInput').value;$('#tokenInput').value='';$('#modelButton').textContent=CONFIG.provider+' · '+CONFIG.model;$('#ctxProvider').textContent=CONFIG.provider;$('#ctxModel').textContent=CONFIG.model;$('#providerSummary').textContent=CONFIG.provider+' · '+CONFIG.model;transportUI();$('#settingsModal').classList.add('hidden');toast('Settings saved','Unified transport updated')};$('#pingAction').onclick=()=>runAction('ping',{source:'frontend'});$('#language').onchange=e=>language(e.target.value);$$('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).classList.add('hidden'));$$('.modalbg').forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.add('hidden')});$('#clearLogs').onclick=()=>$('#logs').textContent='';$('#prompt').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim()){sendChat(e.target.value.trim());e.target.value=''}};
-async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode='mock';transportUI();$('#language').value='en';$('#language').dispatchEvent(new Event('change'));ok('language-en',document.documentElement.dir==='ltr'&&document.querySelector('[data-i18n="tasks"]').textContent==='Tasks');$('#language').value='fa';$('#language').dispatchEvent(new Event('change'));ok('language-fa',document.documentElement.dir==='rtl'&&document.querySelector('[data-i18n="tasks"]').textContent==='تسک‌ها');for(const t of $$('.tab')){t.click();ok('tab-'+t.dataset.view,$('#view-'+t.dataset.view).classList.contains('active'))}for(const a of ['pause','resume','stop','retry','self_fix','inspect_project','plan','build','validate','run','screenshot','patch_apply','patch_reject','patch_revert'])ok('action-'+a,(await runAction(a,{test:true}))?.ok);document.querySelector('[data-panel="projects"]').click();const pr=await runAction('project_select',{path:'C:\\Demo\\MyProject'});ok('project',pr?.data?.project?.name==='MyProject'&&$('#ctxProject').textContent==='MyProject');$('#panelModal').classList.add('hidden');ok('models',(await runAction('provider_models',{provider:'Ollama'}))?.data?.models?.length>0);ok('git',(await runAction('git_status',{branch:'main'}))?.data?.git?.branch==='main');const before=STATE.memory.length;await runAction('memory_add',{content:'selftest memory'});ok('memory-add',STATE.memory.length===before+1);ok('memory-search',(await runAction('memory_search',{query:'selftest'}))?.data?.memory?.length>0);await runAction('approval_request',{reason:'test'});ok('approval-pending',!!STATE.approval);await runAction('approval_approve',{});ok('approval-clear',!STATE.approval);document.querySelector('[data-panel="chat"]').click();ok('chat-open',!!$('#chatInput'));const cb=STATE.chat.length;await sendChat('self test chat');ok('chat-message',STATE.chat.length>=cb+2);$('#panelModal').classList.add('hidden');$('#settingsButton').click();ok('settings-open',!$('#settingsModal').classList.contains('hidden'));$('#settingsModal').classList.add('hidden');$('#prompt').value='self test prompt';$('#prompt').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));await new Promise(r=>setTimeout(r,60));ok('prompt',STATE.tasks.some(t=>t.action==='prompt'))}catch(e){f.push('exception:'+e.message)}const r=$('#SELF_TEST_RESULT');r.style.display='block';r.textContent=f.length?'FAIL '+f.join(','):'PASS 0 failures';document.title=f.length?'SELFTEST_FAIL':'SELFTEST_PASS'}language('fa');transportUI();if(new URLSearchParams(location.search).get('selftest')==='1')setTimeout(selfTest,80);
+async function selfTest(){const f=[],ok=(n,v)=>{if(!v)f.push(n)};try{CONFIG.mode='mock';transportUI();$('#language').value='en';$('#language').dispatchEvent(new Event('change'));ok('language-en',document.documentElement.dir==='ltr'&&document.querySelector('[data-i18n="tasks"]').textContent==='Tasks');$('#language').value='fa';$('#language').dispatchEvent(new Event('change'));ok('language-fa',document.documentElement.dir==='rtl'&&document.querySelector('[data-i18n="tasks"]').textContent==='تسک‌ها');for(const t of $$('.tab')){t.click();ok('tab-'+t.dataset.view,$('#view-'+t.dataset.view).classList.contains('active'))}for(const a of ['pause','resume','stop','retry','self_fix','inspect_project','plan','build','validate','run','screenshot','patch_apply','patch_reject','patch_revert'])ok('action-'+a,(await runAction(a,{test:true}))?.ok);document.querySelector('[data-panel="projects"]').click();const pr=await runAction('project_select',{path:'C:\\Demo\\MyProject'});ok('project',pr?.data?.project?.name==='MyProject'&&$('#ctxProject').textContent==='MyProject');$('#panelModal').classList.add('hidden');ok('models',(await runAction('provider_models',{provider:'Ollama'}))?.data?.models?.length>0);ok('git',(await runAction('git_status',{branch:'main'}))?.data?.git?.branch==='main');const before=STATE.memory.length;await runAction('memory_add',{content:'selftest memory'});ok('memory-add',STATE.memory.length===before+1);ok('memory-search',(await runAction('memory_search',{query:'selftest'}))?.data?.memory?.length>0);await runAction('approval_request',{reason:'test'});ok('approval-pending',!!STATE.approval);await runAction('approval_approve',{});ok('approval-clear',!STATE.approval);document.querySelector('[data-panel="chat"]').click();ok('chat-open',!!$('#chatInput'));const cb=STATE.chat.length;await sendChat('self test chat');ok('chat-message',STATE.chat.length>=cb+2);$('#panelModal').classList.add('hidden');$('#settingsButton').click();ok('settings-open',!$('#settingsModal').classList.contains('hidden'));$('#settingsModal').classList.add('hidden');$('#prompt').value='self test prompt';$('#prompt').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));await new Promise(r=>setTimeout(r,60));ok('prompt',STATE.tasks.some(t=>t.action==='prompt'))}catch(e){f.push('exception:'+e.message)}const r=$('#SELF_TEST_RESULT');r.style.display='block';r.textContent=f.length?'FAIL '+f.join(','):'PASS 0 failures';document.title=f.length?'SELFTEST_FAIL':'SELFTEST_PASS'}/* ============================================================
+   CHAT SUBMIT FLOW V2 — Aivido API Test UI
+     1. Send -> POST {base}/api/action {action:"prompt",payload:{message}}
+     2. No /api/ua/* routes anywhere in this flow.
+     3. Accepted -> WORKING (RUNNING), show task_id, disable duplicate Send.
+     4. Execution state polled ONLY via {base}/api/status.
+     5. execution_active false -> DONE (COMPLETE) + auto-refresh proof.
+     6. Failures show the real backend error in chat; never silent.
+     7. Base URL support unchanged (CONFIG.baseUrl + settings modal).
+   Declared after the legacy sendChat so it wins for all callers
+   (chat Send button, top command Enter, Retry, selfTest).
+   ============================================================ */
+var chatBusy=false, chatPoll=null, chatPollMisses=0;
+function chatSetEnabled(busy){
+  var s=$('#chatSend'), i=$('#chatInput');
+  if(s) s.disabled=!!busy;
+  if(i) i.disabled=!!busy;
+}
+function chatBaseUrl(){ return String(CONFIG.baseUrl||'').replace(/\/+$/,''); }
+function chatApi(path, opts){
+  opts=opts||{};
+  opts.headers=opts.headers||{};
+  if(opts.body && typeof opts.body!=='string'){ opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(opts.body); }
+  if(CONFIG.token) opts.headers['Authorization']='Bearer '+CONFIG.token;
+  return fetch(chatBaseUrl()+path, opts);
+}
+async function chatAction(body){
+  var res=await chatApi(CONFIG.actionEndpoint,{method:'POST',body:body});
+  var data=null; try{ data=await res.json(); }catch(e){}
+  if(!res.ok){
+    var m=(data&&(data.detail||data.error||data.message))||('HTTP '+res.status);
+    var err=new Error(typeof m==='string'?m:JSON.stringify(m)); err.status=res.status; err.detail=data; throw err;
+  }
+  return data;
+}
+async function chatStatusNow(){
+  try{ var r=await chatApi('/api/status'); return (await r.json())||null; }catch(e){ return null; }
+}
+function chatPush(text, role, proofUrl){
+  STATE.chat.push({role:role||'system', text:String(text==null?'':text), at:new Date().toLocaleTimeString(), proof:proofUrl||null});
+  renderChat();
+}
+function chatStopPoll(){ if(chatPoll){ clearInterval(chatPoll); chatPoll=null; } }
+function chatFinish(ok){
+  chatBusy=false; chatPollMisses=0;
+  chatSetEnabled(false);
+  chatStopPoll();
+  $('#taskStatus').textContent=ok?'COMPLETE':'FAILED';
+  $('#liveLine').textContent=ok?'✓ Task done':'✕ Task failed';
+}
+function chatProofRefresh(){
+  var base=chatBaseUrl();
+  chatApi('/api/proof/status').then(function(r){return r.json();}).then(function(st){
+    if(st && st.ok && st.size){
+      var url=(st.url||'/api/proof/latest');
+      chatPush('DONE — proof refreshed ('+(st.size||0)+' bytes).', 'assistant', base+url+'?t='+Date.now());
+      var list=$('#chatList');
+      if(list){
+        var img=document.createElement('img');
+        img.src=base+url+'?t='+Date.now();
+        img.style.cssText='max-width:100%;border-radius:8px;margin:6px 0 0;display:block';
+        list.appendChild(img); list.scrollTop=list.scrollHeight;
+      }
+    }
+  }).catch(function(){});
+}
+function chatResolveTerminal(taskId){
+  // Backend truth wins: DONE only when the backend emitted a terminal PASS
+  // (COMPLETE/final). "execution_active turned false" or "a proof exists" is
+  // never treated as acceptance by itself.
+  return chatApi('/api/events').then(function(r){return r.json();}).then(function(body){
+    var list=(body&&body.events)||[];
+    var terminal=null, structured=null;
+    var STRUCTURED={'EXECUTION_STALLED':1,'EXECUTION_FAILED':1,'BLOCKED':1,'EXECUTION_BLOCKER':1};
+    for(var i=0;i<list.length;i++){
+      var ev=list[i];
+      if(!ev||!ev.task_id||String(ev.task_id)!==String(taskId)) continue;
+      var type=String(ev.type||'').toLowerCase();
+      var status=String(ev.status||'').toLowerCase();
+      var title=String(ev.title||'');
+      var ok=(type==='complete'||type==='final'||status==='success'||status==='complete'||title==='COMPLETE');
+      var bad=(type==='error'||status==='failed'||status==='error'||status==='blocked'||status==='rejected'||status==='cancelled'||status==='canceled');
+      if(!ok&&!bad) continue;
+      terminal={ok:ok,bad:bad,title:title,status:status,ev:ev};
+      if(ok) break; // a PASS event is the strongest signal; stop scanning
+      if(STRUCTURED[title]) structured={title:title,ev:ev};
+    }
+    if(!terminal) return {state:'UNKNOWN',reason:'No terminal event found for this task (backend may have restarted). Not marking DONE.'};
+    if(terminal.ok) return {state:'PASS',reason:terminal.title||'complete'};
+    var label=(structured&&structured.title)||terminal.title||'FAILED';
+    var detail=(structured&&structured.ev&&structured.ev.detail)||terminal.ev.detail;
+    var reason='';
+    if(detail){ if(typeof detail==='object'){ reason=detail.reason||detail.stall_reason||JSON.stringify(detail); } else { reason=String(detail); } }
+    return {state:String(label).toUpperCase(), reason:reason||String(terminal.status||'failed')};
+  }).catch(function(err){ return {state:'UNKNOWN',reason:'Cannot query terminal state: '+String((err&&err.message)||err)}; });
+}
+function chatStartPoll(taskId){
+  chatStopPoll();
+  chatPoll=setInterval(function(){
+    if(!chatBusy){ chatStopPoll(); return; }
+    chatStatusNow().then(function(s){
+      if(!chatBusy) return;
+      if(!s){ chatPollMisses++; if(chatPollMisses>6){ chatPush('ERROR — backend unreachable, task state unknown. Retry after checking the backend.','assistant'); chatFinish(false); } return; }
+      chatPollMisses=0;
+      if(s.execution_active){
+        $('#taskStatus').textContent='RUNNING'; $('#liveLine').textContent='↻ task '+String(taskId).slice(0,8)+' running';
+      }else{
+        // Execution stopped. Resolve the REAL backend verdict instead of
+        // assuming "finished + proof" equals DONE.
+        refreshExecutionDetail(taskId).then(function(detail){
+          return detail ? {state:String(detail.terminal_state||'UNKNOWN').toUpperCase(), verdict:detail.final_verdict||null, reason:detail.message||''} : {state:'UNKNOWN',reason:'Execution detail unavailable'};
+        }).then(function(t){
+          if(!chatBusy) return;
+          if(t.state==='COMPLETE' && t.verdict==='PASS'){
+            chatPush('Task '+taskId+' DONE — backend verdict COMPLETE (PASS).','assistant');
+            chatFinish(true);
+            chatProofRefresh();
+          }else{
+            chatPush('Task '+taskId+' NOT DONE — '+t.state+(t.reason?(' — '+t.reason):'')+'. Proof alone is not acceptance.','assistant');
+            chatFinish(false);
+          }
+        }).catch(function(err){
+          if(!chatBusy) return;
+          chatPush('ERROR — could not resolve task verdict: '+String((err&&err.message)||err),'assistant');
+          chatFinish(false);
+        });
+      }
+    });
+  }, 2000);
+}
+async function sendChat(text){
+  var m=String(text==null?'':text).trim();
+  if(!m || chatBusy) return null;
+  if(CONFIG.mode==='mock'){
+    STATE.chat.push({role:'user',text:m,at:new Date().toLocaleTimeString()}); renderChat();
+    var mr=await runAction('prompt',{message:m});
+    var mt=getTaskId(mr);
+    if(mt){ chatPush('Agent started task '+mt+'.','system'); } else { chatPush(chatResponse(mr),'assistant'); }
+    return mr;
+  }
+  chatBusy=true;
+  chatSetEnabled(true);
+  STATE.chat.push({role:'user',text:m,at:new Date().toLocaleTimeString()}); renderChat();
+  chatPush('WORKING — submitting prompt…','system');
+  $('#taskStatus').textContent='RUNNING';
+  $('#taskTitle').textContent=m.slice(0,64);
+  $('#taskDescription').textContent='Unified backend action via /api/action';
+  try{
+    var r=await chatAction({action:'prompt',payload:{message:m},context:{project:STATE.project,provider:CONFIG.provider,model:CONFIG.model,language:document.documentElement.lang}});
+    if(!r) throw new Error('Empty backend response.');
+    var taskId=getTaskId(r);
+    STATE.last=r;
+    if(taskId){
+      chatPush('WORKING — task accepted. ID: '+taskId,'system');
+      $('#liveLine').textContent='↻ task '+String(taskId).slice(0,8)+' running';
+        refreshExecutionDetail(taskId);
+      chatStartPoll(taskId);
+      return r;
+    }
+    var answer=(r.data&&(r.data.message||r.data.answer))||r.message||r.answer||'';
+    if(answer){ chatPush('DONE — '+answer,'assistant'); }
+    else { chatPush('DONE — task finished without a text answer.','assistant'); }
+    chatFinish(true);
+    chatProofRefresh();
+    return r;
+  }catch(err){
+    var em=String((err&&err.message)||err||'Submission failed');
+    chatPush('ERROR — '+em,'assistant');
+    STATE.last={ok:false,error:em};
+    $('#liveLine').textContent='✕ submission failed: '+em.slice(0,80);
+    chatFinish(false);
+    return null;
+  }
+}
+language('fa');transportUI();if(new URLSearchParams(location.search).get('selftest')==='1')setTimeout(selfTest,80);
 </script>
 <script>
 (function () {
