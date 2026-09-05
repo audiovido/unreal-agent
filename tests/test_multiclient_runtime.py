@@ -774,6 +774,42 @@ def test_http_async_action_polls_to_result(api_env):
 # ---------------------------------------------------------------------------
 
 
+def test_resource_capture_hides_windows_console(monkeypatch):
+    import core.resource_supervisor as resource_supervisor
+
+    calls = []
+
+    class Completed:
+        stdout = "stdout"
+        stderr = "stderr"
+
+    def fake_run(*args, **kwargs):
+        calls.append((args, kwargs))
+        return Completed()
+
+    monkeypatch.setattr(resource_supervisor.os, "name", "nt")
+    monkeypatch.setattr(resource_supervisor.subprocess, "CREATE_NO_WINDOW",
+                        0x08000000, raising=False)
+    monkeypatch.setattr(resource_supervisor.subprocess, "run", fake_run)
+
+    assert resource_supervisor._run_capture(["nvidia-smi"], timeout=3.0) == \
+        "stdoutstderr"
+    assert resource_supervisor._run_capture(["tasklist"], timeout=4.0) == \
+        "stdoutstderr"
+    assert calls == [
+        (
+            (["nvidia-smi"],),
+            {"capture_output": True, "text": True, "timeout": 3.0,
+             "creationflags": 0x08000000},
+        ),
+        (
+            (["tasklist"],),
+            {"capture_output": True, "text": True, "timeout": 4.0,
+             "creationflags": 0x08000000},
+        ),
+    ]
+
+
 def test_resource_gate_classification_and_policy(tmp_path):
     from core.resource_supervisor import (
         QUEUED_RESOURCE,

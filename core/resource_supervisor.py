@@ -91,8 +91,11 @@ def classify(step_or_prompt: Any) -> str:
 
 def _run_capture(args: List[str], timeout: float = 8.0) -> str:
     try:
+        creationflags = (subprocess.CREATE_NO_WINDOW
+                         if os.name == "nt" else 0)
         result = subprocess.run(
-            args, capture_output=True, text=True, timeout=timeout)
+            args, capture_output=True, text=True, timeout=timeout,
+            creationflags=creationflags)
         return (result.stdout or "") + (result.stderr or "")
     except Exception:
         return ""
