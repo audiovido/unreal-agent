@@ -20,6 +20,31 @@ def _has(text, *terms):
     return any(term in lowered for term in terms)
 
 
+_ENVIRONMENT_REQUEST_TERMS = (
+    "environment", "background", "architecture", "surrounding scene",
+    "contextual setting", "room", "interior", "studio", "garage",
+    "backdrop", "set dressing",
+)
+
+
+def environment_required_for_request(request):
+    """Return whether the user explicitly made environment/context part of acceptance."""
+    text = _text(request).lower()
+    if any(marker in text for marker in (
+        "without environment", "without a background", "no environment",
+        "no background", "do not add an environment", "don't add an environment",
+    )):
+        return False
+    if any(term in text for term in _ENVIRONMENT_REQUEST_TERMS):
+        return True
+    # Do not equate a generic "scene" mention with an environment
+    # requirement: a vehicle may be showcased in the existing level without
+    # asking the agent to create surrounding context. Require the explicit
+    # environment/context vocabulary above (or an explicit "surrounding
+    # scene" phrase) so the contract stays task-aware rather than vehicle-aware.
+    return "surrounding scene" in text
+
+
 def _read_only_inspection(text):
     """True for explicit read-only inspection/query requests (no mutation).
 
@@ -174,6 +199,7 @@ def build_acceptance_contract(request, project_context=None):
     text = _text(request)
     criteria = []
     deliverables = []
+    environment_required = environment_required_for_request(text)
 
     def add(label, deliverable=None):
         if label not in criteria:
@@ -217,6 +243,8 @@ def build_acceptance_contract(request, project_context=None):
     for term, label in long_terms.items():
         if term in text.lower():
             add(f"deliverable:{term.replace(' ', '_')}", label)
+    if environment_required:
+        add("deliverable:environment", "verified environment/context")
     # Blender Agent deliverables. These criteria are only emitted when the
     # request actually routes through the Blender Agent, so plain Unreal tasks
     # are never burdened with unsatisfiable 3D-pipeline criteria.
@@ -274,6 +302,13 @@ def build_acceptance_contract(request, project_context=None):
         "primary_goal": text,
         "required_deliverables": deliverables,
         "acceptance_criteria": criteria,
+        "environment_required": environment_required,
+        "environment_criterion": "deliverable:environment" if environment_required else None,
+        "environment_requirement": {
+            "required": environment_required,
+            "criterion": "deliverable:environment" if environment_required else None,
+            "status": "required/unevaluated" if environment_required else "advisory",
+        },
         "completed_criteria": [],
         "pending_criteria": list(criteria),
         "optional_criteria": optional,
@@ -373,6 +408,26 @@ def reconcile_step(goal, step, result):
     actor_name = (step.get("parameters") or {}).get("actor_name") or nested.get("label") or nested.get("actor_name")
     spawn_class = str((step.get("parameters") or {}).get("class_name") or "")
     required = set(goal.get("acceptance_criteria") or [])
+
+    def environment_actor_evidence(value):
+        """Accept only structured environment read-back, never the proof PNG."""
+        if isinstance(value, dict):
+            label = str(value.get("label") or value.get("actor_name") or value.get("name") or "").lower()
+            klass = str(value.get("class") or value.get("class_name") or "").lower()
+            semantic = ("environment", "env_", "floor", "building", "architecture",
+                        "room", "studio", "garage", "backdrop", "set")
+            if any(term in label for term in semantic):
+                return True
+            if any(term in klass for term in ("landscape", "environment", "foliage")):
+                return True
+            return any(environment_actor_evidence(v) for v in value.values())
+        if isinstance(value, (list, tuple)):
+            return any(environment_actor_evidence(v) for v in value)
+        return False
+
+    def environment_readback_verified(value):
+        payload_value = value.get("result") if isinstance(value, dict) else value
+        return environment_actor_evidence(payload_value)
     if tool == "spawn_actor" and step_ok and actor_name:
         completed.append(f"actor:{actor_name}:exists")
         # Scene-content deliverables map to the concrete actor classes that
@@ -385,8 +440,11 @@ def reconcile_step(goal, step, result):
             if "deliverable:camera" in required:
                 completed.append("deliverable:camera")
         elif spawn_class == "StaticMeshActor":
-            # Only visible static geometry proves the environment deliverable.
-            if "deliverable:environment" in required:
+            # Only semantically labelled environment geometry proves the
+            # environment deliverable; a vehicle body alone does not.
+            if "deliverable:environment" in required and environment_actor_evidence({
+                "label": actor_name, "class": spawn_class,
+            }):
                 completed.append("deliverable:environment")
     if tool == "get_actor" and step_ok and actor_name:
         completed.extend([f"actor:{actor_name}:exists", f"actor:{actor_name}:verified"])
@@ -502,6 +560,14 @@ def reconcile_step(goal, step, result):
         and step_ok
     ):
         completed.append("deliverable:environment")
+    if tool == "list_level_actors" and "deliverable:environment" in required:
+        if environment_readback_verified(payload):
+            completed.append("deliverable:environment")
+        # The read-back itself is the evaluation event. A valid structured
+        # actor-list response with no environment-semantic actor is negative
+        # evidence, never an implicit pass from the screenshot.
+        else:
+            completed.append("environment:evaluated")
     if tool == "open_map" and step_ok:
         level = (step.get("parameters") or {}).get("level_path") or nested.get("level_path") or nested.get("world_path")
         if str(level or "").startswith("/Game/"):

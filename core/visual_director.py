@@ -22,6 +22,58 @@ from typing import Any, Callable, Dict, List, Optional
 # Intent vocabulary -> measurable goals
 # --------------------------------------------------------------------------
 
+# Vehicle-showcase profile: this is policy metadata for the bounded director,
+# not an acceptance threshold. It makes the correction order explicit and
+# prevents scene-destructive actions from being selected before framing and
+# exposure have been measured.
+VEHICLE_SHOWCASE_PROFILE = {
+    "name": "vehicle_showcase",
+    "correction_order": [
+        "subject_bbox_validity", "camera_framing", "empty_space",
+        "exposure_clipping", "background_separation",
+    ],
+    "strategy_chains": {
+        "HEAD_CROPPED": ["camera_framing_recompute", "camera_pull_back"],
+        "SUBJECT_TOO_LARGE": ["camera_pull_back", "camera_framing_recompute"],
+        "SUBJECT_TOO_SMALL": ["camera_move_closer", "camera_framing_recompute"],
+        "WHITE_CLIPPING": ["exposure_reduce_highlights",
+                            "lighting_reduce_background"],
+        "BACKGROUND_OVEREXPOSED": ["lighting_reduce_background",
+                                    "exposure_reduce_highlights"],
+        "EMPTY_ENVIRONMENT": ["camera_framing_recompute",
+                               "lighting_reduce_background"],
+    },
+    "max_passes": 3,
+    "allow_geometry_edits": False,
+    "allow_scale_edits": False,
+}
+
+
+def is_vehicle_showcase_prompt(prompt: str) -> bool:
+    """Identify an explicit vehicle showcase request for profile routing."""
+    text = str(prompt or "").lower()
+    return bool(any(word in text for word in
+                    ("vehicle", "truck", "car", "suv", "automobile", "van"))
+                and any(word in text for word in
+                        ("showcase", "show case", "display", "exhibit",
+                         "garage", "scene")))
+
+
+def vehicle_showcase_strategy() -> Dict[str, Any]:
+    """Return a copy of the non-destructive vehicle correction policy."""
+    return {
+        "name": VEHICLE_SHOWCASE_PROFILE["name"],
+        "correction_order": list(VEHICLE_SHOWCASE_PROFILE["correction_order"]),
+        "strategy_chains": {
+            key: list(value)
+            for key, value in VEHICLE_SHOWCASE_PROFILE["strategy_chains"].items()
+        },
+        "max_passes": 3,
+        "allow_geometry_edits": False,
+        "allow_scale_edits": False,
+    }
+
+
 MOODS = {
     "cinematic":      {"brightness": "dark", "contrast": "high", "depth": "high",
                       "style": "cinematic", "vignette": True},
@@ -268,6 +320,21 @@ def parse_intent(
     if ref_image:
         spec = reference_spec(ref_image, vision=vision)
         target["reference"] = spec
+
+    # --- explicit vehicle-showcase profile
+    if is_vehicle_showcase_prompt(prompt):
+        target["visual_profile"] = "vehicle_showcase"
+        target["visual_strategy"] = vehicle_showcase_strategy()
+        target["subject"]["type"] = "vehicle"
+        target["subject"]["target_screen_coverage"] = [0.12, 0.52]
+        target["subject"]["head_fully_visible"] = True
+        # Vehicle showcases do not request an interface; scope aggregation to
+        # the scene-quality contract so absent UI cannot hide the vehicle
+        # detector/strategy result. Per-category values remain visible.
+        target["required_visual_categories"] = [
+            "composition", "subject_framing", "lighting", "environment",
+            "target_match", "technical_integrity",
+        ]
 
     # --- art direction
     target["art_direction"] = art_direct(target).to_dict()

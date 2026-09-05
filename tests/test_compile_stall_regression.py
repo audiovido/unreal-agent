@@ -35,7 +35,7 @@ AVALIVE_PROMPT = (
 
 
 def _goal(prompt):
-    return task_goal.build_acceptance_contract(prompt, dict(api.PROJECT_CONTEXT_DEFAULT))
+    return task_goal.build_acceptance_contract(prompt, dict(api._default_project_context()))
 
 
 def _avlive_steps(compile_path="/Game/Maps/AvaLive_Main"):
@@ -72,7 +72,7 @@ def _state(steps, goal):
         "id": str(uuid.uuid4()),
         "task": AVALIVE_PROMPT,
         "task_goal": goal,
-        "project_context": dict(api.PROJECT_CONTEXT_DEFAULT),
+        "project_context": dict(api._default_project_context()),
         "phase": "PLAN", "current_phase": "PLAN", "current_step": 0,
         "completed_steps": [], "failed_step": None, "retry_count": 0,
         "validation_result": None, "created_resources": [],

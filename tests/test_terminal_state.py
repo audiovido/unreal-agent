@@ -64,7 +64,7 @@ def _cube_state():
     return {
         "id": str(uuid.uuid4()),
         "task": "Spawn a cube named TERMINAL_STATE_FINAL_TEST, save the level, verify it exists.",
-        "project_context": dict(api.PROJECT_CONTEXT_DEFAULT),
+        "project_context": dict(api._default_project_context()),
         "phase": "PLAN", "current_phase": "PLAN", "current_step": 0, "completed_steps": [],
         "failed_step": None, "retry_count": 0, "validation_result": None,
         "created_resources": [], "processed_dispatch_ids": [],

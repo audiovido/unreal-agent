@@ -45,6 +45,8 @@ def release_accept(
     floor: float = RELEASE_FLOOR,
     coverage_band: Tuple[float, float] = RELEASE_COVERAGE_BAND,
     require_ui: bool = False,
+    environment_required: bool = True,
+    environment_verified: bool = False,
 ) -> bool:
     """Terminal release acceptance: overall score >= floor AND no blocking
     defect (no measured issues, no head clip, no roll, no bands/stale, no
@@ -61,6 +63,11 @@ def release_accept(
     if float(getattr(score, "overall", 0.0) or 0.0) < float(floor):
         return False
     issues = list(getattr(metrics, "issues", None) or [])
+    # EMPTY_ENVIRONMENT is task-aware: a requested environment is a blocking
+    # acceptance defect, while an unrequested contextual backdrop is advisory.
+    # All other measured defects retain the canonical blocking behavior.
+    if not environment_required or environment_verified:
+        issues = [issue for issue in issues if issue != "EMPTY_ENVIRONMENT"]
     if issues:
         return False
     if getattr(metrics, "head_clipped", False):

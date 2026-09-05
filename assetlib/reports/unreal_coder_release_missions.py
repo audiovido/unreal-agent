@@ -143,6 +143,22 @@ SCENE_LOCATOR_PROFILES = {
                      "roi": [0.02, 0.05, 0.72, 0.97],
                      "min_luma": 140, "max_luma": 250},
     },
+    # ASSET_Showcase2 vehicle tasks use a task-profiled locator.  It validates
+    # the dark assembled vehicle before any Visual Director correction can
+    # consider camera/exposure changes; it never mutates the scene itself.
+    "vehicle_showcase": {
+        "subject": {"method": "vehicle_showcase",
+                     "roi": [0.28, 0.10, 0.76, 0.95],
+                     "min_luma": 0, "max_luma": 120},
+        "strategy": {
+            "order": ["subject_bbox_validity", "camera_framing",
+                      "empty_space", "exposure_clipping",
+                      "background_separation"],
+            "max_passes": 3,
+            "allow_geometry_edits": False,
+            "allow_scale_edits": False,
+        },
+    },
 }
 
 

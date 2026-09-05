@@ -362,10 +362,21 @@ def deterministic_start():
 
 from tools.unreal.project_manager import inspect_project as _inspect_project
 
-_PROJECT_FILE = (
-    r"C:\Users\Shadow\Desktop\app\AudioVidoLivingCity"
-    r"\AudioVidoLivingCity.uproject"
-)
+def _active_project_file():
+    """Resolve the active project .uproject through the standard priority
+    chain instead of a baked-in legacy demo path. Returns None when nothing
+    is resolvable (callers then fall through to tool-level resolution)."""
+    try:
+        from tools.unreal import project_context as _pc
+        resolved = _pc.resolve_active_project()
+        if resolved and resolved.get("ok") and resolved.get("uproject_path"):
+            return resolved["uproject_path"]
+    except Exception:
+        pass
+    return None
+
+
+_PROJECT_FILE = _active_project_file()
 
 # ------------------------------------------------------------
 # 1. Workboard tasks do NOT need another LLM planning pass.
@@ -477,6 +488,8 @@ def _deterministic_project_audit(task):
         note="Deterministic project audit running",
     )
 
+    # inspect_project(None) runs its own resolution chain (persisted context
+    # -> bridge -> search), so a missing default is safe.
     project = api.serialize(
         _inspect_project(_PROJECT_FILE)
     )
@@ -654,6 +667,8 @@ app = api.app
 # composition layer over the shared FastAPI app.
 # ============================================================
 from app import proof as _proof
+# setup() accepts None: proof candidates fall back to the live bridge
+# project identity, so proof serving follows the editor the agent used.
 _proof.setup(_PROJECT_FILE)
 app.get("/api/proof/latest")(_proof.proof_latest)
 app.get("/api/proof/live/status")(_proof.proof_live_status)
@@ -682,6 +697,17 @@ register_unreal_coder_api(
     tool_registry=lambda: api.REGISTRY,
     dispatch_bridge=None,   # execute mode uses api.new_execution (L3 plans)
 )
+
+
+# ============================================================
+# UNREAL CAMERA + FRESH PROOF — deterministic framing endpoints.
+# Direct /api/unreal/frame-actor, /api/unreal/capture-proof and
+# /api/unreal/frame-and-proof so "focus actor/cube and return fresh
+# proof" never routes through prompt/world-building classification or
+# mission acceptance criteria. Additive: no existing route is touched.
+# ============================================================
+from app.camera_api import register_camera_api
+register_camera_api(app, bridge_factory=None)
 
 
 app.get("/api/proof/status")(_proof.proof_status)
