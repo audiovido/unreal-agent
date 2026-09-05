@@ -279,7 +279,10 @@ def build(
             text = rewrite_cache_bust(text, build_dir)
         else:
             text = rewrite_cache_bust_css(text, build_dir)
-        path.write_text(text, encoding="utf-8")
+        # newline="\n": builds are byte-identical on every OS (Windows text
+        # mode would otherwise translate LF -> CRLF and break cross-platform
+        # hash parity).
+        path.write_text(text, encoding="utf-8", newline="\n")
 
     # Record hashes of the BUILT (deployed) files in the manifest so served-
     # byte parity checks compare against exactly what ships.
@@ -295,7 +298,7 @@ def build(
         "content_hash": content_hash,
     }
     (build_dir / "ui-version.json").write_text(
-        json.dumps(version, indent=2) + "\n", encoding="utf-8")
+        json.dumps(version, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     manifest = {
         "build_id": build_id,
@@ -310,7 +313,7 @@ def build(
         "files": built_hashes,
     }
     (build_dir / "build-manifest.json").write_text(
-        json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     if not quiet:
         print(f"[ui_release] build complete:  {build_dir}")
@@ -857,6 +860,15 @@ def gh_release_publish(cfg: Dict[str, Any], *, tag: str, title: str, notes: str,
                            capture_output=True, text=True, timeout=300)
         if r.returncode != 0:
             return False, (r.stderr or r.stdout).strip()
+        # drop stale aivido-ui-*.zip assets so the corrected package is the
+        # ONLY downloadable UI package on the release (updaters must never
+        # resolve the previous build's artifact).
+        view2 = subprocess.run(["gh", "release", "view", tag, "--repo", repo, "--json", "assets",
+                                "--jq", ".assets[].name"], capture_output=True, text=True, timeout=120)
+        for name in (view2.stdout.splitlines() if view2.returncode == 0 else []):
+            if name.startswith("aivido-ui-") and name.endswith(".zip"):
+                subprocess.run(["gh", "release", "delete-asset", tag, "--repo", repo,
+                                name, "--yes"], capture_output=True, text=True, timeout=300)
         for a in assets:
             u = subprocess.run(["gh", "release", "upload", tag, "--repo", repo,
                                 str(a), "--clobber"], capture_output=True, text=True, timeout=600)
@@ -1313,7 +1325,7 @@ def _write_release_identity(build_dir: Path, cfg: Dict[str, Any], aivido_version
         "content_hash_sha256": manifest["content_hash"],
     }
     (build_dir / "release-manifest.json").write_text(
-        json.dumps(identity, indent=2) + "\n", encoding="utf-8")
+        json.dumps(identity, indent=2) + "\n", encoding="utf-8", newline="\n")
     vpath = build_dir / "ui-version.json"
     if vpath.is_file():
         try:
@@ -1321,7 +1333,7 @@ def _write_release_identity(build_dir: Path, cfg: Dict[str, Any], aivido_version
         except Exception:
             version = {}
         version["aivido_version"] = aivido_version
-        vpath.write_text(json.dumps(version, indent=2) + "\n", encoding="utf-8")
+        vpath.write_text(json.dumps(version, indent=2) + "\n", encoding="utf-8", newline="\n")
     return identity
 
 

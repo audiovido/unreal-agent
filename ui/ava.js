@@ -94,7 +94,7 @@
      hash. Purely additive; every failure path stays silent. Never in
      embed/widget mode. Release tooling: scripts/ui_release.py.
      ============================================================ */
-  var PUBLIC_VERSION_URL = "https://raw.githubusercontent.com/audiovido/unreal-agent/main/ui-version.json";
+  var PUBLIC_VERSION_URL = "https://raw.githubusercontent.com/audiovido/unreal-agent/main/ui/ui-version.json";
   var PUBLIC_LATEST_URL = "https://github.com/audiovido/unreal-agent/releases/latest";
 
   function updateCheck() {

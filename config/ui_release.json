@@ -16,9 +16,10 @@
     "github_branch": "main",
     "public_base": "https://github.com/audiovido/unreal-agent",
     "latest_url": "https://github.com/audiovido/unreal-agent/releases/latest",
-    "raw_ui_version_url": "https://raw.githubusercontent.com/audiovido/unreal-agent/main/ui-version.json",
+    "raw_ui_version_url": "https://raw.githubusercontent.com/audiovido/unreal-agent/main/ui/ui-version.json",
     "commit_paths": [
       "ui",
+      ".gitattributes",
       "scripts/ui_release.py",
       "scripts/ui_staging_server.py",
       "scripts/aivido_update.py",
@@ -43,4 +44,4 @@
       "base_url": "http://127.0.0.1:8765"
     }
   }
-}
+}

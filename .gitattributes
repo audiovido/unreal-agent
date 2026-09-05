@@ -1,0 +1,7 @@
+# Aivido release byte-parity: canonical UI and release tooling are LF-pinned.
+# Every checkout (Windows autocrlf or not, macOS, Linux) yields identical
+# bytes, so FRESH INSTALL HASH == APPROVED UI HASH holds on every platform.
+ui/** text eol=lf
+scripts/*.py text eol=lf
+config/*.json text eol=lf
+tests/*.py text eol=lf
