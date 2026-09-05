@@ -1,391 +1,259 @@
-/* Unreal Agent — minimal product UI client. */
+/* Aivido Test UI — camera / proof frontend integration.
+ *
+ * Modern backend endpoints only (legacy /api/ua/* is gone — it 404s on
+ * the served backend, so no polling of it happens here):
+ *   GET  {base}/api/status                   health + execution state
+ *   POST {base}/api/unreal/frame-and-proof   frame + fresh proof in one call
+ *   GET  {base}/api/proof/status             proof metadata (fallback)
+ *   GET  {base}/api/proof/latest             proof PNG (cache-busted)
+ *
+ * States: IDLE / WORKING / DONE / ERROR. Base URL is configurable and
+ * persisted so the page works from another machine (e.g. the Mac) against
+ * the tailnet/funnel URL. Proof refreshes are cache-busted with a
+ * timestamp query param, and a completed frame-and-proof auto-refreshes
+ * the image.
+ */
 (() => {
   "use strict";
 
   const $ = (id) => document.getElementById(id);
+  const LS_KEY = "aivido_test_base_url";
 
   const el = {
-    dot: $("stateDot"), projectName: $("projectName"),
-    connectBtn: $("connectBtn"), reconnectBtn: $("reconnectBtn"),
-    connectPanel: $("connectPanel"), projectSelect: $("projectSelect"),
-    connectNote: $("connectNote"), connectGoBtn: $("connectGoBtn"),
-    connectCancelBtn: $("connectCancelBtn"),
-    prompt: $("prompt"), runBtn: $("runBtn"), hint: $("hint"),
-    statusCard: $("statusCard"), stateLabel: $("stateLabel"),
-    stageName: $("stageName"), elapsed: $("elapsed"),
-    statusText: $("statusText"), meter: $("meter"),
-    meterFill: $("meterFill"), stages: $("stages"),
-    resultCard: $("resultCard"), verdict: $("verdict"), score: $("score"),
-    resultDetail: $("resultDetail"), proof: $("proof"),
-    newTaskBtn: $("newTaskBtn"),
-    stateJson: $("stateJson"), copyStateBtn: $("copyStateBtn"),
-    footStatus: $("footStatus"), envCheckBtn: $("envCheckBtn"),
-    leaseCheckBtn: $("leaseCheckBtn"), diagResult: $("diagResult"),
+    dot: $("stateDot"), backendState: $("backendState"),
+    baseUrl: $("baseUrl"), baseUrlSave: $("baseUrlSave"),
+    baseUrlNote: $("baseUrlNote"),
+    actorName: $("actorName"), location: $("location"),
+    runBtn: $("runBtn"), hint: $("hint"), stateLabel: $("stateLabel"),
+    resultDetail: $("resultDetail"),
+    pvProof: $("pvProof"), pvEmpty: $("pvEmpty"),
+    pvProofMeta: $("pvProofMeta"),
+    pvAuto: $("pvAuto"), pvRefresh: $("pvRefresh"),
+    footStatus: $("footStatus"),
   };
 
-  const BUSY = new Set(["UNDERSTANDING_REQUEST", "PLANNING", "EXECUTING",
-    "VALIDATING", "SELF_FIXING", "CONNECTING_PROJECT", "RECOVERING"]);
-  const CONNECTING = new Set(["CONNECTING_PROJECT", "RECOVERING"]);
-  const dotClass = {
-    READY: "ready", COMPLETE: "ready", IDLE: "",
-    FAILED: "bad", UNDERSTANDING_REQUEST: "busy", PLANNING: "busy",
-    EXECUTING: "busy", VALIDATING: "busy", SELF_FIXING: "busy",
-    CONNECTING_PROJECT: "connect", RECOVERING: "connect",
-  };
-  const STAGE_ICON = { ok: "ok", failed: "failed", running: "running" };
+  let BASE = (localStorage.getItem(LS_KEY) || "").replace(/\/+$/, "");
+  let backendOnline = false;
+  let backendBusy = false;
+  let badge = "IDLE";      // IDLE | WORKING | DONE | ERROR
+  let taskRunning = false;
 
-  let last = null;
-  // persistent user-facing error (BUSY/conflict etc.) that survives the
-  // status poll re-renders; cleared by typing or by a successful run
-  let runError = null;
+  const u = (path) => BASE + path;
 
   /* ---------------- helpers ---------------- */
   async function api(path, opts) {
-    const r = await fetch(path, opts);
+    const r = await fetch(u(path), opts);
     let data = null;
     try { data = await r.json(); } catch (_) { /* empty body */ }
     if (!r.ok) {
       const detail = (data && (data.detail || data.error)) || r.statusText;
-      const msg = typeof detail === "string" ? detail : JSON.stringify(detail);
-      const e = new Error(msg);
-      e.detail = data && data.detail !== undefined ? data.detail : data;
+      const msg = typeof detail === "string" ? detail
+        : detail ? JSON.stringify(detail) : "";
+      const e = new Error("HTTP " + r.status + (msg ? " — " + msg : ""));
       e.status = r.status;
+      e.detail = data && data.detail !== undefined ? data.detail : data;
       throw e;
     }
     return data;
   }
 
-  function proofUrl(p) {
-    return "/api/ua/proof-file?path=" + encodeURIComponent(p);
+  function setBadge(st, label) {
+    badge = st;
+    el.stateLabel.dataset.state = st;
+    el.stateLabel.className = "state-label "
+      + (st === "DONE" ? "ready" : st === "ERROR" ? "bad"
+        : st === "WORKING" ? "busy" : "");
+    el.stateLabel.textContent = label || st;
   }
 
-  function statusCls(s) {
-    return dotClass[s] || "";
+  function setHint(text, isError) {
+    el.hint.textContent = text;
+    el.hint.style.color = isError ? "#f26d6d" : "";
   }
 
-  function fmtElapsed(s) {
-    if (s == null) return "";
-    if (s < 60) return s.toFixed(0) + "s";
-    const m = Math.floor(s / 60);
-    return m + "m " + Math.round(s % 60) + "s";
+  function backendDot() {
+    el.dot.className = "dot " + (!backendOnline ? "bad"
+      : backendBusy ? "busy" : "ready");
+    el.backendState.textContent = !backendOnline ? "Offline"
+      : backendBusy ? "Busy — agent working" : "Online";
+    el.footStatus.textContent = "Backend: " + (BASE || "same origin")
+      + " · " + el.backendState.textContent;
   }
 
-  /* ---------------- render ---------------- */
-  function render(st) {
-    last = st;
-    const state = st.state || "IDLE";
-    const busy = BUSY.has(state);
-
-    el.dot.className = "dot " + statusCls(state);
-    el.projectName.textContent = (st.project && st.project.name) || "No project";
-    el.footStatus.textContent = st.status_text || state;
-    el.stateJson.textContent = JSON.stringify(st, null, 2);
-    if (runError) {
-      el.hint.textContent = runError;
-      el.hint.style.color = "#f26d6d";
-      return; // keep the persistent error visible until cleared
-    }
-
-    // connect / run affordances
-    const canConnect = !busy;
-    el.connectBtn.disabled = !canConnect;
-    el.connectBtn.classList.toggle("hidden", busy);
-    el.reconnectBtn.classList.toggle("hidden", state !== "RECOVERING");
-    if (state === "RECOVERING") el.reconnectBtn.disabled = false;
-    const canRun = state === "READY" || state === "COMPLETE" || state === "FAILED";
-    el.runBtn.disabled = !canRun || !(el.prompt.value.trim());
-    el.hint.textContent =
-      state === "READY" ? "Ready — describe a change to the level."
-      : state === "COMPLETE" ? "Task complete. Run another request, or start fresh."
-      : state === "FAILED" ? "Task failed. See the reason below, then retry."
-      : state === "IDLE" ? "Connect to a project first."
-      : st.status_text || "Working…";
-    if (state === "FAILED" && st.error_detail) {
-      el.hint.textContent = "Task failed: " + st.error_detail;
-    }
-
-    // active task card
-    if (BUSY.has(state) || state === "READY") {
-      el.statusCard.classList.remove("hidden");
-    } else {
-      el.statusCard.classList.add("hidden");
-    }
-    el.stateLabel.textContent = state.replace(/_/g, " ");
-    el.stateLabel.className = "state-label " + (state === "READY" ? "ready"
-      : state === "FAILED" ? "bad" : busy ? "busy" : "");
-    el.stageName.textContent = st.current_stage
-      ? "Stage: " + st.current_stage : (st.status_text || "");
-    el.statusText.textContent = st.active_issue
-      ? "Active issue: " + st.active_issue : "";
-    el.elapsed.textContent = fmtElapsed(st.elapsed_s);
-
-    if (st.progress && st.progress.total) {
-      el.meter.classList.remove("hidden");
-      el.meterFill.style.width =
-        Math.round(100 * st.progress.completed / st.progress.total) + "%";
-    } else {
-      el.meter.classList.add("hidden");
-    }
-
-    el.stages.innerHTML = "";
-    for (const s of (st.stages || [])) {
-      const li = document.createElement("li");
-      li.className = STAGE_ICON[s.status] || "";
-      li.textContent = (s.detail || s.name) +
-        (s.status === "ok" ? " ✓" : s.status === "failed" ? " ✗" : "");
-      el.stages.appendChild(li);
-    }
-
-    // result card
-    const hasFinal = st.final && st.final.verdict;
-    if (hasFinal) {
-      el.resultCard.classList.remove("hidden");
-      el.verdict.textContent = st.final.verdict;
-      el.verdict.className = "verdict " + st.final.verdict;
-      el.score.textContent = st.final.score != null
-        ? "visual score " + Number(st.final.score).toFixed(2)
-        : "";
-      const defects = (st.final.defects || []).length;
-      const parts = [];
-      if (st.final.score != null) {
-        parts.push(st.final.score >= 8.5 ? "score ≥ 8.5" : "score below gate");
-      }
-      parts.push(defects === 0 ? "no blocking defects" : defects + " defect(s)");
-      if (st.final.world_saved) parts.push("world saved");
-      if (st.final.human_corrections === 0) parts.push("0 human corrections");
-      el.resultDetail.innerHTML = "";
-      const p = document.createElement("p");
-      if (st.final.verdict === "SUCCESS") {
-        p.className = "okline";
-        p.textContent = "Accepted — " + parts.join(" · ");
-      } else {
-        p.className = "reason";
-        p.textContent = (st.final.reason || "Failed") +
-          (st.final.recovery ? "  Recovery: " + st.final.recovery : "");
-        if (st.error_detail) {
-          const d = document.createElement("p");
-          d.className = "reason";
-          d.textContent = st.error_detail;
-          el.resultDetail.appendChild(d);
-        }
-      }
-      el.resultDetail.appendChild(p);
-      renderProof(st);
-    } else {
-      el.resultCard.classList.add("hidden");
-    }
-  }
-
-  function renderProof(st) {
-    el.proof.innerHTML = "";
-    const seen = new Set();
-    const items = (st.proof || []).filter((x) => x.path);
-    for (const it of items.slice(-6)) {
-      if (seen.has(it.path)) continue;
-      seen.add(it.path);
-      const fig = document.createElement("figure");
-      const img = document.createElement("img");
-      img.src = proofUrl(it.path);
-      img.loading = "lazy";
-      img.alt = it.type || "proof";
-      const cap = document.createElement("figcaption");
-      const label = (it.type || "").replace(/_/g, " ");
-      cap.textContent = label + (it.score != null
-        ? " · " + Number(it.score).toFixed(2) : "") +
-        (it.defects && it.defects.length ? " · issues: " + it.defects.join(",")
-         : it.defects ? " · issues: none" : "");
-      fig.appendChild(img);
-      fig.appendChild(cap);
-      el.proof.appendChild(fig);
-    }
-  }
-
-  /* ---------------- actions ---------------- */
-  async function poll() {
+  /* ---------------- health / execution state (#2) ---------------- */
+  async function pollHealth() {
     try {
-      const st = await api("/api/ua/status");
-      render(st);
+      const s = await api("/api/status");
+      backendOnline = true;
+      backendBusy = !!(s && s.execution_active);
+      if (!taskRunning) {
+        if (backendBusy && badge === "IDLE") setBadge("WORKING", "WORKING · backend busy");
+        else if (!backendBusy && badge === "WORKING") setBadge("IDLE", "IDLE");
+      }
     } catch (_) {
-      /* server briefly down; keep last render */
+      backendOnline = false;
+      backendBusy = false;
+      if (badge === "IDLE" || badge === "WORKING") setBadge("ERROR", "ERROR · backend offline");
     }
+    backendDot();
   }
 
-  async function refreshProjects() {
-    try {
-      const d = await api("/api/ua/projects");
-      const known = d.known || [];
-      const lastPath = (d.last && d.last.uproject_path) || "";
-      const cur = el.projectSelect.value;
-      el.projectSelect.innerHTML =
-        '<option value="">Auto — editor already open</option>';
-      for (const k of known) {
-        const o = document.createElement("option");
-        o.value = k.uproject_path || "";
-        o.textContent = k.name + " (" + k.uproject_path + ")";
-        el.projectSelect.appendChild(o);
+  /* ---------------- frame & proof (#3, #4) ---------------- */
+  function parseLocation(text) {
+    if (!text) return null;
+    const cleaned = String(text).replace(/[\[\]()]/g, "").trim();
+    if (!cleaned) return null;
+    const parts = cleaned.split(/[,\s]+/).map(Number);
+    if (parts.length === 3 && parts.every((n) => isFinite(n))) return parts;
+    return null;
+  }
+
+  async function frameAndProof() {
+    if (taskRunning) return;
+    const actor = el.actorName.value.trim();
+    const locText = el.location.value.trim();
+    const body = {};
+    if (actor) {
+      body.actor_name = actor;
+    } else if (locText) {
+      const loc = parseLocation(locText);
+      if (!loc) {
+        setBadge("ERROR", "ERROR");
+        setHint("Location must be three numbers, e.g. [0, 0, 200].", true);
+        return;
       }
-      if (cur) el.projectSelect.value = cur;
-      else if (lastPath) {
-        // preselect the last-used project by default so repeat users
-        // never touch a terminal or browse dialog
-        el.projectSelect.value = lastPath;
-      }
-    } catch (_) { /* ignore */ }
-  }
-
-  function openConnect() {
-    el.connectNote.textContent =
-      "Choose a project, then connect. The agent reuses an already-running " +
-      "editor and never launches a second one for the same project.";
-    el.connectNote.style.color = "";
-    el.connectPanel.classList.remove("hidden");
-    refreshProjects();
-  }
-
-  async function doConnect() {
-    el.connectGoBtn.disabled = true;
-    el.connectNote.textContent = "Connecting…";
-    try {
-      await api("/api/ua/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uproject: el.projectSelect.value || null,
-          launch_if_needed: false,
-        }),
-      });
-      el.connectPanel.classList.add("hidden");
-    } catch (err) {
-      el.connectNote.textContent = "Connect failed: " + err.message;
-      el.connectNote.style.color = "#f26d6d";
-    } finally {
-      el.connectGoBtn.disabled = false;
+      body.location = loc;
+    } else {
+      setBadge("ERROR", "ERROR");
+      setHint("Provide an actor name or a location (e.g. [0, 0, 200]).", true);
+      return;
     }
-  }
 
-  async function run() {
-    const prompt = el.prompt.value.trim();
-    if (!prompt) return;
-    runError = null;
-    el.resultCard.classList.add("hidden");
+    taskRunning = true;
+    setBadge("WORKING", "WORKING");
+    setHint(actor
+      ? "Framing \u201C" + actor + "\u201D and capturing fresh proof\u2026"
+      : "Framing location [" + body.location.join(", ") + "] and capturing fresh proof\u2026");
     el.runBtn.disabled = true;
+    el.resultDetail.innerHTML = "";
+
     try {
-      await api("/api/ua/run", {
+      const res = await api("/api/unreal/frame-and-proof", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify(body),
       });
-      el.prompt.value = "";
+      taskRunning = false;
+      setBadge("DONE", "DONE");
+      setHint("Frame & proof complete. Fresh proof loaded below.");
+      renderResult(res);
+      refreshProof(); // auto-refresh on completion (#4) — always, cache-busted
     } catch (err) {
-      const d = err.detail && typeof err.detail === "object" ? err.detail : null;
-      if (d && d.busy) {
-        // Step 9 — structured BUSY/OWNED: say exactly why, prove nothing
-        // changed, never auto-retry (the lease frees on its own).
-        const c = d.conflict || {};
-        const exp = c.expires_in_s != null
-          ? " (frees in ~" + Math.max(0, Math.round(c.expires_in_s)) + "s)"
-          : "";
-        runError = "Project is busy — another task is working in this editor"
-          + exp + ". No Unreal change was made. Retry when the current task "
-          + "finishes (owner: " + (c.owner_id || "?") + ", task: "
-          + (c.task_id || "?") + ").";
-      } else {
-        runError = "Could not start: " + err.message;
-      }
-      el.hint.textContent = runError;
-      el.hint.style.color = "#f26d6d";
+      taskRunning = false;
+      setBadge("ERROR", "ERROR");
+      setHint("Frame & proof failed — see details below.", true);
+      const d = document.createElement("p");
+      d.className = "reason";
+      d.textContent = "Frame & proof failed: " + String(err.message || err);
+      el.resultDetail.appendChild(d);
+    } finally {
+      el.runBtn.disabled = false;
     }
   }
 
-  /* ---------------- Step 9 developer diagnostics (read-only) ----------- */
-  async function refreshDiagnostics() {
-    el.diagResult.textContent = "Checking environment…";
-    try {
-      const d = await api("/api/ua/env");
-      const doc = d.doctor || {};
-      const fr = d.first_run || {};
-      const lines = [
-        "Environment: " + (doc.summary || ""),
-        doc.user_error || "",
-        "First-run: " + (fr.ready ? "READY" : "not ready") +
-          "  (project: " + (fr.project || "none") + ")",
-        "Config: backend " + (d.config.backend_url || "") +
-          " · bridge " + (d.config.bridge_host || "127.0.0.1") + ":" +
-          (d.config.bridge_port || ""),
-      ];
-      for (const c of (doc.checks || [])) {
-        if (c.status !== "PASS") {
-          lines.push("  [" + c.status + "] " + c.name + ": " + c.detail);
+  function renderResult(res) {
+    el.resultDetail.innerHTML = "";
+    const f = res.framing || {};
+    const p = res.proof || {};
+    const lines = [];
+    if (f.actor && f.actor.label) {
+      lines.push("Framed actor: " + f.actor.label + " (" + (f.actor.class || "") + ")");
+    }
+    if (f.target) {
+      lines.push("Framed target: [" + f.target.map((n) => Number(n).toFixed(1)).join(", ") + "]");
+    }
+    if (f.distance != null) lines.push("Camera distance: " + f.distance + " u");
+    if (f.look_at_error_deg != null) lines.push("Look-at error: " + f.look_at_error_deg + "\u00B0");
+    if (f.viewport_changed != null) lines.push("Viewport changed: " + f.viewport_changed);
+    if (p.path) lines.push("Proof file: " + p.path);
+    if (p.size) lines.push("Proof size: " + p.size + " bytes");
+    if (p.url) lines.push("Proof URL: " + p.url);
+    const pre = document.createElement("pre");
+    pre.className = "state-json";
+    pre.textContent = lines.join("\n") + "\n\n" + JSON.stringify(res, null, 2);
+    el.resultDetail.appendChild(pre);
+  }
+
+  /* ---------------- proof refresh (#3, #5) ---------------- */
+  function refreshProof() {
+    const img = el.pvProof;
+    const src = u("/api/proof/latest?t=" + Date.now()); // cache-bust
+    img.onload = function () {
+      el.pvEmpty.hidden = true;
+      img.hidden = false;
+      el.pvProofMeta.textContent = "Fresh proof \u00B7 "
+        + new Date().toLocaleTimeString() + " \u00B7 " + img.naturalWidth
+        + "\u00D7" + img.naturalHeight;
+    };
+    img.onerror = function () {
+      img.hidden = true;
+      api("/api/proof/status").then(function (st) {
+        if (st && st.ok && st.path) {
+          el.pvEmpty.hidden = true;
+          img.hidden = false;
+          img.onload = null;
+          img.src = u("/api/proof/latest?t=" + Date.now());
+          el.pvProofMeta.textContent = "Proof: " + st.path + " \u00B7 "
+            + (st.size || 0) + " bytes";
+        } else {
+          el.pvEmpty.hidden = false;
+          el.pvEmpty.textContent = "No proof yet — run Frame & Proof or press Refresh Proof.";
+          el.pvProofMeta.textContent = "\u2014";
         }
-      }
-      el.diagResult.textContent = lines.join("\n");
-    } catch (err) {
-      el.diagResult.textContent = "Environment check failed: " + err.message;
-    }
+      }).catch(function () {
+        el.pvEmpty.hidden = false;
+        el.pvEmpty.textContent = backendOnline
+          ? "No proof available."
+          : "Backend offline — cannot fetch proof.";
+        el.pvProofMeta.textContent = "\u2014";
+      });
+    };
+    img.src = src;
   }
 
-  async function refreshLeases() {
-    el.diagResult.textContent = "Reading ownership…";
-    try {
-      const d = await api("/api/ua/leases");
-      const cur = d.current_project || {};
-      const lines = [
-        "This product owner: " + (d.owner || ""),
-        "Current project lease: " +
-          (cur.owned ? "OWNED by " + (cur.owner_id || "?") +
-           " (task " + (cur.task_id || "?") +
-           ", expires in " + (cur.expires_in_s ?? "?") + "s)"
-           : "free (no mutating lease)"),
-      ];
-      if (!(d.leases || []).length) {
-        lines.push("No leases on record.");
-      }
-      for (const l of d.leases || []) {
-        lines.push("  lease: " + (l.identity || "?") + " by " +
-          (l.owner_id || "?") + " task " + (l.task_id || "?") +
-          (l.mutating ? " [mutating]" : " [read-only]"));
-      }
-      el.diagResult.textContent = lines.join("\n");
-    } catch (err) {
-      el.diagResult.textContent = "Lease check failed: " + err.message;
+  /* ---------------- base URL support (#7) ---------------- */
+  function saveBase() {
+    const v = el.baseUrl.value.trim().replace(/\/+$/, "");
+    if (v) {
+      BASE = v;
+      localStorage.setItem(LS_KEY, v);
+    } else {
+      BASE = "";
+      localStorage.removeItem(LS_KEY);
     }
+    el.baseUrl.value = BASE;
+    el.baseUrlNote.textContent = BASE
+      ? "Saved. Requests go to " + BASE + "."
+      : "Empty uses the page origin. Saved in this browser.";
+    setHint("Base URL updated.", false);
+    pollHealth();
+    refreshProof();
   }
 
   /* ---------------- wire up ---------------- */
-  el.connectBtn.addEventListener("click", openConnect);
-  el.connectCancelBtn.addEventListener("click", () =>
-    el.connectPanel.classList.add("hidden"));
-  el.connectGoBtn.addEventListener("click", doConnect);
-  el.reconnectBtn.addEventListener("click", async () => {
-    el.reconnectBtn.disabled = true;
-    try {
-      await api("/api/ua/reconnect", { method: "POST" });
-    } catch (err) {
-      el.hint.textContent = "Reconnect failed: " + err.message;
-    }
+  el.baseUrl.value = BASE;
+  el.baseUrlSave.addEventListener("click", saveBase);
+  el.runBtn.addEventListener("click", frameAndProof);
+  el.pvRefresh.addEventListener("click", refreshProof);
+  el.actorName.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") frameAndProof();
   });
-  el.runBtn.addEventListener("click", run);
-  el.prompt.addEventListener("input", () => {
-    runError = null;
-    el.hint.style.color = "";
-    el.runBtn.disabled = !(el.prompt.value.trim()) ||
-      !["READY", "COMPLETE", "FAILED"].includes((last || {}).state || "");
+  el.location.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") frameAndProof();
   });
-  el.prompt.addEventListener("keydown", (ev) => {
-    if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") run();
-  });
-  el.newTaskBtn.addEventListener("click", () => {
-    el.resultCard.classList.add("hidden");
-    el.prompt.focus();
-  });
-  el.copyStateBtn.addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText(el.stateJson.textContent); }
-    catch (_) { /* clipboard unavailable */ }
-  });
-  el.envCheckBtn.addEventListener("click", refreshDiagnostics);
-  el.leaseCheckBtn.addEventListener("click", refreshLeases);
-  refreshDiagnostics();
 
-  poll();
-  setInterval(poll, 700);
+  pollHealth();
+  setInterval(pollHealth, 5000);
+  refreshProof();
+  setInterval(() => { if (el.pvAuto.checked) refreshProof(); }, 5000);
 })();

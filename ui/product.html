@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Unreal Agent</title>
+  <title>Aivido Test — Camera / Proof</title>
   <link rel="stylesheet" href="/static/product.css">
 </head>
 <body>
@@ -12,86 +12,65 @@
       <div class="brand">
         <span class="logo">◈</span>
         <div>
-          <h1>Unreal Agent</h1>
-          <p class="subtitle">One request. Real Unreal changes. Proof shown.</p>
+          <h1>Aivido Test</h1>
+          <p class="subtitle">Unreal Agent · Frame an actor — get fresh proof. Frontend integration check.</p>
         </div>
       </div>
       <div class="project-cluster">
-        <div class="pill" id="projectPill" title="Project">
+        <div class="pill" title="Backend status">
           <span class="dot" id="stateDot"></span>
-          <span id="projectName">No project</span>
-        </div>
-        <div class="pill actions">
-          <button id="connectBtn" class="btn primary" type="button">Connect</button>
-          <button id="reconnectBtn" class="btn ghost hidden" type="button">Reconnect</button>
+          <span id="backendState">Connecting…</span>
         </div>
       </div>
     </header>
 
-    <section class="connect-panel hidden" id="connectPanel">
+    <section class="card baseurl-card">
       <div class="field">
-        <label for="projectSelect">Project</label>
-        <select id="projectSelect">
-          <option value="">Auto — editor already open</option>
-        </select>
-      </div>
-      <div class="field note" id="connectNote">Choose a project, then connect. The agent reuses an already-running editor and never launches a second one for the same project.</div>
-      <div class="row">
-        <button id="connectGoBtn" class="btn primary" type="button">Connect to project</button>
-        <button id="connectCancelBtn" class="btn ghost" type="button">Cancel</button>
+        <label for="baseUrl">Base URL</label>
+        <div class="row">
+          <input id="baseUrl" class="textinput" autocomplete="off"
+            placeholder="https://shadow-6kckcfdq.tail5f3ac6.ts.net or http://100.84.156.24:8765 (empty = same origin)">
+          <button id="baseUrlSave" class="btn ghost small" type="button">Save</button>
+        </div>
+        <div class="note" id="baseUrlNote">Empty uses the page origin. Saved in this browser.</div>
       </div>
     </section>
 
-    <main>
-      <section class="card ask">
-        <label for="prompt" class="visually-hidden">What should the agent do?</label>
-        <textarea id="prompt" rows="2" spellcheck="false"
-          placeholder="Describe the change… e.g. “Add a cube named DemoProp to the scene”"></textarea>
-        <div class="ask-row">
-          <span class="hint" id="hint">Connect to a project first.</span>
-          <button id="runBtn" class="btn primary big" type="button" disabled>Run</button>
-        </div>
-      </section>
+    <section class="card ask">
+      <div class="field">
+        <label for="actorName">Actor name (optional)</label>
+        <input id="actorName" class="textinput" autocomplete="off"
+          placeholder="e.g. Agent_Test_Cube">
+      </div>
+      <div class="field">
+        <label for="location">Location (optional) — e.g. [0, 0, 200]</label>
+        <input id="location" class="textinput" autocomplete="off"
+          placeholder="[0, 0, 200]">
+      </div>
+      <div class="ask-row">
+        <span class="hint" id="hint">Frame an actor and capture fresh proof in one call.</span>
+        <span class="state-label" id="stateLabel" data-state="IDLE">IDLE</span>
+        <button id="runBtn" class="btn primary big" type="button">Frame &amp; Proof</button>
+      </div>
+      <div class="result-detail" id="resultDetail"></div>
+    </section>
 
-      <section class="card status hidden" id="statusCard">
-        <div class="status-head">
-          <h2>Active task</h2>
-          <span class="state-label" id="stateLabel">—</span>
+    <section class="card proof-card">
+      <div class="proof-head">
+        <h2>Proof</h2>
+        <div class="proof-actions">
+          <label class="auto" title="Re-fetch the proof image every 5 s (cache-busted)">
+            <input type="checkbox" id="pvAuto" checked> Auto-refresh
+          </label>
+          <button id="pvRefresh" class="btn ghost small" type="button">↻ Refresh Proof</button>
         </div>
-        <div class="status-line">
-          <span class="stage-name" id="stageName"></span>
-          <span class="elapsed" id="elapsed"></span>
-        </div>
-        <div class="status-text" id="statusText"></div>
-        <div class="meter hidden" id="meter"><div class="meter-fill" id="meterFill"></div></div>
-        <ol class="stages" id="stages"></ol>
-      </section>
-
-      <section class="card result hidden" id="resultCard">
-        <div class="result-head">
-          <span class="verdict" id="verdict"></span>
-          <span class="score" id="score"></span>
-        </div>
-        <div class="result-detail" id="resultDetail"></div>
-        <div class="proof" id="proof"></div>
-        <button class="btn ghost" id="newTaskBtn" type="button">Start another task</button>
-      </section>
-
-      <details class="advanced">
-        <summary>Advanced / Developer console</summary>
-        <div class="advanced-body">
-          <p class="hint">Full developer console with every tool stays available at
-            <code>app/api.py</code> on <code>:8765</code> (this product screen hides it on purpose).</p>
-          <div class="row diag-row">
-            <button id="envCheckBtn" class="btn ghost small" type="button">Check environment</button>
-            <button id="leaseCheckBtn" class="btn ghost small" type="button">Show editor ownership</button>
-          </div>
-          <pre id="diagResult" class="state-json diag-pre"></pre>
-          <button id="copyStateBtn" class="btn ghost small" type="button">Copy state JSON</button>
-          <pre id="stateJson" class="state-json"></pre>
-        </div>
-      </details>
-    </main>
+      </div>
+      <div class="proof-frame">
+        <img id="pvProof" alt="Latest Unreal viewport proof" src="" hidden>
+        <div class="proof-empty" id="pvEmpty">No proof yet — run Frame &amp; Proof or press Refresh Proof.</div>
+      </div>
+      <div class="proof-meta" id="pvProofMeta">—</div>
+    </section>
 
     <footer class="foot">
       <span id="footStatus">Idle</span>

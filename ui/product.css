@@ -76,6 +76,35 @@ select {
 .note { font-size: 13px; color: var(--muted); }
 .row { display: flex; gap: 8px; margin-top: 12px; }
 
+/* ---------- inputs ---------- */
+.textinput {
+  width: 100%;
+  background: var(--panel2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 11px 14px; font: inherit; outline: none;
+}
+.textinput:focus { border-color: var(--accent); }
+.textinput::placeholder { color: #5b6577; }
+
+/* ---------- proof panel ---------- */
+.proof-head { display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 12px; }
+.proof-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.proof-actions { display: flex; align-items: center; gap: 10px; }
+.proof-actions .auto { display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted); cursor: pointer; user-select: none; }
+.proof-actions .auto input { accent-color: var(--accent); cursor: pointer; }
+.proof-frame {
+  background: #000; border: 1px solid var(--line); border-radius: 10px;
+  min-height: 200px; display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.proof-frame img { display: block; width: 100%; height: auto; }
+.proof-empty { color: var(--muted); font-size: 13px; padding: 24px 16px;
+  text-align: center; }
+.proof-meta { margin-top: 10px; font-size: 12px; color: var(--muted);
+  font-family: Consolas, monospace; word-break: break-all; }
+
 /* ---------- cards ---------- */
 .card {
   background: var(--panel); border: 1px solid var(--line);
