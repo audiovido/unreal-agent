@@ -15,16 +15,17 @@
 ### WORKER STATUS (4 Total)
 | Worker | Domain | Status | Progress |
 |--------|--------|--------|----------|
-| **Worker 1** | HQ Room / Environment | 🔴 WAITING_FOR_WORKER_PUSH | 0% |
+| **Worker 1** | HQ Room / Environment | ✅ INTEGRATED | 100% |
 | **Worker 2** | Characters / Human Agents | ✅ INTEGRATED | 100% |
 | **Worker 3** | Props / Objects | ✅ INTEGRATED | 100% |
 | **Worker 4** | Game UI | 🔴 WAITING_FOR_WORKER_PUSH | 0% |
-| **Worker 5** | Final Integration | 🟡 IN_PROGRESS | 50% |
+| **Worker 5** | Final Integration | 🟡 IN_PROGRESS | 75% |
 
-### INTEGRATION COMPLETION: 50%
+### INTEGRATION COMPLETION: 75%
 - **Characters Integrated:** 8/8 ✅ (Worker 2)
 - **Props Integrated:** 23 actors ✅ (Worker 3) — see below
-- **Environment/UI:** 0/2 ⏳ (Waiting for Worker 1, 4)
+- **Environment Integrated:** ✅ (Worker 1) — see below
+- **UI:** 0/1 ⏳ (Waiting for Worker 4)
 - **QA Validation:** props lane PASS; full QA pending W1/W4
 - **Visual Proof:** `assetlib/reports/worker5_w3_integrated_hq.png` (live AividoHQ PIE/editor capture: characters + props co-located)
 
@@ -125,21 +126,27 @@
 
 ---
 
+## ✅ WORKER 1 ROOM INTEGRATION (2026-09-06)
+
+**Source:** Worker 1 branch `aivido-worker1-room`  
+**Commit:** `9847ea9c61d6dc578f4a91e7d4aa43d95ee902af` (descendant of 2fa2409; fast-forwarded into this branch)  
+**Environment:** `/Game/Maps/AividoHQ` — full HQ room is the live integration stage
+
+**Verified in live editor (independent inventory cross-check):**
+- 80+ AVIDO_* environment actors: main floor (r=54m, top flush z=0) + east/west wing bays, layered ceilings (8.8-9.4m) + cove rings, hub wall + hero/side screens, command dais + consoles + deck ring + pylons, 8 role accent pads + glow rings under the cast, planning table + 4 chairs, lounge breakout, entry portal + signage (TextRender), sky dome
+- Lighting rig: 15 room lights (8 cove pools @ r=38m, zone pools per room/wing/lounge/entry), key+fill directional, skylight (static capture, warning cleared), per-agent face rigs preserved (Worker 2)
+- Materials: 30 in `/Game/AividoHQ` incl. new M_Aivido_Ceil/Desk/Console + color H set
+- Human scale: floor top 0.0cm == cast feet 0.0cm; desks 1.1m; table 82cm; screens 2-7.5m
+- MapCheck: 0 errors, 0 warnings; save/reopen PASS
+- Proof: `assetlib/proof/worker1_room_{hero,command,wing_e,collab}_pie.png`
+
+---
+
 ## 🚫 MISSING DEPENDENCIES (WAITING_FOR_WORKER_PUSH)
-
-### WORKER 1 - HQ ROOM / ENVIRONMENT
-**Expected:** Environment, architecture, lighting  
-**Status:** Not found in repository - WAITING_FOR_WORKER_PUSH  
-**Impact:** Final scene lacks environment context
-
-### WORKER 3 - PROPS / OBJECTS  
-**Expected:** Props, set dressing, workstations
-**Status:** Not found in repository - WAITING_FOR_WORKER_PUSH  
-**Impact:** Characters lack contextual props
 
 ### WORKER 4 - GAME UI
 **Expected:** Game-grade UI integration  
-**Status:** Not found in repository - WAITING_FOR_WORKER_PUSH  
+**Status:** WAITING_FOR_WORKER_PUSH  
 **Impact:** No interactive UI elements
 
 ---

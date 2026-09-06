@@ -1,17 +1,24 @@
 {
   "qa_scorecard": {
-    "version": "1.1",
+    "version": "1.2",
     "evaluation_date": "2026-09-06",
     "integration_branch": "aivido/worker5-final-integration",
     "overall_status": "in_progress",
-    "completion_score": 50,
+    "completion_score": 75,
     "worker_integration_scores": {
       "worker1": {
         "domain": "hq_room_environment",
-        "status": "waiting_for_worker_push",
-        "score": 0,
+        "status": "integrated",
+        "score": 100,
         "weight": 25,
-        "contribution": 0
+        "contribution": 25,
+        "validation": {
+          "architecture": "PASS (floors/ceilings/wings/hub/command deck/pads/lounge/portal)",
+          "lighting": "PASS (15 room lights + rig, warning cleared)",
+          "scale": "PASS (human scale, floor flush z=0)",
+          "map_check": "PASS (0 errors, 0 warnings)",
+          "proof": "assetlib/proof/worker1_room_hero_pie.png"
+        }
       },
       "worker2": {
         "domain": "characters_human_agents",

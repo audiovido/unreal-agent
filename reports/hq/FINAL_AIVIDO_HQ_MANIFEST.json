@@ -1,22 +1,22 @@
 {
   "aivido_hq_final_manifest": {
-    "version": "1.1",
+    "version": "1.2",
     "generation_date": "2026-09-06",
     "integration_branch": "aivido/worker5-final-integration",
     "integration_status": "in_progress",
-    "completion_percentage": 50,
+    "completion_percentage": 75,
     "worker_sources": {
       "worker1": {
         "domain": "hq_room_environment",
-        "status": "waiting_for_worker_push",
-        "branch": null,
-        "commit": null,
+        "status": "integrated",
+        "branch": "aivido-worker1-room",
+        "commit": "9847ea9c61d6dc578f4a91e7d4aa43d95ee902af",
         "deliverables": [
           "environment",
           "architecture",
           "lighting"
         ],
-        "integration_status": "pending"
+        "integration_status": "complete"
       },
       "worker2": {
         "domain": "characters_human_agents",
@@ -274,6 +274,16 @@
       "validation": "PASS",
       "proof": "assetlib/reports/worker5_w3_integrated_hq.png",
       "evidence": "assetlib/reports/worker3_props_evidence.json"
+    },
+    "worker1_integration": {
+      "integrated_date": "2026-09-06",
+      "method": "fast-forward; environment is the live integration map",
+      "env_actors": "80+ AVIDO_* (floors/ceilings/walls/hub/command deck/8 role pads/lounge/portal/signage/sky dome)",
+      "lighting": "15 room lights + key/fill + skylight(static)",
+      "map_check": "0 errors, 0 warnings",
+      "human_scale": "PASS (floor top 0 == cast feet 0; desks 1.1m; ceilings 8.8-9.4m)",
+      "proof": "assetlib/proof/worker1_room_hero_pie.png",
+      "cross_check": "independent live-editor inventory match"
     }
   }
 }
