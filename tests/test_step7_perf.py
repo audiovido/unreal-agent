@@ -103,6 +103,71 @@ class TestVisionProviderDecisiveSkip:
         assert len(calls) == 1
 
 
+class TestVisionReviewFrameCache:
+    """Phase G: identical frames must not re-pay the vision LLM round-trip.
+
+    The cache is keyed by REAL frame content hash; fake/absent files get no
+    key, so the historic provider behavior is unchanged for them.
+    """
+
+    def _review_twice(self, monkeypatch, tmp_path, first_bytes, second_bytes):
+        original_det = vision_provider.deterministic_review
+
+        def _det(image_path, metrics=None, score=None):
+            return original_det(
+                image_path, metrics=metrics or _fake_metrics(overall=7.4),
+                score=score or _fake_score(7.4))
+
+        calls = []
+        monkeypatch.setattr(vision_provider, "deterministic_review", _det)
+        vision_provider.review_cache_clear()
+        frame = tmp_path / "frame.png"
+        frame.write_bytes(first_bytes)
+        out1 = vision_provider.review_image(
+            str(frame), providers=[_spy_provider(calls)],
+            metrics=_fake_metrics(overall=7.4), score=_fake_score(7.4),
+            decisive_score=8.5)
+        frame.write_bytes(second_bytes)
+        out2 = vision_provider.review_image(
+            str(frame), providers=[_spy_provider(calls)],
+            metrics=_fake_metrics(overall=7.4), score=_fake_score(7.4),
+            decisive_score=8.5)
+        return calls, out1, out2
+
+    def test_identical_frame_is_reviewed_once(self, monkeypatch, tmp_path):
+        calls, out1, out2 = self._review_twice(
+            monkeypatch, tmp_path, b"frame-A-bytes", b"frame-A-bytes")
+        assert len(calls) == 1  # second review served from cache
+        assert out1["review_source"] == "provider"
+        assert out2["review_source"] == "frame_cache"
+        assert out2["provider_attempts"][0]["provider"] == "review_cache"
+
+    def test_cached_result_equals_fresh_result(self, monkeypatch, tmp_path):
+        calls, out1, out2 = self._review_twice(
+            monkeypatch, tmp_path, b"frame-B-bytes", b"frame-B-bytes")
+        assert out1["score"] == out2["score"]
+        assert out1["defects"] == out2["defects"]
+        assert out1["deterministic_cross_check"] == out2["deterministic_cross_check"]
+
+    def test_different_pixels_review_both(self, monkeypatch, tmp_path):
+        calls, _out1, _out2 = self._review_twice(
+            monkeypatch, tmp_path, b"frame-C-one", b"frame-C-two")
+        assert len(calls) == 2  # different content -> different cache key
+
+    def test_cache_clear_forces_re_review(self, monkeypatch, tmp_path):
+        calls, _o1, _o2 = self._review_twice(
+            monkeypatch, tmp_path, b"frame-D-bytes", b"frame-D-bytes")
+        assert len(calls) == 1
+        vision_provider.review_cache_clear()
+        frame = tmp_path / "frame.png"
+        out3 = vision_provider.review_image(
+            str(frame), providers=[_spy_provider(calls)],
+            metrics=_fake_metrics(overall=7.4), score=_fake_score(7.4),
+            decisive_score=8.5)
+        assert len(calls) == 2
+        assert out3["review_source"] == "provider"
+
+
 class TestReleaseEvaluateCachedMetrics:
     def _evaluate(self, monkeypatch, measure_calls, score_calls):
         import assetlib.reports.unreal_coder_release_missions as rel

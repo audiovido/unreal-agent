@@ -20,9 +20,11 @@ attached, and the deterministic result wins on ties (no blind scene edits).
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import os
 import re
+import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -65,6 +67,23 @@ class VisionReview:
     evidence: List[Dict[str, Any]] = field(default_factory=list)
     latency_s: float = 0.0
 
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "VisionReview":
+        """Rebuild a review from its serialized form (cache round-trips)."""
+        return cls(
+            score=float(data.get("score") or 0.0),
+            defects=list(data.get("defects") or []),
+            confidence=float(data.get("confidence") or 0.0),
+            summary=str(data.get("summary") or ""),
+            recommended_actions=list(data.get("recommended_actions") or []),
+            provider=str(data.get("provider") or "none"),
+            model=str(data.get("model") or ""),
+            ok=bool(data.get("ok")),
+            error=str(data.get("error") or ""),
+            evidence=list(data.get("evidence") or []),
+            latency_s=float(data.get("latency_s") or 0.0),
+        )
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "ok": self.ok,
@@ -79,6 +98,57 @@ class VisionReview:
             "evidence": list(self.evidence),
             "latency_s": round(self.latency_s, 2),
         }
+
+
+# ---------------------------------------------------------------------------
+# Review cache (Phase G — performance)
+# Identical frames never re-pay the vision LLM round-trip: reviews are cached
+# by frame content hash with a bounded TTL and size. Deterministic review
+# ALWAYS runs fresh (cheap, ms); only the model round-trip is cached.
+# ---------------------------------------------------------------------------
+
+_REVIEW_CACHE: Dict[str, Dict[str, Any]] = {}
+_REVIEW_CACHE_TTL_S = float(os.getenv("UNREAL_AGENT_REVIEW_CACHE_TTL", "900"))
+_REVIEW_CACHE_MAX = int(os.getenv("UNREAL_AGENT_REVIEW_CACHE_MAX", "64"))
+_REVIEW_LOCK = threading.Lock()
+
+
+def _frame_hash(image_path: str) -> str:
+    try:
+        with open(image_path, "rb") as fh:
+            return hashlib.md5(fh.read()).hexdigest()[:12]
+    except OSError:
+        return ""
+
+
+def _review_cache_get(key: str) -> Optional[Dict[str, Any]]:
+    if not key:
+        return None
+    with _REVIEW_LOCK:
+        entry = _REVIEW_CACHE.get(key)
+        if not entry:
+            return None
+        if time.time() - float(entry["at"]) > _REVIEW_CACHE_TTL_S:
+            _REVIEW_CACHE.pop(key, None)
+            return None
+        return dict(entry["review"])
+
+
+def _review_cache_put(key: str, review: Dict[str, Any]) -> None:
+    if not key:
+        return
+    with _REVIEW_LOCK:
+        if len(_REVIEW_CACHE) >= _REVIEW_CACHE_MAX:
+            for old_key in sorted(
+                _REVIEW_CACHE, key=lambda k: _REVIEW_CACHE[k]["at"])[:8]:
+                _REVIEW_CACHE.pop(old_key, None)
+        _REVIEW_CACHE[key] = {"at": time.time(), "review": dict(review)}
+
+
+def review_cache_clear() -> None:
+    """Drop all cached reviews (test/ops hook)."""
+    with _REVIEW_LOCK:
+        _REVIEW_CACHE.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -414,43 +484,73 @@ def review_image(image_path: str,
     chosen: Optional[VisionReview] = None
     disagreement: Dict[str, Any] = {"detected": False, "resolution": "deterministic",
                                     "note": "", "delta": 0.0}
-    for provider in (providers or []):
-        if skip_models:
-            break
-        try:
-            model_review = provider(image_path)
-        except Exception as exc:  # provider crash must not propagate
-            attempts.append({"provider": "unknown", "ok": False,
-                             "error": f"{type(exc).__name__}: {str(exc)[:120]}"})
-            continue
-        attempts.append({
-            "provider": model_review.provider, "model": model_review.model,
-            "ok": model_review.ok, "error": model_review.error,
-            "latency_s": round(model_review.latency_s, 2),
-        })
-        if not model_review.ok:
+    # Phase G: when this exact frame was already reviewed by a vision model,
+    # reuse that verdict instead of paying the LLM round-trip again. Only
+    # applies when providers WOULD run (not decisive-skipped); the cheap
+    # deterministic measurement always re-runs.
+    cached_review: Optional[Dict[str, Any]] = None
+    frame_key = ""
+    if providers and not skip_models:
+        frame_key = _frame_hash(image_path)
+        cached_review = _review_cache_get(frame_key)
+        if cached_review is not None:
             warnings.append(
-                f"vision provider '{model_review.provider}' unavailable: "
-                f"{model_review.error}")
-            continue
-        if float(model_review.confidence) < 0.35:
-            warnings.append(
-                f"vision provider '{model_review.provider}' low confidence "
-                f"({model_review.confidence:.2f}); cross-checking with "
-                "deterministic measurement")
-            continue
+                "vision review served from frame-content cache "
+                "(identical pixels, no model round-trip)")
+
+    if cached_review is not None:
+        model_review = VisionReview.from_dict(cached_review)
+        attempts.append({"provider": "review_cache", "model": "cached",
+                         "ok": True, "latency_s": 0.0})
         disagreement = resolve_disagreement(det, model_review)
         if disagreement["resolution"] == "deterministic_wins":
             warnings.append(f"VISION_DISAGREEMENT: {disagreement['note']}")
             chosen = det
         else:
-            # Non-vocabulary defects cannot map to a repair action: drop
-            # them from the actionable list (kept in the raw review only).
             model_review.defects = [
                 d for d in model_review.defects
                 if str(d).upper() in DEFECT_VOCABULARY]
             chosen = model_review
-        break
+    else:
+        for provider in (providers or []):
+            if skip_models:
+                break
+            try:
+                model_review = provider(image_path)
+            except Exception as exc:  # provider crash must not propagate
+                attempts.append({"provider": "unknown", "ok": False,
+                                 "error": f"{type(exc).__name__}: {str(exc)[:120]}"})
+                continue
+            attempts.append({
+                "provider": model_review.provider, "model": model_review.model,
+                "ok": model_review.ok, "error": model_review.error,
+                "latency_s": round(model_review.latency_s, 2),
+            })
+            if not model_review.ok:
+                warnings.append(
+                    f"vision provider '{model_review.provider}' unavailable: "
+                    f"{model_review.error}")
+                continue
+            if float(model_review.confidence) < 0.35:
+                warnings.append(
+                    f"vision provider '{model_review.provider}' low confidence "
+                    f"({model_review.confidence:.2f}); cross-checking with "
+                    "deterministic measurement")
+                continue
+            raw_review = model_review.to_dict()
+            disagreement = resolve_disagreement(det, model_review)
+            if disagreement["resolution"] == "deterministic_wins":
+                warnings.append(f"VISION_DISAGREEMENT: {disagreement['note']}")
+                chosen = det
+            else:
+                # Non-vocabulary defects cannot map to a repair action: drop
+                # them from the actionable list (kept in the raw review only).
+                model_review.defects = [
+                    d for d in model_review.defects
+                    if str(d).upper() in DEFECT_VOCABULARY]
+                chosen = model_review
+            _review_cache_put(frame_key, raw_review)
+            break
 
     if chosen is None:
         chosen = det
@@ -473,4 +573,8 @@ def review_image(image_path: str,
     result["disagreement"] = disagreement
     result["deterministic_cross_check"] = det.to_dict()
     result["total_latency_s"] = round(time.time() - started, 2)
+    result["review_source"] = (
+        "frame_cache" if cached_review is not None
+        else ("deterministic_only" if not providers or skip_models
+              else "provider"))
     return result

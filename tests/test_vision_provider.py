@@ -24,6 +24,17 @@ from core.vision_provider import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _isolate_review_cache():
+    """The review cache is keyed by frame content; the shared module-scoped
+    `real_image` fixture must not leak one test's provider verdict into the
+    next. Cache is bounded + TTL'd in production; tests clear per-case."""
+    import core.vision_provider as vp
+    vp.review_cache_clear()
+    yield
+    vp.review_cache_clear()
+
+
 @pytest.fixture(scope="module")
 def real_image(tmp_path_factory):
     """A synthetic non-trivial frame so deterministic measurement succeeds."""
