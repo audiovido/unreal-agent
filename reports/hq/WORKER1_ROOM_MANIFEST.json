@@ -1,0 +1,99 @@
+{
+  "worker": "WORKER1",
+  "lane": "HQ ROOM / ENVIRONMENT (architecture, layout, lighting, materials)",
+  "map": "/Game/Maps/AividoHQ",
+  "status": "INTEGRATION_READY",
+  "integration_ready": true,
+  "validated": "2026-09-06",
+  "engine": "UE 5.8.2 (live bridge session, ASSET_Showcase2)",
+  "live_unreal_verification": true,
+  "summary": {
+    "total_actors": 160,
+    "worker1_room_actors": 54,
+    "worker1_room_lights": 15,
+    "worker2_humans_preserved": 8,
+    "worker3_props_preserved": 23,
+    "resolve_errors": 0,
+    "floor_top_cm": 0.0,
+    "human_feet_cm": 0.0
+  },
+  "zones": {
+    "entry": {
+      "location": "y +5100",
+      "actors": ["AVIDO_Portal_Col_E", "AVIDO_Portal_Col_W", "AVIDO_Portal_Lintel", "AVIDO_Entry_Strip", "AVIDO_Sign_Entry", "AVIDO_PlayerStart", "AVIDO_Light_Room_Entry"],
+      "notes": "framed portal + lintel, entry floor strip, AIVIDO HQ signage, player start facing the room"
+    },
+    "lounge_breakout": {
+      "location": "y +3900..+4300",
+      "actors": ["AVIDO_Lounge_Bench_N", "AVIDO_Lounge_Bench_S", "AVIDO_Lounge_Table", "AVIDO_Lounge_Trim", "AVIDO_Lounge_Pad_N", "AVIDO_Lounge_Pad_S", "AVIDO_Light_Room_Lounge"],
+      "notes": "two facing benches + coffee table on cyan pads"
+    },
+    "planning_collaboration": {
+      "location": "y +2800 (north of cast)",
+      "actors": ["AVIDO_Table_Planning", "AVIDO_Table_Planning_Rim", "AVIDO_Chair_*", "AVIDO_Light_Room_Collab"],
+      "notes": "round planning table, 4 chairs, glow rim; center ring intentionally clear for identity column + W3I station ring"
+    },
+    "agent_work_areas": {
+      "owner": "Worker 3 props (W3I_Station_* desks/monitors/chairs, terminals, cabinets, server rack)",
+      "worker1_support": ["AVIDO_Pad_<Role>", "AVIDO_Pad_Ring_<Role>"] ,
+      "notes": "8 per-human accent floor pads + glow rings under the Worker 2 cast (furniture deliberately NOT duplicated)"
+    },
+    "command_director": {
+      "location": "y -1500..-2400 (hub)",
+      "actors": ["AVIDO_Dais_Master", "AVIDO_Console_Center", "AVIDO_Console_Screen", "AVIDO_Console_Left", "AVIDO_Console_Right", "AVIDO_Command_Pylon_E", "AVIDO_Command_Pylon_W", "AVIDO_Command_DeckRing", "AVIDO_Command_SideScreen_E", "AVIDO_Command_SideScreen_W", "AVIDO_Hub_Screen", "AVIDO_Hub_Wall", "AVIDO_Sign_Master", "AVIDO_Sign_Central"],
+      "notes": "director consoles on the dais, flanking pylons, presentation deck ring, hero screen lowered to human scale (2-7.5 m) + 2 side screens"
+    },
+    "creative_wing_e": {
+      "location": "x +3700 (east bay)",
+      "actors": ["AVIDO_Room_Floor_Wing_E", "AVIDO_Room_Ceil_Wing_E", "AVIDO_Room_Wing_E_Wall_E", "AVIDO_Room_Wing_E_Wall_W", "AVIDO_Room_Wing_E_FrontTrim", "AVIDO_CD_Wall", "AVIDO_Light_Room_Wing_E", "AVIDO_Sign_Creative"],
+      "notes": "bay floor, 9 m end walls, ceiling disc, cyan front trim; CD swatches/briefstand realigned to the bay"
+    },
+    "visual_wing_w": {
+      "location": "x -3700 (west bay)",
+      "actors": ["AVIDO_Room_Floor_Wing_W", "AVIDO_Room_Ceil_Wing_W", "AVIDO_Room_Wing_W_Wall_E", "AVIDO_Room_Wing_W_Wall_W", "AVIDO_Room_Wing_W_FrontTrim", "AVIDO_VD_Wall", "AVIDO_Light_Room_Wing_W", "AVIDO_Sign_Visual"],
+      "notes": "mirror of east bay; VD comparison screens/grade strip realigned"
+    }
+  },
+  "architecture": {
+    "floor": "AVIDO_Room_Floor_Main cylinder r=54 m, top flush at z=0 (fixes the previous feet-sink: cast feet now exactly at floor top)",
+    "wing_floors": ["AVIDO_Room_Floor_Wing_E", "AVIDO_Room_Floor_Wing_W"] ,
+    "ceilings": ["AVIDO_Room_Ceil_Center r=40 m @ 8.95 m", "AVIDO_Room_Ceil_Wing_E/W r=20 m @ 9.35 m (layered)"],
+    "cove_rings": ["AVIDO_Room_Cove_Outer (white r=39.5 m)", "AVIDO_Room_Cove_Inner (cyan r=20 m)"],
+    "wall_resizes": "AVIDO_CD_Wall / AVIDO_VD_Wall from 42 m to 9 m tall (human scale, under the new ceilings)",
+    "wing_end_walls": 4,
+    "floor_rings": "AVIDO_Ring_Outer / AVIDO_Ring_Inner lowered to z=6 (flush accent rings r=23 m / r=15 m)",
+    "cleaned": ["AVIDO_Floor_Disc (replaced)", "AVIDO_CD_Floor / AVIDO_VD_Floor (replaced)", "StaticMeshActor 30 m test sphere over AVIDO_Human_Master", "TextRenderActor duplicate 'AIVIDO HQ' sign"]
+  },
+  "lighting": {
+    "room_lights": 15,
+    "cove_ring": "8 x AVIDO_Light_Room_Cove_* @ r=38 m, 42000 lm, cool white",
+    "zone_pools": ["AVIDO_Light_Room_Collab (26000)", "AVIDO_Light_Room_Cmd_E/W (32000)", "AVIDO_Light_Room_Wing_E/W (38000, amber/magenta)", "AVIDO_Light_Room_Lounge (26000)", "AVIDO_Light_Room_Entry (26000)"],
+    "key_fill": "AVIDO_KeyLight directional 4.0, AVIDO_FillLight 2.5",
+    "skylight": "real-time capture disabled + recapture (removes editor warning overlay; static capture from AVIDO_SkyDome)",
+    "preserved": "Worker 2 per-agent face rig (8 FaceLight + 8 KeyLight_Char + Key/Fill/Rim face spots), station pools, AVIDO_Exposure PP (manual, bias +1.0)"
+  },
+  "materials_created": ["M_Aivido_Ceil", "M_Aivido_Desk", "M_Aivido_Console", "M_Aivido_GreenH", "M_Aivido_VioletH", "M_Aivido_BlueH", "M_Aivido_GoldH", "M_Aivido_RedH"],
+  "proof": {
+    "worker1_room_hero_pie.png": "hero overview from entry vantage (ceiling/coves, pillars, central arena, cast)",
+    "worker1_room_command_pie.png": "command zone toward hub screen/dais",
+    "worker1_room_wing_e_pie.png": "east Creative wing bay",
+    "worker1_room_collab_pie.png": "planning table + collab zone",
+    "path": "assetlib/proof/"
+  },
+  "validation": {
+    "save": "PASS (map saved, bias +1.0)",
+    "reopen": "PASS (identity_ok, /Game/Maps/AividoHQ.AividoHQ)",
+    "resolve": "PASS 160 actors: 8/8 humans skeletal meshes, 54/54 room actors meshes+materials, 23/23 W3I props, 0 errors",
+    "scale": "PASS floor top 0.0 cm == Master feet 0.0 cm; ceilings 8.8-9.4 m; screens 2-7.5 m; desks 1.1 m; table 82 cm",
+    "map_check": "0 errors, 0 warnings (editor MapCheck log)"
+  },
+  "blockers": [
+    "None blocking integration. Shared-editor caveat: a concurrent lane reloaded the map mid-build once; the rebuild is atomic (single bridge call) so it cannot interleave."
+  ],
+  "dependencies": {
+    "worker2_characters": "8 x AVIDO_Human_* (untouched)",
+    "worker3_props": "23 x W3I_* (untouched, station furniture complements the room)",
+    "existing_materials": "M_Aivido_Floor / Wall / Wall2 / ScreenH2 / CyanH / AmberH / MagentaH / WhiteH / Shell",
+    "engine_shapes": "/Engine/BasicShapes/Cube.Cube + Cylinder.Cylinder"
+  }
+}
