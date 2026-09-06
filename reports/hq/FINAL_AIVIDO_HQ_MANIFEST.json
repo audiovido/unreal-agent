@@ -1,18 +1,21 @@
 {
   "aivido_hq_final_manifest": {
-    "version": "1.0",
+    "version": "1.1",
     "generation_date": "2026-09-06",
     "integration_branch": "aivido/worker5-final-integration",
-    "integration_status": "partial",
-    "completion_percentage": 25,
-    
+    "integration_status": "in_progress",
+    "completion_percentage": 50,
     "worker_sources": {
       "worker1": {
         "domain": "hq_room_environment",
         "status": "waiting_for_worker_push",
         "branch": null,
         "commit": null,
-        "deliverables": ["environment", "architecture", "lighting"],
+        "deliverables": [
+          "environment",
+          "architecture",
+          "lighting"
+        ],
         "integration_status": "pending"
       },
       "worker2": {
@@ -20,23 +23,37 @@
         "status": "integrated",
         "branch": "aivido-worker2-human-agents",
         "commit": "3dbbd2d5c55a4dfe9bd6acb6662e9ef0ebded5eb",
-        "deliverables": ["8_distinct_characters", "materials", "basic_animations"],
+        "deliverables": [
+          "8_distinct_characters",
+          "materials",
+          "basic_animations"
+        ],
         "integration_status": "complete"
       },
       "worker3": {
         "domain": "props_objects",
-        "status": "waiting_for_worker_push",
-        "branch": null,
-        "commit": null,
-        "deliverables": ["props", "set_dressing", "workstations"],
-        "integration_status": "pending"
+        "status": "integrated",
+        "branch": "aivido-worker3-props",
+        "commit": "f54fe0740502d9cba005621d87d01cde74b5b83c",
+        "deliverables": [
+          "8_prop_blueprints",
+          "9_materials",
+          "lantern_kit_3_meshes",
+          "staging_map",
+          "integration_tool"
+        ],
+        "integration_status": "complete"
       },
       "worker4": {
         "domain": "game_ui",
         "status": "waiting_for_worker_push",
         "branch": null,
         "commit": null,
-        "deliverables": ["game_ui", "interactive_elements", "state_displays"],
+        "deliverables": [
+          "game_ui",
+          "interactive_elements",
+          "state_displays"
+        ],
         "integration_status": "pending"
       },
       "worker5": {
@@ -44,11 +61,14 @@
         "status": "in_progress",
         "branch": "aivido/worker5-final-integration",
         "commit": null,
-        "deliverables": ["integration_framework", "staging_map", "qa_system"],
+        "deliverables": [
+          "integration_framework",
+          "staging_map",
+          "qa_system"
+        ],
         "integration_status": "partial"
       }
     },
-    
     "character_manifest": {
       "character_count": 8,
       "characters": [
@@ -58,7 +78,11 @@
           "role": "Command Director",
           "asset_path": "/Game/AividoHQ/Characters/Master/",
           "mesh_name": "Business_Male_01",
-          "final_position": [0, 500, 0],
+          "final_position": [
+            0,
+            500,
+            0
+          ],
           "final_yaw": 0,
           "station_description": "Central command overlooking team",
           "integration_status": "ready"
@@ -69,7 +93,11 @@
           "role": "Creative Direction",
           "asset_path": "/Game/AividoHQ/Characters/Creative/",
           "mesh_name": "Male_Adult_11",
-          "final_position": [1200, 800, 0],
+          "final_position": [
+            1200,
+            800,
+            0
+          ],
           "final_yaw": -45,
           "station_description": "Creative station near visual displays",
           "integration_status": "ready"
@@ -80,7 +108,11 @@
           "role": "Visual Direction",
           "asset_path": "/Game/AividoHQ/Characters/Visual/",
           "mesh_name": "Business_Female_02",
-          "final_position": [-1200, 800, 0],
+          "final_position": [
+            -1200,
+            800,
+            0
+          ],
           "final_yaw": 45,
           "station_description": "Visual station with review monitors",
           "integration_status": "ready"
@@ -91,7 +123,11 @@
           "role": "Technical Direction",
           "asset_path": "/Game/AividoHQ/Characters/Technical/",
           "mesh_name": "Male_Adult_03",
-          "final_position": [800, 200, 0],
+          "final_position": [
+            800,
+            200,
+            0
+          ],
           "final_yaw": 90,
           "station_description": "Technical workstation",
           "integration_status": "ready"
@@ -102,7 +138,11 @@
           "role": "Audio Production",
           "asset_path": "/Game/AividoHQ/Characters/Audio/",
           "mesh_name": "Female_Adult_05",
-          "final_position": [-800, 200, 0],
+          "final_position": [
+            -800,
+            200,
+            0
+          ],
           "final_yaw": -90,
           "station_description": "Audio mixing station",
           "integration_status": "ready"
@@ -113,7 +153,11 @@
           "role": "Animation Direction",
           "asset_path": "/Game/AividoHQ/Characters/Animation/",
           "mesh_name": "Male_Adult_12",
-          "final_position": [400, 1500, 0],
+          "final_position": [
+            400,
+            1500,
+            0
+          ],
           "final_yaw": 180,
           "station_description": "Animation review area",
           "integration_status": "ready"
@@ -124,7 +168,11 @@
           "role": "Lighting Design",
           "asset_path": "/Game/AividoHQ/Characters/Lighting/",
           "mesh_name": "Female_Adult_01",
-          "final_position": [-400, 1500, 0],
+          "final_position": [
+            -400,
+            1500,
+            0
+          ],
           "final_yaw": 180,
           "station_description": "Lighting control station",
           "integration_status": "ready"
@@ -135,14 +183,17 @@
           "role": "Visual Effects",
           "asset_path": "/Game/AividoHQ/Characters/VFX/",
           "mesh_name": "Female_Adult_08",
-          "final_position": [0, 1200, 0],
+          "final_position": [
+            0,
+            1200,
+            0
+          ],
           "final_yaw": 0,
           "station_description": "VFX central presentation area",
           "integration_status": "ready"
         }
       ]
     },
-    
     "staging_map": {
       "name": "AividoHQ_Final_Stage",
       "path": "Content/Aivido/Production/Integration/Maps/AividoHQ_Final_Stage.umap",
@@ -150,15 +201,17 @@
       "status": "designed",
       "execution_status": "pending"
     },
-    
     "animation_status": {
       "rocketbox_animations": "blocked",
       "current_animation_source": "verified_existing_project_animations",
-      "animation_types": ["basic_idle", "walk", "locomotion"],
+      "animation_types": [
+        "basic_idle",
+        "walk",
+        "locomotion"
+      ],
       "character_motion_profiles": "defined",
       "execution_status": "pending"
     },
-    
     "integration_assets": {
       "integration_plan": "reports/hq/WORKER5_INTEGRATION_PLAN.json",
       "integration_script": "assetlib/tools/worker5_final_integration.py",
@@ -167,40 +220,42 @@
       "worker_status": "reports/hq/WORKER_STATUS_WAITING.md",
       "final_handoff": "reports/hq/WORKER5_FINAL_INTEGRATION_HANDOFF.md"
     },
-    
     "visual_proof": {
       "status": "pending_capture",
       "required_shots": 5,
       "shot_definitions": [
         "hq_establishing_wide",
-        "director_close_up", 
+        "director_close_up",
         "agent_team_groups",
         "character_quality_detail",
         "animation_verification"
       ],
       "capture_status": "pending"
     },
-    
     "qa_status": {
       "status": "pending_execution",
       "checklist": "reports/hq/WORKER5_QA_CHECKLIST.md",
       "pass_criteria_defined": true,
       "execution_status": "pending"
     },
-    
     "dependencies": {
-      "blocked_workers": ["worker1", "worker3", "worker4"],
+      "blocked_workers": [
+        "worker1",
+        "worker3",
+        "worker4"
+      ],
       "completion_requirements": [
         "worker1_environment_integration",
-        "worker3_props_integration", 
+        "worker3_props_integration",
         "worker4_ui_integration",
         "unreal_script_execution",
         "visual_proof_capture",
         "qa_validation"
       ],
-      "current_blockers": ["missing_worker_outputs"]
+      "current_blockers": [
+        "missing_worker_outputs"
+      ]
     },
-    
     "next_actions": [
       "execute_unreal_integration_script",
       "capture_visual_proof",
@@ -208,6 +263,17 @@
       "push_integration_branch",
       "await_worker1_3_4_outputs",
       "complete_final_assembly"
-    ]
+    ],
+    "worker3_integration": {
+      "integrated_date": "2026-09-06",
+      "method": "fast-forward + worker3_props_integrate.py --apply + worker5_w3_floor_snap.py",
+      "actors_placed": 23,
+      "floor_contact_pass": true,
+      "material_resolution_pass": true,
+      "broken_references": 0,
+      "validation": "PASS",
+      "proof": "assetlib/reports/worker5_w3_integrated_hq.png",
+      "evidence": "assetlib/reports/worker3_props_evidence.json"
+    }
   }
 }

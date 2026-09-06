@@ -1,12 +1,12 @@
 # WORKER 5 FINAL INTEGRATION HANDOFF
 
-## MISSION STATUS: PARTIALLY COMPLETE (Worker 2 Integrated, Others Waiting)
+## MISSION STATUS: IN_PROGRESS (Workers 2 + 3 Integrated, 1 and 4 Pending)
 
 **Date:** September 6, 2026  
 **Integration Branch:** `aivido/worker5-final-integration`  
 **Integration Commit:** [To be generated after push]  
 **Unreal Project:** ASSET_Showcase2  
-**Staging Map:** Content/Aivido/Production/Integration/Maps/AividoHQ_Final_Stage.umap  
+**Staging Map:** `/Game/Maps/AividoHQ` (live integrated HQ) + `/Game/Maps/AividoHQ_PropsStage` (Worker 3 props staging)
 
 ---
 
@@ -17,15 +17,44 @@
 |--------|--------|--------|----------|
 | **Worker 1** | HQ Room / Environment | 🔴 WAITING_FOR_WORKER_PUSH | 0% |
 | **Worker 2** | Characters / Human Agents | ✅ INTEGRATED | 100% |
-| **Worker 3** | Props / Objects | 🔴 WAITING_FOR_WORKER_PUSH | 0% |
+| **Worker 3** | Props / Objects | ✅ INTEGRATED | 100% |
 | **Worker 4** | Game UI | 🔴 WAITING_FOR_WORKER_PUSH | 0% |
-| **Worker 5** | Final Integration | 🟡 IN_PROGRESS | 25% |
+| **Worker 5** | Final Integration | 🟡 IN_PROGRESS | 50% |
 
-### INTEGRATION COMPLETION: 25%
+### INTEGRATION COMPLETION: 50%
 - **Characters Integrated:** 8/8 ✅ (Worker 2)
-- **Environment/Props/UI:** 0/3 ⏳ (Waiting for Worker 1,3,4)
-- **QA Validation:** PENDING_EXECUTION ⏳
-- **Visual Proof:** PENDING_CAPTURE ⏳
+- **Props Integrated:** 23 actors ✅ (Worker 3) — see below
+- **Environment/UI:** 0/2 ⏳ (Waiting for Worker 1, 4)
+- **QA Validation:** props lane PASS; full QA pending W1/W4
+- **Visual Proof:** `assetlib/reports/worker5_w3_integrated_hq.png` (live AividoHQ PIE/editor capture: characters + props co-located)
+
+---
+
+## ✅ WORKER 3 PROPS INTEGRATION (NEW — 2026-09-06)
+
+**Source:** Worker 3 branch `aivido-worker3-props`  
+**Commit:** `f54fe0740502d9cba005621d87d01cde74b5b83c` (direct descendant of 3292f93; fast-forwarded)  
+**Method:** fast-forward merge (Worker 5 was exactly at known base 3292f93)
+
+**Integrated into `/Game/Maps/AividoHQ` via `assetlib/tools/worker3_props_integrate.py --apply` + `assetlib/tools/worker5_w3_floor_snap.py`:**
+
+| Set dressing | Actors |
+|---|---|
+| Command workstations | 4x (desk + chair + monitor) W/N/E/S of hub, facing center |
+| Presentation equipment | 1x presentation board (north wall), 2x terminals |
+| Technical equipment | 1x server rack (NE), 1x lantern assembly (north entry, 3-part) |
+| Storage | 2x storage cabinets (east wall) |
+| Decor | 2x plants (south corners) |
+
+**Validation (all PASS):**
+- 23/23 prop actors spawned, 0 errors
+- Floor contact: 20/20 floor props at z_min=0.0cm (monitors at 75cm desk-top height; lantern kit assembled 0/144.24/151.57cm by measured bounds)
+- Materials resolve; monitor screens wired to emissive `M3_PropScreen`
+- No broken references (8 BP + 9 material + 3 mesh load-verified in-editor)
+- Map saved + reopened with props intact
+- No ownership collisions (all props under `/Game/AividoHQ/Props/*` + `W3I_*` labels; Worker 2 character paths untouched)
+
+**Worker 3 source validation (from `aivido-worker3-props`):** staging map `/Game/Maps/AividoHQ_PropsStage` verified 21 actors persisted; evidence `assetlib/reports/worker3_props_evidence.json`; proof `assetlib/reports/worker3_props_stage.png`
 
 ---
 
