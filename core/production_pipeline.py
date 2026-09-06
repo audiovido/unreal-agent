@@ -19,6 +19,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
+from core.asset_intelligence import recommend_assets
+from core.creative_director import direct_scene
+from core.universal_intent import VAGUE_VISUAL_MARKERS
 from core.visual_director import parse_intent
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -110,9 +113,21 @@ class ReuseDecision:
         }
 
 
+# Vague visual direction ("make X look like Y", "prettier", "polish it") is
+# visual work even when no concrete visual noun appears. Same vocabulary as
+# core.universal_intent.VAGUE_VISUAL_MARKERS, kept here so the preflight gate
+# and the intent layer cannot disagree.
+_VISUAL_EXTRA_MARKERS = VAGUE_VISUAL_MARKERS + (
+    "look like", "stylize", "aesthetic", "art direction",
+    "lobby", "vehicle", "suv", "showcase", "street", "display",
+)
+
+
 def is_visual_task(request: str) -> bool:
     text = str(request or "").lower()
-    return any(term in text for term in VISUAL_TERMS)
+    return any(term in text for term in VISUAL_TERMS) or any(
+        marker in text for marker in _VISUAL_EXTRA_MARKERS
+    )
 
 
 def classify_task(request: str) -> str:
@@ -276,14 +291,21 @@ def production_preflight(
     providers: Mapping[str, Callable[[str, Mapping[str, Any]], Iterable[Mapping[str, Any]]]] | None = None,
     force_mode: str | None = None,
     vision: Callable[[str], Any] | None = None,
+    assets: Iterable[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Build the durable pre-execution contract used by all execution paths."""
+    """Build the durable pre-execution contract used by all execution paths.
+
+    ``assets`` (optional) supplies indexed catalog entries; when provided and
+    the task is visual, an ``asset_intelligence`` recommendation is attached.
+    Existing callers pass nothing and keep the exact previous output shape.
+    """
     started = time.perf_counter()
     visual = is_visual_task(request)
     brief = build_visual_brief(request, vision=vision) if visual else VisualDesignBrief(request=str(request), task_type=classify_task(request), mood="n/a")
     candidates = discover_reuse_candidates(request, context=context, providers=providers) if visual else []
     decision = select_reuse_strategy(request, candidates, force_mode=force_mode)
-    return {
+    direction = direct_scene(request, context=context) if visual else None
+    result: dict[str, Any] = {
         "visual_task": visual,
         "brief": brief.to_dict(),
         "asset_template_route": decision.to_dict(),
@@ -291,6 +313,16 @@ def production_preflight(
         "preflight_ms": round((time.perf_counter() - started) * 1000, 2),
         "pipeline": ["intent_reference_analysis", "creative_direction", "reuse_discovery", "strategy_selection", "execution", "visual_review", "technical_validation"] if visual else ["intent", "execution", "technical_validation"],
     }
+    if direction is not None:
+        # Structured creative intent (Phase D): consumed by the Visual Director
+        # loop and the mission timeline; additive, never overrides existing keys.
+        result["creative_direction"] = direction.to_dict()
+    if assets is not None and visual:
+        # Asset intelligence (Phase E): prefer existing suitable assets before
+        # generation. Evidence-first — every candidate comes from the caller's
+        # indexed entries; an empty catalog produces an empty recommendation.
+        result["asset_intelligence"] = recommend_assets(request, assets)
+    return result
 
 
 def visual_scorecard(score: Any, *, vision_review: Mapping[str, Any] | None = None) -> dict[str, Any]:

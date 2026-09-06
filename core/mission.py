@@ -23,15 +23,17 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 
 from core.capability_registry import CapabilityRegistry
+from core.creative_director import CreativeDirection, consistency_report
 from core.mission_policy import (
     MODE_READ_ONLY,
     MODE_MUTATING,
     plan_steps_summary,
     policy_block_payload,
 )
+from core.production_pipeline import production_preflight
 from core.universal_intent import UniversalIntent, expand_requirements, interpret_intent
 from core.universal_planner import MissionPlan, UniversalPlanner
 
@@ -259,6 +261,7 @@ class MissionEngine:
         capture: Optional[Callable[[], Dict[str, Any]]] = None,
         evaluate: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
         repair: Optional[Callable[[Dict[str, Any]], str]] = None,
+        catalog: Optional[Sequence[Mapping[str, Any]]] = None,
     ):
         self.tool_registry = tool_registry
         self.capabilities = capabilities
@@ -266,6 +269,11 @@ class MissionEngine:
         self.capture = capture
         self.evaluate = evaluate
         self.repair = repair
+        # Indexed ready-asset catalog (Phase E): when supplied, the mission
+        # plan carries ranked reuse candidates so existing suitable assets are
+        # preferred before generation. Never fabricated — entries come from
+        # the caller (typically the on-disk catalog loader).
+        self.catalog = list(catalog) if catalog is not None else None
         self.planner = UniversalPlanner(capabilities)
 
     # -- lifecycle -----------------------------------------------------------
@@ -292,10 +300,32 @@ class MissionEngine:
         intent = interpret_intent(state.prompt)
         requirements = expand_requirements(intent)
         project_context = self._resolve_project_context()
+        # Consistency guard (Phase D): before replacing the plan, capture the
+        # previously persisted creative direction for THIS mission so a
+        # resume/re-plan cannot silently drift art direction.
+        prior_preflight = dict((state.plan or {}).get("production_preflight") or {})
+        prior_direction = prior_preflight.get("creative_direction") if prior_preflight.get("visual_task") else None
         mission_plan = self.planner.build_plan(
             intent, requirements, project_context)
         state.plan = mission_plan.to_dict()
         state.warnings = list(mission_plan.warnings)
+        # Creative direction (Phase D) + asset intelligence (Phase E) ride the
+        # same durable pre-execution contract the executor paths use, so the
+        # mission API exposes structured creative intent before execution.
+        preflight = production_preflight(
+            state.prompt, assets=self.catalog)
+        state.plan["production_preflight"] = preflight
+        direction = preflight.get("creative_direction")
+        if prior_direction and direction:
+            drift = consistency_report(
+                CreativeDirection.from_dict(direction), [prior_direction])
+            for conflict in drift["conflicts"]:
+                state.warnings.append(
+                    f"creative drift on replan: {conflict['kind']} "
+                    f"({conflict['prior']} -> {conflict['current']})")
+            for warning in drift["warnings"]:
+                state.warnings.append(
+                    f"creative replan note: {warning['evidence']}")
         state.status = "executing"
         state.save()
         return state

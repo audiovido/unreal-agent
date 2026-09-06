@@ -41,6 +41,7 @@ from pydantic import BaseModel, Field
 
 from core.capability_registry import build_capability_registry
 from core.config import redact
+from core.asset_intelligence import load_catalog_entries
 from core.mission import (
     MissionEngine,
     MissionState,
@@ -191,17 +192,31 @@ def _capability_summary(tool_registry: Dict[str, Any]) -> Dict[str, Any]:
     return registry.discover()
 
 
+_CATALOG_CACHE: Dict[str, Any] = {"entries": None}
+
+
+def _indexed_catalog() -> Any:
+    """Load the indexed ready-asset catalog once per process (evidence-first:
+    an unavailable catalog yields [] rather than fabricated candidates)."""
+    if _CATALOG_CACHE["entries"] is None:
+        _CATALOG_CACHE["entries"] = load_catalog_entries()
+    return _CATALOG_CACHE["entries"]
+
+
 def build_mission_engine(
     tool_registry: Dict[str, Any],
     dispatch: Any = None,
     capture: Any = None,
     evaluate: Any = None,
     repair: Any = None,
+    catalog: Any = None,
 ) -> MissionEngine:
     """Create the mission engine bound to the live tool registry.
 
     When `dispatch` is None the engine plans/checkpoints without executing
     (used by dry_run and by tests); production passes the api dispatcher.
+    ``catalog`` defaults to the indexed ready-asset catalog so visual missions
+    carry ranked reuse candidates (Phase E); tests may inject fixtures.
     """
     capabilities = build_capability_registry(tool_registry)
     return MissionEngine(
@@ -212,6 +227,7 @@ def build_mission_engine(
         capture=capture,
         evaluate=evaluate,
         repair=repair,
+        catalog=_indexed_catalog() if catalog is None else catalog,
     )
 
 

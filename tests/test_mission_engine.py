@@ -195,7 +195,7 @@ def _fake_dispatch_fail(step):
     return {"ok": False, "error": "bridge connection refused"}
 
 
-def _engine(dispatch=None, capture=None, evaluate=None, repair=None):
+def _engine(dispatch=None, capture=None, evaluate=None, repair=None, catalog=None):
     from core.capability_registry import build_capability_registry
     tools = {"inspect_project": object(), "unreal_ping": object(),
              "capture_unreal_viewport": object(), "spawn_actor": object(),
@@ -218,7 +218,7 @@ def _engine(dispatch=None, capture=None, evaluate=None, repair=None):
     return MissionEngine(
         tool_registry=tools, capabilities=caps,
         dispatch=dispatch or _fake_dispatch_ok,
-        capture=capture, evaluate=evaluate, repair=repair,
+        capture=capture, evaluate=evaluate, repair=repair, catalog=catalog,
     )
 
 
@@ -304,6 +304,76 @@ class TestMissionEngine:
         assert state.verdict == "PASS"
         assert state.status == "complete"
         assert state.completed_step_ids
+
+    def test_mission_plan_carries_creative_direction(self, tmp_path, monkeypatch):
+        """Phase D contract: a visual mission's plan exposes structured
+        creative intent (mood, language, composition, lighting, camera,
+        consistency rules) BEFORE execution, via the shared preflight."""
+        monkeypatch.setattr(mission_mod, "CHECKPOINT_DIR",
+                            tmp_path / "cp")
+        engine = _engine()
+        state = engine.start_mission("make this look like a premium sci-fi AAA lobby")
+        engine.interpret(state)
+        engine.plan(state)
+        preflight = state.plan.get("production_preflight") or {}
+        direction = preflight.get("creative_direction") or {}
+        assert preflight.get("visual_task") is True
+        assert direction.get("visual_language") == "sci_fi"
+        for key in ("mood", "composition_strategy", "lighting_philosophy",
+                    "camera_language", "palette_direction",
+                    "storytelling_priorities", "consistency_rules"):
+            assert direction.get(key), key
+
+    def test_replan_with_drifted_creative_direction_warns(self, tmp_path, monkeypatch):
+        """Phase D consistency guard: re-planning the same mission with a
+        conflicting art direction records structured warnings instead of
+        silently accepting creative drift."""
+        monkeypatch.setattr(mission_mod, "CHECKPOINT_DIR",
+                            tmp_path / "cp")
+        engine = _engine()
+        state = engine.start_mission("build a premium sci-fi lobby")
+        engine.interpret(state)
+        engine.plan(state)
+        assert state.warnings == []
+        # Same mission, drifted direction (cozy cabin) -> drift warnings.
+        state.prompt = "actually make it a cozy warm cabin interior with soft lighting"
+        engine.plan(state)
+        kinds = [w for w in state.warnings if "creative drift" in w]
+        assert kinds, state.warnings
+        assert any("visual_language_drift" in w for w in kinds)
+        assert any("mood_drift" in w for w in kinds)
+
+    def test_mission_plan_carries_asset_reuse_candidates(self, tmp_path, monkeypatch):
+        """Phase E contract: a visual mission planned WITH a catalog exposes
+        ranked reuse candidates so existing assets are preferred first."""
+        monkeypatch.setattr(mission_mod, "CHECKPOINT_DIR",
+                            tmp_path / "cp")
+        catalog = [
+            {"id": "cesium_milk_truck", "category": "Vehicles",
+             "name": "Cesium Milk Truck", "tags": ["truck", "vehicle"],
+             "desc": "Khronos sample", "source": "C:/x/truck.glb",
+             "path": "C:/x/truck.fbx", "lod": "LOD0 only"},
+            {"id": "cesium_man", "category": "Characters",
+             "name": "Cesium Man", "tags": ["character", "human"],
+             "desc": "Khronos sample", "source": "C:/x/man.glb",
+             "path": "C:/x/man.fbx", "lod": "LOD0-LOD3"},
+        ]
+        engine = _engine(catalog=catalog)
+        state = engine.start_mission("place a truck in the scene")
+        engine.interpret(state)
+        engine.plan(state)
+        preflight = state.plan.get("production_preflight") or {}
+        intelligence = preflight.get("asset_intelligence") or {}
+        assert intelligence.get("catalog_entry_count") == 2
+        assert intelligence["ranked"][0]["id"] == "cesium_milk_truck"
+        assert intelligence.get("proven") is True
+        # No catalog -> no asset intelligence (existing behavior preserved).
+        plain = _engine()
+        other = plain.start_mission("place a truck in the scene")
+        plain.interpret(other)
+        plain.plan(other)
+        other_preflight = other.plan.get("production_preflight") or {}
+        assert "asset_intelligence" not in other_preflight
 
     def test_checkpoint_persisted_and_loadable(self, tmp_path, monkeypatch):
         cp = tmp_path / "cp"

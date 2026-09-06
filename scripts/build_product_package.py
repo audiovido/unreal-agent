@@ -49,6 +49,9 @@ MODULES_CORE = [
     "scene_locators.py", "vision_provider.py", "mission.py",
     "mission_policy.py", "universal_planner.py", "capability_registry.py",
     "tool_registry.py",
+    # creative direction (Phase D) + asset intelligence (Phase E) ride the
+    # production preflight closure that mission.py now requires:
+    "production_pipeline.py", "creative_director.py", "asset_intelligence.py",
 ]
 MODULES_APP = ["product_app.py"]
 # tools/ and assetlib/ packages pulled in by the real-task path:
