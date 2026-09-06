@@ -18,16 +18,16 @@
 | **Worker 1** | HQ Room / Environment | ✅ INTEGRATED | 100% |
 | **Worker 2** | Characters / Human Agents | ✅ INTEGRATED | 100% |
 | **Worker 3** | Props / Objects | ✅ INTEGRATED | 100% |
-| **Worker 4** | Game UI | 🔴 WAITING_FOR_WORKER_PUSH | 0% |
-| **Worker 5** | Final Integration | 🟡 IN_PROGRESS | 75% |
+| **Worker 4** | Game UI | ✅ INTEGRATED | 100% |
+| **Worker 5** | Final Integration | ✅ FINAL ASSEMBLY | 100% |
 
-### INTEGRATION COMPLETION: 75%
+### INTEGRATION COMPLETION: 100%
 - **Characters Integrated:** 8/8 ✅ (Worker 2)
 - **Props Integrated:** 23 actors ✅ (Worker 3) — see below
 - **Environment Integrated:** ✅ (Worker 1) — see below
-- **UI:** 0/1 ⏳ (Waiting for Worker 4)
-- **QA Validation:** props lane PASS; full QA pending W1/W4
-- **Visual Proof:** `assetlib/reports/worker5_w3_integrated_hq.png` (live AividoHQ PIE/editor capture: characters + props co-located)
+- **UI Integrated:** 3 state-display boards ✅ (Worker 4) — see below
+- **QA Validation:** W1/W3/W4 lanes PASS; final polish pass pending
+- **Visual Proof:** `assetlib/reports/worker5_w3_integrated_hq.png` (integrated HQ) + `assetlib/reports/worker4_ui_hq.png` (final establishing shot: room + cast + props + UI)
 
 ---
 
@@ -142,12 +142,11 @@
 
 ---
 
-## 🚫 MISSING DEPENDENCIES (WAITING_FOR_WORKER_PUSH)
+## ✅ WORKER 4 GAME UI INTEGRATION (2026-09-06)
 
-### WORKER 4 - GAME UI
-**Expected:** Game-grade UI integration  
-**Status:** WAITING_FOR_WORKER_PUSH  
-**Impact:** No interactive UI elements
+**Source:** Worker 4 branch `aivido-worker4-ui`  
+**Commit:** `e2c0c585442040c6d4a2c6063039466950b4ba34` (descendant of 1a3753d; fast-forwarded into this branch)  
+**UI:** 3 in-world state-display boards on the Worker 1 command deck (agents roster / missions tracker / integration status), emissive panels + TextRender, saved + reloaded, 6/6 actors + 3/3 texts verified, proof `assetlib/reports/worker4_ui_hq.png`. Interactive UMG blocked by UE 5.8 python API (documented in `reports/hq/WORKER4_UI_HANDOFF.md`).
 
 ---
 
