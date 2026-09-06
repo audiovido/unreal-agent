@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Aivido responsive audit</title>
+<style>
+  body { font-family: "JetBrains Mono", Consolas, monospace; background: #0d0a07; color: #f2e9d8; margin: 24px; }
+  h3 { font-family: "Cinzel", Georgia, serif; letter-spacing: .08em; color: #e8c878; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+  td, th { border: 1px solid #3d2f1e; padding: 7px 12px; font-size: 12px; text-align: left; }
+  th { color: #cbbfa6; font-weight: 600; }
+  .pass { color: #6ecf8e; }
+  .fail { color: #e25555; }
+  .muted { color: #8f826a; }
+  /* visible off-screen so the iframe viewport honors its width attribute
+     (display:none iframes collapse media queries to a mobile-sized viewport) */
+  iframe { position: fixed; left: -9999px; top: 0; border: 0; }
+  #status { margin-top: 14px; font-size: 13px; }
+</style>
+</head>
+<body>
+<h3>AIVIDO RESPONSIVE AUDIT</h3>
+<p class="muted">iframe harness — each row loads the real booth at the target width (fast boot) and checks rail/mobile-nav swap, horizontal overflow, and screen visibility.</p>
+<table id="t">
+  <tr><th>width</th><th>desktop rail</th><th>mobile nav</th><th>no horizontal trap</th><th>screen active</th><th>result</th></tr>
+</table>
+<div id="status">running…</div>
+<script>
+const WIDTHS = [360, 390, 430, 768, 1024, 1440, 1920, 2560];
+const results = [];
+
+function check(w) {
+  return new Promise((resolve) => {
+    const f = document.createElement('iframe');
+    f.width = w; f.height = 900;
+    f.style.width = w + 'px'; f.style.height = '900px';
+    f.setAttribute('aria-hidden', 'true');
+    f.src = '/static/aivido.html?fast=1&w=' + w;
+    f.onload = () => {
+      setTimeout(() => {
+        try {
+          const doc = f.contentDocument, win = f.contentWindow;
+          if (!doc || !win) throw new Error('cross-origin/unloaded');
+          const rail = doc.querySelector('.rail');
+          const mn = doc.querySelector('.mobile-nav');
+          const railVisible = rail && win.getComputedStyle(rail).display !== 'none';
+          const mnVisible = mn && win.getComputedStyle(mn).display !== 'none';
+          const screens = [...doc.querySelectorAll('.screen')];
+          const onCount = screens.filter((s) => s.classList.contains('on')).length;
+          let overflows = 0;
+          const wrap = doc.querySelector('.stage-wrap');
+          if (wrap && wrap.scrollWidth > wrap.clientWidth + 2) overflows++;
+          screens.forEach((s) => { if (s.scrollWidth > s.clientWidth + 2) overflows++; });
+          const wantMobile = w <= 768;
+          const okRail = wantMobile ? !railVisible : railVisible;
+          const okMn = wantMobile ? mnVisible : !mnVisible;
+          const okOverflow = overflows === 0;
+          const okScreen = onCount >= 1;
+          const pass = okRail && okMn && okOverflow && okScreen;
+          results.push({ w, rail: okRail, mn: okMn, ov: okOverflow, sc: okScreen, pass });
+        } catch (e) {
+          results.push({ w, rail: false, mn: false, ov: false, sc: false, pass: false, err: String(e) });
+        }
+        f.remove();
+        resolve();
+      }, 1600);
+    };
+    document.body.appendChild(f);
+  });
+}
+
+(async () => {
+  for (const w of WIDTHS) { await check(w); }
+  const t = document.getElementById('t');
+  results.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td>${r.w}px</td>` +
+      `<td class="${r.rail ? 'pass' : 'fail'}">${r.rail ? '✓' : '✗'}</td>` +
+      `<td class="${r.mn ? 'pass' : 'fail'}">${r.mn ? '✓' : '✗'}</td>` +
+      `<td class="${r.ov ? 'pass' : 'fail'}">${r.ov ? '✓' : '✗'}</td>` +
+      `<td class="${r.sc ? 'pass' : 'fail'}">${r.sc ? '✓' : '✗'}</td>` +
+      `<td class="${r.pass ? 'pass' : 'fail'}">${r.pass ? 'PASS' : 'FAIL'}${r.err ? ' · ' + r.err : ''}</td>`;
+    t.appendChild(tr);
+  });
+  const allPass = results.every((r) => r.pass);
+  document.title = 'RESPONSIVE_AUDIT_' + (allPass ? 'PASS' : 'FAIL');
+  const s = document.getElementById('status');
+  s.textContent = 'TOTAL: ' + (allPass ? 'PASS' : 'FAIL') + ' — ' + results.filter((r) => r.pass).length + '/' + results.length + ' widths clean';
+  s.className = allPass ? 'pass' : 'fail';
+})();
+</script>
+</body>
+</html>

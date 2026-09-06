@@ -11,6 +11,7 @@
 
   const $ = (id) => document.getElementById(id);
   const LS = "aivido_phase1_v1";
+  const FAST = /[?&]fast=1/.test(location.search); // test harness: skip the cinematic sting
 
   /* ---------------- state ---------------- */
   const DEFAULT = {
@@ -54,7 +55,17 @@
     gallery: [],
   };
 
-  let S = Object.assign({}, JSON.parse(localStorage.getItem(LS) || "null") || JSON.parse(JSON.stringify(DEFAULT)));
+  function loadState() {
+    // safe localStorage recovery: corrupted/unreadable store must never crash the booth
+    try {
+      const raw = JSON.parse(localStorage.getItem(LS) || "null");
+      if (raw && typeof raw === "object") {
+        return Object.assign({}, JSON.parse(JSON.stringify(DEFAULT)), raw);
+      }
+    } catch (_) { /* fall through to fresh defaults */ }
+    return JSON.parse(JSON.stringify(DEFAULT));
+  }
+  let S = loadState();
 
   /* ---------------- crew ---------------- */
   const WORKERS = [
@@ -111,7 +122,13 @@
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const stClass = (s) => ({ IDLE: "IDLE", ASSIGNED: "ASSIGNED", THINKING: "THINKING", WORKING: "WORKING", WAITING: "WAITING", ERROR: "ERROR", DONE: "DONE" }[s] || "IDLE");
   const workerById = (id) => W.find((w) => w.id === id);
-  const persist = () => localStorage.setItem(LS, JSON.stringify(S));
+  const persist = () => { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (_) { /* storage full/unavailable → state stays session-local */ } };
+
+  /* request safety: no overlapping pollers, bounded in-flight ops, stale-response tokens */
+  const _inflight = { health: false, live: false };
+  let _proofReq = 0;        // monotonically increasing — only the latest proof op may render
+  let _capturing = false;   // duplicate-click guard for the capture button
+  let _dispatchBusy = false; // duplicate-click guard for the dispatch lane
 
   /* ---------------- sound (lightweight WebAudio, no assets) ---------------- */
   const SFX = (() => {
@@ -170,8 +187,9 @@
     SFX.click();
     const cur = route();
     Object.keys(SCREENS).forEach((k) => $(SCREENS[k]).classList.remove("on"));
-    document.querySelectorAll(".rail-item").forEach((b) => b.classList.toggle("active", b.dataset.nav === nav));
+    document.querySelectorAll(".rail-item, .mn-item[data-nav]").forEach((b) => b.classList.toggle("active", b.dataset.nav === nav));
     $(SCREENS[nav]).classList.add("on");
+    closeMore();
     el.hudScreen.textContent = TITLES[nav];
     if (nav === "room" && opts.zoom) {
       el.roomStage.classList.remove("room-zoom");
@@ -199,13 +217,26 @@
   let live = { session: null, ws: null, tasks: [], wb: null, missions: [], tools: [], proofAge: null };
 
   async function api(path, opts = {}) {
-    const r = await fetch(apiBase() + path, { headers: { "Content-Type": "application/json" }, ...opts });
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    const ct = r.headers.get("content-type") || "";
-    return ct.includes("json") ? r.json() : r;
+    // bounded request timeout — no unbounded fetch that can hang a poll forever
+    const timeout = opts.timeout || 8000;
+    let ctl = null, timer = null;
+    if (typeof AbortController !== "undefined") {
+      ctl = new AbortController();
+      timer = setTimeout(() => ctl.abort(), timeout);
+    }
+    try {
+      const r = await fetch(apiBase() + path, { headers: { "Content-Type": "application/json" }, ...opts, signal: ctl ? ctl.signal : undefined });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const ct = r.headers.get("content-type") || "";
+      return ct.includes("json") ? r.json() : r;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   }
 
   async function pollHealth() {
+    if (_inflight.health) return; // no overlapping pollers
+    _inflight.health = true;
     try {
       const s = await api("/api/status");
       backend.online = true;
@@ -216,6 +247,8 @@
       backend.online = false;
       backend.busy = false;
       backend.mode = "SIMULATION";
+    } finally {
+      _inflight.health = false;
     }
     const dot = el.railDot, txt = el.railBackendTxt, mode = el.hudMode;
     dot.className = "dot-sm " + (backend.online ? (backend.busy ? "busy" : "ready") : "bad");
@@ -233,10 +266,16 @@
   /* ---------------- live engine data (read-only) ---------------- */
   async function pollLive() {
     if (!backend.online) return;
-    try { const r = await api("/api/unreal-coder/session"); live.session = (r && r.session) || null; } catch (_) {}
-    try { live.ws = await api("/api/workspace"); } catch (_) {}
-    try { const r = await api("/api/code/tasks"); live.tasks = (r && r.tasks) || []; } catch (_) {}
-    try { const r = await api("/api/workboard/state"); live.wb = (r && r.data) || null; } catch (_) {}
+    if (_inflight.live) return; // no overlapping pollers
+    _inflight.live = true;
+    try {
+      try { const r = await api("/api/unreal-coder/session"); live.session = (r && r.session) || null; } catch (_) {}
+      try { live.ws = await api("/api/workspace"); } catch (_) {}
+      try { const r = await api("/api/code/tasks"); live.tasks = (r && r.tasks) || []; } catch (_) {}
+      try { const r = await api("/api/workboard/state"); live.wb = (r && r.data) || null; } catch (_) {}
+    } finally {
+      _inflight.live = false;
+    }
     if (route() === "room") renderHoloData();
     if (route() === "mission") renderMission();
     if (route() === "workspaces") renderWorkspaces();
@@ -262,6 +301,86 @@
     const wb = live.wb; const nWb = wb ? (wb.tasks || []).length + (wb.sprints || []).length : 0;
     set("liWb", backend.online ? (nWb ? nWb + " workboard entries" : "LIVE · empty board") : "offline", backend.online ? (nWb ? "ok" : "warn") : "off");
     set("liClickup", "blocked — no API credentials in this environment", "blocked");
+  }
+
+  /* ---------------- modals: focus management ---------------- */
+  let _lastFocus = null;
+  function focusables(root) {
+    return [...(root || document).querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((x) => !x.disabled && x.offsetParent !== null);
+  }
+  function openModal() {
+    _lastFocus = document.activeElement;
+    el.modalRoot.classList.remove("hidden");
+    const f = focusables(el.modalRoot)[0];
+    if (f) f.focus();
+  }
+  function closeModal() {
+    el.modalRoot.classList.add("hidden");
+    if (_lastFocus && _lastFocus.focus) { try { _lastFocus.focus(); } catch (_) {} }
+  }
+  function trapFocus(e) {
+    if (e.key !== "Tab" || el.modalRoot.classList.contains("hidden")) return;
+    const f = focusables(el.modalRoot);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !el.modalRoot.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (document.activeElement === last || !el.modalRoot.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+  }
+  function closeMore() { const m = $("moreSheet"); if (m && !m.classList.contains("hidden")) m.classList.add("hidden"); }
+
+  /* ---------------- workspace scaffold (local, truthful CONCEPT) ---------------- */
+  const WSLS = "aivido_workspaces_v1";
+  function wsStore() { let w = { version: 1, created: [] }; try { w = Object.assign(w, JSON.parse(localStorage.getItem(WSLS) || "{}")); } catch (_) {} return w; }
+  function wsPersist(w) { try { localStorage.setItem(WSLS, JSON.stringify(w)); } catch (_) {} return w; }
+
+  function openWsCreate() {
+    el.modalRoot.innerHTML = "";
+    const d = document.createElement("div");
+    d.className = "choice-modal dossier";
+    d.innerHTML = `<div class="dos-head"><div class="dos-ic">▦</div><div><p class="choice-eyebrow">NEW WORKSPACE · LOCAL SCAFFOLD</p><h2>Scaffold a fresh world</h2></div></div>
+      <p class="dos-state">Creates a <b>local Booth entry only</b> — opening a real project in the engine is the engine lane's job.</p>
+      <div class="field"><label for="wsName">Workspace name</label><input id="wsName" class="textinput" placeholder="e.g. Canyon Foundry" maxlength="48" autocomplete="off"></div>
+      <div class="field"><label for="wsTpl">Starting template</label><select id="wsTpl" class="textinput">
+        <option value="Blank map (UE 5.8)">Blank map (UE 5.8)</option>
+        <option value="Showcase arena">Showcase arena</option>
+        <option value="Graduation audit rig">Graduation audit rig</option>
+      </select></div>
+      <p class="muted" style="font-size:11px">Label: <b>CONCEPT</b> until an engine session actually opens it. Nothing is created outside the Booth.</p>
+      <div class="row" style="justify-content:flex-end"><button class="btn small ghost" data-c-close>Cancel</button><button class="btn small primary" data-c-ok>Create entry</button></div>`;
+    el.modalRoot.appendChild(d);
+    openModal();
+    d.querySelector("[data-c-close]").onclick = () => { closeModal(); SFX.click(); };
+    d.querySelector("[data-c-ok]").onclick = () => {
+      const name = d.querySelector("#wsName").value.trim();
+      if (!name) return toast("Name required", "Give the workspace a name.", "bad");
+      const tpl = d.querySelector("#wsTpl").value;
+      const st = wsStore();
+      st.created = [{ id: "ws_" + Date.now().toString(36), name: name, template: tpl, status: "CONCEPT", source: "LOCAL", meta: tpl + " · scaffolded " + new Date().toLocaleDateString() + " · CONCEPT", art: "linear-gradient(135deg,#3a2f1c,#16100a)", created: new Date().toISOString() }, ...(st.created || [])];
+      wsPersist(st);
+      closeModal(); SFX.confirm();
+      toast("Workspace scaffolded", name + " added to the Booth as CONCEPT — open it in the engine to go LIVE.", "good");
+      renderWorkspaces();
+    };
+    SFX.open();
+    d.querySelector("#wsName").focus();
+  }
+
+  function openWsDetail(w) {
+    el.modalRoot.innerHTML = "";
+    const d = document.createElement("div");
+    d.className = "choice-modal dossier";
+    d.innerHTML = `<div class="dos-head"><div class="dos-ic">▦</div><div><p class="choice-eyebrow">PROJECT DETAIL</p><h2>${esc(w.name)}</h2></div></div>
+      <div class="dos-slot"><b>Source:</b> ${esc(w.source || "DEMO")}<br>
+        <b>Status:</b> ${esc(w.status || "—")}<br>
+        <b>Engine:</b> UE 5.8 · ${esc(w.up || "not linked to a running session")}<br>
+        <b>Meta:</b> ${esc(w.meta || "—")}</div>
+      <p class="muted" style="font-size:11px">Project detail reflects what the Booth knows. The engine lane owns the actual project files.</p>
+      <div class="row" style="justify-content:flex-end"><button class="btn small ghost" data-c-close>Close</button><button class="btn small primary" data-c-select>Select workspace</button></div>`;
+    el.modalRoot.appendChild(d);
+    openModal();
+    d.querySelector("[data-c-close]").onclick = () => { closeModal(); SFX.click(); };
+    d.querySelector("[data-c-select]").onclick = () => { S.workspace = w.name; persist(); el.hudWorkspace.textContent = w.name; closeModal(); SFX.confirm(); toast("Workspace selected", w.name, "good"); };
+    SFX.open();
   }
 
   /* ---------------- proof ---------------- */
@@ -306,12 +425,15 @@
   }
 
   async function captureProof() {
+    if (_capturing) return toast("Capture already running", "One frame at a time — the viewport is busy.", "info");
+    _capturing = true;
+    const my = ++_proofReq;
     toast("Capture started", "Framing the shot and pulling a fresh frame…", "info");
     const start = Date.now();
     let entry;
     try {
       const res = await api("/api/unreal/frame-and-proof", {
-        method: "POST", body: JSON.stringify({ location: [0, 0, 200] }),
+        method: "POST", body: JSON.stringify({ location: [0, 0, 200] }), timeout: 20000,
       });
       const img = new Image();
       await new Promise((ok, no) => { img.onload = ok; img.onerror = no; img.src = apiBase() + (res.url || "/api/proof/latest") + "?t=" + Date.now(); });
@@ -323,7 +445,10 @@
       const d = demoCapture();
       entry = { src: d, verdict: "PASS", score: "8.7", at: new Date().toISOString(), source: "DEMO", defects: [], meta: "1280×720 · simulation frame · engine offline" };
       toast("Demo capture", "Engine unreachable — captured a simulation frame instead.", "info");
+    } finally {
+      _capturing = false;
     }
+    if (my !== _proofReq) return; // stale response — a newer capture/refresh already won
     const ms = Date.now() - start;
     questTick("capture"); ledgerAdd("capture", "Proof capture (" + entry.source + ")", 0);
     pushGallery(entry);
@@ -334,8 +459,10 @@
 
   async function refreshBackendProof(force) {
     if (!backend.online) return;
+    const my = ++_proofReq;
     try {
       const st = await api("/api/proof/status");
+      if (my !== _proofReq) return; // stale response — a newer op superseded this one
       if (st && st.ok && st.path) {
         live.proofAge = Math.max(0, (Date.now() / 1000) - (st.mtime || Date.now() / 1000));
         renderSysStrip();
@@ -351,7 +478,8 @@
       S._pvIdx = found >= 0 ? found : 0;
     }
     const img = el.pvImg;
-    img.onload = () => { el.pvEmpty.hidden = true; img.hidden = false; };
+    img.classList.remove("loaded"); // re-trigger the reveal transition
+    img.onload = () => { el.pvEmpty.hidden = true; img.hidden = false; img.classList.add("loaded"); };
     img.src = entry.src;
     el.pvVerdict.textContent = entry.verdict || "—";
     el.pvVerdict.className = "pv-v " + String(entry.verdict || "").toLowerCase();
@@ -592,12 +720,12 @@
     });
     el.modalRoot.innerHTML = "";
     el.modalRoot.appendChild(frag);
-    el.modalRoot.classList.remove("hidden");
+    openModal();
     foremanSay(FOREMAN_LINES.choice, 5000);
   }
 
   function resolveChoice(c) {
-    el.modalRoot.classList.add("hidden");
+    closeModal();
     const m = S.missions.find((x) => x.id === "m1");
     toast("Plan locked — " + c.title, c.rarity.toUpperCase() + " play. Crew adjusts.", c.rarity === "common" ? "info" : "good");
     if (c.path === "bold") {
@@ -692,13 +820,25 @@
         <div class="ws-meta">${esc(w.meta)}</div>
         <div class="ws-foot"><span class="pill-sm">${w.status}</span><button class="btn small primary">Open</button></div></div>`;
       c.querySelector(".btn").onclick = (e) => { e.stopPropagation(); S.workspace = w.name; persist(); toast("Workspace set", w.name + " is now the active world.", "good"); el.hudWorkspace.textContent = w.name; };
-      c.onclick = () => { S.workspace = w.name; persist(); el.hudWorkspace.textContent = w.name; toast("Workspace selected", w.name, "info"); };
+      c.onclick = () => openWsDetail({ name: w.name, meta: w.meta, status: w.status, up: w.up, source: "DEMO" });
+      el.wsGrid.appendChild(c);
+    });
+    // local scaffolds created inside the Booth (truthful CONCEPT until opened in the engine)
+    (wsStore().created || []).forEach((w) => {
+      const c = document.createElement("div");
+      c.className = "ws-card created";
+      c.innerHTML = `<div class="ws-art" style="background:${w.art}"></div>
+        <div class="ws-body"><h3>${esc(w.name)} <span class="mc-tag demo">CONCEPT</span></h3>
+        <div class="ws-meta">${esc(w.meta)}</div>
+        <div class="ws-foot"><span class="pill-sm">LOCAL</span><button class="btn small primary">Select</button></div></div>`;
+      c.querySelector(".btn").onclick = (e) => { e.stopPropagation(); S.workspace = w.name; persist(); toast("Workspace set", w.name + " (local concept) is now the active world.", "good"); el.hudWorkspace.textContent = w.name; };
+      c.onclick = () => openWsDetail({ name: w.name, meta: w.meta, status: w.status, up: "", source: w.source });
       el.wsGrid.appendChild(c);
     });
     const n = document.createElement("div");
     n.className = "ws-card ws-new";
     n.innerHTML = '<span class="plus">＋</span><span>New Workspace</span><span class="muted" style="font-size:11px">Scaffold a fresh Unreal world</span>';
-    n.onclick = () => toast("New Workspace", "Workspace scaffolding stays in the engine lane — the Booth selects what is already open.", "info");
+    n.onclick = openWsCreate;
     el.wsGrid.appendChild(n);
     renderCast();
   }
@@ -954,6 +1094,7 @@
       const t = r.task;
       questTick("dispatch"); ledgerAdd("dispatch", "Code task " + t.id + " (isolated worktree)", 0);
       toast("Code task queued", t.id + " — runs in an isolated worktree branch; never touches the live checkout.", "good");
+      el.mcDispatch.classList.remove("pulse-ok"); void el.mcDispatch.offsetWidth; el.mcDispatch.classList.add("pulse-ok");
       S._selLive = t.id; S._selMission = null;
       pollLive().then(() => { renderMissionList(); renderMission(); });
       SFX.confirm();
@@ -973,6 +1114,7 @@
       live.missions = [m, ...live.missions].slice(0, 12);
       questTick("dispatch"); ledgerAdd("dispatch", "Unreal mission " + m.id, 0);
       toast("Mission accepted", m.id + " — real lifecycle is polled from the backend checkpoint.", "good");
+      el.mcDispatch.classList.remove("pulse-ok"); void el.mcDispatch.offsetWidth; el.mcDispatch.classList.add("pulse-ok");
       S._selLive = m.id; S._selMission = null;
       renderMissionList(); renderMission();
       SFX.confirm();
@@ -1002,8 +1144,9 @@
       <div class="mc-phases"><b>Phases</b>${phases || "<div class='mc-phase'><span class='ph-obj'>no phases reported</span></div>"}</div>
       <p class="muted" style="font-size:11px">Plan summary comes straight from the backend pipeline. Full step listing lives in the mission checkpoint (mission log).</p>
       <div class="row" style="justify-content:flex-end"><button class="btn small ghost" data-c-close>Close</button></div>`;
-    el.modalRoot.appendChild(d); el.modalRoot.classList.remove("hidden");
-    d.querySelector("[data-c-close]").onclick = () => { el.modalRoot.classList.add("hidden"); SFX.click(); };
+    el.modalRoot.appendChild(d);
+    openModal();
+    d.querySelector("[data-c-close]").onclick = () => { closeModal(); SFX.click(); };
     SFX.open();
   }
 
@@ -1037,9 +1180,10 @@
         <b>Import contract:</b> ${esc(charTools)}<br>
         <b>Phase-2 path:</b> install MetaHuman preset → wardrobe pass → live portrait capture</div>
       <div class="row" style="justify-content:flex-end"><button class="btn small ghost" data-c-close>Close</button><button class="btn small primary" data-c-check>Check in with ${esc(w.name)}</button></div>`;
-    el.modalRoot.appendChild(d); el.modalRoot.classList.remove("hidden");
-    d.querySelector("[data-c-close]").onclick = () => { el.modalRoot.classList.add("hidden"); SFX.click(); };
-    d.querySelector("[data-c-check]").onclick = () => { workerCheckIn(w); el.modalRoot.classList.add("hidden"); SFX.confirm(); };
+    el.modalRoot.appendChild(d);
+    openModal();
+    d.querySelector("[data-c-close]").onclick = () => { closeModal(); SFX.click(); };
+    d.querySelector("[data-c-check]").onclick = () => { workerCheckIn(w); closeModal(); SFX.confirm(); };
     SFX.open();
   }
 
@@ -1251,7 +1395,7 @@
     el.setCinematic.checked = S.cinematic;
     el.setIdle.checked = S.idle;
     el.setSound.checked = S.sound;
-    el.setVersion.textContent = "aivido-uiux-phase1 · branch aivido-uiux-phase1";
+    el.setVersion.textContent = "aivido-worker4-game-ui · game-grade UI final";
     renderLiveIntegrations();
   }
 
@@ -1282,14 +1426,24 @@
       SFX.click();
     });
 
-    // dispatch lane
+    // dispatch lane (duplicate-click guard: one dispatch at a time)
     el.dlDispatch.addEventListener("click", async () => {
+      if (_dispatchBusy) return toast("Dispatch in progress", "One dispatch at a time — the crew is already taking orders.", "info");
       const mode = document.querySelector('input[name="dlMode"]:checked')?.value || "code";
       if (mode === "unreal") {
         if (!window.confirm("Unreal missions run the live editor and can spawn or change actors. Preview the plan first and cancel if it looks wrong. Continue?")) return;
-        await dispatchUnreal();
-      } else {
-        await dispatchCodeTask();
+      }
+      _dispatchBusy = true;
+      el.dlDispatch.disabled = true;
+      try {
+        if (mode === "unreal") {
+          await dispatchUnreal();
+        } else {
+          await dispatchCodeTask();
+        }
+      } finally {
+        _dispatchBusy = false;
+        el.dlDispatch.disabled = false;
       }
     });
     el.dlPlan.addEventListener("click", planPreview);
@@ -1305,9 +1459,14 @@
     el.pvApprove.addEventListener("click", approveProof);
     el.pvChange.addEventListener("click", requestChange);
 
-    // keyboard: Escape closes modals, arrows walk the vault
+    // keyboard: Tab trapped inside modals, Escape closes modal/sheet, arrows walk the vault
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !el.modalRoot.classList.contains("hidden")) { el.modalRoot.classList.add("hidden"); SFX.click(); }
+      trapFocus(e);
+      if (e.key === "Escape") {
+        if (!el.modalRoot.classList.contains("hidden")) { closeModal(); SFX.click(); return; }
+        const m = $("moreSheet");
+        if (m && !m.classList.contains("hidden")) { closeMore(); SFX.click(); return; }
+      }
       if (route() === "proof" && S.gallery.length) {
         if (e.key === "ArrowLeft") { e.preventDefault(); proofStep(-1); }
         if (e.key === "ArrowRight") { e.preventDefault(); proofStep(1); }
@@ -1316,7 +1475,7 @@
 
     el.homeEnterRoom.addEventListener("click", () => navWithCinematic("room"));
     el.homeNewMission.addEventListener("click", () => { startDemoMission(); show("room"); });
-    el.wsNew.addEventListener("click", () => toast("New Workspace", "Scaffolding flow arrives with the launcher lane.", "info"));
+    el.wsNew.addEventListener("click", openWsCreate);
     el.mcNew.addEventListener("click", () => { startDemoMission(); show("mission"); });
     el.roomDispatch.addEventListener("click", () => startDemoMission());
     el.roomReset.addEventListener("click", () => {
@@ -1343,21 +1502,31 @@
 
     window.addEventListener("hashchange", () => show(route()));
 
+    // mobile bottom-nav "More" sheet
+    const mnMore = $("mnMore"), moreSheet = $("moreSheet");
+    if (mnMore) mnMore.addEventListener("click", () => { moreSheet.classList.toggle("hidden"); SFX.open(); });
+    if (moreSheet) {
+      moreSheet.querySelectorAll("[data-nav]").forEach((b) => b.addEventListener("click", closeMore));
+      const scrim = moreSheet.querySelector("[data-close-more]");
+      if (scrim) scrim.addEventListener("click", closeMore);
+    }
+
     // clock
     setInterval(() => { el.hudClock.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }, 1000);
 
-    // auto-proof refresh in vault
+    // auto-proof refresh in vault (guarded by _proofReq stale protection)
     setInterval(() => { if (S.autoProof && route() === "proof") refreshBackendProof(false); }, 8000);
 
-    // sting → app
-    setTimeout(() => {
+    // sting → app (skipped in test harness with ?fast=1)
+    const startApp = () => {
       el.sting.style.display = "none";
       el.app.classList.remove("hidden");
       show(route());
       pollHealth();
       setInterval(pollHealth, 12000);
       setInterval(pollLive, 20000);
-    }, 3100);
+    };
+    if (FAST) startApp(); else setTimeout(startApp, 3100);
   }
 
   document.addEventListener("DOMContentLoaded", boot);

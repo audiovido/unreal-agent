@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Aivido — Director's Booth</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,7 @@
   <div class="sting-core">
     <div class="sting-mark">◈</div>
     <h1 class="sting-name">A I V I D O</h1>
-    <p class="sting-tag">DIRECTOR'S BOOTH · PHASE 1</p>
+    <p class="sting-tag">DIRECTOR'S BOOTH</p>
   </div>
 </div>
 
@@ -46,6 +46,16 @@
       <span id="railDot" class="dot-sm"></span>
       <span id="railBackendTxt">Linking…</span>
     </div>
+  </nav>
+
+  <!-- mobile bottom nav (<=768px) -->
+  <nav id="mobileNav" class="mobile-nav" aria-label="Primary navigation">
+    <button class="mn-item" data-nav="home" title="Booth"><span class="mn-ic">⌂</span><span class="mn-lb">Booth</span></button>
+    <button class="mn-item" data-nav="workspaces" title="Workspaces"><span class="mn-ic">▦</span><span class="mn-lb">Worlds</span></button>
+    <button class="mn-item" data-nav="mission" title="Mission Control"><span class="mn-ic">☩</span><span class="mn-lb">Mission</span></button>
+    <button class="mn-item" data-nav="room" title="Agent Room"><span class="mn-ic">✪</span><span class="mn-lb">Room</span></button>
+    <button class="mn-item" data-nav="proof" title="Proof Vault"><span class="mn-ic">▣</span><span class="mn-lb">Proof</span></button>
+    <button id="mnMore" class="mn-item mn-more" title="More screens" aria-haspopup="dialog"><span class="mn-ic">⋯</span><span class="mn-lb">More</span></button>
   </nav>
 
   <!-- main -->
@@ -350,8 +360,8 @@
         </div>
         <div class="card">
           <div class="card-head"><h2>About</h2></div>
-          <p class="muted">Aivido Director's Booth · UI/UX Phase 1 + Phase 2<br>
-          Shell, navigation, room, crew states, proof vault, quests, finance, profile, live mission dispatch, cast &amp; asset contracts — built on the existing engine. No backend behavior changed.</p>
+          <p class="muted">Aivido Director's Booth · final game-grade pass<br>
+          Shell, navigation, room, crew states, proof vault, quests, finance, profile, live mission dispatch, cast &amp; asset contracts, responsive mobile nav, keyboard/focus support — built on the existing engine. No backend behavior changed.</p>
           <p class="mono" id="setVersion">aivido-uiux-phase1 · bfc6700+ · Phase 2</p>
         </div>
       </section>
@@ -361,6 +371,15 @@
 </div>
 
 <!-- ============ OVERLAYS ============ -->
+<div id="moreSheet" class="more-sheet hidden" role="dialog" aria-label="More screens">
+  <div class="more-scrim" data-close-more></div>
+  <div class="more-panel">
+    <button class="mn-item" data-nav="quests"><span class="mn-ic">⚑</span><span class="mn-lb">Quests</span></button>
+    <button class="mn-item" data-nav="finance"><span class="mn-ic">◈</span><span class="mn-lb">Finance</span></button>
+    <button class="mn-item" data-nav="profile"><span class="mn-ic">♜</span><span class="mn-lb">Profile</span></button>
+    <button class="mn-item" data-nav="settings"><span class="mn-ic">⚙</span><span class="mn-lb">Settings</span></button>
+  </div>
+</div>
 <div id="letterbox" class="letterbox hidden"><div class="lb-bar top"></div><div class="lb-bar bottom"></div></div>
 <div id="modalRoot" class="modal-root hidden"></div>
 <div id="toastRoot" class="toast-root"></div>

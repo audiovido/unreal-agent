@@ -1208,3 +1208,141 @@ input { font: inherit; }
   .sys-strip { gap: 8px; }
   .pv-viewport { height: 44vh; }
 }
+
+/* ============================================================
+   PHASE 3 — final game-grade pass: mobile bottom nav, keyboard
+   focus, restrained motion, responsive compaction. Presentation
+   layer only; no markup-contract changes to existing screens.
+   ============================================================ */
+
+/* ---- keyboard focus: always visible, never a guess ---- */
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .rail-item:focus-visible, .mn-item:focus-visible, [data-nav]:focus-visible {
+  outline: 2px solid var(--brass-hi); outline-offset: 2px;
+}
+.rail-item:focus-visible, .mn-item:focus-visible { border-color: var(--brass-hi); }
+
+/* ---- press feedback (fast + restrained) ---- */
+.btn:active, .btn-hero:active { transform: scale(.97); }
+.btn-hero:active { transform: translateY(0) scale(.98); }
+.mc-item:active { transform: translateX(3px) scale(.99); }
+.ws-card:active { transform: translateY(-1px) scale(.99); }
+
+/* ---- selected mission card: quiet living glow ---- */
+.mc-item.sel { animation: selGlow 2.6s ease-in-out infinite; }
+@keyframes selGlow { 0%, 100% { box-shadow: 0 0 0 1px rgba(201,162,75,.3); } 50% { box-shadow: 0 0 18px rgba(201,162,75,.18), 0 0 0 1px rgba(201,162,75,.45); } }
+
+/* ---- progress bars sweep when they change ---- */
+.mc-bar i, .q-bar i, .prof-xp-fill, .sk-bar i { transition: width .5s cubic-bezier(.7, 0, .3, 1); }
+
+/* ---- proof reveal ---- */
+.pv-viewport img { opacity: 0; transition: opacity .45s ease; }
+.pv-viewport img.loaded { opacity: 1; }
+.pv-thumb { animation: thumbIn .35s cubic-bezier(.7, 0, .3, 1) both; }
+.pv-thumb:nth-child(2) { animation-delay: .04s; }
+.pv-thumb:nth-child(3) { animation-delay: .08s; }
+.pv-thumb:nth-child(4) { animation-delay: .12s; }
+.pv-thumb:nth-child(5) { animation-delay: .16s; }
+.pv-thumb:nth-child(6) { animation-delay: .2s; }
+@keyframes thumbIn { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---- dispatch lane success flash ---- */
+.mc-dispatch.pulse-ok { animation: okPulse .7s ease; }
+@keyframes okPulse { 0% { box-shadow: 0 0 0 0 rgba(110,207,142,.45); } 100% { box-shadow: 0 0 0 18px rgba(110,207,142,0); } }
+
+/* ---- locally scaffolded workspace cards ---- */
+.ws-card.created { border-color: rgba(95,212,200,.35); }
+.ws-card.created .mc-tag { margin-left: 6px; }
+
+/* ---- mobile bottom nav ---- */
+.mobile-nav { display: none; }
+.mn-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: transparent; border: 1px solid transparent; border-radius: 10px;
+  color: var(--text-dim); padding: 7px 2px; min-width: 0;
+  transition: background .15s, color .15s, transform .1s;
+}
+.mn-item:hover { background: var(--panel); color: var(--text); }
+.mn-item.active { color: var(--brass-hi); }
+.mn-item.active .mn-ic { text-shadow: 0 0 10px rgba(232,200,120,.6); }
+.mn-ic { font-size: 19px; line-height: 1; }
+.mn-lb { font-size: 9px; letter-spacing: .06em; font-weight: 600; }
+
+.more-sheet { position: fixed; inset: 0; z-index: 120; }
+.more-scrim { position: absolute; inset: 0; background: rgba(8,5,2,.6); }
+.more-panel {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #1c150d, #0f0a06);
+  border-top: 1px solid var(--line); border-radius: 18px 18px 0 0;
+  padding: 10px 12px calc(14px + env(safe-area-inset-bottom));
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  animation: sheetUp .3s cubic-bezier(.7, 0, .3, 1) both;
+}
+@keyframes sheetUp { from { transform: translateY(60%); } }
+.more-panel .mn-item { justify-content: flex-start; padding: 12px 14px; }
+
+@media (max-width: 768px) {
+  .rail { display: none; }
+  .mobile-nav {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
+    background: linear-gradient(180deg, rgba(20,14,9,.96), rgba(12,8,5,.98));
+    border-top: 1px solid var(--line);
+    padding: 5px 4px calc(5px + env(safe-area-inset-bottom));
+  }
+  .screen { padding: 16px 14px calc(84px); }
+  .hud { padding: 10px 14px; }
+  .hud-ws { display: none; }
+  .sys-strip { padding: 6px 14px; gap: 8px; font-size: 9px; }
+  .toast-root { right: 12px; bottom: 78px; left: 12px; }
+  .toast { min-width: 0; max-width: none; width: 100%; }
+  .screen-head { flex-wrap: wrap; gap: 10px; }
+  .screen-head h1 { font-size: 21px; }
+  .hero-art { height: 190px; }
+  .hero-title { left: 16px; top: 16px; max-width: 78%; }
+  .hero-title h1 { font-size: 24px; }
+  .hero-cta { flex-wrap: wrap; padding: 14px 16px; }
+  .btn-hero { flex: 1; min-width: 150px; text-align: center; }
+  .pv-viewport { height: 42vh; min-height: 260px; }
+  .pv-meta { grid-template-columns: repeat(2, 1fr); }
+  .pv-foot { flex-wrap: wrap; }
+  .room-toolbar { flex-wrap: wrap; gap: 10px; }
+  .room-actions { width: 100%; justify-content: space-between; }
+  .room-stage { min-height: 360px; }
+  .workers-row { left: 2%; right: 2%; gap: 2px; }
+  .worker-station { width: 62px; transform: scale(.8); transform-origin: bottom center; }
+  .mc-detail { padding: 14px; }
+  .dl-fields .row { flex-direction: column; align-items: stretch; }
+  .dl-fields .row .btn { width: 100%; }
+  .fin-balance { flex-direction: column; gap: 14px; text-align: center; }
+  .prof-hero { gap: 14px; }
+  .prof-stats { width: 100%; justify-content: space-around; }
+  .choice-modal { padding: 20px 16px; }
+  .dossier { width: min(640px, 96vw); }
+}
+
+@media (max-width: 430px) {
+  .hud-right { gap: 6px; }
+  .hud-clock { display: none; }
+  .hero-title h1 { font-size: 21px; }
+  .hero-sub { font-size: 12px; }
+  .crew-chip { font-size: 11px; }
+  .ws-grid { grid-template-columns: 1fr; }
+  .cast-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .pv-thumbs-head { flex-wrap: wrap; }
+  .pv-gallery { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
+  .pv-thumb { flex: none; }
+  .fin-packs { grid-template-columns: 1fr; }
+  .prof-ach { grid-template-columns: repeat(3, 1fr); }
+  .room-actions .btn { flex: 1; }
+  .dl-mode { padding: 9px 11px; }
+  .mc-head { flex-direction: column; }
+}
+
+/* ---- reduced motion: keep it calm for everyone ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

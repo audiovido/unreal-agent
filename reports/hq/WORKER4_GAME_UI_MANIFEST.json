@@ -1,0 +1,99 @@
+{
+  "manifest": "WORKER4_GAME_UI_MANIFEST",
+  "version": "1.0",
+  "generated": "2026-09-06",
+  "branch": "aivido-worker4-game-ui",
+  "base_commit": "b566d87 (aivido-uiux-phase1 · Phase 2)",
+  "WORKER4_INTEGRATION_READY": true,
+  "status": "COMPLETE",
+
+  "screens": {
+    "home_booth": { "status": "COMPLETE", "note": "Command Center — hero, crew status, latest proof, active mission, ledger. LIVE/DEMO labels truthful." },
+    "workspaces": { "status": "COMPLETE", "note": "Project grid — live engine card, demo cards, local CONCEPT scaffolds, project detail modal, New Workspace create flow." },
+    "mission_control": { "status": "COMPLETE", "note": "Dispatch Lane (code tasks + unreal missions), live lane from /api/code/tasks + workboard + unreal-coder missions, demo lane, full inspector (phases, steps, evidence, verdicts, cancel/validate/resume/retry)." },
+    "agent_room": { "status": "COMPLETE", "note": "Crew station view with per-worker states, foreman bar, worker dossier modals, live holo terminal readout." },
+    "proof_vault": { "status": "COMPLETE", "note": "LIVE/DEMO proof viewer, prev/next + fullscreen + approve/request-change, freshness chip, gallery, reveal animation." },
+    "quests": { "status": "COMPLETE", "note": "Durable local quest store, steps tick from real events only, truthful ≥8.5 live-proof step." },
+    "finance": { "status": "COMPLETE", "note": "LOCAL ledger vs DEMO seed separation, billing explicitly FUTURE." },
+    "profile": { "status": "COMPLETE", "note": "XP, skills, achievements." },
+    "settings": { "status": "COMPLETE", "note": "Engine base URL, name, preferences, truthful ClickUp BLOCKED contract, live integration rows." }
+  },
+
+  "owned_paths": {
+    "ui/aivido.html": "SPA shell: mobile bottom nav, More sheet, overlays, templates",
+    "ui/aivido.css": "all styling + Phase 3 final pass (mobile nav, focus, motion, reduced-motion)",
+    "ui/aivido.js": "all SPA logic + Phase 3 reliability/features",
+    "ui/responsive-test.html": "reproducible responsive audit harness (8 widths)",
+    "scripts/ui_health_check.py": "element-reference integrity check (JS ids vs HTML ids)",
+    "scripts/aivido_dev_server.py": "dev-only server proxying /api to the live backend (pre-existing, untouched by this pass)",
+    "uiux-phase1/PHASE1_REPORT.md": "historical Phase 1 record (untouched)",
+    "uiux-phase2/PHASE2_REPORT.md": "historical Phase 2 record (untouched)"
+  },
+
+  "responsive": {
+    "status": "PASS",
+    "widths_validated": [360, 390, 430, 768, 1024, 1440, 1920, 2560],
+    "method": "iframe audit harness (ui/responsive-test.html) — each width loads the real booth with fast boot and checks: desktop rail ↔ mobile bottom-nav swap, no horizontal page trap (scrollWidth <= clientWidth on every screen + stage wrap), at least one screen active.",
+    "result": "8/8 PASS",
+    "mobile_nav": "bottom nav at <=768px (6 items: Booth/Worlds/Mission/Room/Proof/More); More opens a 2x2 sheet with Quests/Finance/Profile/Settings",
+    "desktop_rail": "icon rail <=1100px, full rail above; unchanged behavior preserved",
+    "no_horizontal_trap": "verified programmatically at every width"
+  },
+
+  "motion": {
+    "status": "COMPLETE",
+    "items": [
+      "cinematic sting + letterbox screen transitions (pre-existing, preserved)",
+      "proof image reveal (fade-in on load)",
+      "proof gallery staggered entrance",
+      "selected mission card living glow",
+      "press feedback on buttons/cards",
+      "progress bars sweep on width change",
+      "dispatch success pulse on the Dispatch Lane",
+      "reduced-motion media query kills all animation/transition for users who ask"
+    ],
+    "principle": "fast and restrained — no long or looping UI animation added beyond subtle states"
+  },
+
+  "reliability": {
+    "no_js_runtime_exceptions": "verified — zero console errors across boot, navigation, modals, proof, and audit harness (8 live iframe instances)",
+    "request_timeout": "api() wrapped in AbortController, 8s default (20s for frame-and-proof)",
+    "no_overlapping_pollers": "pollHealth/pollLive guarded with in-flight flags",
+    "bounded_retries": "mission polling is single-chain and self-terminates on terminal states or missing mission",
+    "safe_localStorage_recovery": "corrupt/unreadable store falls back to fresh defaults (was a boot-crash risk)",
+    "stale_async_response_protection": "monotonic _proofReq token — only the newest capture/refresh may render",
+    "duplicate_click_idempotency": "dispatch lane busy-guard disables the button; capture guarded against overlap",
+    "truthful_labels": "LIVE / DEMO / CONCEPT / BLOCKED / FUTURE / LOCAL distinctions verified in the live session (LIVE frame badge, LIVE mission lane, DEMO lane, CONCEPT workspace cards, ClickUp BLOCKED)"
+  },
+
+  "keyboard_focus": {
+    "escape": "closes modal and More sheet",
+    "tab_trap": "focus cycles inside open modals and returns to the trigger on close",
+    "arrows": "left/right walk the proof vault (pre-existing, preserved)",
+    "focus_visible": "explicit brass outline on all interactive elements",
+    "auto_focus": "workspace-name field focused on create-modal open"
+  },
+
+  "validation": {
+    "responsive_audit": "PASS 8/8 (360/390/430/768/1024/1440/1920/2560)",
+    "ui_health_check": "PASS — every JS element reference resolves to an HTML id (scripts/ui_health_check.py)",
+    "js_syntax": "PASS — node --check ui/aivido.js",
+    "git_diff_check": "PASS — git diff --check clean",
+    "live_backend": "UI validated against the LIVE backend (127.0.0.1:8765 via dev-server proxy): engine linked, LIVE mode, live task lane rendered real tasks, LIVE proof frame loaded",
+    "console_errors": "0 across all exercised flows"
+  },
+
+  "known_blockers": [
+    "ClickUp sync stays BLOCKED — no credentials or gateway tool in this environment (truthful, by design; contract documented in Settings)",
+    "Workspace scaffolding is a local Booth entry (CONCEPT) — the engine lane owns real project creation",
+    "Proof verdict for engine frames may read '—' until the pipeline's visual gate reports a verdict (rendered verbatim, never synthesized)"
+  ],
+
+  "integration_instructions_worker5": {
+    "serve": "dev: python scripts/aivido_dev_server.py 8866 (serves ui/ + proxies /api to the backend); product: additive GET /app route already registered in app/api.py, static via /static",
+    "routes_used": ["/api/status", "/api/workspace", "/api/unreal-coder/session", "/api/code/tasks", "/api/code/tasks/{id}", "/api/code/tasks/{id}/evidence", "/api/code/tasks/{id}/cancel", "/api/code/tasks/{id}/retry", "/api/code/tasks", "/api/workboard/state", "/api/unreal-coder", "/api/unreal-coder/async", "/api/unreal-coder/mission/{id}", "/api/unreal-coder/mission/{id}/cancel", "/api/unreal-coder/mission/{id}/validate", "/api/unreal-coder/mission/{id}/resume", "/api/unreal-coder/mission/{id}", "/api/unreal/frame-and-proof", "/api/proof/status", "/api/proof/latest", "/api/action (tools_list)"],
+    "no_backend_changes_required": "UI is read-only over the canonical backend; dispatch uses the exact endpoints the ClickUp gateway uses",
+    "hash_routes": "#/home #/workspaces #/mission #/room #/proof #/quests #/finance #/profile #/settings",
+    "local_stores": "aivido_phase1_v1 (settings/state), aivido_quests_v1 (quest ticks), aivido_ledger_v1 (ledger rows), aivido_workspaces_v1 (local concept scaffolds) — all versioned, all guarded against corruption"
+  }
+}
