@@ -1,0 +1,96 @@
+{
+ "tool": "worker3_props_build",
+ "phases": {
+  "verify": {
+   "ok": true,
+   "result": {
+    "ok": true,
+    "props_assets": 20,
+    "by_class": {
+     "StaticMesh": 3,
+     "Material": 9,
+     "Blueprint": 8
+    },
+    "contacts": [
+     {
+      "label": "W3P_Desk",
+      "meshes": 4,
+      "z_min": 0.0,
+      "floor_contact": true
+     },
+     {
+      "label": "W3P_Chair",
+      "meshes": 4,
+      "z_min": 0.0,
+      "floor_contact": true
+     },
+     {
+      "label": "W3P_Monitor",
+      "meshes": 3,
+      "z_min": 0.0,
+      "floor_contact": true
+     },
+     {
+      "label": "W3P_Terminal",
+      "meshes": 3,
+      "z_min": 0.0,
+      "floor_contact": true
+     },
+     {
+      "label": "W3P_PresentationBoard",
+      "meshes": 4,
+      "z_min": 0.0,
+      "floor_contact": true
+     },
+     {
+      "label": "W3P_StorageCabinet",
+      "meshes": 4,
+      "z_min": 0.0,
+      "floor_contact": true
+     },
+     {
+      "label": "W3P_PlantDecor",
+      "meshes": 3,
+      "z_min": 0.0,
+      "floor_contact": true
+     },
+     {
+      "label": "W3P_ServerRack",
+      "meshes": 4,
+      "z_min": 0.0,
+      "floor_contact": true
+     },
+     {
+      "label": "W3P_Lantern_Body",
+      "meshes": 1,
+      "z_min": 0.0,
+      "floor_contact": true
+     },
+     {
+      "label": "W3P_Lantern_Chain",
+      "meshes": 1,
+      "z_min": 144.24,
+      "floor_contact": false
+     },
+     {
+      "label": "W3P_Lantern_Lantern",
+      "meshes": 1,
+      "z_min": 151.57,
+      "floor_contact": false
+     }
+    ],
+    "monitor_material_wired": true,
+    "lantern_actors": 3,
+    "level": "/Game/Maps/AividoHQ_PropsStage.AividoHQ_PropsStage"
+   }
+  },
+  "capture": {
+   "ok": true,
+   "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent-w3-props\\assetlib\\reports\\worker3_props_stage.png"
+  }
+ },
+ "started": "2026-09-06 10:55:08",
+ "proof_png": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent-w3-props\\assetlib\\reports\\worker3_props_stage.png",
+ "proof_png_bytes": 610273,
+ "proof_source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png"
+}

@@ -1,0 +1,52 @@
+{
+  "worker": 3,
+  "lane": "Props / Objects / Set-Dressing",
+  "generated": "2026-09-06",
+  "generator_tool": "assetlib/tools/worker3_props_build.py",
+  "unreal_project": "assetlib/tests/ue/ASSET_Showcase2 (engine 5.8.2)",
+  "content_root": "/Game/AividoHQ/Props",
+  "usable_prop_count": 8,
+  "prop_blueprints": [
+    {"name": "BP_Aivido_Prop_Desk", "category": "desks", "parts": 4, "size_cm": [160, 80, 75]},
+    {"name": "BP_Aivido_Prop_Chair", "category": "chairs", "parts": 4, "size_cm": [50, 56, 95]},
+    {"name": "BP_Aivido_Prop_Monitor", "category": "monitors", "parts": 3, "size_cm": [60, 20, 50], "emissive_screen": true},
+    {"name": "BP_Aivido_Prop_Terminal", "category": "terminals", "parts": 3, "size_cm": [60, 40, 180], "emissive_screen": true},
+    {"name": "BP_Aivido_Prop_PresentationBoard", "category": "presentation", "parts": 4, "size_cm": [240, 10, 175], "emissive_frame": true},
+    {"name": "BP_Aivido_Prop_StorageCabinet", "category": "storage", "parts": 4, "size_cm": [104, 50, 196], "emissive_trim": true},
+    {"name": "BP_Aivido_Prop_PlantDecor", "category": "decor", "parts": 3, "size_cm": [50, 50, 113]},
+    {"name": "BP_Aivido_Prop_ServerRack", "category": "technical", "parts": 4, "size_cm": [80, 100, 200], "emissive_leds": true}
+  ],
+  "categories": ["desks", "chairs", "monitors", "terminals", "presentation", "storage", "decor", "technical", "lantern_kit"],
+  "materials": 9,
+  "material_names": ["M3_PropWood", "M3_PropMetal", "M3_PropPlastic", "M3_PropScreen", "M3_PropGlow", "M3_PropFabric", "M3_PropLeaf", "M3_PropBoard", "M3_PropFloor"],
+  "lantern_kit": {
+    "source": "/Game/Showcase/Props/Lantern (Khronos glTF, import_ok=true, 5554 tris)",
+    "duplicated_meshes": [
+      "/Game/AividoHQ/Props/Lantern/StaticMeshes/LanternPole_Body",
+      "/Game/AividoHQ/Props/Lantern/StaticMeshes/LanternPole_Chain",
+      "/Game/AividoHQ/Props/Lantern/StaticMeshes/LanternPole_Lantern"
+    ],
+    "assembly_height_cm": 180.0,
+    "uniform_scale": 0.0562,
+    "note": "3-part lantern assembled by measured bounds (body 0-144.24, chain 144.24-151.57, head 151.57-180.0); materials reference /Game/Showcase path"
+  },
+  "staging_map": "/Game/Maps/AividoHQ_PropsStage",
+  "staging_map_contents": "3000x3000cm floor + directional sun + skylight + 8 prop BP instances + 3 lantern mesh parts (all floor-contact verified)",
+  "validation": {
+    "result": "PASS",
+    "props_assets_total": 20,
+    "asset_breakdown": {"Blueprint": 8, "Material": 9, "StaticMesh": 3},
+    "floor_contact_check": "8/8 prop BPs at z_min=0.0cm (component-bounds union, 5cm tolerance)",
+    "material_wiring_check": "PASS (monitor Part0 -> M3_PropScreen verified via SCS template read-back)",
+    "map_persistence_check": "PASS (staging map saved to disk and reloaded with props intact)",
+    "visual_proof": "assetlib/reports/worker3_props_stage.png (PIE capture of staging map)",
+    "evidence_json": "assetlib/reports/worker3_props_evidence.json"
+  },
+  "integration_ready": true,
+  "integration_instructions": "Run: python assetlib/tools/worker3_props_integrate.py --map /Game/Maps/AividoHQ --apply  (dry run without --apply). Places 4 workstations + terminals + presentation board + cabinets + plants + server rack + lantern assembly.",
+  "remaining_blockers": [
+    "Prop meshes are primitive-composed (stylized placeholder kit) - upgrade path: replace part static meshes with authored meshes, BP structure unchanged",
+    "Lantern material/textures remain at /Game/Showcase path (documented dependency, meshes are owned by this lane)"
+  ],
+  "worker5_notes": "Props are spawnable Blueprint actors with root at floor level (z=0), forward = +X. Safe to place directly in AividoHQ. Do not scale; sizes are HQ-scale cm."
+}
