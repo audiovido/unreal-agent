@@ -48,7 +48,7 @@ each gate below names what was re-verified for this entry.
 | CREATIVE DIRECTOR | 68 | implemented + hermetic tests + live preflight proof + mission-plan contract + replan drift guard wired |
 | ASSET INTELLIGENCE | 66 | implemented + hermetic tests + live ranking/dup proof + mission-plan reuse candidates via engine catalog |
 | AUTONOMOUS LOOP | 75 | mission engine, loop protection, self-repair live; bounded autonomy in place |
-| PERFORMANCE | 50 | parallel discovery + caching in pipeline; step7 bench 32.6s; no end-to-end latency profile yet |
+| PERFORMANCE | 62 | parallel discovery + pipeline caching; vision-review frame cache (20s -> 0s live); step7 bench 32.6s remains as honest ambiguous-frame cost |
 | UI/UX | 70 | Director's Booth Phase 1-2 + live wiring + Release 1.0.0; Phase H "no wall of buttons" not complete |
 | RECOVERY | 85 | torture 8/8 + resume tests green |
 | QA | 82 | 926 green + classification doc + packaging closure; live-UE suite is probe-based |
@@ -66,6 +66,7 @@ Second pass (same day):
 | Replan art-direction drift guard | `core/mission.py` (consistency_report) | `test_replan_with_drifted_creative_direction_warns` pinned |
 | Mission asset reuse (catalog) | `MissionEngine(catalog=...)`, `app/unreal_coder_api.py` engine builder + process-cached catalog loader | `test_mission_plan_carries_asset_reuse_candidates` pinned; live plan ranked black_suv first |
 | Live full-loop proof | in-process mission against bridge 6766 | read-only mission PASS with 3 real steps; visual plan carried Phase D/E contract |
+| Vision-review frame cache (Phase G) | `core/vision_provider.py` (bounded TTL cache keyed by frame hash) + `VisionReview.from_dict` | 4 new tests; LIVE: 20.03s -> 0.00s identical verdict on real showcase frame; 932 tests green |
 
 ## 5. FIRST PASS (same day) — what changed and proof
 

@@ -305,6 +305,11 @@ class MissionEngine:
         # resume/re-plan cannot silently drift art direction.
         prior_preflight = dict((state.plan or {}).get("production_preflight") or {})
         prior_direction = prior_preflight.get("creative_direction") if prior_preflight.get("visual_task") else None
+        if self.catalog is not None:
+            # Phase E: give the planner the indexed catalog so it can prefer
+            # an existing suitable asset over generating a substitute.
+            project_context = dict(project_context or {})
+            project_context["asset_catalog"] = self.catalog
         mission_plan = self.planner.build_plan(
             intent, requirements, project_context)
         state.plan = mission_plan.to_dict()

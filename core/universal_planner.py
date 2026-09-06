@@ -12,10 +12,12 @@ only), never invented tool names.
 """
 from __future__ import annotations
 
+import os
 import re
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from core.capability_registry import CapabilityRegistry, RECOVERY_VISUAL
 from core.universal_intent import RequirementSpec, UniversalIntent
@@ -60,6 +62,17 @@ KIND_TO_CAPABILITY = {
 
 PARALLELIZABLE_KINDS = {"materials", "lighting", "vfx", "audio"}
 RISKY_KINDS = {"safety", "assets", "packaging"}
+
+# Phase E: minimum relevance score for a catalog asset to be reused by the
+# planner instead of spawning generic geometry. Deliberately modest because
+# multi-term objectives dilute coverage; the entry must still be a REAL
+# on-disk catalog entry (evidence-first, never fabricated).
+ASSET_REUSE_MIN_SCORE = float(os.getenv("UNREAL_AGENT_ASSET_REUSE_MIN_SCORE", "0.10"))
+_REUSE_IMPORT_TOOL_BY_EXT = {
+    "fbx": "import_asset_fbx",
+    "glb": "import_asset_gltf",
+    "gltf": "import_asset_gltf",
+}
 
 
 @dataclass
@@ -260,6 +273,25 @@ class UniversalPlanner:
         # ---- Phase 1..n: capability-driven work --------------------------
         work_steps: List[PlanStep] = []
         prev_id = ground_steps[-1].step_id if ground_steps else None
+        # Phase E: prefer an existing suitable catalog asset before
+        # generating a substitute. Only active when the caller supplied the
+        # indexed catalog (mission engine does); direct/legacy planners keep
+        # their exact previous behavior.
+        replaced_spawners: List[str] = []
+        catalog = (project_context or {}).get("asset_catalog")
+        if catalog:
+            reuse_steps, replaced_spawners = self._asset_reuse_steps(
+                plan.objective, catalog, skipped, prev_id,
+                base=len(plan.steps))
+            work_steps.extend(reuse_steps)
+            if reuse_steps:
+                for _step in reuse_steps:
+                    plan.selected_capabilities.append("asset_import")
+                prev_id = reuse_steps[-1].step_id
+                plan.warnings.append(
+                    "Asset reuse: planning to import the catalog asset "
+                    f"'{reuse_steps[0].parameters.get('source_path')}' "
+                    "instead of generating a substitute")
         for req in requirements.requirements:
             kind = req.get("kind")
             if kind in {"answer", "validation"}:
@@ -290,6 +322,10 @@ class UniversalPlanner:
             cap_names = KIND_TO_CAPABILITY.get(kind, [])
             for cap_name in cap_names:
                 if cap_name in plan.selected_capabilities:
+                    continue
+                if cap_name in replaced_spawners:
+                    # Catalog reuse already covers placement for this goal;
+                    # do not also spawn generic geometry.
                     continue
                 chosen = self._select(cap_name, skipped)
                 if not chosen:
@@ -365,6 +401,76 @@ class UniversalPlanner:
     def _primary_tool(self, capability_name: str) -> Optional[str]:
         cap = self._cap(capability_name)
         return cap.spec.tools[0] if cap and cap.spec.tools else None
+
+    def _asset_reuse_steps(
+        self, objective: str, catalog: Sequence[Mapping[str, Any]],
+        skipped: Dict[str, str], prev_id: Optional[str], base: int,
+    ) -> Tuple[List[PlanStep], List[str]]:
+        """Phase E: plan import -> spawn -> verify for the best catalog match.
+
+        Prefer an existing suitable asset over generating a substitute. Only a
+        real catalog entry with a sufficient relevance score AND a usable
+        import tool can be reused; anything else falls through to the generic
+        spawn path. Returns (steps, replaced_capabilities).
+        """
+        from core.asset_intelligence import search_assets
+        ranked = search_assets(str(objective or ""), catalog, top_k=1,
+                               min_score=ASSET_REUSE_MIN_SCORE)
+        if not ranked:
+            return [], []
+        best = next((e for e in catalog if e.get("id") == ranked[0]["id"]), None)
+        if not best:
+            return [], []
+        source = str(best.get("path") or "")
+        ext = Path(source).suffix.lower().lstrip(".")
+        import_tool = _REUSE_IMPORT_TOOL_BY_EXT.get(ext)
+        registry = self.capabilities._tool_registry
+        if (not import_tool or import_tool not in registry
+                or "spawn_imported_asset" not in registry
+                or "verify_imported_asset" not in registry):
+            return [], []
+        category = re.sub(r"[^A-Za-z0-9_]", "",
+                          str(best.get("category") or "Reuse")) or "Reuse"
+        destination = f"/Game/Reuse/{category}"
+        stem = Path(source).stem
+        asset_path = f"{destination}/{stem}.{stem}"
+        label = "UA_" + re.sub(r"[^A-Za-z0-9_]", "", stem)[:24]
+        steps: List[PlanStep] = [
+            PlanStep(
+                step_id=f"reuse_import_{base}", phase="EDIT", intent="asset_reuse",
+                preferred_tool=import_tool, capability="asset_import",
+                parameters={"source_path": source,
+                            "destination_path": destination},
+                depends_on=[prev_id] if prev_id else [],
+                stop_condition=f"{stem} imported to {destination}",
+            ),
+            PlanStep(
+                step_id=f"reuse_spawn_{base}", phase="EDIT", intent="asset_reuse",
+                preferred_tool="spawn_imported_asset", capability="asset_import",
+                parameters={"asset_path": asset_path, "actor_name": label,
+                            "location": [0.0, 0.0, 0.0],
+                            "scale": [1.0, 1.0, 1.0]},
+                depends_on=[f"reuse_import_{base}"],
+                stop_condition=f"StaticMeshActor {label} placed from catalog asset",
+            ),
+            PlanStep(
+                step_id=f"reuse_verify_{base}", phase="VALIDATE", intent="asset_reuse",
+                preferred_tool="verify_imported_asset", capability="asset_import",
+                parameters={"asset_path": asset_path},
+                depends_on=[f"reuse_spawn_{base}"],
+                stop_condition=f"{stem} verified as imported with real bounds",
+            ),
+        ]
+        if "get_actor" in registry:
+            steps.append(PlanStep(
+                step_id=f"reuse_readback_{base}", phase="VALIDATE",
+                intent="asset_reuse", preferred_tool="get_actor",
+                capability="asset_import",
+                parameters={"actor_name": label},
+                depends_on=[f"reuse_verify_{base}"],
+                stop_condition=f"actor {label} found in the level actor list",
+            ))
+        return steps, ["actor_staging", "environment_composition"]
 
     def _actor_placement_steps(
         self, objective: str, skipped: Dict[str, str],

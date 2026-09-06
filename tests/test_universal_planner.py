@@ -231,5 +231,81 @@ class TestActorPlacementPlan:
         assert verifies[0].phase == "VALIDATE"
 
 
+class TestAssetReusePlanning:
+    """Phase E: the planner prefers verified catalog assets over substitutes.
+
+    Only active when the caller supplies the indexed catalog via
+    project_context["asset_catalog"]; direct/legacy callers keep the exact
+    previous plan shape. Evidence-first: never fabricates an entry.
+    """
+
+    CATALOG = [
+        {"id": "black_suv", "category": "Vehicles", "name": "Black SUV (derived)",
+         "tags": ["suv", "black", "vehicle", "car"], "desc": "tinted variant",
+         "source": "C:/x/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck.fbx",
+         "path": "D:/AI/_Assets/Vehicles/BlackSUV.fbx", "lod": "LOD0 only"},
+        {"id": "cesium_milk_truck", "category": "Vehicles", "name": "Cesium Milk Truck",
+         "tags": ["truck", "vehicle", "milk truck"], "desc": "Khronos sample",
+         "source": "C:/x/truck.glb",
+         "path": "C:/x/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck.fbx",
+         "lod": "LOD0 only"},
+    ]
+
+    def _plan(self, planner, prompt, catalog):
+        intent = interpret_intent(prompt)
+        requirements = expand_requirements(intent)
+        ctx = {"asset_catalog": catalog} if catalog is not None else None
+        return planner.build_plan(intent, requirements, ctx)
+
+    def test_strong_catalog_match_plans_import_chain(self, planner):
+        plan = self._plan(
+            planner, "build a showcase scene with the black suv", self.CATALOG)
+        imports = [s for s in plan.steps
+                   if s.preferred_tool == "import_asset_fbx"]
+        spawns = [s for s in plan.steps
+                  if s.preferred_tool == "spawn_imported_asset"]
+        verifies = [s for s in plan.steps
+                    if s.preferred_tool == "verify_imported_asset"]
+        assert len(imports) == 1
+        assert imports[0].parameters["source_path"] == \
+            "D:/AI/_Assets/Vehicles/BlackSUV.fbx"
+        assert imports[0].parameters["destination_path"] == \
+            "/Game/Reuse/Vehicles"
+        assert len(spawns) == 1
+        assert spawns[0].parameters["asset_path"] == \
+            "/Game/Reuse/Vehicles/BlackSUV.BlackSUV"
+        assert spawns[0].depends_on == ["reuse_import_2"]
+        assert len(verifies) == 1
+        # Generic cube spawn must be suppressed for this goal.
+        cubes = [s for s in plan.steps if s.preferred_tool == "spawn_actor"
+                 and "Cube.Cube" in str(s.parameters.get("mesh_asset", ""))]
+        assert cubes == []
+        assert any("Asset reuse" in w for w in plan.warnings)
+
+    def test_no_catalog_keeps_previous_behavior(self, planner):
+        plan = self._plan(
+            planner, "build a showcase scene with the black suv", None)
+        assert not [s for s in plan.steps
+                    if s.preferred_tool == "import_asset_fbx"]
+
+    def test_weak_match_falls_back_to_generic(self, planner):
+        plan = self._plan(
+            planner, "build a cozy bedroom with soft lighting", self.CATALOG)
+        assert not [s for s in plan.steps
+                    if s.preferred_tool == "import_asset_fbx"]
+
+    def test_glb_entry_uses_gltf_import_tool(self, planner):
+        catalog = [{"id": "cesium_man", "category": "Characters",
+                    "name": "Cesium Man", "tags": ["character", "human"],
+                    "desc": "rigged sample", "source": "C:/x/man.glb",
+                    "path": "C:/x/content/Characters/CesiumMan/CesiumMan.glb",
+                    "lod": "LOD0-LOD3"}]
+        plan = self._plan(planner, "make a scene with the cesium man character", catalog)
+        imports = [s for s in plan.steps
+                   if s.preferred_tool == "import_asset_gltf"]
+        assert len(imports) == 1
+        assert imports[0].parameters["source_path"].endswith(".glb")
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))

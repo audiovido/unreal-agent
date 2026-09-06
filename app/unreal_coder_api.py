@@ -585,7 +585,8 @@ def register_unreal_coder_api(
             intent_obj.quality_source = "user"
         requirements_obj = expand_requirements(intent_obj)
         mission_plan = planner.build_plan(
-            intent_obj, requirements_obj, None)
+            intent_obj, requirements_obj,
+            {"asset_catalog": _indexed_catalog()})
         state.plan = mission_plan.to_dict()
         rejected = _apply_plan_gate(state)
         if rejected is not None:
@@ -648,7 +649,8 @@ def register_unreal_coder_api(
             intent_obj.quality_source = "user"
         requirements_obj = expand_requirements(intent_obj)
         mission_plan = planner.build_plan(
-            intent_obj, requirements_obj, None)
+            intent_obj, requirements_obj,
+            {"asset_catalog": _indexed_catalog()})
         state.plan = mission_plan.to_dict()
         rejected = _apply_plan_gate(state)
         if rejected is not None:
