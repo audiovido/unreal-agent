@@ -1,0 +1,1905 @@
+[
+ {
+  "label": "WorldSettings",
+  "name": "WorldSettings",
+  "class": "WorldSettings",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "Brush0",
+  "name": "Brush_0",
+  "class": "Brush",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_SkyLight",
+  "name": "SkyLight_0",
+  "class": "SkyLight",
+  "loc": [
+   0.0,
+   0.0,
+   800.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Ring_Outer",
+  "name": "StaticMeshActor_25",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   6.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Ring_Inner",
+  "name": "StaticMeshActor_26",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   6.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Column_Base",
+  "name": "StaticMeshActor_27",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   30.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Column_Core",
+  "name": "StaticMeshActor_28",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Dais_Master",
+  "name": "StaticMeshActor_29",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   -1500.0,
+   30.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Hub_Wall",
+  "name": "StaticMeshActor_30",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   -2400.0,
+   2250.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Hub_Screen",
+  "name": "StaticMeshActor_31",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   -2330.0,
+   480.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_CD_Wall",
+  "name": "StaticMeshActor_33",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   -1600.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_CD_Swatch_0",
+  "name": "StaticMeshActor_34",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   -1500.0,
+   2500.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_CD_Swatch_1",
+  "name": "StaticMeshActor_35",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   -1500.0,
+   2500.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_CD_Swatch_2",
+  "name": "StaticMeshActor_36",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   -1500.0,
+   2500.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_CD_Swatch_3",
+  "name": "StaticMeshActor_37",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   -1500.0,
+   2500.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_CD_Swatch_4",
+  "name": "StaticMeshActor_38",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   -1500.0,
+   2500.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_CD_Swatch_5",
+  "name": "StaticMeshActor_39",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   -1500.0,
+   2500.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_CD_BriefStand",
+  "name": "StaticMeshActor_40",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   -1200.0,
+   1400.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_CD_Accent",
+  "name": "StaticMeshActor_41",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   -1470.0,
+   3300.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_VD_Wall",
+  "name": "StaticMeshActor_43",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3700.0,
+   -1600.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_VD_Screen_A",
+  "name": "StaticMeshActor_44",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3760.0,
+   -1500.0,
+   2600.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_VD_Screen_B",
+  "name": "StaticMeshActor_45",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3640.0,
+   -1500.0,
+   2600.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_VD_GradeStrip",
+  "name": "StaticMeshActor_46",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3700.0,
+   -1440.0,
+   3700.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pylon_Master",
+  "name": "StaticMeshActor_1",
+  "class": "StaticMeshActor",
+  "loc": [
+   500.0,
+   -1380.0,
+   40.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pylon_Creative",
+  "name": "StaticMeshActor_2",
+  "class": "StaticMeshActor",
+  "loc": [
+   3800.0,
+   -900.0,
+   40.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pylon_Visual",
+  "name": "StaticMeshActor_3",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3800.0,
+   -900.0,
+   40.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_KeyLight",
+  "name": "DirectionalLight_0",
+  "class": "DirectionalLight",
+  "loc": [
+   0.0,
+   0.0,
+   3000.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Sign_Entry",
+  "name": "TextRenderActor_1",
+  "class": "TextRenderActor",
+  "loc": [
+   0.0,
+   5150.0,
+   950.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Sign_Central",
+  "name": "TextRenderActor_2",
+  "class": "TextRenderActor",
+  "loc": [
+   0.0,
+   -2350.0,
+   1020.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Sign_Master",
+  "name": "TextRenderActor_3",
+  "class": "TextRenderActor",
+  "loc": [
+   0.0,
+   -2350.0,
+   1250.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Sign_Creative",
+  "name": "TextRenderActor_4",
+  "class": "TextRenderActor",
+  "loc": [
+   3700.0,
+   -1450.0,
+   760.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Sign_Visual",
+  "name": "TextRenderActor_5",
+  "class": "TextRenderActor",
+  "loc": [
+   -3700.0,
+   -1450.0,
+   760.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Exposure",
+  "name": "PostProcessVolume_0",
+  "class": "PostProcessVolume",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Shell",
+  "name": "StaticMeshActor_10",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Center",
+  "name": "PointLight_45",
+  "class": "PointLight",
+  "loc": [
+   0.0,
+   0.0,
+   800.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Master",
+  "name": "PointLight_46",
+  "class": "PointLight",
+  "loc": [
+   0.0,
+   -1050.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Creative",
+  "name": "PointLight_47",
+  "class": "PointLight",
+  "loc": [
+   1900.0,
+   -120.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Visual",
+  "name": "PointLight_48",
+  "class": "PointLight",
+  "loc": [
+   -1900.0,
+   -120.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Fill",
+  "name": "PointLight_49",
+  "class": "PointLight",
+  "loc": [
+   0.0,
+   600.0,
+   800.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Key_Face",
+  "name": "SpotLight_3",
+  "class": "SpotLight",
+  "loc": [
+   280.0,
+   640.0,
+   400.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_PlayerStart",
+  "name": "PlayerStart_3",
+  "class": "PlayerStart",
+  "loc": [
+   0.0,
+   5050.0,
+   250.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Fill_Face",
+  "name": "SpotLight_5",
+  "class": "SpotLight",
+  "loc": [
+   -300.0,
+   660.0,
+   360.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Rim_Face",
+  "name": "SpotLight_6",
+  "class": "SpotLight",
+  "loc": [
+   40.0,
+   540.0,
+   500.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_ShotCam",
+  "name": "CameraActor_3",
+  "class": "CameraActor",
+  "loc": [
+   0.0,
+   4700.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_SkyDome",
+  "name": "StaticMeshActor_4",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_FaceLight_Master",
+  "name": "SpotLight_0",
+  "class": "SpotLight",
+  "loc": [
+   0.0,
+   960.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_FaceLight_Creative",
+  "name": "SpotLight_1",
+  "class": "SpotLight",
+  "loc": [
+   3800.0,
+   1160.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_FaceLight_Visual",
+  "name": "SpotLight_2",
+  "class": "SpotLight",
+  "loc": [
+   -3800.0,
+   1160.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_FaceLight_Technical",
+  "name": "SpotLight_4",
+  "class": "SpotLight",
+  "loc": [
+   1900.0,
+   560.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_FaceLight_Audio",
+  "name": "SpotLight_7",
+  "class": "SpotLight",
+  "loc": [
+   -1900.0,
+   560.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_FaceLight_Animation",
+  "name": "SpotLight_8",
+  "class": "SpotLight",
+  "loc": [
+   950.0,
+   1960.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_FaceLight_Lighting",
+  "name": "SpotLight_9",
+  "class": "SpotLight",
+  "loc": [
+   -950.0,
+   1960.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_FaceLight_VFX",
+  "name": "SpotLight_10",
+  "class": "SpotLight",
+  "loc": [
+   0.0,
+   2260.0,
+   320.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Human_Master",
+  "name": "SkeletalMeshActor_0",
+  "class": "SkeletalMeshActor",
+  "loc": [
+   0.0,
+   700.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Human_Creative",
+  "name": "SkeletalMeshActor_1",
+  "class": "SkeletalMeshActor",
+  "loc": [
+   3800.0,
+   900.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Human_Visual",
+  "name": "SkeletalMeshActor_2",
+  "class": "SkeletalMeshActor",
+  "loc": [
+   -3800.0,
+   900.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Human_Technical",
+  "name": "SkeletalMeshActor_3",
+  "class": "SkeletalMeshActor",
+  "loc": [
+   1900.0,
+   300.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Human_Audio",
+  "name": "SkeletalMeshActor_4",
+  "class": "SkeletalMeshActor",
+  "loc": [
+   -1900.0,
+   300.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Human_Animation",
+  "name": "SkeletalMeshActor_5",
+  "class": "SkeletalMeshActor",
+  "loc": [
+   950.0,
+   1700.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Human_Lighting",
+  "name": "SkeletalMeshActor_6",
+  "class": "SkeletalMeshActor",
+  "loc": [
+   -950.0,
+   1700.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Human_VFX",
+  "name": "SkeletalMeshActor_7",
+  "class": "SkeletalMeshActor",
+  "loc": [
+   0.0,
+   2000.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_KeyLight_Char_Master",
+  "name": "SpotLight_19",
+  "class": "SpotLight",
+  "loc": [
+   320.0,
+   700.0,
+   330.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_KeyLight_Char_Creative",
+  "name": "SpotLight_20",
+  "class": "SpotLight",
+  "loc": [
+   3800.0,
+   580.0,
+   330.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_KeyLight_Char_Visual",
+  "name": "SpotLight_21",
+  "class": "SpotLight",
+  "loc": [
+   -3800.0,
+   580.0,
+   330.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_KeyLight_Char_Technical",
+  "name": "SpotLight_22",
+  "class": "SpotLight",
+  "loc": [
+   1580.0,
+   300.0,
+   330.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_KeyLight_Char_Audio",
+  "name": "SpotLight_23",
+  "class": "SpotLight",
+  "loc": [
+   -2220.0,
+   300.0,
+   330.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_KeyLight_Char_Animation",
+  "name": "SpotLight_24",
+  "class": "SpotLight",
+  "loc": [
+   630.0,
+   1700.0,
+   330.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_KeyLight_Char_Lighting",
+  "name": "SpotLight_25",
+  "class": "SpotLight",
+  "loc": [
+   -1270.0,
+   1700.0,
+   330.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_KeyLight_Char_VFX",
+  "name": "SpotLight_26",
+  "class": "SpotLight",
+  "loc": [
+   -320.0,
+   2000.0,
+   330.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_W_Desk",
+  "name": "BP_Aivido_Prop_Desk_C_0",
+  "class": "BP_Aivido_Prop_Desk_C",
+  "loc": [
+   -900.0,
+   0.0,
+   80.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_W_Chair",
+  "name": "BP_Aivido_Prop_Chair_C_0",
+  "class": "BP_Aivido_Prop_Chair_C",
+  "loc": [
+   -1250.0,
+   0.0,
+   25.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_W_Monitor",
+  "name": "BP_Aivido_Prop_Monitor_C_0",
+  "class": "BP_Aivido_Prop_Monitor_C",
+  "loc": [
+   -900.0,
+   0.0,
+   105.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_N_Desk",
+  "name": "BP_Aivido_Prop_Desk_C_1",
+  "class": "BP_Aivido_Prop_Desk_C",
+  "loc": [
+   0.0,
+   900.0,
+   75.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_N_Chair",
+  "name": "BP_Aivido_Prop_Chair_C_1",
+  "class": "BP_Aivido_Prop_Chair_C",
+  "loc": [
+   0.0,
+   1250.0,
+   95.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_N_Monitor",
+  "name": "BP_Aivido_Prop_Monitor_C_1",
+  "class": "BP_Aivido_Prop_Monitor_C",
+  "loc": [
+   0.0,
+   900.0,
+   125.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_E_Desk",
+  "name": "BP_Aivido_Prop_Desk_C_2",
+  "class": "BP_Aivido_Prop_Desk_C",
+  "loc": [
+   900.0,
+   0.0,
+   80.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_E_Chair",
+  "name": "BP_Aivido_Prop_Chair_C_2",
+  "class": "BP_Aivido_Prop_Chair_C",
+  "loc": [
+   1250.0,
+   0.0,
+   25.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_E_Monitor",
+  "name": "BP_Aivido_Prop_Monitor_C_2",
+  "class": "BP_Aivido_Prop_Monitor_C",
+  "loc": [
+   900.0,
+   0.0,
+   105.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_S_Desk",
+  "name": "BP_Aivido_Prop_Desk_C_3",
+  "class": "BP_Aivido_Prop_Desk_C",
+  "loc": [
+   0.0,
+   -900.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_S_Chair",
+  "name": "BP_Aivido_Prop_Chair_C_3",
+  "class": "BP_Aivido_Prop_Chair_C",
+  "loc": [
+   0.0,
+   -1250.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Station_S_Monitor",
+  "name": "BP_Aivido_Prop_Monitor_C_3",
+  "class": "BP_Aivido_Prop_Monitor_C",
+  "loc": [
+   0.0,
+   -900.0,
+   75.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Terminal_W",
+  "name": "BP_Aivido_Prop_Terminal_C_0",
+  "class": "BP_Aivido_Prop_Terminal_C",
+  "loc": [
+   -700.0,
+   500.0,
+   113.1
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Terminal_E",
+  "name": "BP_Aivido_Prop_Terminal_C_1",
+  "class": "BP_Aivido_Prop_Terminal_C",
+  "loc": [
+   700.0,
+   -500.0,
+   17.7
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_PresentationBoard",
+  "name": "BP_Aivido_Prop_PresentationBoard_C_0",
+  "class": "BP_Aivido_Prop_PresentationBoard_C",
+  "loc": [
+   0.0,
+   1800.0,
+   175.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Cabinet_E1",
+  "name": "BP_Aivido_Prop_StorageCabinet_C_0",
+  "class": "BP_Aivido_Prop_StorageCabinet_C",
+  "loc": [
+   1800.0,
+   300.0,
+   52.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Cabinet_E2",
+  "name": "BP_Aivido_Prop_StorageCabinet_C_1",
+  "class": "BP_Aivido_Prop_StorageCabinet_C",
+  "loc": [
+   1800.0,
+   700.0,
+   52.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Plant_SW",
+  "name": "BP_Aivido_Prop_PlantDecor_C_0",
+  "class": "BP_Aivido_Prop_PlantDecor_C",
+  "loc": [
+   -1800.0,
+   -1700.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Plant_SE",
+  "name": "BP_Aivido_Prop_PlantDecor_C_1",
+  "class": "BP_Aivido_Prop_PlantDecor_C",
+  "loc": [
+   1800.0,
+   -1700.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_ServerRack",
+  "name": "BP_Aivido_Prop_ServerRack_C_0",
+  "class": "BP_Aivido_Prop_ServerRack_C",
+  "loc": [
+   1500.0,
+   1500.0,
+   169.7
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Lantern_Body",
+  "name": "StaticMeshActor_0",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   2100.0,
+   -1.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Lantern_Chain",
+  "name": "StaticMeshActor_5",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   2100.0,
+   29.7
+  ],
+  "hidden": false
+ },
+ {
+  "label": "W3I_Lantern_Lantern",
+  "name": "StaticMeshActor_6",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   2100.0,
+   64.6
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Floor_Main",
+  "name": "StaticMeshActor_7",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   -17.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Floor_Wing_E",
+  "name": "StaticMeshActor_8",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   0.0,
+   -17.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Floor_Wing_W",
+  "name": "StaticMeshActor_9",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3700.0,
+   0.0,
+   -17.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Wing_E_Wall_E",
+  "name": "StaticMeshActor_11",
+  "class": "StaticMeshActor",
+  "loc": [
+   1900.0,
+   0.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Wing_E_Wall_W",
+  "name": "StaticMeshActor_13",
+  "class": "StaticMeshActor",
+  "loc": [
+   5500.0,
+   0.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Wing_W_Wall_E",
+  "name": "StaticMeshActor_14",
+  "class": "StaticMeshActor",
+  "loc": [
+   -1900.0,
+   0.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Wing_W_Wall_W",
+  "name": "StaticMeshActor_15",
+  "class": "StaticMeshActor",
+  "loc": [
+   -5500.0,
+   0.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Ceil_Center",
+  "name": "StaticMeshActor_16",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   895.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Ceil_Wing_E",
+  "name": "StaticMeshActor_17",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   0.0,
+   935.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Ceil_Wing_W",
+  "name": "StaticMeshActor_18",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3700.0,
+   0.0,
+   935.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Cove_Outer",
+  "name": "StaticMeshActor_19",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   890.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Cove_Inner",
+  "name": "StaticMeshActor_20",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   0.0,
+   890.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Portal_Col_E",
+  "name": "StaticMeshActor_21",
+  "class": "StaticMeshActor",
+  "loc": [
+   400.0,
+   5100.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Portal_Col_W",
+  "name": "StaticMeshActor_22",
+  "class": "StaticMeshActor",
+  "loc": [
+   -400.0,
+   5100.0,
+   450.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Portal_Lintel",
+  "name": "StaticMeshActor_23",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   5100.0,
+   870.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Entry_Strip",
+  "name": "StaticMeshActor_47",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   5100.0,
+   6.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Wing_E_FrontTrim",
+  "name": "StaticMeshActor_48",
+  "class": "StaticMeshActor",
+  "loc": [
+   3700.0,
+   1620.0,
+   935.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Room_Wing_W_FrontTrim",
+  "name": "StaticMeshActor_49",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3700.0,
+   1620.0,
+   935.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Master",
+  "name": "StaticMeshActor_50",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   700.0,
+   -2.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Ring_Master",
+  "name": "StaticMeshActor_51",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   700.0,
+   1.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Creative",
+  "name": "StaticMeshActor_52",
+  "class": "StaticMeshActor",
+  "loc": [
+   3800.0,
+   900.0,
+   -2.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Ring_Creative",
+  "name": "StaticMeshActor_53",
+  "class": "StaticMeshActor",
+  "loc": [
+   3800.0,
+   900.0,
+   1.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Visual",
+  "name": "StaticMeshActor_54",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3800.0,
+   900.0,
+   -2.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Ring_Visual",
+  "name": "StaticMeshActor_55",
+  "class": "StaticMeshActor",
+  "loc": [
+   -3800.0,
+   900.0,
+   1.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Technical",
+  "name": "StaticMeshActor_56",
+  "class": "StaticMeshActor",
+  "loc": [
+   1900.0,
+   300.0,
+   -2.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Ring_Technical",
+  "name": "StaticMeshActor_57",
+  "class": "StaticMeshActor",
+  "loc": [
+   1900.0,
+   300.0,
+   1.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Audio",
+  "name": "StaticMeshActor_58",
+  "class": "StaticMeshActor",
+  "loc": [
+   -1900.0,
+   300.0,
+   -2.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Ring_Audio",
+  "name": "StaticMeshActor_59",
+  "class": "StaticMeshActor",
+  "loc": [
+   -1900.0,
+   300.0,
+   1.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Animation",
+  "name": "StaticMeshActor_60",
+  "class": "StaticMeshActor",
+  "loc": [
+   950.0,
+   1700.0,
+   -2.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Ring_Animation",
+  "name": "StaticMeshActor_61",
+  "class": "StaticMeshActor",
+  "loc": [
+   950.0,
+   1700.0,
+   1.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Lighting",
+  "name": "StaticMeshActor_62",
+  "class": "StaticMeshActor",
+  "loc": [
+   -950.0,
+   1700.0,
+   -2.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Ring_Lighting",
+  "name": "StaticMeshActor_63",
+  "class": "StaticMeshActor",
+  "loc": [
+   -950.0,
+   1700.0,
+   1.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_VFX",
+  "name": "StaticMeshActor_64",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   2000.0,
+   -2.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Pad_Ring_VFX",
+  "name": "StaticMeshActor_65",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   2000.0,
+   1.5
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Table_Planning",
+  "name": "StaticMeshActor_66",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   2800.0,
+   78.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Table_Planning_Rim",
+  "name": "StaticMeshActor_67",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   2800.0,
+   83.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Chair_320_2800",
+  "name": "StaticMeshActor_68",
+  "class": "StaticMeshActor",
+  "loc": [
+   320.0,
+   2800.0,
+   25.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Chair_-320_2800",
+  "name": "StaticMeshActor_69",
+  "class": "StaticMeshActor",
+  "loc": [
+   -320.0,
+   2800.0,
+   25.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Chair_0_2480",
+  "name": "StaticMeshActor_70",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   2480.0,
+   25.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Chair_0_3120",
+  "name": "StaticMeshActor_71",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   3120.0,
+   25.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Console_Center",
+  "name": "StaticMeshActor_72",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   -1500.0,
+   75.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Console_Screen",
+  "name": "StaticMeshActor_73",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   -1500.0,
+   155.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Console_Left",
+  "name": "StaticMeshActor_74",
+  "class": "StaticMeshActor",
+  "loc": [
+   450.0,
+   -1500.0,
+   75.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Console_Right",
+  "name": "StaticMeshActor_75",
+  "class": "StaticMeshActor",
+  "loc": [
+   -450.0,
+   -1500.0,
+   75.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Command_Pylon_E",
+  "name": "StaticMeshActor_76",
+  "class": "StaticMeshActor",
+  "loc": [
+   1200.0,
+   -1500.0,
+   350.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Command_Pylon_W",
+  "name": "StaticMeshActor_77",
+  "class": "StaticMeshActor",
+  "loc": [
+   -1200.0,
+   -1500.0,
+   350.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Command_DeckRing",
+  "name": "StaticMeshActor_78",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   -1500.0,
+   6.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Command_SideScreen_E",
+  "name": "StaticMeshActor_79",
+  "class": "StaticMeshActor",
+  "loc": [
+   1700.0,
+   -2330.0,
+   480.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Command_SideScreen_W",
+  "name": "StaticMeshActor_80",
+  "class": "StaticMeshActor",
+  "loc": [
+   -1700.0,
+   -2330.0,
+   480.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Lounge_Bench_N",
+  "name": "StaticMeshActor_81",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   4300.0,
+   45.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Lounge_Bench_S",
+  "name": "StaticMeshActor_82",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   3900.0,
+   45.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Lounge_Table",
+  "name": "StaticMeshActor_83",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   4100.0,
+   20.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Lounge_Trim",
+  "name": "StaticMeshActor_84",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   4100.0,
+   42.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Lounge_Pad_N",
+  "name": "StaticMeshActor_85",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   4300.0,
+   -2.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Lounge_Pad_S",
+  "name": "StaticMeshActor_86",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   3900.0,
+   -2.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cove_0",
+  "name": "PointLight_15",
+  "class": "PointLight",
+  "loc": [
+   3510.7,
+   1454.2,
+   850.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cove_1",
+  "name": "PointLight_16",
+  "class": "PointLight",
+  "loc": [
+   1454.2,
+   3510.7,
+   850.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cove_2",
+  "name": "PointLight_17",
+  "class": "PointLight",
+  "loc": [
+   -1454.2,
+   3510.7,
+   850.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cove_3",
+  "name": "PointLight_18",
+  "class": "PointLight",
+  "loc": [
+   -3510.7,
+   1454.2,
+   850.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cove_4",
+  "name": "PointLight_19",
+  "class": "PointLight",
+  "loc": [
+   -3510.7,
+   -1454.2,
+   850.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cove_5",
+  "name": "PointLight_20",
+  "class": "PointLight",
+  "loc": [
+   -1454.2,
+   -3510.7,
+   850.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cove_6",
+  "name": "PointLight_21",
+  "class": "PointLight",
+  "loc": [
+   1454.2,
+   -3510.7,
+   850.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cove_7",
+  "name": "PointLight_22",
+  "class": "PointLight",
+  "loc": [
+   3510.7,
+   -1454.2,
+   850.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Collab",
+  "name": "PointLight_23",
+  "class": "PointLight",
+  "loc": [
+   0.0,
+   2800.0,
+   700.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cmd_E",
+  "name": "PointLight_24",
+  "class": "PointLight",
+  "loc": [
+   900.0,
+   -1900.0,
+   700.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Cmd_W",
+  "name": "PointLight_25",
+  "class": "PointLight",
+  "loc": [
+   -900.0,
+   -1900.0,
+   700.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Wing_E",
+  "name": "PointLight_26",
+  "class": "PointLight",
+  "loc": [
+   3700.0,
+   0.0,
+   700.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Wing_W",
+  "name": "PointLight_27",
+  "class": "PointLight",
+  "loc": [
+   -3700.0,
+   0.0,
+   700.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Lounge",
+  "name": "PointLight_28",
+  "class": "PointLight",
+  "loc": [
+   0.0,
+   4100.0,
+   550.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AVIDO_Light_Room_Entry",
+  "name": "PointLight_29",
+  "class": "PointLight",
+  "loc": [
+   0.0,
+   5100.0,
+   500.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AIVIDO_UI_Agents_Panel",
+  "name": "StaticMeshActor_12",
+  "class": "StaticMeshActor",
+  "loc": [
+   1700.0,
+   -2285.0,
+   480.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AIVIDO_UI_Agents_Text",
+  "name": "TextRenderActor_0",
+  "class": "TextRenderActor",
+  "loc": [
+   1700.0,
+   -2291.0,
+   570.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AIVIDO_UI_Missions_Panel",
+  "name": "StaticMeshActor_24",
+  "class": "StaticMeshActor",
+  "loc": [
+   -1700.0,
+   -2285.0,
+   480.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AIVIDO_UI_Missions_Text",
+  "name": "TextRenderActor_6",
+  "class": "TextRenderActor",
+  "loc": [
+   -1700.0,
+   -2291.0,
+   570.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AIVIDO_UI_Status_Panel",
+  "name": "StaticMeshActor_32",
+  "class": "StaticMeshActor",
+  "loc": [
+   0.0,
+   -2355.0,
+   1650.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AIVIDO_UI_Status_Text",
+  "name": "TextRenderActor_7",
+  "class": "TextRenderActor",
+  "loc": [
+   0.0,
+   -2361.0,
+   1770.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "BuoyancyManager0",
+  "name": "BuoyancyManager_0",
+  "class": "BuoyancyManager",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "DefaultPhysicsVolume0",
+  "name": "DefaultPhysicsVolume_0",
+  "class": "DefaultPhysicsVolume",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": true
+ },
+ {
+  "label": "GameplayDebuggerPlayerManager0",
+  "name": "GameplayDebuggerPlayerManager_0",
+  "class": "GameplayDebuggerPlayerManager",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": true
+ },
+ {
+  "label": "Actor",
+  "name": "ChaosDebugDrawActor",
+  "class": "Actor",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": false
+ },
+ {
+  "label": "AbstractNavData-Default",
+  "name": "AbstractNavData-Default",
+  "class": "AbstractNavData",
+  "loc": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "hidden": true
+ }
+]

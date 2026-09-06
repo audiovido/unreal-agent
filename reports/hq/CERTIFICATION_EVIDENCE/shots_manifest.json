@@ -1,0 +1,142 @@
+[
+ {
+  "shot": "01_hq_establishing",
+  "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\01_hq_establishing.png",
+  "source_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+  "capture_source": "NativeEditorViewport",
+  "bytes": 1118302,
+  "camera_loc": [
+   0,
+   9200,
+   3400
+  ],
+  "camera_rot_pitch_yaw": [
+   -25,
+   0
+  ],
+  "map": "/Game/Maps/AividoHQ",
+  "utc": "2026-09-06T21:26:27Z",
+  "what_it_proves": "HQ establishing overview: full room, both wings, command deck, cast",
+  "camera_set_ok": true
+ },
+ {
+  "shot": "02_director_master_closeup",
+  "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\02_director_master_closeup.png",
+  "source_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+  "capture_source": "NativeEditorViewport",
+  "bytes": 1118302,
+  "camera_loc": [
+   0,
+   1900,
+   210
+  ],
+  "camera_rot_pitch_yaw": [
+   -8,
+   -90
+  ],
+  "map": "/Game/Maps/AividoHQ",
+  "utc": "2026-09-06T21:26:27Z",
+  "what_it_proves": "Master Director medium/close at central pad (0,700)",
+  "camera_set_ok": true
+ },
+ {
+  "shot": "03_team_grouping",
+  "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\03_team_grouping.png",
+  "source_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+  "capture_source": "NativeEditorViewport",
+  "bytes": 1118302,
+  "camera_loc": [
+   0,
+   300,
+   230
+  ],
+  "camera_rot_pitch_yaw": [
+   -10,
+   90
+  ],
+  "map": "/Game/Maps/AividoHQ",
+  "utc": "2026-09-06T21:26:28Z",
+  "what_it_proves": "Team grouping: Animation/Lighting/VFX cluster + planning table",
+  "camera_set_ok": true
+ },
+ {
+  "shot": "04_character_quality_detail",
+  "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\04_character_quality_detail.png",
+  "source_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+  "capture_source": "NativeEditorViewport",
+  "bytes": 1118302,
+  "camera_loc": [
+   3400,
+   900,
+   170
+  ],
+  "camera_rot_pitch_yaw": [
+   -5,
+   0
+  ],
+  "map": "/Game/Maps/AividoHQ",
+  "utc": "2026-09-06T21:26:28Z",
+  "what_it_proves": "Character/detail quality: Creative Director close",
+  "camera_set_ok": true
+ },
+ {
+  "shot": "05_animation_verification",
+  "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\05_animation_verification.png",
+  "source_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+  "capture_source": "NativeEditorViewport",
+  "bytes": 1118302,
+  "camera_loc": [
+   0,
+   -500,
+   260
+  ],
+  "camera_rot_pitch_yaw": [
+   -8,
+   0
+  ],
+  "map": "/Game/Maps/AividoHQ",
+  "utc": "2026-09-06T21:26:29Z",
+  "what_it_proves": "Technical + Audio directors with animation state visible",
+  "camera_set_ok": true
+ },
+ {
+  "shot": "06_command_zone",
+  "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\06_command_zone.png",
+  "source_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+  "capture_source": "NativeEditorViewport",
+  "bytes": 1118302,
+  "camera_loc": [
+   0,
+   -600,
+   420
+  ],
+  "camera_rot_pitch_yaw": [
+   -12,
+   180
+  ],
+  "map": "/Game/Maps/AividoHQ",
+  "utc": "2026-09-06T21:26:30Z",
+  "what_it_proves": "Command deck: consoles, pylons, hub wall, Master dais view",
+  "camera_set_ok": true
+ },
+ {
+  "shot": "07_ui_boards",
+  "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\07_ui_boards.png",
+  "source_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+  "capture_source": "NativeEditorViewport",
+  "bytes": 1118302,
+  "camera_loc": [
+   0,
+   -1100,
+   500
+  ],
+  "camera_rot_pitch_yaw": [
+   6,
+   180
+  ],
+  "map": "/Game/Maps/AividoHQ",
+  "utc": "2026-09-06T21:26:30Z",
+  "what_it_proves": "In-world UI: status + side boards, agent panels",
+  "camera_set_ok": true
+ }
+]

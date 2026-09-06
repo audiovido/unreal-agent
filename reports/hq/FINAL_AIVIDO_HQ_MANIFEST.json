@@ -1,302 +1,155 @@
-{
+﻿{
   "aivido_hq_final_manifest": {
-    "version": "1.3",
+    "version": "2.0",
     "generation_date": "2026-09-06",
-    "integration_branch": "aivido/worker5-final-integration",
-    "integration_status": "final_assembly",
-    "completion_percentage": 100,
+    "certification_branch": "aivido/final-product-certification",
+    "base_integration_branch": "aivido/worker5-final-integration",
+    "base_commit": "8568cfb7e37264623e3f093ec24daedcb588c8ec",
+    "integration_status": "certified_with_warnings",
+    "completion_percentage": 80,
+    "score_note": "80/100 is a measured certification score, not assembly progress. No gate was marked PASS without live execution.",
+    "live_environment": {
+      "editor": "Unreal Editor 5.8.2-56702186+++UE5+Release-5.8 (ASSET_Showcase2)",
+      "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+      "bridge": "127.0.0.1:6766 (UNREAL_BRIDGE_READY)",
+      "map": "/Game/Maps/AividoHQ",
+      "actors_after_reopen": 173
+    },
     "worker_sources": {
       "worker1": {
         "domain": "hq_room_environment",
-        "status": "integrated",
+        "status": "verified_live",
         "branch": "aivido-worker1-room",
         "commit": "9847ea9c61d6dc578f4a91e7d4aa43d95ee902af",
-        "deliverables": [
-          "environment",
-          "architecture",
-          "lighting"
-        ],
-        "integration_status": "complete"
+        "live_evidence": "129 AVIDO_* environment actors + 41 lights; floors/ceilings/wings/pads/lounge/portal/skydome present; floor top z=0 trace-verified",
+        "fixes_applied": "17 zone/cove lights attenuation 1000->2800 cm (wings were dark); PPV bloom 0.25; persisted"
       },
       "worker2": {
         "domain": "characters_human_agents",
-        "status": "integrated",
+        "status": "verified_live_with_limitation",
         "branch": "aivido-worker2-human-agents",
         "commit": "3dbbd2d5c55a4dfe9bd6acb6662e9ef0ebded5eb",
-        "deliverables": [
-          "8_distinct_characters",
-          "materials",
-          "basic_animations"
-        ],
-        "integration_status": "complete"
+        "live_evidence": "8/8 SkeletalMeshActors, meshes resolve, 0 null material slots, standing, feet on floor, role pads match",
+        "fixes_applied": "AVIDO_Human_Master pitch 90->0 / z->0 (was lying and sunk); verified after reopen",
+        "limitation": "body AnimSequences are single-frame stubs (0.033s); RocketBox idle import remains blocked; characters certified in standing A-pose"
       },
       "worker3": {
         "domain": "props_objects",
-        "status": "integrated",
+        "status": "verified_live",
         "branch": "aivido-worker3-props",
         "commit": "f54fe0740502d9cba005621d87d01cde74b5b83c",
-        "deliverables": [
-          "8_prop_blueprints",
-          "9_materials",
-          "lantern_kit_3_meshes",
-          "staging_map",
-          "integration_tool"
-        ],
-        "integration_status": "complete"
+        "live_evidence": "23/23 W3I_* actors; 0 null material slots; monitors/desks/chairs believable; presentation/technical/storage/decor present",
+        "fixes_applied": "lantern kit relocated to (620, 2180) â€” previously clipped the VFX pad"
       },
       "worker4": {
         "domain": "game_ui",
-        "status": "integrated",
+        "status": "verified_live_with_limitation",
         "branch": "aivido-worker4-ui",
         "commit": "e2c0c585442040c6d4a2c6063039466950b4ba34",
-        "deliverables": [
-          "agents_roster_board",
-          "missions_board",
-          "status_board"
-        ],
-        "integration_status": "complete"
+        "live_evidence": "3 state boards (panels + TextRenders); texts 175/172/119 chars verified in reopened map",
+        "limitation": "static TextRender state displays only â€” NOT interactive UMG (UE 5.8 Python limitation, documented)"
       },
       "worker5": {
-        "domain": "final_integration",
-        "status": "in_progress",
-        "branch": "aivido/worker5-final-integration",
-        "commit": null,
+        "domain": "final_integration_and_certification",
+        "status": "certified_with_warnings",
+        "branch": "aivido/final-product-certification",
         "deliverables": [
-          "integration_framework",
-          "staging_map",
-          "qa_system"
-        ],
-        "integration_status": "partial"
+          "live certification of all four worker outputs",
+          "map persistence fixes (Master transform, lantern, lighting)",
+          "planner EVIDENCE-step defect fix in app/api.py",
+          "10 real Unreal proof frames with truthful labels",
+          "rewritten scorecard/handoff/manifest + raw evidence set"
+        ]
       }
     },
     "character_manifest": {
       "character_count": 8,
+      "validated": 8,
+      "note": "positions are the live map placements (role pads), yaw = facing the hub; all standing pitch 0",
       "characters": [
-        {
-          "agent_id": "Master",
-          "display_name": "Master Director",
-          "role": "Command Director",
-          "asset_path": "/Game/AividoHQ/Characters/Master/",
-          "mesh_name": "Business_Male_01",
-          "final_position": [
-            0,
-            500,
-            0
-          ],
-          "final_yaw": 0,
-          "station_description": "Central command overlooking team",
-          "integration_status": "ready"
-        },
-        {
-          "agent_id": "Creative",
-          "display_name": "Creative Director",
-          "role": "Creative Direction",
-          "asset_path": "/Game/AividoHQ/Characters/Creative/",
-          "mesh_name": "Male_Adult_11",
-          "final_position": [
-            1200,
-            800,
-            0
-          ],
-          "final_yaw": -45,
-          "station_description": "Creative station near visual displays",
-          "integration_status": "ready"
-        },
-        {
-          "agent_id": "Visual",
-          "display_name": "Visual Director",
-          "role": "Visual Direction",
-          "asset_path": "/Game/AividoHQ/Characters/Visual/",
-          "mesh_name": "Business_Female_02",
-          "final_position": [
-            -1200,
-            800,
-            0
-          ],
-          "final_yaw": 45,
-          "station_description": "Visual station with review monitors",
-          "integration_status": "ready"
-        },
-        {
-          "agent_id": "Technical",
-          "display_name": "Technical Director",
-          "role": "Technical Direction",
-          "asset_path": "/Game/AividoHQ/Characters/Technical/",
-          "mesh_name": "Male_Adult_03",
-          "final_position": [
-            800,
-            200,
-            0
-          ],
-          "final_yaw": 90,
-          "station_description": "Technical workstation",
-          "integration_status": "ready"
-        },
-        {
-          "agent_id": "Audio",
-          "display_name": "Audio Director",
-          "role": "Audio Production",
-          "asset_path": "/Game/AividoHQ/Characters/Audio/",
-          "mesh_name": "Female_Adult_05",
-          "final_position": [
-            -800,
-            200,
-            0
-          ],
-          "final_yaw": -90,
-          "station_description": "Audio mixing station",
-          "integration_status": "ready"
-        },
-        {
-          "agent_id": "Animation",
-          "display_name": "Animation Director",
-          "role": "Animation Direction",
-          "asset_path": "/Game/AividoHQ/Characters/Animation/",
-          "mesh_name": "Male_Adult_12",
-          "final_position": [
-            400,
-            1500,
-            0
-          ],
-          "final_yaw": 180,
-          "station_description": "Animation review area",
-          "integration_status": "ready"
-        },
-        {
-          "agent_id": "Lighting",
-          "display_name": "Lighting Artist",
-          "role": "Lighting Design",
-          "asset_path": "/Game/AividoHQ/Characters/Lighting/",
-          "mesh_name": "Female_Adult_01",
-          "final_position": [
-            -400,
-            1500,
-            0
-          ],
-          "final_yaw": 180,
-          "station_description": "Lighting control station",
-          "integration_status": "ready"
-        },
-        {
-          "agent_id": "VFX",
-          "display_name": "VFX Artist",
-          "role": "Visual Effects",
-          "asset_path": "/Game/AividoHQ/Characters/VFX/",
-          "mesh_name": "Female_Adult_08",
-          "final_position": [
-            0,
-            1200,
-            0
-          ],
-          "final_yaw": 0,
-          "station_description": "VFX central presentation area",
-          "integration_status": "ready"
-        }
+        {"agent_id": "Master", "display_name": "Master Director", "mesh": "Business_Male_01", "pos": [0, 700, 0], "yaw": 180},
+        {"agent_id": "Creative", "display_name": "Creative Director", "mesh": "Male_Adult_11", "pos": [3800, 900, 0], "yaw": -90},
+        {"agent_id": "Visual", "display_name": "Visual Director", "mesh": "Business_Female_02", "pos": [-3800, 900, 0], "yaw": -90},
+        {"agent_id": "Technical", "display_name": "Technical Director", "mesh": "Male_Adult_03", "pos": [1900, 300, 0], "yaw": 180},
+        {"agent_id": "Audio", "display_name": "Audio Director", "mesh": "Female_Adult_05", "pos": [-1900, 300, 0], "yaw": 180},
+        {"agent_id": "Animation", "display_name": "Animation Director", "mesh": "Male_Adult_12", "pos": [950, 1700, 0], "yaw": 180},
+        {"agent_id": "Lighting", "display_name": "Lighting Artist", "mesh": "Female_Adult_01", "pos": [-950, 1700, 0], "yaw": 180},
+        {"agent_id": "VFX", "display_name": "VFX Artist", "mesh": "Female_Adult_08", "pos": [0, 2000, 0], "yaw": 180}
       ]
     },
-    "staging_map": {
-      "name": "AividoHQ_Final_Stage",
-      "path": "Content/Aivido/Production/Integration/Maps/AividoHQ_Final_Stage.umap",
-      "description": "Final integration candidate for Aivido HQ production",
-      "status": "designed",
-      "execution_status": "pending"
+    "map_validation": {
+      "map": "/Game/Maps/AividoHQ",
+      "load": "PASS",
+      "save": "PASS",
+      "reopen": "PASS",
+      "reopen_identity": true,
+      "counts_stable": true,
+      "broken_reference_count": 0,
+      "asset_scan": "195/195 /Game/AividoHQ assets load",
+      "mapcheck": "editor MapCheck not exposed to UE 5.8 Python; equivalent live validation applied (see scorecard)"
     },
     "animation_status": {
-      "rocketbox_animations": "blocked",
-      "current_animation_source": "verified_existing_project_animations",
-      "animation_types": [
-        "basic_idle",
-        "walk",
-        "locomotion"
-      ],
-      "character_motion_profiles": "defined",
-      "execution_status": "pending"
+      "rocketbox_animations": "blocked (confirmed via editor log InterchangeEngine import errors)",
+      "body_sequences": "single-frame stubs (0.033s) â€” assigned and playing, no visible motion",
+      "facial_sequences": "~5s, facial skeleton only",
+      "certified_state": "standing A-pose; no fabricated idle"
     },
+    "staging_map_note": "The legacy designed-but-never-executed staging map (AividoHQ_Final_Stage) is obsolete: /Game/Maps/AividoHQ is the certified live product map.",
     "integration_assets": {
-      "integration_plan": "reports/hq/WORKER5_INTEGRATION_PLAN.json",
-      "integration_script": "assetlib/tools/worker5_final_integration.py",
-      "qa_checklist": "reports/hq/WORKER5_QA_CHECKLIST.md",
-      "character_motion": "reports/hq/WORKER5_CHARACTER_MOTION.md",
-      "worker_status": "reports/hq/WORKER_STATUS_WAITING.md",
-      "final_handoff": "reports/hq/WORKER5_FINAL_INTEGRATION_HANDOFF.md"
+      "final_scorecard": "reports/hq/FINAL_QA_SCORECARD.json",
+      "final_handoff": "reports/hq/WORKER5_FINAL_INTEGRATION_HANDOFF.md",
+      "evidence_directory": "reports/hq/CERTIFICATION_EVIDENCE/",
+      "visual_proof_directory": "reports/hq/CERTIFICATION_EVIDENCE/proof/"
     },
     "visual_proof": {
-      "status": "pending_capture",
+      "status": "captured",
       "required_shots": 5,
-      "shot_definitions": [
-        "hq_establishing_wide",
-        "director_close_up",
-        "agent_team_groups",
-        "character_quality_detail",
-        "animation_verification"
-      ],
-      "capture_status": "pending"
-    },
-    "qa_status": {
-      "status": "pending_execution",
-      "checklist": "reports/hq/WORKER5_QA_CHECKLIST.md",
-      "pass_criteria_defined": true,
-      "execution_status": "pending"
-    },
-    "dependencies": {
-      "blocked_workers": [
-        "worker1",
-        "worker3",
-        "worker4"
-      ],
-      "completion_requirements": [
-        "worker1_environment_integration",
-        "worker3_props_integration",
-        "worker4_ui_integration",
-        "unreal_script_execution",
-        "visual_proof_capture",
-        "qa_validation"
-      ],
-      "current_blockers": [
-        "missing_worker_outputs"
+      "captured_required": 5,
+      "total_frames": 10,
+      "labels": "VERIFIED UNREAL (PIE GameViewport native captures; poses via AVIDO_ShotCam SetViewTarget)",
+      "manifest": "reports/hq/CERTIFICATION_EVIDENCE/pie_shots_manifest.json",
+      "shots": [
+        "01_hq_establishing.png",
+        "02_director_master_closeup.png",
+        "03_team_grouping.png",
+        "04_character_quality_detail.png",
+        "05_animation_verification.png",
+        "06_command_zone.png",
+        "07_ui_boards.png",
+        "08_ui_agent_panels.png",
+        "09_ui_missions_panel.png",
+        "10_fps_stat_overlay.png"
       ]
     },
-    "next_actions": [
-      "execute_unreal_integration_script",
-      "capture_visual_proof",
-      "perform_qa_validation",
-      "push_integration_branch",
-      "await_worker1_3_4_outputs",
-      "complete_final_assembly"
-    ],
-    "worker3_integration": {
-      "integrated_date": "2026-09-06",
-      "method": "fast-forward + worker3_props_integrate.py --apply + worker5_w3_floor_snap.py",
-      "actors_placed": 23,
-      "floor_contact_pass": true,
-      "material_resolution_pass": true,
-      "broken_references": 0,
-      "validation": "PASS",
-      "proof": "assetlib/reports/worker5_w3_integrated_hq.png",
-      "evidence": "assetlib/reports/worker3_props_evidence.json"
+    "end_to_end_mission": {
+      "result": "PASS",
+      "prompt": "Capture a screenshot of the current viewport in the AividoHQ map",
+      "first_run": "TERMINAL STALL (planner defect: no EVIDENCE step for actor-less capture prompts)",
+      "fix": "app/api.py normalize_execution_plan â€” actor-less capture/screenshot/proof prompts now emit the EVIDENCE step",
+      "rerun": "terminal PASS, 537.9 s, steps: inspect_project -> unreal_ping -> capture_unreal_viewport",
+      "proof": "served via GET /api/proof/latest (721069 bytes); copy in evidence directory"
     },
-    "worker1_integration": {
-      "integrated_date": "2026-09-06",
-      "method": "fast-forward; environment is the live integration map",
-      "env_actors": "80+ AVIDO_* (floors/ceilings/walls/hub/command deck/8 role pads/lounge/portal/signage/sky dome)",
-      "lighting": "15 room lights + key/fill + skylight(static)",
-      "map_check": "0 errors, 0 warnings",
-      "human_scale": "PASS (floor top 0 == cast feet 0; desks 1.1m; ceilings 8.8-9.4m)",
-      "proof": "assetlib/proof/worker1_room_hero_pie.png",
-      "cross_check": "independent live-editor inventory match"
+    "technical_measurements": {
+      "render_tick": "3.0 FPS measured (frame-count method) in throttled/unfocused editor session; game time 1:1 wall time; no stalls",
+      "memory": "UnrealEditor working set 3664 MB / private 9785 MB",
+      "backend": "live (app server :8765, cert-branch test instance :8790 used for E2E rerun)",
+      "bridge": "live :6766"
     },
-    "worker4_integration": {
-      "integrated_date": "2026-09-06",
-      "method": "fast-forward; in-world state-display UI on command deck",
-      "actors": 6,
-      "texts_verified": {
-        "agents": 175,
-        "missions": 172,
-        "status": 119
-      },
-      "persistence": "PASS",
-      "proof": "assetlib/reports/worker4_ui_hq.png",
-      "limitation": "interactive UMG blocked by UE 5.8 python API (documented)"
+    "qa_status": {
+      "status": "certified_with_warnings",
+      "current_score": 80,
+      "promotion_ready": true,
+      "critical_errors": 0,
+      "major_errors": 0,
+      "warnings": 5,
+      "warnings_summary": [
+        "no genuine body idle animation (RocketBox blocked) â€” certified as standing A-pose",
+        "in-world boards static/non-interactive and emissive-overexposed",
+        "foreground FPS not measurable without user focus",
+        "hub screens remain bright",
+        "UI 390px hero CTA row slightly clipped"
+      ]
     }
   }
 }
+

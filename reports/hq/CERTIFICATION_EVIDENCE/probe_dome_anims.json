@@ -1,0 +1,125 @@
+{
+ "skydome": {
+  "origin": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "extent": [
+   45000.0,
+   45000.0,
+   45000.0
+  ],
+  "mesh": "/Engine/BasicShapes/Sphere.Sphere",
+  "mesh_bounds_box_extent": [
+   50.0,
+   50.0,
+   50.0
+  ]
+ },
+ "animation_assets_total": 28,
+ "animation_assets": [
+  "/Game/Mannequin/Animations/ThirdPerson_WalkRun_1D/ThirdPerson_WalkRun_1D",
+  "/Game/AividoHQ/Characters/Technical/Male_Adult_03_Anim/Male_Adult_03_Anim",
+  "/Game/AividoHQ/Characters/Technical/Male_Adult_03_facial_Anim/Male_Adult_03_facial_Anim",
+  "/Game/AividoHQ/Characters/Audio/Female_Adult_05_Anim/Female_Adult_05_Anim",
+  "/Game/AividoHQ/Characters/Audio/Female_Adult_05_facial_Anim/Female_Adult_05_facial_Anim",
+  "/Game/AividoHQ/Characters/Animation/Male_Adult_12_Anim/Male_Adult_12_Anim",
+  "/Game/AividoHQ/Characters/Animation/Male_Adult_12_facial_Anim/Male_Adult_12_facial_Anim",
+  "/Game/AividoHQ/Characters/Lighting/Female_Adult_01_Anim/Female_Adult_01_Anim",
+  "/Game/AividoHQ/Characters/Lighting/Female_Adult_01_facial_Anim/Female_Adult_01_facial_Anim",
+  "/Game/AividoHQ/Characters/VFX/Female_Adult_08_Anim/Female_Adult_08_Anim",
+  "/Game/AividoHQ/Characters/VFX/Female_Adult_08_facial_Anim/Female_Adult_08_facial_Anim",
+  "/Game/AividoHQ/Characters/Master/Business_Male_01_Anim/Business_Male_01_Anim",
+  "/Game/AividoHQ/Characters/Creative/Male_Adult_11_Anim/Male_Adult_11_Anim",
+  "/Game/AividoHQ/Characters/Visual/Business_Female_02_Anim/Business_Female_02_Anim",
+  "/Game/Mannequin/Animations/ThirdPersonIdle/ThirdPersonIdle",
+  "/Game/Mannequin/Animations/ThirdPersonJump_End/ThirdPersonJump_End",
+  "/Game/Mannequin/Animations/ThirdPersonJump_Loop/ThirdPersonJump_Loop",
+  "/Game/Mannequin/Animations/ThirdPersonJump_Start/ThirdPersonJump_Start",
+  "/Game/Mannequin/Animations/ThirdPersonRun/ThirdPersonRun",
+  "/Game/Mannequin/Animations/ThirdPersonWalk/ThirdPersonWalk",
+  "/Game/Mannequin/Animations/ThirdPerson_Jump/ThirdPerson_Jump",
+  "/Engine/Tutorial/SubEditors/TutorialAssets/Character/NewBlendSpace1D/NewBlendSpace1D",
+  "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxRun/FoxRun",
+  "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxSurvey/FoxSurvey",
+  "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxWalk/FoxWalk",
+  "/Game/Showcase/Characters/CesiumMan/SkeletalMeshes/CesiumMan_Anim/CesiumMan_Anim",
+  "/Engine/Tutorial/SubEditors/TutorialAssets/Character/Tutorial_Idle/Tutorial_Idle",
+  "/Engine/Tutorial/SubEditors/TutorialAssets/Character/Tutorial_Walk_Fwd/Tutorial_Walk_Fwd"
+ ],
+ "anim_blueprints": [
+  "/Game/Mannequin/Animations/ThirdPerson_AnimBP/ThirdPerson_AnimBP",
+  "/Engine/Tutorial/SubEditors/TutorialAssets/TutorialAnimationBlueprint/TutorialAnimationBlueprint",
+  "/Engine/Tutorial/SubEditors/TutorialAssets/Character/TutorialTPP_AnimBlueprint/TutorialTPP_AnimBlueprint"
+ ],
+ "skeletons": [
+  "/Game/Showcase/Animations/Fox/SkeletalMeshes/Fox_Skeleton/Fox_Skeleton",
+  "/Game/AividoHQ/Characters/Master/Business_Male_01_Skeleton/Business_Male_01_Skeleton",
+  "/Game/AividoHQ/Characters/VFX/Female_Adult_08_facial_Skeleton/Female_Adult_08_facial_Skeleton",
+  "/Game/AividoHQ/Characters/Creative/Male_Adult_11_Skeleton/Male_Adult_11_Skeleton",
+  "/Game/AividoHQ/Characters/Master/Business_Male_01_facial_Skeleton/Business_Male_01_facial_Skeleton",
+  "/Game/AividoHQ/Characters/Creative/Male_Adult_11_facial_Skeleton/Male_Adult_11_facial_Skeleton",
+  "/Game/AividoHQ/Characters/Visual/Business_Female_02_facial_Skeleton/Business_Female_02_facial_Skeleton",
+  "/Game/AividoHQ/Characters/Technical/Male_Adult_03_Skeleton/Male_Adult_03_Skeleton",
+  "/Game/AividoHQ/Characters/Technical/Male_Adult_03_facial_Skeleton/Male_Adult_03_facial_Skeleton",
+  "/Game/AividoHQ/Characters/Audio/Female_Adult_05_Skeleton/Female_Adult_05_Skeleton",
+  "/Game/AividoHQ/Characters/Audio/Female_Adult_05_facial_Skeleton/Female_Adult_05_facial_Skeleton",
+  "/Game/AividoHQ/Characters/Animation/Male_Adult_12_Skeleton/Male_Adult_12_Skeleton",
+  "/Game/AividoHQ/Characters/Animation/Male_Adult_12_facial_Skeleton/Male_Adult_12_facial_Skeleton",
+  "/Game/AividoHQ/Characters/Lighting/Female_Adult_01_Skeleton/Female_Adult_01_Skeleton",
+  "/Game/AividoHQ/Characters/Lighting/Female_Adult_01_facial_Skeleton/Female_Adult_01_facial_Skeleton",
+  "/Game/AividoHQ/Characters/VFX/Female_Adult_08_Skeleton/Female_Adult_08_Skeleton",
+  "/Game/AividoHQ/Characters/Visual/Business_Female_02_Skeleton/Business_Female_02_Skeleton",
+  "/Game/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton/UE4_Mannequin_Skeleton",
+  "/Game/Showcase/Characters/CesiumMan/SkeletalMeshes/CesiumMan_Skeleton/CesiumMan_Skeleton",
+  "/Engine/EngineMeshes/SkeletalCube_Skeleton/SkeletalCube_Skeleton",
+  "/AnimatorKit/Meshes/SK_EmptyMesh/SK_EmptyMesh",
+  "/AnimatorKit/Meshes/SK_PhysCube/SK_PhysCube",
+  "/Engine/EditorMeshes/SkeletalMesh/DefaultSkeletalMesh_Skeleton/DefaultSkeletalMesh_Skeleton",
+  "/ControlRig/Modules/Meshes/SK_Root_Template/SK_Root_Template",
+  "/ControlRigModules/Modules/Meshes/SK_BipedPhys_Template/SK_BipedPhys_Template",
+  "/ControlRigModules/Modules/Meshes/SK_Biped_Template/SK_Biped_Template",
+  "/ControlRigModules/Modules/Meshes/SK_Car_Template/SK_Car_Template",
+  "/ControlRigModules/Modules/Meshes/SK_Chain_Template/SK_Chain_Template",
+  "/ControlRigModules/Modules/Meshes/SK_Doggee_Template/SK_Doggee_Template",
+  "/ControlRigModules/Modules/Meshes/SK_Dragon_Template/SK_Dragon_Template",
+  "/ControlRigModules/Modules/Meshes/SK_Starfish_Template/SK_Starfish_Template",
+  "/ControlRigModules/Modules/Meshes/SK_Tentacle_Template/SK_Tentacle_Template",
+  "/Engine/Tutorial/SubEditors/TutorialAssets/Character/TutorialTPP_Skeleton/TutorialTPP_Skeleton"
+ ],
+ "floor_traces_800": {
+  "hub": [
+   480.0,
+   480.0
+  ],
+  "master_pad": [
+   17.7,
+   12.0
+  ],
+  "creative_pad": [
+   182.87,
+   2.5
+  ],
+  "wing_e": [
+   -0.0,
+   2.5
+  ],
+  "wing_w": [
+   -0.0,
+   -0.0
+  ],
+  "lounge": [
+   44.0,
+   44.0
+  ],
+  "entry": [
+   9.0,
+   9.0
+  ],
+  "command": [
+   225.0,
+   112.5
+  ]
+ }
+}

@@ -1,0 +1,166 @@
+{
+ "applied": [
+  {
+   "label": "AVIDO_Human_Master",
+   "role": "Master",
+   "pkg": "/Game/AividoHQ/Characters/Master/Business_Male_01_Anim",
+   "exists": true,
+   "loaded": true,
+   "duration_s": 0.03333333507180214,
+   "editor_tick": true,
+   "mode_after": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>",
+   "playing_after": true,
+   "inst_class": "AnimSingleNodeInstance",
+   "pos_t0": null
+  },
+  {
+   "label": "AVIDO_Human_Creative",
+   "role": "Creative",
+   "pkg": "/Game/AividoHQ/Characters/Creative/Male_Adult_11_Anim",
+   "exists": true,
+   "loaded": true,
+   "duration_s": 0.03333333507180214,
+   "editor_tick": true,
+   "mode_after": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>",
+   "playing_after": true,
+   "inst_class": "AnimSingleNodeInstance",
+   "pos_t0": null
+  },
+  {
+   "label": "AVIDO_Human_Visual",
+   "role": "Visual",
+   "pkg": "/Game/AividoHQ/Characters/Visual/Business_Female_02_Anim",
+   "exists": true,
+   "loaded": true,
+   "duration_s": 0.03333333507180214,
+   "editor_tick": true,
+   "mode_after": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>",
+   "playing_after": true,
+   "inst_class": "AnimSingleNodeInstance",
+   "pos_t0": null
+  },
+  {
+   "label": "AVIDO_Human_Technical",
+   "role": "Technical",
+   "pkg": "/Game/AividoHQ/Characters/Technical/Male_Adult_03_Anim",
+   "exists": true,
+   "loaded": true,
+   "duration_s": 0.03333333507180214,
+   "editor_tick": true,
+   "mode_after": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>",
+   "playing_after": true,
+   "inst_class": "AnimSingleNodeInstance",
+   "pos_t0": null
+  },
+  {
+   "label": "AVIDO_Human_Audio",
+   "role": "Audio",
+   "pkg": "/Game/AividoHQ/Characters/Audio/Female_Adult_05_Anim",
+   "exists": true,
+   "loaded": true,
+   "duration_s": 0.03333333507180214,
+   "editor_tick": true,
+   "mode_after": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>",
+   "playing_after": true,
+   "inst_class": "AnimSingleNodeInstance",
+   "pos_t0": null
+  },
+  {
+   "label": "AVIDO_Human_Animation",
+   "role": "Animation",
+   "pkg": "/Game/AividoHQ/Characters/Animation/Male_Adult_12_Anim",
+   "exists": true,
+   "loaded": true,
+   "duration_s": 0.03333333507180214,
+   "editor_tick": true,
+   "mode_after": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>",
+   "playing_after": true,
+   "inst_class": "AnimSingleNodeInstance",
+   "pos_t0": null
+  },
+  {
+   "label": "AVIDO_Human_Lighting",
+   "role": "Lighting",
+   "pkg": "/Game/AividoHQ/Characters/Lighting/Female_Adult_01_Anim",
+   "exists": true,
+   "loaded": true,
+   "duration_s": 0.03333333507180214,
+   "editor_tick": true,
+   "mode_after": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>",
+   "playing_after": true,
+   "inst_class": "AnimSingleNodeInstance",
+   "pos_t0": null
+  },
+  {
+   "label": "AVIDO_Human_VFX",
+   "role": "VFX",
+   "pkg": "/Game/AividoHQ/Characters/VFX/Female_Adult_08_Anim",
+   "exists": true,
+   "loaded": true,
+   "duration_s": 0.03333333507180214,
+   "editor_tick": true,
+   "mode_after": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>",
+   "playing_after": true,
+   "inst_class": "AnimSingleNodeInstance",
+   "pos_t0": null
+  }
+ ],
+ "readback": [
+  {
+   "label": "AVIDO_Human_Master",
+   "playing": true,
+   "pos1": null,
+   "pos2": null,
+   "advanced": false
+  },
+  {
+   "label": "AVIDO_Human_Creative",
+   "playing": true,
+   "pos1": null,
+   "pos2": null,
+   "advanced": false
+  },
+  {
+   "label": "AVIDO_Human_Visual",
+   "playing": true,
+   "pos1": null,
+   "pos2": null,
+   "advanced": false
+  },
+  {
+   "label": "AVIDO_Human_Technical",
+   "playing": true,
+   "pos1": null,
+   "pos2": null,
+   "advanced": false
+  },
+  {
+   "label": "AVIDO_Human_Audio",
+   "playing": true,
+   "pos1": null,
+   "pos2": null,
+   "advanced": false
+  },
+  {
+   "label": "AVIDO_Human_Animation",
+   "playing": true,
+   "pos1": null,
+   "pos2": null,
+   "advanced": false
+  },
+  {
+   "label": "AVIDO_Human_Lighting",
+   "playing": true,
+   "pos1": null,
+   "pos2": null,
+   "advanced": false
+  },
+  {
+   "label": "AVIDO_Human_VFX",
+   "playing": true,
+   "pos1": null,
+   "pos2": null,
+   "advanced": false
+  }
+ ]
+}

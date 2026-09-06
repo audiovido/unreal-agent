@@ -1,0 +1,113 @@
+{
+ "/": {
+  "status": 200,
+  "len": 13032,
+  "error": null
+ },
+ "/app": {
+  "status": 200,
+  "len": 21575,
+  "error": null
+ },
+ "/api/status": {
+  "status": 200,
+  "len": 539,
+  "error": null
+ },
+ "/api/workspace": {
+  "status": 200,
+  "len": 202,
+  "error": null
+ },
+ "nav_sections": {
+  "home": false,
+  "workspace": true,
+  "mission": true,
+  "agent": false,
+  "proof": true,
+  "project": false,
+  "setting": false
+ },
+ "js": {
+  "ava_widget.js": {
+   "served": true,
+   "syntax_ok": true,
+   "err": ""
+  },
+  "ava.js": {
+   "served": true,
+   "syntax_ok": true,
+   "err": ""
+  }
+ },
+ "api_endpoint_crosscheck": {
+  "js_api_refs": 8,
+  "unmatched": []
+ },
+ "js_safety": {
+  "app.js": {
+   "localstorage_wrapped": false,
+   "localStorage_uses": 8,
+   "fetch_timeout": false,
+   "setinterval_uses": 2,
+   "poll_guard": false,
+   "mutation_guard": true
+  },
+  "aivido.js": {
+   "localstorage_wrapped": true,
+   "localStorage_uses": 6,
+   "fetch_timeout": false,
+   "setinterval_uses": 6,
+   "poll_guard": false,
+   "mutation_guard": true
+  }
+ },
+ "css_responsive": {
+  "styles.css": {
+   "mq_390": false,
+   "mq_1440": false,
+   "mq_any": 4,
+   "overflow_x_rules": 5
+  },
+  "aivido.css": {
+   "mq_390": false,
+   "mq_1440": false,
+   "mq_any": 5,
+   "overflow_x_rules": 20
+  }
+ },
+ "director_booth": {
+  "app_status": 200,
+  "app_len": 21575,
+  "app_nav": {
+   "home": true,
+   "workspace": true,
+   "mission": true,
+   "agent": true,
+   "proof": true,
+   "project": true,
+   "setting": true,
+   "command": false,
+   "run": true,
+   "chat": false
+  },
+  "app_js_syntax": {
+   "aivido.js": {
+    "served_status": 200,
+    "bytes": 90617,
+    "syntax_ok": true,
+    "err": ""
+   }
+  },
+  "encoding_ok": true,
+  "app_css": {
+   "aivido.css": {
+    "served_status": 200,
+    "mq_any": 5,
+    "mq_mobile": true,
+    "mq_desktop": false,
+    "overflow_x": 0
+   }
+  }
+ }
+}

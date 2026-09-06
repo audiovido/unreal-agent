@@ -1,0 +1,542 @@
+{
+ "count": 29,
+ "props": [
+  {
+   "label": "AIVIDO_UI_Agents_Panel",
+   "class": "StaticMeshActor",
+   "loc": [
+    1700.0,
+    -2285.0,
+    480.0
+   ],
+   "bounds_min_z": 330.0,
+   "hidden_ed": false,
+   "static_mesh_components": 1,
+   "meshes_valid": 1,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ]
+  },
+  {
+   "label": "AIVIDO_UI_Agents_Text",
+   "class": "TextRenderActor",
+   "loc": [
+    1700.0,
+    -2291.0,
+    570.0
+   ],
+   "bounds_min_z": 442.0,
+   "hidden_ed": false,
+   "static_mesh_components": 0,
+   "meshes_valid": 0,
+   "null_material_slots": 0,
+   "mesh_paths": [],
+   "text": "AIVIDO AGENTS ROSTER\n\nMASTER    - COMMAND\nCREATIVE  - DESIGN\nVISUAL    - REVIEW\nTECHNICAL - BUILD\nAUDIO     - SOUND\nANIMATION - MOTION\nLIGHTING  - LOOK DEV\nVFX       - EFFECTS",
+   "text_len": 175
+  },
+  {
+   "label": "AIVIDO_UI_Missions_Panel",
+   "class": "StaticMeshActor",
+   "loc": [
+    -1700.0,
+    -2285.0,
+    480.0
+   ],
+   "bounds_min_z": 330.0,
+   "hidden_ed": false,
+   "static_mesh_components": 1,
+   "meshes_valid": 1,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ]
+  },
+  {
+   "label": "AIVIDO_UI_Missions_Text",
+   "class": "TextRenderActor",
+   "loc": [
+    -1700.0,
+    -2291.0,
+    570.0
+   ],
+   "bounds_min_z": 442.0,
+   "hidden_ed": false,
+   "static_mesh_components": 0,
+   "meshes_valid": 0,
+   "null_material_slots": 0,
+   "mesh_paths": [],
+   "text": "PRODUCTION MISSIONS\n\nM1 HQ ENVIRONMENT   - COMPLETE\nM2 CAST INTEGRATION - COMPLETE\nM3 PROPS KIT        - COMPLETE\nM4 GAME UI          - ACTIVE\nM5 FINAL QA         - PENDING",
+   "text_len": 172
+  },
+  {
+   "label": "AIVIDO_UI_Status_Panel",
+   "class": "StaticMeshActor",
+   "loc": [
+    0.0,
+    -2355.0,
+    1650.0
+   ],
+   "bounds_min_z": 1520.0,
+   "hidden_ed": false,
+   "static_mesh_components": 1,
+   "meshes_valid": 1,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ]
+  },
+  {
+   "label": "AIVIDO_UI_Status_Text",
+   "class": "TextRenderActor",
+   "loc": [
+    0.0,
+    -2361.0,
+    1770.0
+   ],
+   "bounds_min_z": 1642.0,
+   "hidden_ed": false,
+   "static_mesh_components": 0,
+   "meshes_valid": 0,
+   "null_material_slots": 0,
+   "mesh_paths": [],
+   "text": "HQ INTEGRATION STATUS\n\nW1 ROOM  - OK\nW2 CAST  - OK\nW3 PROPS - OK\nW4 UI    - ACTIVE\nW5 QA    - PENDING\n\nINTEGRATION: 88%",
+   "text_len": 119
+  },
+  {
+   "label": "W3I_Cabinet_E1",
+   "class": "BP_Aivido_Prop_StorageCabinet_C",
+   "loc": [
+    1800.0,
+    300.0,
+    52.0
+   ],
+   "bounds_min_z": -76.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44819.8,
+   "float_delta": -44895.8
+  },
+  {
+   "label": "W3I_Cabinet_E2",
+   "class": "BP_Aivido_Prop_StorageCabinet_C",
+   "loc": [
+    1800.0,
+    700.0,
+    52.0
+   ],
+   "bounds_min_z": -76.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44809.41,
+   "float_delta": -44885.41
+  },
+  {
+   "label": "W3I_Lantern_Body",
+   "class": "StaticMeshActor",
+   "loc": [
+    0.0,
+    2100.0,
+    -1.0
+   ],
+   "bounds_min_z": 0.0,
+   "hidden_ed": false,
+   "static_mesh_components": 1,
+   "meshes_valid": 1,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Game/AividoHQ/Props/Lantern/StaticMeshes/LanternPole_Body.LanternPole_Body"
+   ],
+   "floor_z": 44793.16,
+   "float_delta": -44793.16
+  },
+  {
+   "label": "W3I_Lantern_Chain",
+   "class": "StaticMeshActor",
+   "loc": [
+    0.0,
+    2100.0,
+    29.7
+   ],
+   "bounds_min_z": 144.24,
+   "hidden_ed": false,
+   "static_mesh_components": 1,
+   "meshes_valid": 1,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Game/AividoHQ/Props/Lantern/StaticMeshes/LanternPole_Chain.LanternPole_Chain"
+   ]
+  },
+  {
+   "label": "W3I_Lantern_Lantern",
+   "class": "StaticMeshActor",
+   "loc": [
+    0.0,
+    2100.0,
+    64.6
+   ],
+   "bounds_min_z": 151.57,
+   "hidden_ed": false,
+   "static_mesh_components": 1,
+   "meshes_valid": 1,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Game/AividoHQ/Props/Lantern/StaticMeshes/LanternPole_Lantern.LanternPole_Lantern"
+   ]
+  },
+  {
+   "label": "W3I_Plant_SE",
+   "class": "BP_Aivido_Prop_PlantDecor_C",
+   "loc": [
+    1800.0,
+    -1700.0,
+    0.0
+   ],
+   "bounds_min_z": -128.0,
+   "hidden_ed": false,
+   "static_mesh_components": 3,
+   "meshes_valid": 3,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cylinder.Cylinder",
+    "/Engine/BasicShapes/Sphere.Sphere"
+   ],
+   "floor_z": 44755.56,
+   "float_delta": -44883.56
+  },
+  {
+   "label": "W3I_Plant_SW",
+   "class": "BP_Aivido_Prop_PlantDecor_C",
+   "loc": [
+    -1800.0,
+    -1700.0,
+    0.0
+   ],
+   "bounds_min_z": -128.0,
+   "hidden_ed": false,
+   "static_mesh_components": 3,
+   "meshes_valid": 3,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cylinder.Cylinder",
+    "/Engine/BasicShapes/Sphere.Sphere"
+   ],
+   "floor_z": 44755.56,
+   "float_delta": -44883.56
+  },
+  {
+   "label": "W3I_PresentationBoard",
+   "class": "BP_Aivido_Prop_PresentationBoard_C",
+   "loc": [
+    0.0,
+    1800.0,
+    175.0
+   ],
+   "bounds_min_z": 0.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44822.72,
+   "float_delta": -44822.72
+  },
+  {
+   "label": "W3I_ServerRack",
+   "class": "BP_Aivido_Prop_ServerRack_C",
+   "loc": [
+    1500.0,
+    1500.0,
+    169.7
+   ],
+   "bounds_min_z": 0.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44791.07,
+   "float_delta": -44791.07
+  },
+  {
+   "label": "W3I_Station_E_Chair",
+   "class": "BP_Aivido_Prop_Chair_C",
+   "loc": [
+    1250.0,
+    0.0,
+    25.0
+   ],
+   "bounds_min_z": -103.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44876.88,
+   "float_delta": -44979.88
+  },
+  {
+   "label": "W3I_Station_E_Desk",
+   "class": "BP_Aivido_Prop_Desk_C",
+   "loc": [
+    900.0,
+    0.0,
+    80.0
+   ],
+   "bounds_min_z": -48.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44911.35,
+   "float_delta": -44959.35
+  },
+  {
+   "label": "W3I_Station_E_Monitor",
+   "class": "BP_Aivido_Prop_Monitor_C",
+   "loc": [
+    900.0,
+    0.0,
+    105.0
+   ],
+   "bounds_min_z": -23.0,
+   "hidden_ed": false,
+   "static_mesh_components": 3,
+   "meshes_valid": 3,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44911.35,
+   "float_delta": -44934.35
+  },
+  {
+   "label": "W3I_Station_N_Chair",
+   "class": "BP_Aivido_Prop_Chair_C",
+   "loc": [
+    0.0,
+    1250.0,
+    95.0
+   ],
+   "bounds_min_z": -33.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44876.88,
+   "float_delta": -44909.88
+  },
+  {
+   "label": "W3I_Station_N_Desk",
+   "class": "BP_Aivido_Prop_Desk_C",
+   "loc": [
+    0.0,
+    900.0,
+    75.0
+   ],
+   "bounds_min_z": -53.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44911.35,
+   "float_delta": -44964.35
+  },
+  {
+   "label": "W3I_Station_N_Monitor",
+   "class": "BP_Aivido_Prop_Monitor_C",
+   "loc": [
+    0.0,
+    900.0,
+    125.0
+   ],
+   "bounds_min_z": -3.0,
+   "hidden_ed": false,
+   "static_mesh_components": 3,
+   "meshes_valid": 3,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44911.35,
+   "float_delta": -44914.35
+  },
+  {
+   "label": "W3I_Station_S_Chair",
+   "class": "BP_Aivido_Prop_Chair_C",
+   "loc": [
+    0.0,
+    -1250.0,
+    0.0
+   ],
+   "bounds_min_z": -128.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44876.88,
+   "float_delta": -45004.88
+  },
+  {
+   "label": "W3I_Station_S_Desk",
+   "class": "BP_Aivido_Prop_Desk_C",
+   "loc": [
+    0.0,
+    -900.0,
+    0.0
+   ],
+   "bounds_min_z": -128.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44911.35,
+   "float_delta": -45039.35
+  },
+  {
+   "label": "W3I_Station_S_Monitor",
+   "class": "BP_Aivido_Prop_Monitor_C",
+   "loc": [
+    0.0,
+    -900.0,
+    75.0
+   ],
+   "bounds_min_z": -53.0,
+   "hidden_ed": false,
+   "static_mesh_components": 3,
+   "meshes_valid": 3,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44911.35,
+   "float_delta": -44964.35
+  },
+  {
+   "label": "W3I_Station_W_Chair",
+   "class": "BP_Aivido_Prop_Chair_C",
+   "loc": [
+    -1250.0,
+    0.0,
+    25.0
+   ],
+   "bounds_min_z": -103.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44876.88,
+   "float_delta": -44979.88
+  },
+  {
+   "label": "W3I_Station_W_Desk",
+   "class": "BP_Aivido_Prop_Desk_C",
+   "loc": [
+    -900.0,
+    0.0,
+    80.0
+   ],
+   "bounds_min_z": -48.0,
+   "hidden_ed": false,
+   "static_mesh_components": 4,
+   "meshes_valid": 4,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44911.35,
+   "float_delta": -44959.35
+  },
+  {
+   "label": "W3I_Station_W_Monitor",
+   "class": "BP_Aivido_Prop_Monitor_C",
+   "loc": [
+    -900.0,
+    0.0,
+    105.0
+   ],
+   "bounds_min_z": -23.0,
+   "hidden_ed": false,
+   "static_mesh_components": 3,
+   "meshes_valid": 3,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44911.35,
+   "float_delta": -44934.35
+  },
+  {
+   "label": "W3I_Terminal_E",
+   "class": "BP_Aivido_Prop_Terminal_C",
+   "loc": [
+    700.0,
+    -500.0,
+    17.7
+   ],
+   "bounds_min_z": -110.32,
+   "hidden_ed": false,
+   "static_mesh_components": 3,
+   "meshes_valid": 3,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44915.06,
+   "float_delta": -45025.38
+  },
+  {
+   "label": "W3I_Terminal_W",
+   "class": "BP_Aivido_Prop_Terminal_C",
+   "loc": [
+    -700.0,
+    500.0,
+    113.1
+   ],
+   "bounds_min_z": -14.86,
+   "hidden_ed": false,
+   "static_mesh_components": 3,
+   "meshes_valid": 3,
+   "null_material_slots": 0,
+   "mesh_paths": [
+    "/Engine/BasicShapes/Cube.Cube"
+   ],
+   "floor_z": 44915.06,
+   "float_delta": -44929.92
+  }
+ ]
+}

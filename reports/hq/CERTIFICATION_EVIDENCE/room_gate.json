@@ -1,0 +1,33 @@
+{
+ "floor_traces": {
+  "hub": 45000.0,
+  "master_pad": 44931.06,
+  "wing_e": 44623.73,
+  "wing_w": 44623.73,
+  "lounge": 44596.18,
+  "entry": 44497.69,
+  "command": 44852.26
+ },
+ "skylight": {
+  "mobility": "<ComponentMobility.MOVABLE: 2>",
+  "source_type": "<SkyLightSourceType.SLS_CAPTURED_SCENE: 0>",
+  "intensity": 3.0,
+  "cast_shadows": false
+ },
+ "key_light": {
+  "intensity": 4.0,
+  "mobility": "<ComponentMobility.MOVABLE: 2>"
+ },
+ "component_scan": {
+  "components": 92,
+  "null_mesh": 0,
+  "null_material_slots": 0,
+  "bad_mesh": [],
+  "bad_material": []
+ },
+ "aivido_asset_scan": {
+  "total": 195,
+  "loaded_ok": 195,
+  "load_fail": []
+ }
+}

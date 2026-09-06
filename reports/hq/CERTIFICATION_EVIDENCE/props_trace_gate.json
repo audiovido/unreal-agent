@@ -1,0 +1,147 @@
+{
+ "floor_traces": {
+  "hub": 4500.0,
+  "master_pad": 4500.0,
+  "wing_e": 4500.0,
+  "wing_w": 4500.0,
+  "lounge": 4500.0,
+  "entry": 4500.0,
+  "command": 4500.0
+ },
+ "props": [
+  {
+   "label": "W3I_Station_W_Desk",
+   "min_z": -48.0,
+   "floor_z": 4500.0,
+   "float_delta": -4548.0
+  },
+  {
+   "label": "W3I_Station_W_Chair",
+   "min_z": -103.0,
+   "floor_z": 4500.0,
+   "float_delta": -4603.0
+  },
+  {
+   "label": "W3I_Station_W_Monitor",
+   "min_z": -23.0,
+   "floor_z": 4500.0,
+   "float_delta": -4523.0
+  },
+  {
+   "label": "W3I_Station_N_Desk",
+   "min_z": -53.0,
+   "floor_z": 4500.0,
+   "float_delta": -4553.0
+  },
+  {
+   "label": "W3I_Station_N_Chair",
+   "min_z": -33.0,
+   "floor_z": 4500.0,
+   "float_delta": -4533.0
+  },
+  {
+   "label": "W3I_Station_N_Monitor",
+   "min_z": -3.0,
+   "floor_z": 4500.0,
+   "float_delta": -4503.0
+  },
+  {
+   "label": "W3I_Station_E_Desk",
+   "min_z": -48.0,
+   "floor_z": 4500.0,
+   "float_delta": -4548.0
+  },
+  {
+   "label": "W3I_Station_E_Chair",
+   "min_z": -103.0,
+   "floor_z": 4500.0,
+   "float_delta": -4603.0
+  },
+  {
+   "label": "W3I_Station_E_Monitor",
+   "min_z": -23.0,
+   "floor_z": 4500.0,
+   "float_delta": -4523.0
+  },
+  {
+   "label": "W3I_Station_S_Desk",
+   "min_z": -128.0,
+   "floor_z": 4500.0,
+   "float_delta": -4628.0
+  },
+  {
+   "label": "W3I_Station_S_Chair",
+   "min_z": -128.0,
+   "floor_z": 4500.0,
+   "float_delta": -4628.0
+  },
+  {
+   "label": "W3I_Station_S_Monitor",
+   "min_z": -53.0,
+   "floor_z": 4500.0,
+   "float_delta": -4553.0
+  },
+  {
+   "label": "W3I_Terminal_W",
+   "min_z": -14.86,
+   "floor_z": 4500.0,
+   "float_delta": -4514.86
+  },
+  {
+   "label": "W3I_Terminal_E",
+   "min_z": -110.32,
+   "floor_z": 4500.0,
+   "float_delta": -4610.32
+  },
+  {
+   "label": "W3I_PresentationBoard",
+   "min_z": 0.0,
+   "floor_z": 4500.0,
+   "float_delta": -4500.0
+  },
+  {
+   "label": "W3I_Cabinet_E1",
+   "min_z": -76.0,
+   "floor_z": 4500.0,
+   "float_delta": -4576.0
+  },
+  {
+   "label": "W3I_Cabinet_E2",
+   "min_z": -76.0,
+   "floor_z": 4500.0,
+   "float_delta": -4576.0
+  },
+  {
+   "label": "W3I_Plant_SW",
+   "min_z": -128.0,
+   "floor_z": 4500.0,
+   "float_delta": -4628.0
+  },
+  {
+   "label": "W3I_Plant_SE",
+   "min_z": -128.0,
+   "floor_z": 4500.0,
+   "float_delta": -4628.0
+  },
+  {
+   "label": "W3I_ServerRack",
+   "min_z": 0.0,
+   "floor_z": 4500.0,
+   "float_delta": -4500.0
+  },
+  {
+   "label": "W3I_Lantern_Body",
+   "min_z": 0.0,
+   "floor_z": 4500.0,
+   "float_delta": -4500.0
+  },
+  {
+   "label": "W3I_Lantern_Chain",
+   "min_z": 144.24
+  },
+  {
+   "label": "W3I_Lantern_Lantern",
+   "min_z": 151.57
+  }
+ ]
+}

@@ -1,0 +1,136 @@
+{
+ "total": 173,
+ "chars": [
+  {
+   "l": "AVIDO_Human_Animation",
+   "mesh": "Male_Adult_12",
+   "mn": 0,
+   "loc": [
+    950,
+    1700,
+    0
+   ],
+   "yaw": 180.0,
+   "pitch": 0.0,
+   "minz": -4.3,
+   "maxz": 182.7
+  },
+  {
+   "l": "AVIDO_Human_Audio",
+   "mesh": "Female_Adult_05",
+   "mn": 0,
+   "loc": [
+    -1900,
+    300,
+    0
+   ],
+   "yaw": 180.0,
+   "pitch": 0.0,
+   "minz": -1.8,
+   "maxz": 178.1
+  },
+  {
+   "l": "AVIDO_Human_Creative",
+   "mesh": "Male_Adult_11",
+   "mn": 0,
+   "loc": [
+    3800,
+    900,
+    0
+   ],
+   "yaw": -90.0,
+   "pitch": 0.0,
+   "minz": -2.0,
+   "maxz": 183.0
+  },
+  {
+   "l": "AVIDO_Human_Lighting",
+   "mesh": "Female_Adult_01",
+   "mn": 0,
+   "loc": [
+    -950,
+    1700,
+    0
+   ],
+   "yaw": 180.0,
+   "pitch": 0.0,
+   "minz": 0.4,
+   "maxz": 174.8
+  },
+  {
+   "l": "AVIDO_Human_Master",
+   "mesh": "Business_Male_01",
+   "mn": 0,
+   "loc": [
+    0,
+    700,
+    0
+   ],
+   "yaw": 180.0,
+   "pitch": 0.0,
+   "minz": -2.9,
+   "maxz": 184.8
+  },
+  {
+   "l": "AVIDO_Human_Technical",
+   "mesh": "Male_Adult_03",
+   "mn": 0,
+   "loc": [
+    1900,
+    300,
+    0
+   ],
+   "yaw": 180.0,
+   "pitch": 0.0,
+   "minz": -1.2,
+   "maxz": 185.1
+  },
+  {
+   "l": "AVIDO_Human_VFX",
+   "mesh": "Female_Adult_08",
+   "mn": 0,
+   "loc": [
+    0,
+    2000,
+    0
+   ],
+   "yaw": 180.0,
+   "pitch": 0.0,
+   "minz": -0.6,
+   "maxz": 175.2
+  },
+  {
+   "l": "AVIDO_Human_Visual",
+   "mesh": "Business_Female_02",
+   "mn": 0,
+   "loc": [
+    -3800,
+    900,
+    0
+   ],
+   "yaw": -90.0,
+   "pitch": 0.0,
+   "minz": -0.5,
+   "maxz": 176.3
+  }
+ ],
+ "n_props": 23,
+ "ui_p": 3,
+ "ui_t": [
+  {
+   "l": "AIVIDO_UI_Agents_Text",
+   "len": 175
+  },
+  {
+   "l": "AIVIDO_UI_Missions_Text",
+   "len": 172
+  },
+  {
+   "l": "AIVIDO_UI_Status_Text",
+   "len": 119
+  }
+ ],
+ "env": 129,
+ "lights": 41,
+ "bad_mats": 0
+}

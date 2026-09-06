@@ -1,0 +1,53 @@
+{
+ "log_exists": true,
+ "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\ue\\ASSET_Showcase2\\Saved\\Logs\\ASSET_Showcase2.log",
+ "lines": 10855,
+ "error_count_all": 228,
+ "warning_count_all": 86,
+ "errors_sample": [
+  "[2026.09.06-15.37.56:385][  0]LogObj: Error: LoadConfig (/Script/EngineSettings.Default__GeneralProjectSettings): import failed for ProjectID in: 5DD01C53-C881-4568-9E50-7029C9FAAB33",
+  "[2026.09.06-16.39.34:789][638]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/animations/m_idle_breathe_01.max.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.40.13:535][754]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/animations/m_idle_breathe_01.max.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.44.38:169][548]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Business_Male_01/Business_Male_01.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.44.38:642][549]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Male_Adult_11/Male_Adult_11.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.44.39:061][550]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Business_Female_02/Business_Female_02.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.44.39:528][551]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Male_Adult_03/Male_Adult_03.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.44.39:939][552]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Female_Adult_05/Female_Adult_05.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.44.40:425][553]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Male_Adult_12/Male_Adult_12.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.44.40:907][554]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Female_Adult_01/Female_Adult_01.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.44.41:379][555]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Female_Adult_08/Female_Adult_08.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.46.06:008][788]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Business_Male_01/Business_Male_01.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.46.06:493][789]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Male_Adult_11/Male_Adult_11.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.46.06:958][790]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Business_Female_02/Business_Female_02.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options.",
+  "[2026.09.06-16.46.07:454][791]LogInterchangeEngine: Error: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Male_Adult_03/Male_Adult_03.fbx : '', Unknown] There was nothing to import from the provided source data using the chosen pipeline options."
+ ],
+ "warnings_sample": [
+  "LogAssetRegistry: Warning: PlatformFileJournal is not available on volume 'D:'. AssetRegistry discovery of files on this volume will be uncached. Unavailability reason:",
+  "[2026.09.06-15.37.35:214][  0]LogD3D12RHI: Warning: Batched command list execution is disabled for async queues due to known bugs in the current driver.",
+  "[2026.09.06-15.37.35:214][  0]LogD3D12RHI: Warning: TSR 16-bit VALU is disabled on NVIDIA due to known compiler bugs in drivers older than 610.00.",
+  "[2026.09.06-16.31.05:153][117]LogPython: Warning: C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\ue\\ASSET_Showcase2\\Content\\Python\\ue_listener_asset.py:58: DeprecationWarning: EditorLevelLibrary: Function 'get_editor_world' on 'EditorLevelLibrary' is deprecated: The Editor Scripting Utilities Plugin is deprecated - Use the function in Unreal Editor Subsystem",
+  "[2026.09.06-16.45.24:633][680]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/MASTER/Business_Male_01.fbx : 'Bip01_Skeleton', Skeleton] Imported skeleton has some invalid bind poses. Skeletal mesh skinning has been rebind using the time zero pose.",
+  "[2026.09.06-16.45.24:633][680]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/MASTER/Business_Male_01.fbx : 'Business_Male_01', SkeletalMesh] No smoothing group information was found for this mesh 'Mesh' in the FBX file. Please make sure to enable the 'Export Smoothing Groups' option in the FBX Exporter before exporting the file.",
+  "[2026.09.06-16.46.30:365][857]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Master/Business_Male_01.fbx : 'Bip01_Skeleton', Skeleton] Imported skeleton has some invalid bind poses. Skeletal mesh skinning has been rebind using the time zero pose.",
+  "[2026.09.06-16.46.30:365][857]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Master/Business_Male_01.fbx : 'Business_Male_01', SkeletalMesh] No smoothing group information was found for this mesh 'Mesh' in the FBX file. Please make sure to enable the 'Export Smoothing Groups' option in the FBX Exporter before exporting the file.",
+  "[2026.09.06-16.46.33:927][858]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Master/Business_Male_01_facial.fbx : 'Bip01_Skeleton', Skeleton] Imported skeleton has some invalid bind poses. Skeletal mesh skinning has been rebind using the time zero pose.",
+  "[2026.09.06-16.46.33:927][858]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Master/Business_Male_01_facial.fbx : 'Business_Male_01_facial', SkeletalMesh] No smoothing group information was found for this mesh 'Mesh' in the FBX file. Please make sure to enable the 'Export Smoothing Groups' option in the FBX Exporter before exporting the file.",
+  "[2026.09.06-16.46.34:467][858]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Creative/Male_Adult_11.fbx : 'Bip01_Skeleton', Skeleton] Imported skeleton has some invalid bind poses. Skeletal mesh skinning has been rebind using the time zero pose.",
+  "[2026.09.06-16.46.34:467][858]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Creative/Male_Adult_11.fbx : 'Male_Adult_11', SkeletalMesh] No smoothing group information was found for this mesh 'Mesh' in the FBX file. Please make sure to enable the 'Export Smoothing Groups' option in the FBX Exporter before exporting the file.",
+  "[2026.09.06-16.46.37:520][858]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Creative/Male_Adult_11_facial.fbx : 'Bip01_Skeleton', Skeleton] Imported skeleton has some invalid bind poses. Skeletal mesh skinning has been rebind using the time zero pose.",
+  "[2026.09.06-16.46.37:521][858]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Creative/Male_Adult_11_facial.fbx : 'Male_Adult_11_facial', SkeletalMesh] No smoothing group information was found for this mesh 'Mesh' in the FBX file. Please make sure to enable the 'Export Smoothing Groups' option in the FBX Exporter before exporting the file.",
+  "[2026.09.06-16.46.38:167][858]LogInterchangeEngine: Warning: [C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/rocketbox/stage/Visual/Business_Female_02.fbx : 'Bip01_Skeleton', Skeleton] Imported skeleton has some invalid bind poses. Skeletal mesh skinning has been rebind using the time zero pose."
+ ],
+ "mapcheck_lines": [
+  "[2026.09.06-15.38.24:074][  0]Cmd: MAP CHECKDEP NOCLEARLOG",
+  "[2026.09.06-15.38.24:074][  0]MapCheck: Map check complete: 0 Error(s), 0 Warning(s), took 0.084ms to complete.",
+  "[2026.09.06-16.37.15:077][213]Cmd: MAP CHECKDEP NOCLEARLOG",
+  "[2026.09.06-16.37.15:078][213]MapCheck: Map check complete: 0 Error(s), 0 Warning(s), took 0.09ms to complete.",
+  "[2026.09.06-17.02.11:603][549]Cmd: MAP CHECKDEP NOCLEARLOG",
+  "[2026.09.06-17.02.11:603][549]MapCheck: Map check complete: 0 Error(s), 0 Warning(s), took 0.11ms to complete.",
+  "[2026.09.06-17.50.00:363][702]Cmd: MAP CHECKDEP NOCLEARLOG",
+  "[2026.09.06-17.50.00:363][702]MapCheck: Map check complete: 0 Error(s), 0 Warning(s), took 0.096ms to complete.",
+  "[2026.09.06-17.51.04:985][668]Cmd: MAP CHECKDEP NOCLEARLOG",
+  "[2026.09.06-17.51.04:985][668]MapCheck: Map check complete: 0 Error(s), 0 Warning(s), took 0.073ms to complete."
+ ]
+}

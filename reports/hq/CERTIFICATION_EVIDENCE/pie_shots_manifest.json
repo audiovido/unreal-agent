@@ -1,0 +1,34 @@
+{
+ "fix_round": 5,
+ "shots": [
+  {
+   "shot": "02_director_master_closeup",
+   "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\02_director_master_closeup.png",
+   "bytes": 969282,
+   "utc": "2026-09-06T22:09:22Z",
+   "what_it_proves": "Master Director standing at central pad (0,700), feet on floor, facing hub"
+  },
+  {
+   "shot": "05_animation_verification",
+   "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\05_animation_verification.png",
+   "bytes": 949337,
+   "utc": "2026-09-06T22:09:24Z",
+   "what_it_proves": "Cast pose verification: Master + Technical + Audio from north"
+  },
+  {
+   "shot": "06_command_zone",
+   "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\06_command_zone.png",
+   "bytes": 930872,
+   "utc": "2026-09-06T22:09:26Z",
+   "what_it_proves": "Command deck: dais, consoles, pylons, hub wall"
+  },
+  {
+   "shot": "03_team_grouping",
+   "file": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\assetlib\\proof\\certification\\03_team_grouping.png",
+   "bytes": 789757,
+   "utc": "2026-09-06T22:09:28Z",
+   "what_it_proves": "Team grouping: Animation/Lighting/VFX cluster at their pads"
+  }
+ ],
+ "fps_median": 3.0
+}

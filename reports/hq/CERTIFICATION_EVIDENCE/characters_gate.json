@@ -1,0 +1,268 @@
+{
+ "count": 8,
+ "characters": [
+  {
+   "label": "AVIDO_Human_Animation",
+   "class": "SkeletalMeshActor",
+   "loc": [
+    950.0,
+    1700.0,
+    0.0
+   ],
+   "yaw": 180.0,
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "bounds_min_z": -4.31,
+   "bounds_max_z": 182.69,
+   "hidden_ed": false,
+   "pad_xy_match": true,
+   "role": "Animation",
+   "feet_delta_vs_floor": -4504.31,
+   "mesh": "/Game/AividoHQ/Characters/Animation/Male_Adult_12.Male_Adult_12",
+   "materials": [
+    "/Game/AividoHQ/Characters/Animation/Aivido_Body.Aivido_Body",
+    "/Game/AividoHQ/Characters/Animation/Aivido_Head.Aivido_Head"
+   ],
+   "materials_null": 0,
+   "animation_mode": "<AnimationMode.ANIMATION_BLUEPRINT: 0>",
+   "anim_to_play": null,
+   "anim_instance_class": null,
+   "is_playing": false,
+   "floor_z": 4500.0
+  },
+  {
+   "label": "AVIDO_Human_Audio",
+   "class": "SkeletalMeshActor",
+   "loc": [
+    -1900.0,
+    300.0,
+    0.0
+   ],
+   "yaw": 180.0,
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "bounds_min_z": -1.83,
+   "bounds_max_z": 178.15,
+   "hidden_ed": false,
+   "pad_xy_match": true,
+   "role": "Audio",
+   "feet_delta_vs_floor": -4501.83,
+   "mesh": "/Game/AividoHQ/Characters/Audio/Female_Adult_05.Female_Adult_05",
+   "materials": [
+    "/Game/AividoHQ/Characters/Audio/Aivido_Body.Aivido_Body",
+    "/Game/AividoHQ/Characters/Audio/Aivido_Head.Aivido_Head",
+    "/Game/AividoHQ/Characters/Audio/Aivido_Body.Aivido_Body"
+   ],
+   "materials_null": 0,
+   "animation_mode": "<AnimationMode.ANIMATION_BLUEPRINT: 0>",
+   "anim_to_play": null,
+   "anim_instance_class": null,
+   "is_playing": false,
+   "floor_z": 4500.0
+  },
+  {
+   "label": "AVIDO_Human_Creative",
+   "class": "SkeletalMeshActor",
+   "loc": [
+    3800.0,
+    900.0,
+    0.0
+   ],
+   "yaw": -90.0,
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "bounds_min_z": -2.01,
+   "bounds_max_z": 183.03,
+   "hidden_ed": false,
+   "pad_xy_match": true,
+   "role": "Creative",
+   "feet_delta_vs_floor": -4502.01,
+   "mesh": "/Game/AividoHQ/Characters/Creative/Male_Adult_11.Male_Adult_11",
+   "materials": [
+    "/Game/AividoHQ/Characters/Creative/Aivido_Body.Aivido_Body",
+    "/Game/AividoHQ/Characters/Creative/Aivido_Head.Aivido_Head"
+   ],
+   "materials_null": 0,
+   "animation_mode": "<AnimationMode.ANIMATION_BLUEPRINT: 0>",
+   "anim_to_play": null,
+   "anim_instance_class": null,
+   "is_playing": false,
+   "floor_z": 4500.0
+  },
+  {
+   "label": "AVIDO_Human_Lighting",
+   "class": "SkeletalMeshActor",
+   "loc": [
+    -950.0,
+    1700.0,
+    0.0
+   ],
+   "yaw": 180.0,
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "bounds_min_z": 0.42,
+   "bounds_max_z": 174.76,
+   "hidden_ed": false,
+   "pad_xy_match": true,
+   "role": "Lighting",
+   "feet_delta_vs_floor": -4499.58,
+   "mesh": "/Game/AividoHQ/Characters/Lighting/Female_Adult_01.Female_Adult_01",
+   "materials": [
+    "/Game/AividoHQ/Characters/Lighting/Aivido_Body.Aivido_Body",
+    "/Game/AividoHQ/Characters/Lighting/Aivido_Head.Aivido_Head",
+    "/Game/AividoHQ/Characters/Lighting/Aivido_Body.Aivido_Body"
+   ],
+   "materials_null": 0,
+   "animation_mode": "<AnimationMode.ANIMATION_BLUEPRINT: 0>",
+   "anim_to_play": null,
+   "anim_instance_class": null,
+   "is_playing": false,
+   "floor_z": 4500.0
+  },
+  {
+   "label": "AVIDO_Human_Master",
+   "class": "SkeletalMeshActor",
+   "loc": [
+    0.0,
+    700.0,
+    0.0
+   ],
+   "yaw": 0.0,
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "bounds_min_z": -71.37,
+   "bounds_max_z": 71.1,
+   "hidden_ed": false,
+   "pad_xy_match": true,
+   "role": "Master",
+   "feet_delta_vs_floor": -4571.37,
+   "mesh": "/Game/AividoHQ/Characters/Master/Business_Male_01.Business_Male_01",
+   "materials": [
+    "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body",
+    "/Game/AividoHQ/Characters/Master/Aivido_Head.Aivido_Head",
+    "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body"
+   ],
+   "materials_null": 0,
+   "animation_mode": "<AnimationMode.ANIMATION_BLUEPRINT: 0>",
+   "anim_to_play": null,
+   "anim_instance_class": null,
+   "is_playing": false,
+   "floor_z": 4500.0
+  },
+  {
+   "label": "AVIDO_Human_Technical",
+   "class": "SkeletalMeshActor",
+   "loc": [
+    1900.0,
+    300.0,
+    0.0
+   ],
+   "yaw": 180.0,
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "bounds_min_z": -1.22,
+   "bounds_max_z": 185.09,
+   "hidden_ed": false,
+   "pad_xy_match": true,
+   "role": "Technical",
+   "feet_delta_vs_floor": -4501.22,
+   "mesh": "/Game/AividoHQ/Characters/Technical/Male_Adult_03.Male_Adult_03",
+   "materials": [
+    "/Game/AividoHQ/Characters/Technical/Aivido_Body.Aivido_Body",
+    "/Game/AividoHQ/Characters/Technical/Aivido_Head.Aivido_Head",
+    "/Game/AividoHQ/Characters/Technical/Aivido_Body.Aivido_Body"
+   ],
+   "materials_null": 0,
+   "animation_mode": "<AnimationMode.ANIMATION_BLUEPRINT: 0>",
+   "anim_to_play": null,
+   "anim_instance_class": null,
+   "is_playing": false,
+   "floor_z": 4500.0
+  },
+  {
+   "label": "AVIDO_Human_VFX",
+   "class": "SkeletalMeshActor",
+   "loc": [
+    0.0,
+    2000.0,
+    0.0
+   ],
+   "yaw": 180.0,
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "bounds_min_z": -0.58,
+   "bounds_max_z": 175.25,
+   "hidden_ed": false,
+   "pad_xy_match": true,
+   "role": "VFX",
+   "feet_delta_vs_floor": -4500.58,
+   "mesh": "/Game/AividoHQ/Characters/VFX/Female_Adult_08.Female_Adult_08",
+   "materials": [
+    "/Game/AividoHQ/Characters/VFX/Aivido_Body.Aivido_Body",
+    "/Game/AividoHQ/Characters/VFX/Aivido_Head.Aivido_Head",
+    "/Game/AividoHQ/Characters/VFX/Aivido_Body.Aivido_Body"
+   ],
+   "materials_null": 0,
+   "animation_mode": "<AnimationMode.ANIMATION_BLUEPRINT: 0>",
+   "anim_to_play": null,
+   "anim_instance_class": null,
+   "is_playing": false,
+   "floor_z": 4500.0
+  },
+  {
+   "label": "AVIDO_Human_Visual",
+   "class": "SkeletalMeshActor",
+   "loc": [
+    -3800.0,
+    900.0,
+    0.0
+   ],
+   "yaw": -90.0,
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "bounds_min_z": -0.47,
+   "bounds_max_z": 176.26,
+   "hidden_ed": false,
+   "pad_xy_match": true,
+   "role": "Visual",
+   "feet_delta_vs_floor": -4500.47,
+   "mesh": "/Game/AividoHQ/Characters/Visual/Business_Female_02.Business_Female_02",
+   "materials": [
+    "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body",
+    "/Game/AividoHQ/Characters/Visual/Aivido_Head.Aivido_Head",
+    "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body",
+    "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body"
+   ],
+   "materials_null": 0,
+   "animation_mode": "<AnimationMode.ANIMATION_BLUEPRINT: 0>",
+   "anim_to_play": null,
+   "anim_instance_class": null,
+   "is_playing": false,
+   "floor_z": 4500.0
+  }
+ ]
+}

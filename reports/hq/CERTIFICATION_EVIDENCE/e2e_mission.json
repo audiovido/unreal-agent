@@ -1,0 +1,22 @@
+{
+ "prompt": "Capture a screenshot of the current viewport in the AividoHQ map",
+ "post_status": 200,
+ "resp": {
+  "state": "complete",
+  "message": "Execution complete.",
+  "terminal": "PASS",
+  "stall_reason": null,
+  "stall_detail": null
+ },
+ "exec_id": null,
+ "duration_s": 537.9,
+ "final": null,
+ "proof_url": "/api/proof/latest",
+ "proof_status": {
+  "ok": true,
+  "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+  "size": 721069
+ },
+ "evidence_copy": "C:\\Users\\Shadow\\Desktop\\aivido-cert\\reports\\hq\\CERTIFICATION_EVIDENCE\\e2e_mission_proof.png",
+ "note": "E2E rerun on cert-branch backend :8790 (planner fix applied); terminal=PASS; proof served via product surface :8765 /api/proof/latest"
+}

@@ -764,6 +764,13 @@ def normalize_execution_plan(task, plan):
             _lower_task = str(task).lower()
             if any(w in _lower_task for w in ("capture", "screenshot", "screen shot", "proof", "visual evidence")):
                 add("evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
+        else:
+            # Actor-less capture requests (e.g. "capture a screenshot of the
+            # current map") must still emit the EVIDENCE step their parent
+            # contract demands, or viewport:captured can never be satisfied
+            # and the execution deterministically stalls.
+            if any(w in task_lower for w in ("capture", "screenshot", "screen shot", "proof", "visual evidence")):
+                add("evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
     if p["disposable"]:
         add("evidence", "EVIDENCE", "capture_unreal_viewport", "capture_unreal_viewport", {})
         add("cleanup", "CLEANUP", "delete_asset", "delete_asset", {"asset_path": p["asset_path"]}, {"absent": True})

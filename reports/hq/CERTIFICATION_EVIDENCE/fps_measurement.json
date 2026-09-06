@@ -1,0 +1,7 @@
+{
+ "method": "unreal.SystemLibrary.get_frame_count() delta across wall-clock window",
+ "pie_fps": 3.0,
+ "editor_fps": 3.0,
+ "pie_window_s": 8.34,
+ "utc": "2026-09-06T22:00:10Z"
+}
