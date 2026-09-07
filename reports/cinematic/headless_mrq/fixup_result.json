@@ -1,0 +1,44 @@
+{
+  "camera_candidates": [
+    "current_focal_length",
+    "enable_first_person_field_of_view",
+    "field_of_view",
+    "first_person_field_of_view",
+    "get_horizontal_field_of_view",
+    "get_vertical_field_of_view",
+    "set_enable_first_person_field_of_view",
+    "set_field_of_view",
+    "set_first_person_field_of_view",
+    "set_use_field_of_view_for_lod",
+    "use_field_of_view_for_lod"
+  ],
+  "camera_fov_set": {
+    "property": "field_of_view",
+    "value": 37.49735641479492
+  },
+  "render_map_saved": true,
+  "seq_methods": [
+    "get_display_rate",
+    "get_playback_end",
+    "get_playback_end_seconds",
+    "get_playback_range",
+    "get_playback_start",
+    "get_playback_start_seconds",
+    "get_tick_resolution",
+    "is_playback_range_locked",
+    "set_display_rate",
+    "set_playback_end",
+    "set_playback_end_seconds",
+    "set_playback_range_locked",
+    "set_playback_start",
+    "set_playback_start_seconds",
+    "set_tick_resolution",
+    "set_tick_resolution_directly"
+  ],
+  "display_rate": "<Struct 'FrameRate' (0x0000019ABCFC7E78) {numerator: 30, denominator: 1}>",
+  "range_setter_applied": "set_playback_start/end_seconds",
+  "playback_start_s": 0.0,
+  "playback_end_s": 8.0,
+  "sequence_saved": true,
+  "ok": true
+}

@@ -1,0 +1,23 @@
+{
+  "phase": "done",
+  "actions": [
+    "STARTED",
+    "config methods w/ 'set': ['__setattr__', 'find_or_add_setting_by_class', 'find_setting_by_class', 'find_settings_by_class', 'get_all_settings', 'get_transient_settings', 'get_user_settings', 'initialize_transient_settings', 'remove_setting', 'reset_editor_property', 'set_config_origin', 'set_editor_properties', 'set_editor_property']",
+    "WARN is_abstract failed: type object 'MoviePipelineDeferredPassBase' has no attribute 'is_abstract'",
+    "Added pass object: <Object '/Game/CineMRQ/MRQ_Config.MRQ_Config:MoviePipelineDeferredPassBase_0' (0x000002CAB2A22D00) Class 'MoviePipelineDeferredPassBase'> class=MoviePipelineDeferredPassBase",
+    "Saved config: True",
+    "reloaded methods w/ 'set': ['__setattr__', 'find_or_add_setting_by_class', 'find_setting_by_class', 'find_settings_by_class', 'get_all_settings', 'get_transient_settings', 'get_user_settings', 'initialize_transient_settings', 'remove_setting', 'reset_editor_property', 'set_config_origin', 'set_editor_properties', 'set_editor_property']",
+    "  persisted setting: MoviePipelineImageSequenceOutput_PNG",
+    "  persisted setting: MoviePipelineDeferredPassBase",
+    "  persisted setting: MoviePipelineOutputSetting",
+    "total=3 nulls=0 render_passes=1"
+  ],
+  "error": null,
+  "ok": true,
+  "pass_abstract": null,
+  "pass_added": "MoviePipelineDeferredPassBase",
+  "saved": true,
+  "setting_count": 3,
+  "null_settings": 0,
+  "render_pass_persisted": 1
+}

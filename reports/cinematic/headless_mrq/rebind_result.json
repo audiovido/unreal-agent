@@ -1,0 +1,13 @@
+{
+  "loaded_map": "/Game/CineMRQ/RenderMap",
+  "camera_found": true,
+  "camera_path": "/Game/CineMRQ/RenderMap.RenderMap:PersistentLevel.CineCameraActor_0",
+  "section_range": [
+    0.0,
+    8.000041961669922
+  ],
+  "sequence_saved": true,
+  "camera_bound": true,
+  "binding_path": "/Game/CineMRQ/RenderMap.RenderMap:PersistentLevel.CineCameraActor_0",
+  "ok": true
+}

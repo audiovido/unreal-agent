@@ -1,0 +1,50 @@
+{
+  "certified_loaded": {
+    "actor_count": 166,
+    "cast": [
+      "AVIDO_Human_Animation",
+      "AVIDO_Human_Audio",
+      "AVIDO_Human_Creative",
+      "AVIDO_Human_Lighting",
+      "AVIDO_Human_Master",
+      "AVIDO_Human_Technical",
+      "AVIDO_Human_VFX",
+      "AVIDO_Human_Visual"
+    ]
+  },
+  "hero": {
+    "loc": [
+      -0.0,
+      700.0,
+      2.9
+    ],
+    "zmin": -0.0,
+    "zmax": 187.68
+  },
+  "cam_fov_error": "CineCameraComponent: Failed to find property 'current_fov' for attribute 'current_fov' on 'CineCameraComponent'",
+  "camera": {
+    "label": "MRQ_Cam",
+    "loc": [
+      -360.0,
+      700.0,
+      134.9
+    ],
+    "rot": [
+      5.0,
+      0.0,
+      0.0
+    ]
+  },
+  "render_map_saved": true,
+  "range_error": "type object 'MovieSceneSequenceExtensions' has no attribute 'set_playback_range_start_seconds'",
+  "sequence": {
+    "ok": true,
+    "camera_bound": true,
+    "saved": true
+  },
+  "config": {
+    "ok": true,
+    "saved": true
+  },
+  "ok": true
+}

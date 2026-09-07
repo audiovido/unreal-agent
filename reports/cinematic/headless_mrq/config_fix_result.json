@@ -1,0 +1,14 @@
+{
+  "pass_settings": [
+    {
+      "class": "MoviePipelineRenderPass",
+      "ok": true
+    },
+    {
+      "class": "MoviePipelineImageSequenceOutput_PNG",
+      "ok": true
+    }
+  ],
+  "config_saved": true,
+  "ok": true
+}

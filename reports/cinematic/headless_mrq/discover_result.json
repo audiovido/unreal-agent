@@ -1,0 +1,600 @@
+{
+  "classes": [
+    {
+      "name": "MoviePipeline",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineAntiAliasingSetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineBasicConfig",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineBasicDenoiserType",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineBurnInSetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineBurnInWidget",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineCameraCutInfo",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineCameraSetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineCollection",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineCollectionModifier",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineColorSetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineCommandLineEncoder",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineCommandLineEncoderSettings",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineConfigBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineConfigMode",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineConsoleVariableEntry",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineConsoleVariableSetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineDebugSettings",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineDefaultConfigType",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineDeferredPassBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineDeferredPass_DetailLighting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineDeferredPass_LightingOnly",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineDeferredPass_PathTracer",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineDeferredPass_ReflectionsOnly",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineDeferredPass_Unlit",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineEdGraphNode",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineEdGraphNodeBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineEdGraphNodeInput",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineEdGraphNodeOutput",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineEdGraphRerouteNode",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineEdGraphSubgraphNode",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineEdGraphVariableNode",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineEditorLibrary",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineEncodeQuality",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineExecutorBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineExecutorJob",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineExecutorShot",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineFCPXMLExporter",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineFilenameResolveParams",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineFinished",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineFormatArgs",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineFunctionalTestBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineGameMode",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineGameOverrideSetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineHighResSetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineHttpResponseRecieved",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineImagePassBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineImageSequenceOutputBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineImageSequenceOutput_BMP",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineImageSequenceOutput_EXR",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineImageSequenceOutput_JPG",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineImageSequenceOutput_PNG",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineInProcessExecutor",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineInProcessExecutorSettings",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineLibrary",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineLinearExecutorBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineMP4EncodeLevel",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineMP4EncodeProfile",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineMP4EncodeRateControlMode",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineMP4EncoderOutput",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineMasterConfig",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineMaterialModifier",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineNewProcessExecutor",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineOutputBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineOutputData",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineOutputSetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelinePIEExecutor",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelinePIEExecutorSettings",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelinePanoramicFilterType",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelinePassIdentifier",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelinePostProcessPass",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelinePostRenderActionType",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelinePrimaryConfig",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelinePrimaryConfigFactory",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelinePythonHostExecutor",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineQueue",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineQueueEngineSubsystem",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineQueueProjectSettings",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineQueueSubsystem",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineRenderPass",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineRenderPassOutputData",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineSegmentWorkMetrics",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineSetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineSetting_BlueprintBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineShotConfig",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineShotConfigFactory",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineShotOutputData",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineShutterTiming",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineSidecarCamera",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineSocketMessageRecieved",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineStringArray",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineTextureStreamingMethod",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineVideoOutputBase",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineViewFamilySetting",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineVisibilityModifier",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineWaveOutput",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineWidgetRenderer",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    },
+    {
+      "name": "MoviePipelineWorkFinished",
+      "abstract": null,
+      "is_pass": null,
+      "is_output": null
+    }
+  ],
+  "base_pass_resolved": "<Object '/Script/MovieRenderPipelineCore.MoviePipelineRenderPass' (0x0000029FF3D24880) Class 'Class'>",
+  "out_base_resolved": "<Object '/Script/MovieRenderPipelineCore.MoviePipelineOutputBase' (0x0000029FF3D24600) Class 'Class'>"
+}

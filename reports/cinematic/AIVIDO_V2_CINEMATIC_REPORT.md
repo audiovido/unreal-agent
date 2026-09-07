@@ -3,6 +3,10 @@
 - Branch: `aivido/v2-cinematic`
 - Base: frozen V1 `79fe5c7e2db7f070841dc07291e1f35fbe03cad2` (`aivido/v1-release`) — V1 untouched.
 - Hermetic suite on this branch: **1121 passed, 1 skipped, 0 failed** (clean full-suite rerun 233 s, exit 0; cinematic tests **39/39 PASS**).
+- **HEADLESS MRQ closeout:** real Movie Render Pipeline render delivered via
+  `UnrealEditor-Cmd.exe -game -RenderOffscreen -DisablePython` — **240 frames,
+  1920×1080 @ 30 fps, 8.0 s, human cast visible, exit 0**. See
+  `AIVIDO_HEADLESS_MRQ_REPORT.md`.
 - Live editor: UE 5.8.2, project ASSET_Showcase2, level `/Game/Maps/AividoHQ.AividoHQ` (166 actors, certified scene).
 
 Every claim below is backed by a real artifact (code, hermetic test, JSON,
@@ -89,35 +93,42 @@ no bounded cinematic quality loop, no scene-framing/hero-shot planner.
 
 ## 6. Phase 5 — real render / Movie Render Queue
 
-- **MRQ plugin is now enabled** for ASSET_Showcase2 (`MovieRenderPipeline`
-  added to the .uproject). On UE 5.8 the python-visible surface is
+- **MRQ plugin is enabled** for ASSET_Showcase2 (`MovieRenderPipeline` added
+  to the .uproject). On UE 5.8 the python-visible surface is
   `MoviePipelineQueueSubsystem` / `MoviePipelineInProcessExecutor` /
-  `MoviePipelinePIEExecutor` (the 5.4-era names `MovieRenderQueueSubsystem` /
-  `MoviePipelineEditorExecutor` no longer exist). `MovieRenderQueueDriver` was
-  updated to the 5.8 API and the probe now **PASSES** (subsystem + job +
-  config APIs verified live).
-- Real MRQ submission was attempted end-to-end: a Level Sequence with
-  **camera-bound** camera cuts (via `get_binding_id` → `set_camera_binding_id`,
-  the cut binding verified as `camera_bound: true` and the shot detected by
-  the engine: `Inner: AVCam_…`), plus a temp map copy carrying the transient
-  cameras so a clean certified level is never touched. Both the InProcess and
-  the PIE executors **stall at the in-editor target-map load step** (worker
-  thread renders up to “About to load target map”, then goes silent; no
-  frames are produced). The certified on-disk map is untouched. Result:
-  **MRQ is engine-BLOCKED** at the map-switch step, reported truthfully; no
-  MRQ output is claimed.
-- Real-frame fallback (explicitly labeled NOT MRQ) — the cast-hero film was
-  rendered through the proven fresh-capture path (wake → viewport kick →
-  settle → native capture with bounded retry + liveness probe) along a
-  deterministic camera pose path. ffprobe: **2002×742, 8.0 s, 6 fps, 48 real
-  frames**, MP4 verified.
-- Deliverables live:
-  - video: `reports/cinematic/cast/demo/render/aivido_cinematic.mp4`
-  - frames dir: `reports/cinematic/cast/demo/render/frames/` (48 real frames)
-  - proof stills: `reports/cinematic/cast/demo/shot1_frame.png`,
-    `shot2_frame.png`; `reports/cinematic/cast/proof/cast_pre_lift.png`,
-    `cast_post_lift.png`
-  - full record: `reports/cinematic/cast/demo/cinematic_result.json`
+  `MoviePipelinePIEExecutor`; `MovieRenderQueueDriver` was updated to the 5.8
+  API and the probe **PASSES**.
+- **In-editor MRQ remains engine-blocked**: real MRQ submission with
+  camera-bound cuts + a temp map copy stalls at the in-editor target-map load
+  step (silent after “About to load target map”, no frames) for both
+  InProcess and PIE executors.
+- **HEADLESS MRQ — COMPLETE (this commit).** The stall is bypassed by
+  rendering through the command-line editor:
+  `UnrealEditor-Cmd.exe <project> /Game/CineMRQ/RenderMap.RenderMap -game
+  -MoviePipelineConfig=/Game/CineMRQ/MRQ_Config.MRQ_Config
+  -LevelSequence=/Game/CineMRQ/MRQ_CastHero.MRQ_CastHero
+  -MoviePipelineLocalExecutor -RenderOffscreen -DisablePython …`
+  → **exit 0**, engine log confirms `Shot has 1 Passes … 1920x1080`,
+  `Finished rendering last shot`, executor finished 1 job in 34.6 s.
+  - **240 genuine Movie Render Pipeline frames**, 1920×1080 @ 30 fps,
+    8.0 s; **human cast visible** in start/middle/end proof frames;
+    no viewport fallback, no fake PASS.
+  - Frames: `reports/cinematic/headless_mrq/frames/`; MP4 (ffmpeg encode of
+    the real MRQ frames, H.264): `mrq_render_1920x1080_30fps.mp4`;
+    proofs: `reports/cinematic/headless_mrq/proof/proof_{start,middle,end}.png`.
+  - Key engine fixes this task: CineCamera `field_of_view`; playback-range
+    `set_playback_start/end_seconds`; camera-cut re-bound to the RenderMap
+    actor path; **`-DisablePython`** (the auto-run Python bridge crashed the
+    render process otherwise); and the **0-Pass fix** — `MoviePipelineRenderPass`
+    is **abstract** in UE 5.8 and was silently nulled on save; the concrete
+    full pass is **`MoviePipelineDeferredPassBase`** (verified persisted).
+  - Certified map untouched (mtime unchanged), render assets isolated under
+    `/Game/CineMRQ/`. Full detail: **`AIVIDO_HEADLESS_MRQ_REPORT.md`**.
+- Earlier real-frame fallback (explicitly labeled NOT MRQ) — the cast-hero
+  film via the fresh-capture path (wake → viewport kick → settle → native
+  capture, bounded retry + liveness probe): ffprobe **2002×742, 8.0 s,
+  6 fps, 48 real frames** at
+  `reports/cinematic/cast/demo/render/aivido_cinematic.mp4`.
 
 ## 7. Phase 6 — mission support
 
@@ -176,10 +187,10 @@ chain.
 
 ## Blockers (truthful, engine/content — not faked)
 
-1. **MRQ engine-blocked** — plugin enabled + 5.8 surface verified + jobs
-   submitted with camera-bound cuts, but both executors stall at the in-editor
-   target-map load step. Real MRQ output BLOCKED (no fake render). Real-frame
-   evidence delivered instead, labeled exactly as such.
+1. **In-editor MRQ still stalls** at the interactive map-switch step — the
+   working route is the **headless** `UnrealEditor-Cmd.exe -game
+   -RenderOffscreen -DisablePython` path (proven; see
+   `AIVIDO_HEADLESS_MRQ_REPORT.md`).
 2. ~~AividoHQ human cast renders 0 px by default~~ — **RESOLVED DURABLY.**
    Root cause was diagnosed as three independent Unreal-side import/ref-pose
    bakes (legacy "Bip01 Footsteps" pivot bake burying the cast ~1.8 m below
@@ -200,27 +211,32 @@ chain.
 
 ## Major
 
-1. MRQ cannot complete an in-editor map-switch render this session (engine
-   block, evidence recorded; not reopened).
-2. Deterministic cinematic scoring of the dark hero: the luma subject
-   locator merges the bright certified set into a 0.93-coverage blob, so
-   framing is pinned at 0.0 at every angle tested and the deterministic 8.0
-   gate stays open — a precisely characterized scorer limitation, not a real
-   framing failure. Vision dimension passes at **8/10** on the upright hero.
-3. Editor viewport capture is intermittently unreliable after heavy session
+1. In-editor MRQ cannot complete an interactive map-switch render (engine
+   block, evidence recorded); the headless command-line path renders instead.
+2. Headless MRQ visual ceiling: ~27 % of pixels clip to white on the certified
+   practical light and the subject is backlit (dark suit ~44 luma) — subject
+   readable/identifiable; one bounded render-map light adjustment would lift it.
+3. Deterministic cinematic scoring of the dark hero: the luma subject locator
+   merges the bright certified set into a 0.93-coverage blob (framing pinned at
+   0.0 at every angle) — a precisely characterized scorer limitation; vision
+   passes at 8/10 on the upright hero.
+4. Editor viewport capture is intermittently unreliable after heavy session
    use (transient empty/failed native captures); fresh editors + the
    wake→kick→settle contract with bounded retry + a liveness probe restore
    it, and partial renders are recorded truthfully, never padded.
 
 ## Warnings
 
-1. MRQ stays BLOCKED; no 30 fps 1080p MRQ render is claimed.
-2. Local qwen3-vl vision critiques are recorded per pass (advisory); they are
+1. MRQ in-editor path remains engine-blocked; the headless path is proven and
+   reproducible (see `AIVIDO_HEADLESS_MRQ_REPORT.md`).
+2. Headless MRQ pass class: `MoviePipelineRenderPass` is abstract in UE 5.8
+   (silently nulled on save); use `MoviePipelineDeferredPassBase`.
+3. Local qwen3-vl vision critiques are recorded per pass (advisory); they are
    not yet auto-applied as scene fixes beyond the deterministic defect map.
-3. Capture resolution follows native editor viewport geometry (2002×742
-   effective this session), not an exact 1920×1080 target.
-4. Raw frame dirs (`reports/cinematic/*/render/frames*`) stay untracked per
+4. Viewport-capture films (not MRQ) follow native editor viewport geometry
+   (2002×742 effective this session); the MRQ render is exactly 1920×1080.
+5. Raw frame dirs (`reports/cinematic/*/render/frames*`) stay untracked per
    repo convention; committed evidence is the verified MP4s + proof stills +
    JSON records.
-5. Keyframed camera motion is engine-closed in UE 5.8 python; shot motion is
-   rendered via a deterministic camera path.
+6. Keyframed camera motion is engine-closed in UE 5.8 python; the MRQ shot
+   uses the bound CineCamera (static framing).
