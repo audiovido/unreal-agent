@@ -182,19 +182,15 @@ class TestLocalStorageGuards:
             assert "try {" in window and "catch" in window, f"{fn} lacks try/catch"
 
     def test_all_localstorage_access_is_guarded(self, js_text):
-        """DEFECT SCAN: every localStorage getItem/setItem must be inside a
-        guarded (try/catch) store function. Top-level or persist-path access
-        in a storage-blocked context would throw and break the whole UI."""
+        """DEFECT SCAN: every localStorage getItem/setItem must sit inside a
+        try/catch guard (the project's safe-storage pattern: try/catch on the
+        same line as the access). Unguarded access in a storage-blocked
+        context would throw and break the whole UI."""
         lines = js_text.splitlines()
         unguarded = []
-        guarded_fns = ("function questStore(", "function ledgerStore(")
-        in_guarded = False
         for i, line in enumerate(lines, start=1):
-            if any(f in line for f in guarded_fns):
-                in_guarded = True
-                continue
             if "localStorage" in line and not line.strip().startswith("//"):
-                if not in_guarded:
+                if "try" not in line or "catch" not in line:
                     unguarded.append((i, line.strip()[:90]))
         assert not unguarded, \
             "UNGUARDED localStorage access (would throw in storage-blocked contexts):\n" + \

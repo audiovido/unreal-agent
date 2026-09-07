@@ -161,7 +161,7 @@
   "performance_metrics": {
     "character_count": 8,
     "material_instances": 16,
-    "master_materials": quarter2,
+    "master_materials": 2,
     "texture_resolution": "2K",
     "lod_system": "Default_Unreal",
     "estimated_vram": "Low_Impact"
