@@ -168,3 +168,36 @@ class TestTruthfulGuardsPreserved:
         from core import session_execution
         source = inspect.getsource(session_execution)
         assert "REQUESTED_TOOL_MISSING" in source
+
+
+class TestCaptureEvidenceEmission:
+    def test_capture_mission_records_real_evidence(self, tmp_path):
+        """A completed capture/proof mission must carry the real captured
+        PNG path in state.evidence (get_evidence never empty)."""
+        from core.mission import MissionEngine, MissionState
+
+        state = MissionState(mission_id="mission_test_capture",
+                             prompt="Capture the current Unreal viewport")
+        state.intent = {
+            "capture_only": True, "mode": "execute", "read_only": True,
+        }
+        state.plan = {"steps": [
+            {"step_id": "viewport_evidence", "phase": "EVIDENCE",
+             "preferred_tool": "capture_unreal_viewport"},
+        ]}
+        state.completed_step_ids = ["viewport_evidence"]
+        state.step_results = {"viewport_evidence": {
+            "ok": True, "tool": "capture_unreal_viewport",
+            "result": {"ok": True,
+                       "path": str(tmp_path / "viewport_latest.png"),
+                       "size": 12345},
+        }}
+
+        engine = MissionEngine.__new__(MissionEngine)
+        MissionEngine._emit_capture_evidence(engine, state)
+
+        ev = [e for e in state.evidence if e.get("kind") == "viewport_capture"]
+        assert ev, "capture mission produced no evidence entry"
+        assert ev[0]["ok"] is True
+        assert ev[0]["path"].endswith("viewport_latest.png")
+        assert ev[0]["bytes"] == 12345

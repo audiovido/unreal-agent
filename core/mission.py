@@ -450,6 +450,10 @@ class MissionEngine:
             # Diagnostics only PASS with real probe evidence;
             # get_evidence must never come back empty for them.
             self._emit_diagnostic_evidence(state)
+        if bool((state.intent or {}).get("capture_only")):
+            # Capture/proof missions only PASS with the real capture file
+            # recorded as evidence; get_evidence must never be empty.
+            self._emit_capture_evidence(state)
 
         if state.blockers:
             state.status = "blocked"
@@ -540,6 +544,45 @@ class MissionEngine:
                     or inner.get("path") or inner.get("resource_path"))
             if path:
                 entry["path"] = str(path)
+            state.evidence.append(entry)
+
+    def _emit_capture_evidence(self, state: MissionState) -> None:
+        """Append one real evidence entry per completed viewport capture.
+
+        A capture/proof mission must never finish with empty evidence: the
+        EVIDENCE step's real capture result (the actual PNG path the tool
+        wrote) lands in `state.evidence`, so get_evidence returns
+        non-empty, real evidence and the response can serve the file.
+        """
+        steps = state.plan.get("steps") or []
+        completed = set(state.completed_step_ids)
+        existing = {
+            ev.get("step_id")
+            for ev in state.evidence
+            if ev.get("kind") == "viewport_capture"
+        }
+        for step in steps:
+            sid = step.get("step_id")
+            if sid in existing or sid not in completed:
+                continue
+            if str(step.get("phase", "")).upper() != "EVIDENCE":
+                continue
+            if str(step.get("preferred_tool", "")) != "capture_unreal_viewport":
+                continue
+            result = state.step_results.get(sid) or {}
+            inner = (result.get("result")
+                     if isinstance(result.get("result"), dict) else {})
+            path = (inner.get("path") or result.get("path"))
+            entry = {
+                "kind": "viewport_capture",
+                "step_id": sid,
+                "tool": step.get("preferred_tool"),
+                "ok": bool(result.get("ok") or inner.get("ok")),
+                "path": str(path or ""),
+            }
+            size = inner.get("size", result.get("size"))
+            if isinstance(size, int):
+                entry["bytes"] = size
             state.evidence.append(entry)
 
     def _diagnostic_verdict(
