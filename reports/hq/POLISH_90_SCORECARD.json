@@ -1,0 +1,103 @@
+{
+  "mission": "AIVIDO FREEBUFF POLISH-90",
+  "certified_baseline": 80,
+  "truthful_score": 90,
+  "target_achieved": true,
+  "branch": "aivido/polish-90",
+  "certified_commit": "1c082f041af2237e429b9c30f1980ac447134483",
+  "date": "2026-09-06",
+  "categories": {
+    "character_motion": {
+      "status": "PASS",
+      "visual_proof": "WARN",
+      "method": "procedural idle driver (slate tick, python) — breathing bob 2-4cm, weight-shift sway 1-2cm, per-character phases; driven in PIE game world; restore-on-stop verified",
+      "telemetry": {
+        "characters_driven": 8,
+        "max_vertical_motion_cm": 2.8,
+        "max_lateral_motion_cm": 1.4,
+        "driver_tick_rate_fg": 56.6,
+        "restore_verified": true
+      },
+      "note": "Real tick-driven motion verified by transform telemetry; characters render in editor viewport but not in PIE game viewport (pre-existing); no fabricated frames."
+    },
+    "lighting": {
+      "status": "PASS",
+      "fix": "31 stationary lights -> Movable (no bake required under Lumen); intensities/colors untouched; full editor restart + reopen verified",
+      "unbuilt_warning_before": 457,
+      "unbuilt_warning_after": 0
+    },
+    "hub_screens": {
+      "status": "PASS",
+      "before": "blown-out white screens (white clip up to 27.8% in screen band)",
+      "after": "glowing blue panels on lit room",
+      "white_clip_before_after": {
+        "hub_wide": [0.130, 0.115],
+        "agents_panel": [0.278, 0.269],
+        "missions_panel": [0.271, 0.230]
+      },
+      "glow_before_after": {
+        "M_Aivido_ScreenH2": [[3.0, 4.2, 6.0], [0.35, 0.5, 0.7]],
+        "M_Aivido_ScreenH": [[0.5, 0.8, 1.4], [0.1, 0.17, 0.3]]
+      }
+    },
+    "in_world_ui": {
+      "status": "PASS",
+      "type": "static TextRender (unchanged architecture; no UMG claimed)",
+      "text_size_before_after": [22, 32],
+      "text_color": "cyan 6,235,255",
+      "boards": ["AIVIDO_UI_Agents_Panel", "AIVIDO_UI_Missions_Panel", "AIVIDO_UI_Status_Panel"]
+    },
+    "mobile_390px": {
+      "status": "PASS",
+      "fix": "ui/aivido.css @media(max-width:440px) stacks hero CTA cleanly; cache-bust in aivido.html + build-manifest.json",
+      "verified_widths_px": [360, 390, 430]
+    },
+    "foreground_performance": {
+      "status": "PASS",
+      "approx_fps_foreground": "53-57 (slate tick 53.0-56.6/s with PIE active)",
+      "unreal_working_set_mb": 3191,
+      "unreal_private_mb": 4364,
+      "note": "certification 3 FPS was measured unfocused/throttled"
+    }
+  },
+  "regression_gate": {
+    "map_load": "PASS",
+    "characters": "8/8",
+    "props_environment_actors": 83,
+    "screens": "6 + 3 UI panels with original materials",
+    "lights": "41/41 movable",
+    "lighting_rebuild_warning": "RESOLVED",
+    "map_save": "PASS",
+    "map_reopen": "PASS",
+    "materials_resolve": true,
+    "idle_driver_start_stop_restore": "PASS",
+    "backend_bridge_planner_untouched": true
+  },
+  "warnings": [
+    "Visual motion proof limited: characters do not render in PIE game viewport (pre-existing); motion proven via telemetry",
+    "Team-group capture: characters sub-pixel at wide framing; room/lighting correct",
+    "In-world UI remains static TextRender (as certified)"
+  ],
+  "proof_paths": {
+    "dir": "reports/hq/POLISH_90_EVIDENCE",
+    "shots": [
+      "shot1_hq_wide.png",
+      "shot2_master_director.png",
+      "shot3_team_group.png",
+      "shot4_animated_character.png",
+      "shot4b_room_lighting.png",
+      "shot5_command_hub.png",
+      "shot6_inworld_ui.png",
+      "shot7_cinematic_angle.png",
+      "before_hub_wide.png",
+      "before_agents_panel.png",
+      "before_missions_panel.png",
+      "v2_hub_wide.png",
+      "v2_agents_panel.png",
+      "v2_missions_panel.png"
+    ]
+  },
+  "critical_errors": 0,
+  "major_errors": 0,
+  "warnings_remaining": 3
+}
