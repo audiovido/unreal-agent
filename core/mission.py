@@ -570,17 +570,25 @@ class MissionEngine:
             if str(step.get("preferred_tool", "")) != "capture_unreal_viewport":
                 continue
             result = state.step_results.get(sid) or {}
-            inner = (result.get("result")
-                     if isinstance(result.get("result"), dict) else {})
-            path = (inner.get("path") or result.get("path"))
+            # The tool result arrives wrapped in bridge envelope(s):
+            # {ok, result: {ok, message, result: {ok, path, size, ...}}}.
+            node = (result.get("result")
+                    if isinstance(result.get("result"), dict) else {})
+            for _ in range(3):
+                if node.get("path"):
+                    break
+                nxt = node.get("result")
+                if not isinstance(nxt, dict):
+                    break
+                node = nxt
             entry = {
                 "kind": "viewport_capture",
                 "step_id": sid,
                 "tool": step.get("preferred_tool"),
-                "ok": bool(result.get("ok") or inner.get("ok")),
-                "path": str(path or ""),
+                "ok": bool(result.get("ok") or node.get("ok")),
+                "path": str(node.get("path") or ""),
             }
-            size = inner.get("size", result.get("size"))
+            size = node.get("size")
             if isinstance(size, int):
                 entry["bytes"] = size
             state.evidence.append(entry)

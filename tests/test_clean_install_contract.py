@@ -188,9 +188,13 @@ class TestCaptureEvidenceEmission:
         state.completed_step_ids = ["viewport_evidence"]
         state.step_results = {"viewport_evidence": {
             "ok": True, "tool": "capture_unreal_viewport",
-            "result": {"ok": True,
-                       "path": str(tmp_path / "viewport_latest.png"),
-                       "size": 12345},
+            # real shape: bridge envelope nested around the tool result
+            "result": {"ok": True, "message": "Python executed",
+                       "result": {"ok": True,
+                                  "path": str(tmp_path / "viewport_latest.png"),
+                                  "size": 1351837,
+                                  "capture_source": "NativeEditorViewport"},
+                       "stdout": ""},
         }}
 
         engine = MissionEngine.__new__(MissionEngine)
@@ -200,4 +204,4 @@ class TestCaptureEvidenceEmission:
         assert ev, "capture mission produced no evidence entry"
         assert ev[0]["ok"] is True
         assert ev[0]["path"].endswith("viewport_latest.png")
-        assert ev[0]["bytes"] == 12345
+        assert ev[0]["bytes"] == 1351837
