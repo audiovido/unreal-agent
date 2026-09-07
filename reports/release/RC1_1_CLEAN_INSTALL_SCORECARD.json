@@ -1,0 +1,68 @@
+{
+  "mission": "AIVIDO RC1.1 — clean-install defect closure",
+  "branch": "aivido/rc1.1-clean-install-fixes",
+  "base": {"branch": "aivido/rc1-integration", "commit": "b079300de99715347877b21e3940c5ba19dd4413"},
+  "head": "3a80be9 (full history: ae7c34e dependency+planning, 3d0287f evidence emission, 3a80be9 envelope unwrap)",
+  "date_utc": "2026-09-07",
+  "rc1_1_ready": true,
+  "defect_1_missing_requests": {
+    "symptom": "fresh clone + fresh venv: ModuleNotFoundError: No module named 'requests' (core/orchestrator.py imports requests); documented closure listed only fastapi, uvicorn, pillow, numpy, pydantic",
+    "fix": [
+      "requirements.txt created at repo root as the AUTHORITATIVE runtime dependency contract (fastapi, uvicorn, pillow, numpy, pydantic, requests, rich — rich was also a hard runtime import in core/agent.py)",
+      "scripts/build_product_package.py packaging docstring now points to requirements.txt as the contract",
+      "app/start.ps1 bootstraps a missing .venv from requirements.txt (clean install path)",
+      "core/env_doctor.py CORE_DEPS now checks requests + rich",
+      "no vendoring"
+    ],
+    "clean_runtime_import": "PASS (fresh venv created from requirements.txt in an isolated clean worktree: import requests, fastapi, uvicorn, PIL, numpy, pydantic, rich all OK)"
+  },
+  "defect_2_zero_step_capture_plan": {
+    "symptom": "explicit viewport capture/proof prompts (mode=execute) produced a 0-step ANSWER plan via the universal intent/planner pipeline; the truthful zero-step guard then failed the mission (steps_total=0, evidence=[])",
+    "truthfulness_guard": "PRESERVED — zero executed steps still FAIL (guarded by regression test)",
+    "fix": [
+      "core/universal_intent.py: CAPTURE_PROOF_MARKERS + intent.capture_only — explicit viewport capture/screenshot/proof requests classify as mode=execute, read_only=True (read-only intent is NOT reset for capture_only)",
+      "core/universal_intent.py: expand_requirements emits exactly one capture_evidence requirement for capture_only intents (never the mutating environment-polish default)",
+      "core/universal_planner.py: kind==capture_evidence plans a single READ-ONLY EVIDENCE step using the real registered capture_unreal_viewport tool (no mutating steps, no spawning)",
+      "core/mission.py: capture-only missions record the real captured file as evidence (_emit_capture_evidence, bridge-envelope-aware: path + bytes from the actual PNG)"
+    ],
+    "plan_shape": "resolve_project (INSPECT, inspect_project) -> bridge_health (INSPECT, unreal_ping) -> viewport_evidence (EVIDENCE, capture_unreal_viewport)"
+  },
+  "regression_tests": {
+    "file": "tests/test_clean_install_contract.py",
+    "count": 20,
+    "covers": [
+      "runtime import contract (7 modules incl. requests) in a clean dependency contract",
+      "requirements.txt completeness",
+      "3 required capture prompts emit capture_unreal_viewport EVIDENCE steps",
+      "read-only compatibility (read_only intent + no mutating tools in plan)",
+      "exact clean-clone prompt plans a capture step",
+      "unrelated chat gets NO capture step",
+      "capture_only flag flows through intent.to_dict() to policy",
+      "zero-step execute missions still FAIL truthfully (guard source present)",
+      "REQUESTED_TOOL_MISSING behavior intact",
+      "capture evidence emission records real path/bytes from the nested bridge envelope"
+    ]
+  },
+  "full_tests": {"passed": 1051, "skipped": 1, "failed": 0, "duration_s": 129.9, "note": "1 pre-existing skip; 0 new failures"},
+  "live_clean_clone_e2e": {
+    "environment": "NEW isolated clean worktree (fresh checkout of the fixed branch) + FRESH venv installed from requirements.txt; backend app.served:app on 127.0.0.1:8790; existing live bridge 127.0.0.1:6766 (UE 5.8.2, AividoHQ, editor pid 2220)",
+    "request": "POST /api/unreal-coder {prompt: 'Capture the CURRENT Unreal Editor viewport from the live AividoHQ project and return the captured viewport as real evidence. Read-only: do not modify anything.', mode: 'execute', quality: 'standard', dry_run: false}",
+    "mission_id": "mission_631b6f668cf8",
+    "status": "complete",
+    "verdict": "PASS",
+    "steps_total": 3,
+    "steps_completed": 3,
+    "evidence_count": 1,
+    "evidence_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
+    "evidence_is_real": "native editor viewport capture (diagnostic: OK|source=LevelViewport[1]|perspective=1|visible=1|width=1922|height=677|bytes=1351837), file exists, 1351837 bytes, written during the mission (mtime age 0.0s)",
+    "project_mutation": 0,
+    "mutation_proof": "actor scan identical before/after (173 actors, 8/8 AVIDO_Human, 23/23 W3I_*, 41/41 movable lights, 0 broken roots, 0 missing materials); read-only policy enforced the whole run"
+  },
+  "counts": {"critical": 0, "major": 0, "warnings": 2},
+  "warnings_list": [
+    "memory/mission_logs/*.json counters can read steps_total=0 while the API reported 3/3 (legacy event-log writer lags completed_work); verdict/evidence in the API response and checkpoint are the source of truth",
+    "1 pre-existing skipped test (unchanged)"
+  ],
+  "score": 95,
+  "score_note": "truthful 95 baseline preserved; RC1.1 closes clean-install and viewport-planning defects with no regressions"
+}
