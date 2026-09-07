@@ -18,7 +18,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from core import app_config
 
-CORE_DEPS = ("fastapi", "uvicorn", "PIL", "numpy", "pydantic")
+CORE_DEPS = ("fastapi", "uvicorn", "PIL", "numpy", "pydantic",
+             "requests", "rich")
 PASS = "PASS"
 WARN = "WARNING"
 FAIL = "FAIL"

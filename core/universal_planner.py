@@ -319,6 +319,22 @@ class UniversalPlanner:
                 ))
                 prev_id = "checkpoint"
                 continue
+            if kind == "capture_evidence":
+                # Explicit viewport capture/proof request: exactly one
+                # READ-ONLY evidence step using the real registered capture
+                # tool (same tool the visual gate uses). No mutating steps;
+                # the evidence file is the deliverable.
+                ev_step = PlanStep(
+                    step_id="viewport_evidence", phase="EVIDENCE",
+                    intent="viewport_evidence",
+                    preferred_tool="capture_unreal_viewport",
+                    capability="",
+                    depends_on=[prev_id] if prev_id else [],
+                    stop_condition="viewport capture saved as real evidence",
+                )
+                work_steps.append(ev_step)
+                prev_id = ev_step.step_id
+                continue
             cap_names = KIND_TO_CAPABILITY.get(kind, [])
             for cap_name in cap_names:
                 if cap_name in plan.selected_capabilities:

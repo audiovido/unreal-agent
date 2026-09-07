@@ -1,0 +1,16 @@
+# AIVIDO / Unreal Agent — authoritative runtime dependency contract.
+#
+# A clean install (fresh clone + fresh venv) must satisfy every import the
+# runtime performs. This file is the single source of truth for installers,
+# packaging docs, and the import-contract regression test
+# (tests/test_clean_install_contract.py).
+#
+# Install:  python -m venv .venv
+#           .venv/Scripts/python -m pip install -r requirements.txt
+fastapi
+uvicorn
+pillow
+numpy
+pydantic
+requests
+rich

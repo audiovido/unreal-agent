@@ -144,6 +144,22 @@ DIAGNOSTIC_MARKERS = (
     "status only", "status-only",
 )
 
+# Explicit viewport capture / proof requests are NOT chat: they are
+# read-only EXECUTE missions that must run a real capture_unreal_viewport
+# evidence step (a 0-step "answer" plan can never return real evidence).
+# Markers are deliberately specific (they name the current viewport / a
+# capture of it) so ordinary "what is X" questions stay chat.
+CAPTURE_PROOF_MARKERS = (
+    "capture the current", "capture current", "capture the viewport",
+    "capture viewport", "screenshot of the current", "screenshot the current",
+    "screenshot of current", "screenshot current",
+    "screenshot the viewport", "screenshot the editor",
+    "visual proof of the current", "proof of the current",
+    "viewport proof", "viewport as evidence", "viewport evidence",
+    "capture proof", "return the captured viewport",
+    "return visual proof", "return viewport evidence",
+)
+
 # Negation markers: when a domain trigger word appears only after one of
 # these, the user EXCLUDED that scope ("don't touch gameplay").
 NEGATION_MARKERS = (
@@ -207,6 +223,9 @@ class UniversalIntent:
     mixed: bool = False                   # e.g. UI + cinematic + materials
     diagnostic: bool = False              # status/health check: run REAL
                                           # read-only probes (never chat)
+    capture_only: bool = False            # explicit viewport capture/proof:
+                                          # run ONE read-only evidence step
+                                          # (capture_unreal_viewport)
     warnings: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -231,6 +250,7 @@ class UniversalIntent:
             "read_only": self.read_only,
             "mixed": self.mixed,
             "diagnostic": self.diagnostic,
+            "capture_only": self.capture_only,
             "warnings": list(self.warnings),
         }
 
@@ -357,6 +377,18 @@ def interpret_intent(prompt: str) -> UniversalIntent:
             "Diagnostic request: planned as read-only health probes "
             "(backend + Unreal bridge) with real evidence, not chat."
         )
+    elif _has(lowered, *CAPTURE_PROOF_MARKERS):
+        # Explicit viewport capture/proof requests must EXECUTE a real
+        # read-only evidence step (capture_unreal_viewport) — never a 0-step
+        # chat answer that cannot return real evidence. The read-only intent
+        # is preserved so the policy gate still blocks any mutating tool.
+        intent.mode = "execute"
+        intent.read_only = True
+        intent.capture_only = True
+        intent.warnings.append(
+            "Explicit viewport capture/proof request: planned as a "
+            "read-only capture_unreal_viewport evidence step; no mutation."
+        )
     elif _has(lowered, *READ_ONLY_MARKERS) and not _has(
         lowered, *EXECUTE_MARKERS
     ):
@@ -444,8 +476,9 @@ def interpret_intent(prompt: str) -> UniversalIntent:
             "explicit backup/checkpoint steps before any deletion."
         )
     if intent.mode == "execute" and intent.read_only\
-            and not intent.diagnostic:
-        # Diagnostics intentionally stay read_only while executing probes.
+            and not (intent.diagnostic or intent.capture_only):
+        # Diagnostics and capture/proof missions intentionally stay
+        # read_only while executing their real probe/evidence steps.
         intent.read_only = False
     return intent
 
@@ -653,6 +686,23 @@ def expand_requirements(intent: UniversalIntent) -> RequirementSpec:
         spec.defaults_applied.append(
             "Diagnostic request expanded to read-only backend + bridge "
             "probes only (no scene mutation)."
+        )
+        return spec
+
+    if intent.capture_only:
+        # Explicit viewport capture/proof requests expand to exactly one
+        # read-only evidence capture — never a 0-step answer plan and never
+        # a mutating environment-polish default.
+        spec.requirements.append({
+            "id": "viewport_evidence", "kind": "capture_evidence",
+            "desc": "Capture the CURRENT Unreal viewport with the real "
+                    "capture_unreal_viewport tool and return the captured "
+                    "file as evidence (read-only; no mutation)",
+            "ops": ["capture", "evidence"],
+        })
+        spec.defaults_applied.append(
+            "Capture/proof request expanded to a single read-only "
+            "capture_unreal_viewport evidence step (no scene mutation)."
         )
         return spec
 

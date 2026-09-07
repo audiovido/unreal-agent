@@ -11,8 +11,21 @@ $Python =
     Join-Path $Root ".venv\Scripts\python.exe"
 
 if (-not (Test-Path $Python)) {
-    Write-Host "Virtual environment not found."
-    exit 1
+    # Clean-install bootstrap: create the venv from the authoritative
+    # runtime dependency contract (requirements.txt) so a fresh clone
+    # cannot start with a broken import closure (e.g. missing requests).
+    Write-Host "Virtual environment not found; creating it from requirements.txt..."
+    python -m venv "$Root\.venv"
+    if (-not (Test-Path $Python)) {
+        Write-Host "Could not create the virtual environment."
+        exit 1
+    }
+    & $Python -m pip install --upgrade pip
+    & $Python -m pip install -r (Join-Path $Root "requirements.txt")
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Dependency installation failed; see pip output above."
+        exit 1
+    }
 }
 
 Write-Host ""

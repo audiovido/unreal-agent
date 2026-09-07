@@ -76,8 +76,10 @@ desktop (double-click wrapper) — ports/hosts come from defaults or
 UA_* environment variables.  This layout is a Python package bundle; a
 native .exe build additionally needs a packager such as PyInstaller.
 
-Dependencies (installed in the .venv): fastapi, uvicorn, pillow, numpy,
-pydantic.
+Dependencies (installed in the .venv): the authoritative runtime dependency
+contract is requirements.txt at the repository root — fastapi, uvicorn,
+pillow, numpy, pydantic, requests, rich. A clean environment MUST install
+from that file; missing entries (e.g. requests) break clean-clone startup.
 """
 
 
