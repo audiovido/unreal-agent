@@ -1,0 +1,60 @@
+{
+  "mission": "AIVIDO parallel QA defect closure (offline/hermetic)",
+  "branch": "aivido/qa-defect-fixes",
+  "source_branch": "aivido/parallel-qa-automation",
+  "source_commit": "9d52422b46afee1cfefce2eb8e4e94a87b4283a8",
+  "date": "2026-09-06",
+  "mode": "hermetic",
+  "live_unreal_access": false,
+  "live_backend_access": false,
+  "ports_used": [],
+  "defects": {
+    "QA-1": {
+      "severity": "MAJOR",
+      "status": "PASS",
+      "file": "reports/hq/WORKER2_CHARACTERS_MANIFEST.json",
+      "fix": "\"master_materials\": quarter2 -> 2 (truthful: 2 master materials M_Aivido_Skin + M_Aivido_Cloth per ue_hq_characters.py and handoff '2 masters + 16 instances')"
+    },
+    "QA-2": {
+      "severity": "MINOR",
+      "status": "PASS",
+      "file": "ui/aivido.js",
+      "fix": "4 unguarded localStorage accesses wrapped with try/catch safe-storage pattern; boot falls back to DEFAULT when storage blocked"
+    },
+    "QA-3": {
+      "severity": "MINOR",
+      "status": "PASS",
+      "file": "ui/build-manifest.json",
+      "fix": "aivido.html hash corrected to committed content (800f2a13); aivido.js hash recomputed (10baa905) after QA-2/QA-4 edits; js cache-bust pin updated to match"
+    },
+    "QA-4": {
+      "severity": "INFO",
+      "status": "PASS",
+      "file": "ui/aivido.js",
+      "fix": "duplicate homeEnterRoom removed from REFS array; single listener preserved"
+    }
+  },
+  "verification": {
+    "parallel_qa_suites": {"passed": 86, "failed": 0},
+    "ui_release_tests": {"passed": 37, "failed": 0},
+    "json_parse_validation": {"files": 27, "failed": 0},
+    "node_check_ui_js": "PASS",
+    "git_diff_check": "clean",
+    "full_hermetic_suite": {"passed": 1020, "failed": 1, "skipped": 1}
+  },
+  "pre_existing_vehicle_blocker": {
+    "test": "tests/test_api_action_vehicle_integration.py::test_vehicle_profile_keeps_bounded_strategy_and_corrected_locator",
+    "status": "PRE-EXISTING/BLOCKED",
+    "detail": "requires uncommitted proof artifact assetlib/proof/vehicle_showcase_controlled_20260905/final_fresh_vehicle.png; not fixed per mission"
+  },
+  "production_files_changed": [
+    "reports/hq/WORKER2_CHARACTERS_MANIFEST.json",
+    "ui/aivido.js",
+    "ui/aivido.html",
+    "ui/build-manifest.json"
+  ],
+  "test_files_changed": [
+    "tests/test_ui_hermetic_contract.py"
+  ],
+  "new_regressions": 0
+}

@@ -54,7 +54,8 @@
     gallery: [],
   };
 
-  let S = Object.assign({}, JSON.parse(localStorage.getItem(LS) || "null") || JSON.parse(JSON.stringify(DEFAULT)));
+  let S;
+  try { S = Object.assign({}, JSON.parse(localStorage.getItem(LS) || "null") || JSON.parse(JSON.stringify(DEFAULT))); } catch (_) { S = JSON.parse(JSON.stringify(DEFAULT)); }
 
   /* ---------------- crew ---------------- */
   const WORKERS = [
@@ -102,7 +103,7 @@
     "foreman","foremanBar","fbLine","fbName","pvStage","pvViewport","pvImg","pvEmpty","pvVerdict","pvScore","pvTime","pvSource","pvDefects","pvGallery","pvCapture","pvAuto",
     "questActive","questDone","finBalance","finPacks","finChart","finLedger",
     "profAvatar","profName","profXpFill","profXpTxt","stMissions","stSuccess","stHours","profSkills","profAch",
-    "setBase","setName","setSave","setSaved","setAutoProof","setCinematic","setIdle","setSound","setVersion","railDot","railBackendTxt","homeEnterRoom",
+    "setBase","setName","setSave","setSaved","setAutoProof","setCinematic","setIdle","setSound","setVersion","railDot","railBackendTxt",
     "holoData","pvPrev","pvNext","pvFull","pvIdx","pvBadge","pvAge","pvApprove","pvChange","liEngine","liCode","liWb","liClickup",
     "ssEngine","ssBridge","ssMap","ssProof","ssExec","dlPrompt","dlDispatch","dlPlan","dlWarn","castGrid","cuStatus","cuDetail",
     "ssList","ssDetail","ssRegPath","ssRegBtn","ssProjSel","ssConnectBtn","ssRefresh"];
@@ -112,7 +113,7 @@
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const stClass = (s) => ({ IDLE: "IDLE", ASSIGNED: "ASSIGNED", THINKING: "THINKING", WORKING: "WORKING", WAITING: "WAITING", ERROR: "ERROR", DONE: "DONE" }[s] || "IDLE");
   const workerById = (id) => W.find((w) => w.id === id);
-  const persist = () => localStorage.setItem(LS, JSON.stringify(S));
+  const persist = () => { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (_) {} };
 
   /* ---------------- sound (lightweight WebAudio, no assets) ---------------- */
   const SFX = (() => {
@@ -1084,13 +1085,13 @@
   function questStore() { let q = { version: 1, source: "LOCAL", updated_at: null, ticks: {} }; try { q = Object.assign(q, JSON.parse(localStorage.getItem(QLS) || "{}")); } catch (_) {} return q; }
   function questTick(key) {
     const q = questStore(); q.ticks[key] = (q.ticks[key] || 0) + 1; q.updated_at = new Date().toISOString();
-    localStorage.setItem(QLS, JSON.stringify(q)); return q.ticks[key];
+    try { localStorage.setItem(QLS, JSON.stringify(q)); } catch (_) {} return q.ticks[key];
   }
   function ledgerStore() { let l = { version: 1, rows: [] }; try { l = Object.assign(l, JSON.parse(localStorage.getItem(LLS) || "{}")); } catch (_) {} return l; }
   function ledgerAdd(kind, label, delta) {
     const l = ledgerStore();
     l.rows = [{ kind: kind, label: label, delta: delta, source: "LOCAL", at: new Date().toISOString() }, ...l.rows].slice(0, 40);
-    localStorage.setItem(LLS, JSON.stringify(l)); return l.rows;
+    try { localStorage.setItem(LLS, JSON.stringify(l)); } catch (_) {} return l.rows;
   }
 
   /* ---------------- clickup detection (truthful BLOCKED) ---------------- */
