@@ -1,65 +1,92 @@
 # AIVIDO — POLISH-90 INDEPENDENT RE-CERTIFICATION
 
-- **Date:** 2026-09-06
-- **Baseline:** 80/100 @ `1c082f0` (`aivido/final-product-certification`)
-- **Polish source:** `aivido/polish-90` (claimed commit `3b0b4d1`, verified tip `9fb11ef`), claimed 90/100
+- **Date:** 2026-09-06 (overnight mission)
+- **Subject:** `aivido/polish-90` @ `9fb11ef416a308e267d76ba671cd676692573c7d`
+  (contains the stated polish source `3b0b4d1616da6f60158eb9669b9543ddcab82131`
+  plus the closeout commit `9fb11ef` "polish-90 closeout - live re-verification and final evidence")
+- **Certified baseline reference:** `aivido/final-product-certification` @ `1c082f0` (80/100)
 - **Recert branch:** `aivido/polish-90-recert`
-- **Independent verified score:** **90/100**
-- **Decision:** **VERIFIED_90_PLUS**
 
-All gates below were run live this session by the recertifier through the editor bridge (127.0.0.1:6766), the live backend (:8765), and headless Chrome CDP — not copied from Freebuff's evidence.
+This document merges two independent live re-verification passes performed during the
+overnight mission (Session A: bridge + backend + headless-Chrome-CDP verification;
+Session B: committed probe-script verification with raw JSON evidence). Both reached
+the same decision independently.
 
-## 1. Unreal gates — PASS
+## Decision
 
-- **Map:** `/Game/Maps/AividoHQ` loads (verified live; also re-opened via `load_level` during save/reopen gate).
-- **Characters:** **8/8** (`AVIDO_Human_Master/Creative/Visual/Technical/Audio/Animation/Lighting/VFX`).
-- **Save/reopen:** `save_dirty_packages` True → `load_level` OK → post-reopen scan stable (173 actors).
-- **Actor state:** 0 content actors with broken root; 0 static-mesh components missing a material; no critical broken references.
-- **Props/screens/boards:** 23/23 `W3I_*` props, 8/8 screens, 6/6 `AIVIDO_UI_*` boards preserved; text world_size verified live at **32/32/30**.
-- **Lighting rebuild warning: RESOLVED** — 41/41 lights MOVABLE (0 STATIC, 0 STATIONARY, root cause remains removed after reopen); fresh OS window capture of the reopened editor shows a lit room and **no rebuild banner**.
+## VERIFIED_90_PLUS
 
-## 2. Character motion — PASS
+Independent re-certification score: **90/100** (conservative; every claim below is backed
+by a live probe executed this session, not inherited from the polish report).
 
-Independent before/during/after cycle (recertifier captured base transforms itself):
+## Required checks — all executed live
 
-- Driver starts OK; **8/8 actors receive real transform motion** (max displacement measured **2.68 cm**; live sample planar 1.06–2.08 cm, vertical 0.63–3.35 cm — matches the documented 2–4 cm bob / 1–2 cm sway design; bounded and subtle).
-- **Stop restores exact base transforms:** position AND yaw error **0.0** on all 8 (independent comparison, not driver-reported).
-- **No fake visual-motion claim:** the polish report honestly documents the PIE-render limitation; motion is proven by transform telemetry, not fabricated frames.
+| # | Check | Result | Evidence (A / B) |
+|---|---|---|---|
+| 1 | AividoHQ loads | PASS | `/Game/Maps/AividoHQ` open; reopened via `load_level` (A, B) |
+| 2 | 8/8 characters | PASS | `AVIDO_Human_{Master,Creative,Visual,Technical,Audio,Animation,Lighting,VFX}`, all valid roots (A, B) |
+| 3 | Idle motion truly changes transforms | PASS | PIE live: 8/8 displaced (B: planar 0.14–1.94 cm, vertical ≤2.84 cm, 918 ticks/~9 s ≈ 102 ticks/s; A: planar 1.06–2.08 cm, vertical 0.63–3.35 cm, ~110 ticks/s foreground over 10 s) |
+| 4 | Idle stop restores exact transforms | PASS | position AND yaw error **0.0 on all 8** (independent before/after capture, both sessions) |
+| 5 | Lighting rebuild warning remains 0 | PASS | 41/41 lights MOVABLE (0 static / 0 stationary — warning condition impossible); fresh OS window captures show lit room, no banner (A, B) |
+| 6 | Room intact | PASS | 166–173 actors (counting-method delta), 0 broken roots, 0 missing materials (A, B) |
+| 7 | Props intact | PASS | 23/23 `W3I_*` props (also after reopen) |
+| 8 | In-world UI intact | PASS | 8 TextRender actors / `AIVIDO_UI_*` boards + 8–12 screens/panels; text world_size 32/32/30 verified live (A) |
+| 9 | Web UI 360/390/430 | PASS | A: Chrome headless CDP computed styles — CTAs stacked, right edge 299<360 / 329<390 / 369<430 (no overflow); B: backend-served `/app` headless-Edge renders at all three widths, no horizontal trap |
+| 10 | Map save/reopen | PASS | `save_dirty_packages` True → `load_level` identity_ok → post-reopen census stable: 8 chars / 23 props / 0 stationary lights / 8 texts (A, B) |
+| 11 | Backend reachable | PASS | `GET /api/status` → 200, `unreal.ok=UNREAL_BRIDGE_READY`, ollama READY (backend was DOWN at mission start; restarted, startup verified) |
+| 12 | Bridge reachable | PASS | bridge ping + identity (ASSET_Showcase2, UE 5.8.2-56702186) (A, B) |
+| 13 | Planner screenshot/EVIDENCE fix present | PASS | `app/api.py` emits `EVIDENCE`-phase steps (`capture_unreal_viewport`/`capture_pie_viewport`) incl. fallback guarantee (~line 925); polish diff touches only reports+ui+idle driver (A, B) |
+| 14 | No critical regression | PASS | zero critical, zero major in both passes |
 
-## 3. Performance — PASS
+## Idle-driver live motion detail (Session B probe, PIE, 8/8)
 
-- Method: slate post-tick call delta over 10 s via bridge, `r.ThrottleCPUWhenNotForeground 0`, editor brought to foreground.
-- **Measured: ~110 ticks/s foreground** (1100 calls / 10 s) vs the old throttled ~3 FPS (unfocused) → materially higher. Backgrounded reference: ~6.2 ticks/s.
+Displacement from true base at ~9 s (cm):
 
-## 4. Web UI (360/390/430) — PASS
+| Character | planar | dz |
+|---|---|---|
+| Master | 0.815 | -2.598 |
+| Creative | 1.944 | -0.422 |
+| Visual | 0.794 | -2.844 |
+| Technical | 0.380 | -1.901 |
+| Audio | 1.498 | -1.714 |
+| Animation | 1.137 | -2.843 |
+| Lighting | 0.140 | -0.991 |
+| VFX | 1.051 | -2.575 |
 
-- Method: Chrome headless CDP against the live backend `/app`; `getComputedStyle` + `getBoundingClientRect`.
-- 360 px: CTAs stacked, right edge 299 < 360 — no overflow.
-- 390 px: stacked, right edge 329 < 390; screenshot visually confirms clean stacked buttons — **CTA clipping regression is GONE**.
-- 430 px: stacked, right edge 369 < 430.
-- No redesign performed (as instructed).
+- Per-character phase/frequency variation confirmed (no two identical).
+- Duplicate `start_idle_driver()` returns `already=True` — no double registration.
+- `stop_idle_driver()` restored 8/8 at exact base (max |Δ| = 0.0); stats `running=false`, callback torn down.
 
-## 5. Visual proof — inspected, usable
+## New finding (Session A — documentation accuracy warning)
 
-Existing polish evidence reviewed (`final_reopen_warning_check.png`, `shot4b_room_lighting.png`, `shot1_hq_wide.png`, `shot6_inworld_ui.png`): lit room, dynamic lighting visible, no warning banner. No new cinematic set created (as instructed). Carried warnings: PIE character rendering (pre-existing), sub-pixel characters in wide shots.
+The UI board text color is actually **amber RGB(255,235,6)**, not the documented cyan
+(6,235,255): `unreal.Color`'s constructor is (b,g,r,a), so `Color(6,235,255,255)` stored
+r=255 (verified live). The functional goal — bright high-contrast text, no longer dim
+red — is still met and sizes are correct. No scene changes were made during recert.
 
-## 6. Previously certified product path — NO REGRESSION
+## Warnings carried forward (unchanged from polish-90, not regressions)
 
-- **Backend:** reachable (`GET /api/status` 200; `unreal: ok UNREAL_BRIDGE_READY`, engine 5.8.2).
-- **Bridge:** reachable (every gate this session ran through it).
-- **Planner EVIDENCE-step fix:** still present (`app/api.py` EVIDENCE phase handling intact; the polish diff touches only reports + ui + the idle driver).
-- Critical/major regressions: **none**.
+1. **PIE character rendering** — SkeletalMeshActors render in the editor viewport but not
+   in the PIE game viewport in this engine configuration (pre-existing). Visual character
+   proof = editor-viewport capture; motion proof = transform telemetry. `PIE_CHARACTER_RENDER = WARN`.
+2. In-world UI remains static TextRender (no interactive UMG — UE 5.8 python surface).
+3. Idle yaw drift reads as 0 in deltas (characters' rotation lock overrides yaw) — position
+   motion is the dominant verified effect.
+4. Sub-pixel characters in wide team shots (documented in polish-90).
 
-## 7. New finding (warning — documentation accuracy)
+## Environmental notes (not product defects)
 
-The UI board text color is actually **amber RGB(255,235,6)**, not the documented cyan (6,235,255): `unreal.Color`'s constructor is (b,g,r,a), so `Color(6,235,255,255)` stored r=255 (verified live). The functional goal — bright high-contrast text, no longer dim red — is still met and sizes are correct. No scene changes were made during recert.
+- Backend was **down** at session start; restarted it (`uvicorn app.api:app` on 8765) — startup verified.
+- A stale process from 08:35 (PID 3612) listens on the tailscale interface only (100.84.156.24:8765);
+  it does not serve 127.0.0.1 and was left untouched.
+- Two `app.mcp_gateway --port 8844` processes existed; one holds the port, the other lost the bind.
+  Recorded for the overnight performance/duplicate-poller pass.
+- `origin/aivido/polish-90` does not exist on the remote (aivido/* branches are local-only);
+  verification therefore targeted the local branch at the pinned SHA above.
 
-## 8. Verdict
+## Evidence
 
-Freebuff's claimed 90 is **truthful and independently reproduced**: all five polish items verified live, zero regressions to the certified 80-path.
-
-- Critical errors: **0**
-- Major errors: **0**
-- Warnings: **4** (1 new doc-accuracy finding; 3 carried from the polish report)
-
-**Decision: VERIFIED_90_PLUS**
+- `scripts/recert/polish90_recert_probe.py` — reproducible probe (committed on this branch)
+- `reports/hq/POLISH_90_RECERT_EVIDENCE/recert_probe.json` — raw Session-B probe output (all gates)
+- `reports/hq/POLISH_90_RECERT_EVIDENCE/recert_editor_window.png` — fresh editor capture (lit room, no rebuild banner)
+- `reports/hq/POLISH_90_RECERT_EVIDENCE/web_ui_{360,390,430}px*.png` — backend-served UI renders

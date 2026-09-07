@@ -1,0 +1,947 @@
+{
+  "started_utc": "2026-09-07T02:28:36Z",
+  "identity": {
+    "ok": true,
+    "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+    "project_name": "ASSET_Showcase2",
+    "engine": "5.8.2-56702186+++UE5+Release-5.8"
+  },
+  "census_initial": {
+    "world": "/Game/Maps/AividoHQ.AividoHQ",
+    "total_actors": 166,
+    "characters": [
+      {
+        "label": "AVIDO_Human_Master",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          -0.0,
+          700.0,
+          0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Creative",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          3800.0,
+          900.0,
+          -0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Visual",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          -3800.0,
+          900.0,
+          -0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Technical",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          1900.0,
+          300.0,
+          -0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Audio",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          -1900.0,
+          300.0,
+          0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Animation",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          950.0,
+          1700.0,
+          0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Lighting",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          -950.0,
+          1700.0,
+          0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_VFX",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          0.0,
+          2000.0,
+          -0.0
+        ]
+      }
+    ],
+    "prop_count": 23,
+    "props": [
+      "W3I_Station_W_Desk",
+      "W3I_Station_W_Chair",
+      "W3I_Station_W_Monitor",
+      "W3I_Station_N_Desk",
+      "W3I_Station_N_Chair",
+      "W3I_Station_N_Monitor",
+      "W3I_Station_E_Desk",
+      "W3I_Station_E_Chair",
+      "W3I_Station_E_Monitor",
+      "W3I_Station_S_Desk",
+      "W3I_Station_S_Chair",
+      "W3I_Station_S_Monitor",
+      "W3I_Terminal_W",
+      "W3I_Terminal_E",
+      "W3I_PresentationBoard",
+      "W3I_Cabinet_E1",
+      "W3I_Cabinet_E2",
+      "W3I_Plant_SW",
+      "W3I_Plant_SE",
+      "W3I_ServerRack",
+      "W3I_Lantern_Body",
+      "W3I_Lantern_Chain",
+      "W3I_Lantern_Lantern"
+    ],
+    "screens": [
+      "AVIDO_Hub_Wall",
+      "AVIDO_Hub_Screen",
+      "AVIDO_VD_Wall",
+      "AVIDO_VD_Screen_A",
+      "AVIDO_VD_Screen_B",
+      "AVIDO_VD_GradeStrip",
+      "AVIDO_Console_Center",
+      "AVIDO_Console_Screen",
+      "AVIDO_Console_Left",
+      "AVIDO_Console_Right",
+      "AVIDO_Command_SideScreen_E",
+      "AVIDO_Command_SideScreen_W"
+    ],
+    "text_renders": [
+      "AVIDO_Sign_Entry",
+      "AVIDO_Sign_Central",
+      "AVIDO_Sign_Master",
+      "AVIDO_Sign_Creative",
+      "AVIDO_Sign_Visual",
+      "AIVIDO_UI_Agents_Text",
+      "AIVIDO_UI_Missions_Text",
+      "AIVIDO_UI_Status_Text"
+    ],
+    "lights": [
+      {
+        "label": "AVIDO_SkyLight",
+        "class": "SkyLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight",
+        "class": "DirectionalLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Center",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Master",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Creative",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Visual",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Fill",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Key_Face",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Fill_Face",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Rim_Face",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Master",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Creative",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Visual",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Technical",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Audio",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Animation",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Lighting",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_VFX",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Master",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Creative",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Visual",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Technical",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Audio",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Animation",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Lighting",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_VFX",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_0",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_1",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_2",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_3",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_4",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_5",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_6",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_7",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Collab",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cmd_E",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cmd_W",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Wing_E",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Wing_W",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Lounge",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Entry",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      }
+    ],
+    "light_total": 41,
+    "light_movable": 0,
+    "light_stationary": 0,
+    "light_static": 0,
+    "bad_mesh_actors": [],
+    "broken_root_actors": [],
+    "ok": true
+  },
+  "pie_pre": {
+    "pie": true,
+    "n": 8,
+    "err": null
+  },
+  "idle_start": {
+    "ok": true,
+    "second_start": {
+      "ok": true,
+      "already": true
+    },
+    "second_start_already_flag": true
+  },
+  "idle_deltas_mid": {
+    "AVIDO_Human_Master": {
+      "dx": -1.297,
+      "dy": -0.783,
+      "dz": -2.195,
+      "planar": 1.515,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Creative": {
+      "dx": -1.735,
+      "dy": -0.908,
+      "dz": -0.226,
+      "planar": 1.959,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Visual": {
+      "dx": -0.872,
+      "dy": -0.496,
+      "dz": -1.733,
+      "planar": 1.003,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Technical": {
+      "dx": -0.97,
+      "dy": -0.613,
+      "dz": -2.291,
+      "planar": 1.147,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Audio": {
+      "dx": -1.397,
+      "dy": -0.753,
+      "dz": -0.901,
+      "planar": 1.587,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Animation": {
+      "dx": -1.514,
+      "dy": -0.892,
+      "dz": -2.063,
+      "planar": 1.757,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Lighting": {
+      "dx": -0.678,
+      "dy": -0.453,
+      "dz": -2.256,
+      "planar": 0.816,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_VFX": {
+      "dx": -1.067,
+      "dy": -0.594,
+      "dz": -1.457,
+      "planar": 1.221,
+      "yaw_d": 0.0
+    }
+  },
+  "idle_deltas_post": {
+    "AVIDO_Human_Master": {
+      "dx": 0.626,
+      "dy": 0.521,
+      "dz": -2.598,
+      "planar": 0.815,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Creative": {
+      "dx": 1.72,
+      "dy": 0.907,
+      "dz": -0.422,
+      "planar": 1.944,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Visual": {
+      "dx": 0.669,
+      "dy": 0.428,
+      "dz": -2.844,
+      "planar": 0.794,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Technical": {
+      "dx": 0.229,
+      "dy": 0.303,
+      "dz": -1.901,
+      "planar": 0.38,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Audio": {
+      "dx": 1.306,
+      "dy": 0.733,
+      "dz": -1.714,
+      "planar": 1.498,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Animation": {
+      "dx": 0.918,
+      "dy": 0.671,
+      "dz": -2.843,
+      "planar": 1.137,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Lighting": {
+      "dx": -0.057,
+      "dy": 0.128,
+      "dz": -0.991,
+      "planar": 0.14,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_VFX": {
+      "dx": 0.9,
+      "dy": 0.544,
+      "dz": -2.575,
+      "planar": 1.051,
+      "yaw_d": 0.0
+    }
+  },
+  "idle_stats_running": {
+    "ok": true,
+    "running": true,
+    "chars": 8,
+    "calls": 914,
+    "include_editor": false
+  },
+  "idle_stop": {
+    "ok": true,
+    "calls": 918,
+    "restored": 8
+  },
+  "idle_restore_delta": {
+    "AVIDO_Human_Master": {
+      "dx": 0.0,
+      "dy": 0.0,
+      "dz": 0.0,
+      "planar": 0.0,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Creative": {
+      "dx": 0.0,
+      "dy": 0.0,
+      "dz": 0.0,
+      "planar": 0.0,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Visual": {
+      "dx": 0.0,
+      "dy": 0.0,
+      "dz": 0.0,
+      "planar": 0.0,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Technical": {
+      "dx": 0.0,
+      "dy": 0.0,
+      "dz": 0.0,
+      "planar": 0.0,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Audio": {
+      "dx": 0.0,
+      "dy": 0.0,
+      "dz": 0.0,
+      "planar": 0.0,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Animation": {
+      "dx": 0.0,
+      "dy": 0.0,
+      "dz": 0.0,
+      "planar": 0.0,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_Lighting": {
+      "dx": 0.0,
+      "dy": 0.0,
+      "dz": 0.0,
+      "planar": 0.0,
+      "yaw_d": 0.0
+    },
+    "AVIDO_Human_VFX": {
+      "dx": 0.0,
+      "dy": 0.0,
+      "dz": 0.0,
+      "planar": 0.0,
+      "yaw_d": 0.0
+    }
+  },
+  "idle_stats_after": {
+    "ok": true,
+    "running": false,
+    "chars": 0,
+    "calls": 918,
+    "include_editor": false
+  },
+  "save": {
+    "ok": true,
+    "saved_map": "/Game/Maps/AividoHQ.AividoHQ",
+    "dirty_after": false,
+    "package_exists": true,
+    "verified": true
+  },
+  "reopen": {
+    "ok": true,
+    "loaded": true,
+    "world_path": "/Game/Maps/AividoHQ.AividoHQ",
+    "identity_ok": true
+  },
+  "census_after_reopen": {
+    "world": "/Game/Maps/AividoHQ.AividoHQ",
+    "total_actors": 166,
+    "characters": [
+      {
+        "label": "AVIDO_Human_Master",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          -0.0,
+          700.0,
+          0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Creative",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          3800.0,
+          900.0,
+          -0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Visual",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          -3800.0,
+          900.0,
+          -0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Technical",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          1900.0,
+          300.0,
+          -0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Audio",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          -1900.0,
+          300.0,
+          0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Animation",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          950.0,
+          1700.0,
+          0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_Lighting",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          -950.0,
+          1700.0,
+          0.0
+        ]
+      },
+      {
+        "label": "AVIDO_Human_VFX",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "loc": [
+          0.0,
+          2000.0,
+          -0.0
+        ]
+      }
+    ],
+    "prop_count": 23,
+    "props": [
+      "W3I_Station_W_Desk",
+      "W3I_Station_W_Chair",
+      "W3I_Station_W_Monitor",
+      "W3I_Station_N_Desk",
+      "W3I_Station_N_Chair",
+      "W3I_Station_N_Monitor",
+      "W3I_Station_E_Desk",
+      "W3I_Station_E_Chair",
+      "W3I_Station_E_Monitor",
+      "W3I_Station_S_Desk",
+      "W3I_Station_S_Chair",
+      "W3I_Station_S_Monitor",
+      "W3I_Terminal_W",
+      "W3I_Terminal_E",
+      "W3I_PresentationBoard",
+      "W3I_Cabinet_E1",
+      "W3I_Cabinet_E2",
+      "W3I_Plant_SW",
+      "W3I_Plant_SE",
+      "W3I_ServerRack",
+      "W3I_Lantern_Body",
+      "W3I_Lantern_Chain",
+      "W3I_Lantern_Lantern"
+    ],
+    "screens": [
+      "AVIDO_Hub_Wall",
+      "AVIDO_Hub_Screen",
+      "AVIDO_VD_Wall",
+      "AVIDO_VD_Screen_A",
+      "AVIDO_VD_Screen_B",
+      "AVIDO_VD_GradeStrip",
+      "AVIDO_Console_Center",
+      "AVIDO_Console_Screen",
+      "AVIDO_Console_Left",
+      "AVIDO_Console_Right",
+      "AVIDO_Command_SideScreen_E",
+      "AVIDO_Command_SideScreen_W"
+    ],
+    "text_renders": [
+      "AVIDO_Sign_Entry",
+      "AVIDO_Sign_Central",
+      "AVIDO_Sign_Master",
+      "AVIDO_Sign_Creative",
+      "AVIDO_Sign_Visual",
+      "AIVIDO_UI_Agents_Text",
+      "AIVIDO_UI_Missions_Text",
+      "AIVIDO_UI_Status_Text"
+    ],
+    "lights": [
+      {
+        "label": "AVIDO_SkyLight",
+        "class": "SkyLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight",
+        "class": "DirectionalLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Center",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Master",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Creative",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Visual",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Fill",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Key_Face",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Fill_Face",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Rim_Face",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Master",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Creative",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Visual",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Technical",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Audio",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Animation",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_Lighting",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_FaceLight_VFX",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Master",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Creative",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Visual",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Technical",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Audio",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Animation",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_Lighting",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_KeyLight_Char_VFX",
+        "class": "SpotLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_0",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_1",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_2",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_3",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_4",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_5",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_6",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cove_7",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Collab",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cmd_E",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Cmd_W",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Wing_E",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Wing_W",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Lounge",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      },
+      {
+        "label": "AVIDO_Light_Room_Entry",
+        "class": "PointLight",
+        "mobility": "<ComponentMobility.MOVABLE: 2>"
+      }
+    ],
+    "light_total": 41,
+    "light_movable": 0,
+    "light_stationary": 0,
+    "light_static": 0,
+    "bad_mesh_actors": [],
+    "broken_root_actors": [],
+    "ok": true
+  },
+  "gates": {
+    "bridge_reachable": true,
+    "map_loaded": true,
+    "characters_8of8": true,
+    "props_present": true,
+    "screens_present": true,
+    "ui_text_present": true,
+    "lights_all_movable": true,
+    "no_broken_roots": true,
+    "no_missing_materials": true,
+    "idle_motion": true,
+    "idle_duplicate_guard": true,
+    "idle_exact_restore": true,
+    "idle_callback_stopped": true,
+    "save_reopen": true,
+    "post_reopen_actors": true
+  },
+  "all_pass": true,
+  "finished_utc": "2026-09-07T02:29:07Z"
+}
