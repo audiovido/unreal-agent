@@ -29,7 +29,7 @@ import json
 import math
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 # Resolution presets the renderer honors (1920x1080 default, 4K optional).
 RESOLUTION_PRESETS = {
@@ -164,7 +164,9 @@ else:
                            fps: int = 30,
                            pose_paths: Optional[List[Dict[str, Any]]] = None,
                            sample_stride: float = 0.5,
-                           poll_timeout_s: float = 60.0) -> Dict[str, Any]:
+                           poll_timeout_s: float = 60.0,
+                           wake: Optional[Callable[[], None]] = None,
+                           max_frame_retries: int = 3) -> Dict[str, Any]:
         """Capture real Unreal frames along a deterministic camera pose path.
 
         Each sample: the editor level-viewport camera is moved to the pose and
@@ -183,8 +185,17 @@ else:
             return {"ok": False, "error": "no camera poses to render",
                     "renderer": "real_frames"}
         width, height = int(width), int(height)
+        # a foregrounded, unthrottled editor is required for the viewport to
+        # present (and therefore save) real frames on every sample.
+        self.bridge.execute_python("""
+import unreal
+unreal.SystemLibrary.execute_console_command(None, "r.ThrottleCPUWhenNotForeground 0")
+unreal.SystemLibrary.execute_console_command(None, "t.MaxFPS 0")
+__bridge_result__ = {"ok": True}
+""")
         out = {"ok": False, "renderer": "real_frames",
                "renderer_is_mrq": False,
+               "missing_frames": [],
                "note": "real Unreal frames captured from the live level "
                        "viewport (native editor viewport read-back, MRQ "
                        "unavailable); not a Movie Render Queue output. "
@@ -215,34 +226,63 @@ __bridge_result__ = {{"ok": readback is not None}}
                 out["error"] = f"frame {i + 1}: viewport camera set failed: {payload}"
                 out["frames_captured"] = len(paths)
                 return out
-            cap = self._native_capture()
-            cap_payload = _payload(cap)
-            src = (cap_payload or {}).get("path") if isinstance(
-                cap_payload, dict) else None
-            if isinstance(cap_payload, dict) and cap_payload.get("ok") and src \
-                    and os.path.isfile(src):
-                import shutil
-                try:
-                    shutil.copyfile(src, frame_path)
-                except OSError:
-                    frame_path = ""
-                if frame_path and os.path.isfile(frame_path) \
-                        and os.path.getsize(frame_path) > 0:
-                    paths.append(frame_path)
-                    if actual is None:
-                        try:
-                            from PIL import Image as _Im
-                            actual = list(_Im.open(frame_path).size)
-                        except Exception:
-                            actual = None
-                    continue
-            out["error"] = f"frame {i + 1} capture failed: {cap_payload}"
-            out["frames_captured"] = len(paths)
+            cap = None
+            frame_path = ""
+            for attempt in range(1, max_frame_retries + 1):
+                if wake is not None:
+                    try:
+                        wake()
+                    except Exception:
+                        pass
+                cap = self._native_capture()
+                cap_payload = _payload(cap)
+                src = (cap_payload or {}).get("path") if isinstance(
+                    cap_payload, dict) else None
+                if isinstance(cap_payload, dict) and cap_payload.get("ok") and \
+                        src and os.path.isfile(src):
+                    import shutil
+                    try:
+                        shutil.copyfile(src, frame_path)
+                    except OSError:
+                        frame_path = ""
+                    if frame_path and os.path.isfile(frame_path) \
+                            and os.path.getsize(frame_path) > 0:
+                        paths.append(frame_path)
+                        if actual is None:
+                            try:
+                                from PIL import Image as _Im
+                                actual = list(_Im.open(frame_path).size)
+                            except Exception:
+                                actual = None
+                        break
+                if attempt < max_frame_retries:
+                    time.sleep(1.0)
+            if not (frame_path and os.path.isfile(frame_path)
+                    and os.path.getsize(frame_path) > 0):
+                # a stubborn frame must not silently abort the film: keep the
+                # frames captured so far, retry the NEXT pose, and record the
+                # partial render truthfully (never a fake full-length film).
+                stale = os.path.join(out_dir, frame_name)
+                if os.path.isfile(stale):
+                    try:
+                        os.remove(stale)   # never let a stale frame stand in
+                    except OSError:
+                        pass
+                out["missing_frames"].append(
+                    {"frame": i + 1, "error": f"{cap_payload}"})
+                continue
+        if not paths:
+            out["error"] = "no real frames captured by the render path"
+            out["frames_captured"] = 0
             return out
+        partial = bool(out["missing_frames"])
         w_actual = (actual or [width, height])[0]
         h_actual = (actual or [width, height])[1]
         out.update({
             "ok": True,
+            "partial": partial,
+            "requested_frames": total,
+            "missing_count": len(out["missing_frames"]),
             "frame_dir": out_dir,
             "frames": paths,
             "frame_count": len(paths),
@@ -252,7 +292,9 @@ __bridge_result__ = {{"ok": readback is not None}}
             "duration_s": round(len(paths) * sample_stride, 2),
             "note": ("real Unreal frames captured natively from the live "
                       "level viewport at " + str(w_actual) + "x" + str(h_actual)
-                      + " (MRQ unavailable); not a Movie Render Queue output"),
+                      + " (MRQ unavailable); not a Movie Render Queue output"
+                      + (f"; PARTIAL render ({len(paths)}/{total} frames)"
+                         if partial else "")),
         })
         return out
 

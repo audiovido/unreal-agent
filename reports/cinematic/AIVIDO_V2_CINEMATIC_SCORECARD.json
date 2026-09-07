@@ -7,9 +7,9 @@
   "level": "/Game/Maps/AividoHQ.AividoHQ",
   "date": "2026-09-07",
   "hermetic_suite": {
-    "passed": 1114,
+    "passed": 1119,
     "skipped": 1,
-    "new_cinematic_tests": 32
+    "new_cinematic_tests": 37
   },
   "phases": {
     "blender_integration": {
@@ -34,18 +34,19 @@
     },
     "real_video": {
       "status": "PASS",
-      "detail": "54 real Unreal frames (native viewport capture) encoded to MP4; not an MRQ output and labeled exactly as such",
-      "resolution": "1922x676",
+      "detail": "59 unique real Unreal frames (native viewport capture via the wake->kick->settle fresh-capture contract) encoded to MP4; not an MRQ output and labeled exactly as such; one transient frame-7 capture failure recorded and the encode is contiguous from the real frames",
+      "resolution": "2002x742",
       "fps": 6,
-      "duration_s": 9.0,
+      "duration_s": 9.83,
       "video_path": "reports/cinematic/demo/render/aivido_cinematic.mp4",
       "frame_dir": "reports/cinematic/demo/render/frames",
+      "frame_count": 59,
       "proof_paths": [
         "reports/cinematic/proof/proof_shot1.png",
         "reports/cinematic/proof/proof_shot2.png",
-        "reports/cinematic/proof/motion_frame_0001.png",
-        "reports/cinematic/proof/motion_frame_0027.png",
-        "reports/cinematic/proof/motion_frame_0054.png"
+        "reports/cinematic/proof/proof_render_start.png",
+        "reports/cinematic/proof/proof_render_mid.png",
+        "reports/cinematic/proof/proof_render_end.png"
       ]
     },
     "animation": {
@@ -54,19 +55,20 @@
     },
     "lighting": {
       "status": "PASS",
-      "detail": "cinematic lighting scored 10.0 measured on the live demo shots; exposure/lighting fix actions implemented engine-guarded (not needed live)"
+      "detail": "exposure/light fix actions mutate REAL PPV exposure and light intensities with engine read-back and exact restore; final live run applied real mutations (per-shot restore counts 1/2/0); measured lighting 9.49 on the delivered shots; fixes reverted per-shot so the film renders from the certified baseline"
     },
     "visual_iterations": {
       "status": "PASS",
-      "detail": "bounded CinematicShotLoop (<=3) hermetic-tested; live used 1 measured capture per shot (no mapped deterministic defect on environment shots)"
+      "detail": "bounded CinematicShotLoop (<=3) hermetic-tested; live runs executed the full bounded loop with real corrective actions + local vision critiques on every pass (3+3+2 passes final run); per-shot reset hooks (on_shot_done/before_render) keep fixes from accumulating"
     },
     "visual_score": {
-      "measured_overall": 7.38,
+      "measured_overall": 7.25,
       "gate": "below 8.0 premium acceptance; no fake PASS",
+      "status": "DELIVERED_BELOW_GATE",
       "dimensions": {
         "composition": 6.5,
         "framing": 6.0,
-        "lighting": 10.0,
+        "lighting": 9.49,
         "subject_visibility": 7.0,
         "material_readability": null,
         "cinematic_depth": null,
@@ -76,22 +78,23 @@
     },
     "scene_preservation": {
       "status": "PASS",
-      "detail": "level never saved; demo actors/assets removed; active map and dirty state unchanged"
+      "detail": "level never saved by the demo; demo actors/assets removed; per-shot light/PPV mutations restored exactly; certified map re-saved clean (166 actors, PPV manual bias 1.0, certified light values)"
     }
   },
   "issues": {
     "critical": [],
     "major": [
       "AividoHQ human cast meshes do not render in the current editor session (0-pixel diff proof); team-member hero shots blocked at content level",
-      "live environment shots measured 7.38 (< 8.0 premium gate) - delivered as real evidence with honest scorecard"
+      "live environment shots measured 7.25 (< 8.0 premium gate) - delivered as real evidence with honest scorecard; the bounded loop's real light/exposure fixes did not beat the certified baseline and were reverted per-shot",
+      "editor viewport capture is intermittently unreliable after heavy session use (one transient frame loss in the final render; partial renders are recorded truthfully, never padded)"
     ],
     "warnings": [
       "MovieRenderPipeline plugin not enabled - full 30fps/1080p MRQ render not attempted",
-      "CinematicShotLoop does not yet auto-apply vision-model critiques as scene fixes",
-      "capture resolution follows native editor viewport geometry (1922x676 effective)",
+      "CinematicShotLoop does not yet auto-apply vision-model critiques as scene fixes (recorded per pass, advisory)",
+      "capture resolution follows native editor viewport geometry (2002x742 effective this session)",
       "keyframed camera motion is engine-closed in UE 5.8 python; motion rendered via deterministic camera path"
     ]
   },
   "cinematic_v1_ready": false,
-  "summary": "Cinematic + Blender creation pipeline added to Aivido on an isolated branch from frozen V1: bounded director/quality-loop/render orchestration with hermetic tests (32 new; 1114 total green). Live demo produced a real 9s MP4 of 54 real Unreal frames of the AividoHQ command floor with real CineCameras + Level Sequence + honest 7.38 visual scorecard. MRQ and cast-member hero shots are truthfully BLOCKED by engine/content state, not faked."
+  "summary": "Cinematic + Blender creation pipeline on an isolated branch from frozen V1: bounded director/quality-loop/render orchestration that now applies REAL per-shot light/exposure mutations with engine readback + exact restore (no-op loop gap closed), scene/env framing semantics fixed, and a robust real-frame render path. Hermetic suite 1119 passed / 1 skipped (37 new cinematic tests). Final live demo: real CineCameras + Level Sequence + 59 real Unreal frames -> 9.83s MP4 (2002x742 @ 6fps, no duplicated frames) of the certified AividoHQ board zone with an honest 7.25 measured scorecard (DELIVERED_BELOW_GATE, no fake PASS). MRQ and cast-member hero shots remain truthfully BLOCKED by engine/content state."
 }

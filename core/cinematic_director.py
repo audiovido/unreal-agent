@@ -415,6 +415,8 @@ def plan_cinematic_shots(
                     "subject_kind": str(hero.get("kind") or "actor"),
                     "location": [round(v, 2) for v in (cx, cy, float(group_point[2]))],
                     "member_count": len(subjects), "spread_cm": round(spread, 1)},
+        "subject_kind": str(hero.get("kind") or "actor"),
+        "member_count": len(subjects),
         "target_screen_coverage": coverage,
         "shots": [s.to_dict() for s in shots],
         "fps": fps,
@@ -435,8 +437,10 @@ def cinematic_target(brief: Dict[str, Any], plan: Dict[str, Any]) -> Dict[str, A
     p = str(brief.get("raw_prompt") or "").lower()
     scene_words = ("scene", "environment", "floor", "headquarters",
                    "command", "interior", "room", "stage", "set")
-    scene_framing = (str(plan.get("subject_kind") or "") == "prop"
-                     or any(w in p for w in scene_words))
+    plan_subj = plan.get("subject") or {}
+    subj_kind = (plan.get("subject_kind") or plan_subj.get("subject_kind")
+                 or "")   # prop hero == environment; actor team stays a subject
+    scene_framing = (str(subj_kind) == "prop" or any(w in p for w in scene_words))
     return {
         "subject": {
             "type": "scene" if scene_framing else (
@@ -596,6 +600,40 @@ CINEMATIC_STRATEGY_CHAINS: Dict[str, List[str]] = {
     "STALE_CAPTURE": ["capture_force_fresh"],
 }
 
+# Vision-reviewed issues (from the injected local-vision review) map onto the
+# SAME bounded real actions. This closes the previous no-op: a frame that is
+# measured as lit but vision-rejected as washed-out / flat / weak now selects
+# a genuine corrective action instead of silently ending at REVISE_MAXED.
+VISION_ISSUE_ACTIONS: List[Tuple[Tuple[str, ...], str]] = [
+    # issue-keywords -> corrective action (first untried wins)
+    (( "overexpos", "washed", "too bright", "blown", "bright",
+       "glare", "white clip", "bloom" ), "exposure_reduce_highlights"),
+    (( "flat", "no strong shadow", "directional", "contrast",
+       "moody", "depth" ), "lighting_raise_key"),
+    (( "dominant", "hierarchy", "focal point", "center", "empty",
+       "composition", "cluttered", "balanced" ), "camera_framing_recompute"),
+    (( "small", "too far", "visibility", "hard to see", "far away",
+       "tiny" ), "camera_move_closer"),
+    (( "dark", "underexposed", "too dark", "shadow" ), "exposure_raise_blacks"),
+    (( "monoton", "palette", "color", "saturation" ), "lighting_raise_key"),
+]
+
+def _action_from_vision_issues(issues: Sequence[str],
+                               tried: Sequence[str]) -> Optional[str]:
+    """Pick the first untried corrective action a vision issue implies.
+
+    Returns None when no issue maps to an action or every implied action was
+    already tried in this pass series (boundedness preserved).
+    """
+    text = " ".join(str(i).lower() for i in (issues or []))
+    if not text:
+        return None
+    for keys, action in VISION_ISSUE_ACTIONS:
+        if any(k in text for k in keys) and action not in tried:
+            return action
+    return None
+
+
 
 class CinematicShotLoop:
     """Bounded capture -> score -> diagnose -> improve -> recapture loop.
@@ -646,12 +684,15 @@ class CinematicShotLoop:
                 return self._finish("BLOCKED", shot,
                                     error=cap.get("error") or "capture failed")
             sc = score_cinematic_frame(path, self.target)
+            vision_issues: List[str] = []
             if self.vision is not None and sc.get("ok"):
                 try:
                     review = self.vision(path)
                     if review:
                         sc = score_cinematic_frame(
                             path, self.target, vision=review)
+                        vision_issues = [str(x) for x in
+                                         (review.get("issues") or [])]
                 except Exception:
                     sc = sc  # vision is advisory, never fatal
             defects = _derive_shot_defects(sc)
@@ -667,6 +708,15 @@ class CinematicShotLoop:
             if best is None or sc["overall"] >= best["scorecard"]["overall"]:
                 best = rec
             action = None if rec["verdict"] == "PASS" else self._choose_action(defects)
+            if action is None and rec["verdict"] == "REVISE":
+                # deterministic defects silent -> drive a REAL corrective
+                # action from the vision issues when present (still bounded:
+                # pass cap 3 + the tried-actions set below).
+                tried_all = [a for v in self._tried.values() for a in v]
+                action = _action_from_vision_issues(
+                    (vision_issues or (sc.get("issues") or [])), tried_all)
+                if action:
+                    rec["action_source"] = "vision"
             rec["action"] = action
             if action is None:
                 break
@@ -754,6 +804,20 @@ class CinematicAdapter:
                out_dir: str) -> Dict[str, Any]:
         raise NotImplementedError("CinematicAdapter.render")
 
+    def on_shot_done(self) -> Dict[str, Any]:
+        """Hook after each shot's bounded loop. Default: no reset needed.
+
+        Live adapters that mutate scene state during the loop use this to
+        revert every mutation so each shot starts from the certified scene
+        (per-shot fixes are evidence of the loop, never accumulated onto the
+        next shot or the final render)."""
+        return {"ok": True, "restored": 0}
+
+    def before_render(self) -> Dict[str, Any]:
+        """Hook before the final render: render from the best-verified
+        configuration. Default: no reset."""
+        return {"ok": True, "restored": 0}
+
     def blender_if_needed(self, plan: Dict[str, Any]) -> Dict[str, Any]:
         """Asset decision hook; default: reuse (no blender) when unused."""
         return {"decision": "reuse", "blender_used": False,
@@ -769,6 +833,7 @@ def run_cinematic(
     max_visual_passes: int = 3,
     verify_shots: bool = True,
     subjects: Optional[List[Dict[str, Any]]] = None,
+    plan_options: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Full cinematic mission: brief -> plan -> asset decision -> shots ->
     per-shot bounded quality -> render -> proof + scorecard.
@@ -817,7 +882,7 @@ def run_cinematic(
                                 "note": "explicit subject override"})
 
     # 2. shot plan (framing math, no live calls)
-    plan = plan_cinematic_shots(brief, subjects)
+    plan = plan_cinematic_shots(brief, subjects, options=plan_options)
     record["steps"].append({"step": "plan_shots", "ok": bool(plan.get("ok")),
                             "plan": {k: plan.get(k) for k in
                                      ("subject", "target_screen_coverage",
@@ -866,6 +931,16 @@ def run_cinematic(
         shot_rec["ok"] = bool(result.get("ok"))
         shot_rec["loop"] = result
         record["shots"].append(shot_rec)
+        # every mutation the loop made is reverted before the next shot so
+        # each shot starts from the certified scene; the final render also
+        # starts from that baseline (never from accumulated fixes).
+        try:
+            hook = getattr(adapter, "on_shot_done", None)
+            reset = hook() if callable(hook) else {"ok": True, "restored": 0}
+            shot_rec["reset_after_shot"] = reset
+        except Exception as exc:
+            shot_rec["reset_after_shot"] = {"ok": False,
+                                            "error": f"{type(exc).__name__}: {exc}"}
 
     # usable captures (readable frames) are kept even when the acceptance
     # gate is not met, so a real render + scorecard are always delivered;
@@ -886,6 +961,12 @@ def run_cinematic(
         return _finalize(record)
 
     # 5. final render (real Unreal render through the adapter)
+    try:
+        hook = getattr(adapter, "before_render", None)
+        if callable(hook):
+            hook()
+    except Exception:
+        pass  # render still proceeds; adapter records its own baseline
     try:
         render_result = adapter.render(
             brief, [s["shot"] for s in usable_shots],

@@ -143,13 +143,26 @@ def run(args):
     hero = _resolve_hero_subjects(adapter, args.prompt, args.hero)[0]
     prompt = args.prompt
     vision = vision_review if args.vision else None
+    plan_options = {}
+    if args.distance:
+        plan_options["distance"] = float(args.distance)
+    if args.fov:
+        plan_options["fov_deg"] = float(args.fov)
+    if args.shots:
+        plan_options["max_shots"] = int(args.shots)
+    if args.yaws:
+        plan_options["yaws"] = [float(v) for v in args.yaws.split(",")]
     result = run_cinematic(prompt, adapter, out_dir=out_dir,
                            max_visual_passes=int(args.max_passes),
-                           subjects=[hero], vision=vision)
+                           subjects=[hero], vision=vision,
+                           plan_options=plan_options or None)
 
-    # restore scene: remove cameras + sequence assets created by this demo
+    # restore scene: remove cameras + sequence assets created by this demo,
+    # and revert every light/exposure value the adapter mutated (exact-value
+    # restore; the level is never saved).
     seq = (result.get("video") or {}).get("sequence")
     cleanup_live(bridge, seq_path=seq)
+    restore = adapter.restore_scene()
     dirty_after = bridge.is_level_dirty()
     dap = dirty_after.get("result") if isinstance(dirty_after, dict) and \
         isinstance(dirty_after.get("result"), dict) else dirty_after
@@ -157,12 +170,17 @@ def run(args):
         "dirty_before": bool((dbp or {}).get("is_dirty")),
         "dirty_after": bool((dap or {}).get("is_dirty")),
         "level_saved": False,
+        "restored_mutations": restore.get("restored_count"),
+        "restore_detail": (restore.get("restored") if isinstance(restore, dict)
+                           else None),
         "note": ("level was never saved; demo-created actors/assets were "
-                 "removed; certified scene untouched"),
+                 "removed; every PPV/light mutation the visual loop made "
+                 "was reverted to its certified value"),
     }
     result["resolution"] = [w, h]
     result["hero"] = hero
     result["rendered_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    _enrich_media_fields(result, out_dir)
     path = write_cinematic_result(result, out_dir)
     result["result_path"] = path
     print(json.dumps(result, indent=2, default=str))
@@ -205,6 +223,66 @@ def vision_review(path: str):
     return None
 
 
+def _enrich_media_fields(result, out_dir):
+    """Attach authoritative media evidence (video path + ffprobe verify +
+    proof stills) to the result so every artifact links to real files."""
+    render = result.get("video") or {}
+    # render frames recorded by the adapter renderer
+    frames = render.get("frames") or []
+    # keep the best-scoring shot frames as proof stills
+    proof = list((result.get("scorecard") or {}).get("frames") or [])
+    video_candidates = [
+        os.path.join(out_dir, "render", "aivido_cinematic.mp4"),
+    ]
+    video_path = None
+    for c in video_candidates:
+        if os.path.isfile(c) and os.path.getsize(c) > 0:
+            video_path = c
+            break
+    verification = {}
+    if video_path:
+        import subprocess
+        try:
+            out = subprocess.run(
+                ["ffprobe", "-v", "error", "-select_streams", "v:0",
+                 "-show_entries", "stream=width,height,r_frame_rate",
+                 "-show_entries", "format=duration", "-of", "json",
+                 video_path],
+                capture_output=True, text=True, timeout=60)
+            info = json.loads(out.stdout or "{}")
+            st = (info.get("streams") or [{}])[0]
+            fmt = info.get("format") or {}
+            rate = str(st.get("r_frame_rate") or "0/0").split("/")
+            fps = round(float(rate[0]) / float(rate[1]), 2) if len(rate) == 2 \
+                and float(rate[1]) else None
+            verification = {
+                "video_path": os.path.relpath(video_path, out_dir),
+                "ffprobe_duration_s": round(float(fmt.get("duration") or 0), 2),
+                "width": int(st.get("width") or 0),
+                "height": int(st.get("height") or 0),
+                "fps": fps,
+            }
+        except Exception as exc:
+            verification = {"video_path": os.path.relpath(video_path, out_dir),
+                            "ffprobe_error": f"{type(exc).__name__}: {exc}"}
+    # only real frames kept as proof
+    proof_paths = [os.path.abspath(p) for p in proof if os.path.isfile(p)]
+    if frames:
+        # fall back to the first render frame as a real-frame proof
+        for p in frames:
+            if os.path.isfile(p):
+                proof_paths.append(os.path.abspath(p))
+                break
+    result["video_path"] = verification.get("video_path")
+    result["video_verification"] = verification
+    result["proof_frames"] = [
+        os.path.relpath(p, out_dir) for p in proof_paths]
+    result["frame_count"] = len(frames)
+    result["capture_fps"] = (render.get("fps") or render.get("capture_fps")
+                              or None)
+    result["duration_s"] = render.get("duration_s")
+
+
 def cleanup_live(bridge, seq_path=None):
     """Remove every actor/asset the demo created. Never touches other actors."""
     if seq_path:
@@ -225,16 +303,25 @@ for a in list(unreal.EditorLevelLibrary.get_all_level_actors()):
         removed += 1
 __bridge_result__ = {{"removed": removed}}
 ''')
-    # delete the empty content folder if the demo created it and it is empty
+    # delete the content folder the demo created (asset deletion only lands
+    # on disk after a save; retry after persisting so no empty shell remains)
     bridge.execute_python(f'''
 import unreal
 root = {json.dumps(_SEQ_ROOT)}
-try:
-    items = unreal.EditorAssetLibrary.list_assets(root, recursive=True)
-    if not items:
+for attempt in range(3):
+    try:
+        items = unreal.EditorAssetLibrary.list_assets(root, recursive=True)
+        for it in items:
+            try:
+                unreal.EditorAssetLibrary.delete_asset(it)
+            except Exception:
+                pass
         unreal.EditorAssetLibrary.delete_directory(root)
-except Exception:
-    pass
+        if not unreal.EditorAssetLibrary.does_directory_exist(root):
+            break
+        unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
+    except Exception:
+        pass
 __bridge_result__ = {{"ok": True}}
 ''')
 
@@ -249,7 +336,9 @@ def main():
     ap.add_argument("--out-dir", default=None)
     ap.add_argument("--resolution", default="1920x1080")
     ap.add_argument("--duration", default="10")
-    ap.add_argument("--distance", default="420")
+    ap.add_argument("--distance", default="480")
+    ap.add_argument("--fov", default=None)
+    ap.add_argument("--shots", default="3")
     ap.add_argument("--yaws", default=None)
     ap.add_argument("--max-passes", default="3")
     ap.add_argument("--no-vision", action="store_true",

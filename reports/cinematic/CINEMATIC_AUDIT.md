@@ -24,7 +24,9 @@ V1 release tree (`aivido/v1-release`). Broad repo audit intentionally not done.
 - Identity: ASSET_Showcase2, UE 5.8.2; active level `/Game/Maps/AividoHQ.AividoHQ`, 166 actors.
 - `MovieRenderQueueSubsystem` / `MoviePipeline*` classes: **absent** → MRQ blocked at probe level.
 - `CineCameraActor`, `LevelSequenceEditorSubsystem`, `LevelSequenceEditorBlueprintLibrary`: present.
-- Native editor-viewport capture: reliable repeated capture (OK every call, source=LevelViewport[1], visible=1).
+- Native editor-viewport capture: reliable on a fresh editor and through the wake → viewport-kick →
+  settle → capture contract; intermittent empty/failed captures after heavy session use (partial
+  renders are recorded truthfully, never padded).
 - Cast census: 8 `SkeletalMeshActor` (AVIDO_Human_* pods); pixel-diff proof that the cast
   SkeletalMeshComponents rasterize **0 pixels** in this session (mesh bounds ~1.9 m below floor for
   Business_Male actors; Creative bounds at floor level also render 0 px) → cast not filmable without
@@ -34,4 +36,4 @@ V1 release tree (`aivido/v1-release`). Broad repo audit intentionally not done.
 
 cinematic director + bounded quality loop + scene framing + MRQ driver
 (truthful BLOCKED) + real-frame renderer + live adapter + asset decision
-layer + registry wiring + 32 hermetic tests.
+layer + registry wiring + 37 hermetic tests.

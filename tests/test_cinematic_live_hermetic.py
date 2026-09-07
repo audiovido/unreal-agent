@@ -141,3 +141,53 @@ def test_live_adapter_noop_actions_are_clearly_noop():
     adapter._current_cam_label = "AVCam_Shot01"
     out = adapter.apply_fix("capture_force_fresh", None, None, None, 1)
     assert out["ok"] is True and out.get("noop") is True
+
+
+def test_live_adapter_exposure_change_records_mutation_for_restore():
+    b = ScriptedBridge([{"result": {"ok": True,
+                                    "action": "exposure_adjust",
+                                    "change": {"prop": "auto_exposure_bias",
+                                                "before": 1.0, "after": 0.5},
+                                    "readback": True}}])
+    adapter = CinematicLiveAdapter(b)
+    adapter._current_cam_label = "AVCam_Shot01"
+    out = adapter.apply_fix("exposure_reduce_highlights", None, None, None, 1)
+    assert out["ok"] is True
+    assert adapter._mutations == [{"kind": "ppv",
+                                  "prop": "auto_exposure_bias",
+                                  "before": 1.0}]
+    # restore replays a set back to 1.0
+    b2 = ScriptedBridge()
+    adapter2 = CinematicLiveAdapter(b2)
+    adapter2._mutations = [{"kind": "ppv", "prop": "auto_exposure_bias",
+                            "before": 1.0}]
+    rest = adapter2.restore_scene()
+    assert rest["ok"] is True
+    assert rest["restored_count"] == 1
+    assert "auto_exposure_bias" in b2.calls[0]
+
+
+def test_live_adapter_capture_kicks_viewport_for_fresh_frame(tmp_path):
+    import shutil
+    src = tmp_path / "viewport_latest.png"
+    dst = tmp_path / "out.png"
+    # simple valid png
+    from PIL import Image
+    Image.new("RGB", (640, 360), (120, 120, 120)).save(str(src))
+
+    class _CapBridge(ScriptedBridge):
+        def capture_unreal_viewport(self):
+            self.calls.append("capture_unreal_viewport")
+            return {"ok": True, "result": {"ok": True, "path": str(src)}}
+
+    b = _CapBridge()
+    adapter = CinematicLiveAdapter(b)
+    shot = {"index": 1, "pose": {"location_x": 0.0, "location_y": -400.0,
+                                 "location_z": 180.0, "pitch": 0.0, "yaw": 0.0,
+                                 "roll": 0.0}}
+    out = adapter.capture(shot, str(dst))
+    assert out["ok"] is True
+    # the fresh-render contract emits a viewport camera set before capture
+    assert any("set_level_viewport_camera_info" in c for c in b.calls)
+    assert b.calls[-1] == "capture_unreal_viewport"
+    assert dst.exists()

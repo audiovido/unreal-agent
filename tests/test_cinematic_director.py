@@ -259,6 +259,61 @@ def test_quality_loop_recovers_on_second_capture(tmp_path):
     assert out["iterations"] == 2
 
 
+def test_quality_loop_vision_issues_select_real_action(tmp_path):
+    """Vision-rejected (but deterministic-clean) frames must not no-op.
+
+    Previously a frame with vision issues but no deterministic defect ended
+    at REVISE_MAXED with zero actions applied. Now vision issues select a
+    real bounded corrective action on the next pass.
+    """
+    flat = save(tmp_path, "flat", framed_subject_img())
+    good = save(tmp_path, "good_v", framed_subject_img())
+    fake_apply = _FakeApply()
+
+    class _Review:
+        def __call__(self, path):
+            # clean-looking synthetic frame: only vision complains
+            return {"score": 6.5, "pass": False,
+                    "issues": ["Lighting is flat with no directional shadows",
+                                "No focal point"],
+                    "summary": "flat"}
+
+    brief = parse_cinematic_brief("hero shot of the team, 8 seconds")
+    plan = plan_cinematic_shots(brief, sample_subjects())
+    target = cinematic_target(brief, plan)
+    loop = CinematicShotLoop(target, _FakeCapture([flat, flat, good]),
+                             fake_apply, vision=_Review())
+    out = loop.run(plan["shots"][0])
+    assert fake_apply.calls, "vision issues must drive at least one real action"
+    assert fake_apply.calls[0] in ("lighting_raise_key",
+                                   "camera_framing_recompute",
+                                   "exposure_reduce_highlights")
+    assert out["iterations"] <= 3
+    assert any("vision" in str((p or {}).get("action_source"))
+               for p in out["passes"])
+
+
+def test_vision_action_mapping_stops_when_all_tried(tmp_path):
+    """Boundedness: after every implied action is tried the loop stops."""
+    frame = save(tmp_path, "v1", framed_subject_img())
+    fake_apply = _FakeApply()
+
+    class _Review:
+        def __call__(self, path):
+            return {"score": 6.0, "pass": False,
+                    "issues": ["overexposed washed out highlights"],
+                    "summary": "washed"}
+
+    brief = parse_cinematic_brief("hero shot of the team, 8 seconds")
+    plan = plan_cinematic_shots(brief, sample_subjects())
+    target = cinematic_target(brief, plan)
+    loop = CinematicShotLoop(target, _FakeCapture([frame] * 6), fake_apply,
+                             vision=_Review())
+    out = loop.run(plan["shots"][0])
+    assert out["iterations"] <= 3
+    assert out["status"] in ("PASS", "REVISE_MAXED")
+
+
 # --------------------------------------------------------------------------
 # run_cinematic orchestration
 # --------------------------------------------------------------------------
@@ -321,6 +376,30 @@ def test_run_cinematic_complete_with_proof(tmp_path):
     assert out["video"]["frames"]
     assert out["asset_decision"]["decision"] == "reuse"
     assert out["shots"] and all(s["ok"] for s in out["shots"])
+
+
+def test_run_cinematic_calls_reset_hooks_between_shots(tmp_path):
+    calls = {"shot_done": 0, "before_render": 0}
+
+    class HookAdapter(FakeCinematicAdapter):
+        def on_shot_done(self):
+            calls["shot_done"] += 1
+            return {"ok": True, "restored": 2}
+
+        def before_render(self):
+            calls["before_render"] += 1
+            return {"ok": True, "restored": 2}
+
+    adapter = HookAdapter(tmp_path, good=True)
+    out = run_cinematic(
+        "Create a 10-second cinematic hero shot of the AividoHQ team, "
+        "8 seconds", adapter, str(tmp_path))
+    assert out["status"] == "COMPLETE"
+    # one reset after every executed shot, and one reset before the render
+    assert calls["shot_done"] == len(out["shots"])
+    assert calls["before_render"] == 1
+    resets = [s["reset_after_shot"]["ok"] for s in out["shots"]]
+    assert resets == [True] * len(out["shots"])
 
 
 def test_run_cinematic_blocked_when_no_shot_passes(tmp_path):

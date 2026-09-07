@@ -71,9 +71,105 @@ class CinematicLiveAdapter:
         self._current_shot: Optional[Dict[str, Any]] = None
         self._current_cam_label: Optional[str] = None
         self._resolution = [1920, 1080]
+        self._mutations: List[Dict[str, Any]] = []
 
     def set_resolution(self, width: int, height: int) -> None:
         self._resolution = [int(width), int(height)]
+
+    def snapshot_scene(self) -> Dict[str, Any]:
+        """Record PPV exposure + certified light values this adapter may touch.
+
+        Restore is exact-value based: every mutation made through this adapter
+        is recorded in ``self._mutations`` and ``restore_scene()`` reverts
+        them one by one (level is never saved)."""
+        res = self.bridge.execute_python(r'''
+import unreal
+out = {"ppv": [], "lights": []}
+for a in unreal.EditorLevelLibrary.get_all_level_actors():
+    cn = a.get_class().get_name()
+    if cn == "PostProcessVolume" and hasattr(a, "settings"):
+        entry = {"label": a.get_actor_label(), "props": {}}
+        for p in ("auto_exposure_bias", "auto_exposure_method",
+                  "camera_shutter_speed", "camera_iso"):
+            try:
+                entry["props"][p] = a.settings.get_editor_property(p)
+            except Exception:
+                pass
+        out["ppv"].append(entry)
+    elif cn in ("DirectionalLight", "PointLight", "SpotLight"):
+        for c in a.get_components_by_class(unreal.LightComponent):
+            entry = {"label": a.get_actor_label(), "comp": c.get_class().get_name()}
+            try:
+                entry["intensity"] = c.get_editor_property("intensity")
+            except Exception:
+                continue
+            out["lights"].append(entry)
+__bridge_result__ = out
+''')
+        return _payload(res)
+
+    def restore_scene(self) -> Dict[str, Any]:
+        """Exact restore of every scene value this adapter mutated."""
+        restored = []
+        # reverse order: the LAST mutation applied is reverted first, so the
+        # final value equals the original certified value exactly.
+        for m in list(reversed(self._mutations)):
+            ok = self._restore_one(m)
+            restored.append({"mutation": m, "restored": ok})
+        self._mutations.clear()
+        return {"ok": True, "restored_count": len(restored), "restored": restored}
+
+    def _restore_one(self, m: Dict[str, Any]) -> bool:
+        kind = m.get("kind")
+        if kind == "ppv":
+            prop = m.get("prop")
+            code = f'''
+import unreal
+vols = [a for a in unreal.EditorLevelLibrary.get_all_level_actors()
+        if a.get_class().get_name() == "PostProcessVolume"]
+if vols:
+    try:
+        vols[0].settings.set_editor_property({json.dumps(prop)}, {json.dumps(m.get("before"))})
+        __bridge_result__ = {{"ok": True}}
+    except Exception as exc:
+        __bridge_result__ = {{"ok": False, "error": str(exc)[:120]}}
+else:
+    __bridge_result__ = {{"ok": False}}
+'''
+        elif kind == "light":
+            code = f'''
+import unreal
+label = {json.dumps(m.get("label"))}
+done = {{"ok": False}}
+for a in unreal.EditorLevelLibrary.get_all_level_actors():
+    if a.get_actor_label() != label:
+        continue
+    for c in a.get_components_by_class(unreal.LightComponent):
+        if c.get_class().get_name() != {json.dumps(m.get("comp"))}:
+            continue
+        try:
+            c.set_editor_property("intensity", {json.dumps(float(m.get("before")))})
+            done = {{"ok": True}}
+        except Exception as exc:
+            done = {{"ok": False, "error": str(exc)[:120]}}
+        break
+    break
+__bridge_result__ = done
+'''
+        else:
+            return True
+        payload = _payload(self.bridge.execute_python(code))
+        return isinstance(payload, dict) and bool(payload.get("ok"))
+
+    def on_shot_done(self) -> Dict[str, Any]:
+        """Revert every loop mutation so the next shot starts from the
+        certified scene (fixes are per-shot evidence, never accumulated)."""
+        return self.restore_scene()
+
+    def before_render(self) -> Dict[str, Any]:
+        """Render the final film from the certified baseline, which the
+        bounded loop could not beat in earlier live runs."""
+        return self.restore_scene()
 
     def blender_if_needed(self, plan: Dict[str, Any]) -> Dict[str, Any]:
         """Asset decision hook for run_cinematic: reuse existing AividoHQ
@@ -210,45 +306,194 @@ __bridge_result__ = {{
         return payload
 
     def aim_viewport(self, shot: Dict[str, Any]) -> Dict[str, Any]:
-        label = f"AVCam_Shot{int(shot.get('index') or 1):02d}"
-        res = self.bridge.frame_viewport_from_actor(label, distance=0.0)
+        """Point the level-viewport camera at the shot pose directly.
+
+        Never frames from an actor (pilot/frame-from-actor left the editor
+        viewport frozen and captures stale on this engine build); the pose is
+        a stable explicit camera transform that the capture path re-applies
+        before every fresh frame.
+        """
+        pose = shot.get("pose") or {}
+        loc = [float(pose.get("location_x", 0.0)),
+               float(pose.get("location_y", 0.0)),
+               float(pose.get("location_z", 0.0))]
+        pitch = float(pose.get("pitch", 0.0))
+        yaw = float(pose.get("yaw", 0.0))
+        roll = float(pose.get("roll", 0.0))
+        res = self.bridge.execute_python(f'''
+import unreal
+sub = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem)
+loc = {json.dumps([round(v, 3) for v in loc])}
+rot = unreal.Rotator(pitch={json.dumps(float(pitch))}, yaw={json.dumps(float(yaw))}, roll={json.dumps(float(roll))})
+__bridge_result__ = {{"ok": True}}
+try:
+    sub.set_level_viewport_camera_info(
+        unreal.Vector(loc[0], loc[1], loc[2]), rot)
+    rb = sub.get_level_viewport_camera_info()
+    __bridge_result__ = {{"ok": rb is not None}}
+except Exception as exc:
+    __bridge_result__ = {{"ok": False, "error": str(exc)[:120]}}
+''')
         return _payload(res)
 
     # -------------------------------------------------------------- capture
+    def _wake_editor(self) -> bool:
+        """Restore + foreground the UnrealEditor frame window.
+
+        A backgrounded/minimized editor stops presenting new viewport frames
+        (the native capture then returns a stale backbuffer as evidence).
+        V1 restores the window before every guarded capture; the cinematic
+        fresh-capture contract needs the same wake so an exposure/light fix
+        is actually visible in the next capture.
+        """
+        import subprocess
+        # canonical location is the workspace root scripts/ (the cinematic
+        # worktree lives inside the same workspace as the V1 tree)
+        here = os.path.dirname(os.path.abspath(__file__))  # .../tools/unreal
+        candidates = [
+            os.path.join(here, "..", "..", "..", "..", "scripts",
+                         "restore_editor_window.ps1"),
+            os.path.join(here, "..", "..", "..", "scripts",
+                         "restore_editor_window.ps1"),
+        ]
+        script = next((p for p in candidates if os.path.isfile(p)), None)
+        if not script:
+            return False
+        try:
+            r = subprocess.run(
+                ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                 "-File", script], capture_output=True, text=True,
+                timeout=30)
+            out = r.stdout or ""
+            return "RESTORED" in out or "ALREADY_OK" in out
+        except Exception:
+            return False
+
+    def _kick_viewport_render(self, shot: Dict[str, Any]) -> bool:
+        """Force the level viewport to present a REAL fresh frame.
+
+        An editor whose window is not foreground stops re-rendering the
+        viewport on pure post-process/light edits, so a capture taken after
+        only a PPV property change silently returns the previous frame. The
+        reliable refresh (proven live) is to move the level-viewport camera:
+        each move forces a new render, and the final re-set restores the
+        exact shot framing before the native capture reads the backbuffer.
+        """
+        pose = shot.get("pose") or {}
+        loc = [float(pose.get("location_x", 0.0)),
+               float(pose.get("location_y", 0.0)),
+               float(pose.get("location_z", 0.0))]
+        pitch = float(pose.get("pitch", 0.0))
+        yaw = float(pose.get("yaw", 0.0))
+        roll = float(pose.get("roll", 0.0))
+        import time as _t
+        code = f'''
+import unreal
+sub = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem)
+loc = {json.dumps([round(v, 3) for v in loc])}
+rot = unreal.Rotator(pitch={json.dumps(float(pitch))}, yaw={json.dumps(float(yaw))}, roll={json.dumps(float(roll))})
+ok = False
+try:
+    sub.set_level_viewport_camera_info(
+        unreal.Vector(loc[0], loc[1], loc[2]), rot)
+    ok = True
+except Exception:
+    ok = False
+__bridge_result__ = {{"ok": ok}}
+'''
+        res = self.bridge.execute_python(code)
+        payload = _payload(res)
+        ok = isinstance(payload, dict) and bool(payload.get("ok"))
+        # V1's verified fresh-render recipe in a SEPARATE call (the editor
+        # main thread must be free to present the frame; sleeping inside a
+        # single editor python block starves rendering).
+        redraw = f'''
+import unreal
+w = unreal.EditorLevelLibrary.get_editor_world()
+if w is not None:
+    try:
+        unreal.EditorLevelLibrary.editor_invalidate_viewports()
+    except Exception:
+        pass
+    for cmd in ("r.ScreenPercentage 99", "RedrawAllViewports",
+                "r.ScreenPercentage 100", "RedrawAllViewports"):
+        try:
+            unreal.SystemLibrary.execute_console_command(w, cmd)
+        except Exception:
+            pass
+__bridge_result__ = {{"ok": True}}
+'''
+        self.bridge.execute_python(redraw)
+        _t.sleep(2.2)
+        return ok
+
     def capture(self, shot: Dict[str, Any], out_path: str) -> Dict[str, Any]:
         """Real capture of the active level viewport (native read-back).
 
-        The editor viewport is the source; its ACTUAL resolution is read back
-        and reported (never assumed to equal the requested resolution). The
-        requested resolution remains the target for an MRQ render when the
-        plugin is available.
+        A shot pose is re-applied to the level-viewport camera before capture
+        so every capture reflects the CURRENT scene state (PPV exposure,
+        lights) rather than a stale backbuffer from a backgrounded editor.
+        The viewport's ACTUAL resolution is read back and reported (never
+        assumed to equal the requested resolution). The requested resolution
+        remains the target for an MRQ render when the plugin is available.
         """
         out_path = os.path.abspath(out_path)
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
-        res = self.bridge.capture_unreal_viewport()
-        payload = _payload(res)
-        if not (isinstance(payload, dict) and payload.get("ok")):
-            return {"ok": False, "error": "native viewport capture failed",
-                    "path": out_path, "bridge": payload}
-        src = payload.get("path")
-        if not src or not os.path.isfile(src):
-            return {"ok": False, "error": "native capture file missing",
-                    "path": out_path}
-        import shutil
-        try:
-            shutil.copyfile(src, out_path)
-        except OSError as exc:
-            return {"ok": False, "error": f"copy failed: {exc}",
-                    "path": out_path}
-        try:
-            im = Image.open(out_path)
-            actual = list(im.size)
-        except Exception:
-            actual = None
-        return {"ok": True, "path": out_path,
-                "resolution_requested": list(self._resolution),
-                "resolution": actual,
-                "bytes": os.path.getsize(out_path)}
+        # Fresh-render contract with bounded retry: the editor viewport needs
+        # an explicit kick to present a NEW frame after a PPV/light edit, and
+        # a capture can transiently race that present. Retrying keeps the
+        # quality loop honest (never a stale frame labelled as current).
+        last_error = ""
+        # Wake the editor once per capture: a foregrounded window is required
+        # for the viewport to actually present the fresh frame.
+        self._wake_editor()
+        self.bridge.execute_python("""
+import unreal
+unreal.SystemLibrary.execute_console_command(None, "r.ThrottleCPUWhenNotForeground 0")
+unreal.SystemLibrary.execute_console_command(None, "t.MaxFPS 0")
+try:
+    # no selection gizmo/overlay may appear in a capture frame
+    unreal.get_editor_subsystem(unreal.EditorActorSubsystem).set_selected_level_actors([])
+except Exception:
+    pass
+__bridge_result__ = {"ok": True}
+""")
+        for _attempt in range(3):
+            self._kick_viewport_render(shot)
+            res = self.bridge.capture_unreal_viewport()
+            payload = _payload(res)
+            if not (isinstance(payload, dict) and payload.get("ok")):
+                last_error = "native viewport capture failed"
+                continue
+            src = payload.get("path")
+            if not src or not os.path.isfile(src):
+                last_error = "native capture file missing"
+                continue
+            if os.path.getsize(src) == 0:
+                last_error = "native capture produced an empty file"
+                continue
+            import shutil
+            try:
+                shutil.copyfile(src, out_path)
+            except OSError as exc:
+                last_error = f"copy failed: {exc}"
+                continue
+            try:
+                im = Image.open(out_path)
+                actual = list(im.size)
+            except Exception:
+                actual = None
+            if not actual or actual[0] < 320:
+                last_error = f"capture not a real frame: {actual}"
+                continue
+            return {"ok": True, "path": out_path,
+                    "resolution_requested": list(self._resolution),
+                    "resolution": actual,
+                    "bytes": os.path.getsize(out_path),
+                    "attempts": _attempt + 1}
+        return {"ok": False, "error": last_error or "native capture failed "
+                                                "after retries",
+                "path": out_path}
 
     # ----------------------------------------------------------------- fix
     def apply_fix(self, action: str, metrics: Any, scorecard: Dict[str, Any],
@@ -264,6 +509,8 @@ __bridge_result__ = {{
             return self._reframe_camera(label, metrics, scorecard)
         if action in ("exposure_reduce_highlights", "exposure_raise_blacks",
                       "lighting_reduce_background", "lighting_raise_key"):
+            if action in ("lighting_raise_key", "lighting_reduce_background"):
+                return self._adjust_lights(action)
             return self._adjust_exposure(action)
         if action in ("environment_add_depth", "viewport_aspect_fix",
                       "camera_roll_reset", "capture_force_fresh"):
@@ -334,17 +581,16 @@ else:
         return self._nudge_camera(label, 0.9)
 
     def _adjust_exposure(self, action: str) -> Dict[str, Any]:
-        """Best-effort exposure change through a PostProcessVolume.
+        """Best-effort exposure change through the scene PostProcessVolume.
 
-        Property names differ across engine builds, so each candidate is
-        probed and only a verified change is reported ok. Failure is an
-        honest engine-closed result, never a silent no-op.
+        The AividoHQ PPV drives manual exposure through ``auto_exposure_bias``
+        (verified live: each -1.0 EV measurably darkens the captured frame).
+        Every change is read back and recorded so ``restore_scene()`` can put
+        the certified value back exactly (level never saved).
         """
-        bias = -0.5 if action in ("exposure_reduce_highlights",
-                                  "lighting_reduce_background") else 0.5
-        res = self.bridge.execute_python(f'''
+        delta = -0.5 if action == "exposure_reduce_highlights" else 0.5
+        code = f'''
 import unreal
-bias = float({json.dumps(float(bias))})
 volumes = [a for a in unreal.EditorLevelLibrary.get_all_level_actors()
            if a.get_class().get_name() == "PostProcessVolume"]
 if not volumes:
@@ -352,30 +598,86 @@ if not volumes:
                           "error": "no PostProcessVolume in level to "
                                    "drive exposure"}}
 else:
-    changed = None
-    error = None
     vol = volumes[0]
-    if hasattr(vol, "settings"):
-        for prop in ("exposure_compensation", "auto_exposure_bias",
-                     "auto_exposure_bias_compensation"):
-            if hasattr(vol.settings, prop):
-                try:
-                    cur = float(vol.settings.get_editor_property(prop) or 0.0)
-                    vol.settings.set_editor_property(prop, cur + bias)
-                    new = float(vol.settings.get_editor_property(prop) or 0.0)
-                    changed = {{"prop": prop, "before": cur, "after": new}}
-                    break
-                except Exception as exc:
-                    error = str(exc)[:120]
-    if changed is not None:
-        __bridge_result__ = {{"ok": True, "action": "exposure_adjust",
-                              "change": changed, "readback": True}}
-    else:
+    if not hasattr(vol, "settings"):
         __bridge_result__ = {{"ok": False, "engine_closed": True,
-                              "error": error or "exposure property not "
-                                                "exposed on PostProcessVolume"}}
-''')
-        return _payload(res)
+                              "error": "PPV settings not accessible"}}
+    else:
+        changed = None
+        error = None
+        for prop in ("auto_exposure_bias", "exposure_compensation",
+                     "auto_exposure_bias_compensation"):
+            try:
+                cur = float(vol.settings.get_editor_property(prop) or 0.0)
+                vol.settings.set_editor_property(prop, cur + {json.dumps(float(delta))})
+                new = float(vol.settings.get_editor_property(prop) or 0.0)
+                changed = {{"prop": prop, "before": cur, "after": new}}
+                break
+            except Exception as exc:
+                error = str(exc)[:120]
+        if changed is not None:
+            __bridge_result__ = {{"ok": True, "action": "exposure_adjust",
+                                  "change": changed, "readback": True}}
+        else:
+            __bridge_result__ = {{"ok": False, "engine_closed": True,
+                                  "error": error or "exposure property not "
+                                                    "exposed on PPV"}}
+'''
+        payload = _payload(self.bridge.execute_python(code))
+        if isinstance(payload, dict) and payload.get("ok"):
+            change = payload.get("change") or {}
+            self._mutations.append({"kind": "ppv",
+                                    "prop": change.get("prop"),
+                                    "before": change.get("before")})
+        return payload
+
+    def _adjust_lights(self, action: str) -> Dict[str, Any]:
+        """Real light-intensity change (key raise / background reduce).
+
+        Operates on the certified AividoHQ light rig by actor label; the
+        before value is recorded in ``self._mutations`` so ``restore_scene``
+        reverts it exactly. Read-back verified, never a silent no-op.
+        """
+        if action == "lighting_raise_key":
+            label = "AVIDO_KeyLight"
+            factor = 1.35
+        else:  # lighting_reduce_background
+            label = "AVIDO_Light_Fill"
+            factor = 0.65
+        code = f'''
+import unreal
+label = {json.dumps(label)}
+factor = float({json.dumps(float(factor))})
+target = None
+for a in unreal.EditorLevelLibrary.get_all_level_actors():
+    if a.get_actor_label() == label:
+        for c in a.get_components_by_class(unreal.LightComponent):
+            try:
+                cur = float(c.get_editor_property("intensity"))
+            except Exception:
+                continue
+            c.set_editor_property("intensity", cur * factor)
+            new = float(c.get_editor_property("intensity"))
+            target = {{"label": label, "comp": c.get_class().get_name(),
+                       "before": cur, "after": new}}
+            break
+        break
+if target is None:
+    __bridge_result__ = {{"ok": False, "engine_closed": True,
+                          "error": ("light " + label + " not found "
+                                     "in level")}}
+else:
+    __bridge_result__ = {{"ok": True, "action": "light_intensity",
+                          "change": target, "readback": True}}
+'''
+        payload = _payload(self.bridge.execute_python(code))
+        if isinstance(payload, dict) and payload.get("ok"):
+            change = payload.get("change") or {}
+            self._mutations.append({"kind": "light",
+                                    "label": change.get("label"),
+                                    "comp": change.get("comp"),
+                                    "before": change.get("before")})
+        return payload
 
     # --------------------------------------------------------------- render
     def render(self, brief: Dict[str, Any], shots: List[Dict[str, Any]],
@@ -407,46 +709,74 @@ else:
                 "resolution": [width, height], "fps": fps,
                 "duration_s": duration,
             }
-        # MRQ unavailable -> real-frame evidence path (viewer dolly)
+        # MRQ unavailable -> real-frame evidence path (viewer dolly), using
+        # the SAME fresh-capture contract as the quality loop (wake -> kick
+        # -> settle -> native capture with bounded retry) because that path
+        # is the only one proven to present real frames reliably on this
+        # editor. Each pose is one real captured frame.
         poses = self._motion_poses(shots, duration)
-        frames = driver.render_real_frames(
-            seq_path, os.path.join(out_dir, "frames"), width=width,
-            height=height, fps=fps, pose_paths=poses,
-            sample_stride=1.0 / 6.0)
-        frames_payload = _payload(frames)
-        if not (isinstance(frames_payload, dict) and frames_payload.get("ok")):
+        capture_fps = 6  # real-time capture rate; MRQ full-rate stays blocked
+        frame_dir = os.path.join(out_dir, "frames")
+        os.makedirs(frame_dir, exist_ok=True)
+        missing: List[Dict[str, Any]] = []
+        paths: List[str] = []
+        actual: Optional[List[int]] = None
+        import time as _time
+        total = len(poses)
+        for i, pose in enumerate(poses):
+            frame_name = f"frame_{i + 1:04d}.png"
+            frame_path = os.path.join(frame_dir, frame_name)
+            shot_like = {"index": i + 1, "pose": pose}
+            cap = self.capture(shot_like, frame_path)
+            if cap.get("ok") and os.path.isfile(frame_path) \
+                    and os.path.getsize(frame_path) > 0:
+                paths.append(frame_path)
+                if actual is None:
+                    try:
+                        from PIL import Image as _Im
+                        actual = list(_Im.open(frame_path).size)
+                    except Exception:
+                        actual = None
+            else:
+                missing.append({"frame": i + 1,
+                                "error": cap.get("error") or "capture failed"})
+            if missing and len(missing) >= max(3, total // 4):
+                break   # a genuinely frozen viewport; stop wasting attempts
+        if not paths:
             return {
                 "ok": False,
                 "blocked": "movie_render_queue",
-                "error": (str((frames_payload or {}).get("error"))
-                          or "real-frame render failed"),
+                "error": "no real frames captured by the render path",
                 "mrq_blocked": mrq_payload,
                 "sequence": seq_path,
                 "path": None,
             }
-        frame_dir = frames_payload.get("frame_dir")
-        capture_fps = 6  # real-time capture rate; MRQ full-rate stays blocked
+        actual = actual or [int(width), int(height)]
         result = {
             "ok": True,
             "renderer": "real_frames",
             "renderer_is_mrq": False,
             "mrq_blocked_evidence": mrq_payload,
             "sequence": seq_path,
-            "frames": frames_payload.get("frames"),
-            "frame_count": frames_payload.get("frame_count"),
+            "frames": paths,
+            "frame_count": len(paths),
             "frame_dir": frame_dir,
-            "resolution": [frames_payload.get("width"),
-                           frames_payload.get("height")],
+            "resolution": actual,
+            "width": actual[0], "height": actual[1],
             "fps": fps,
             "capture_fps": capture_fps,
-            "duration_s": frames_payload.get("duration_s"),
+            "duration_s": round(len(paths) / float(capture_fps), 2),
+            "partial": bool(missing),
+            "missing_count": len(missing),
+            "missing": missing[:5],
             "video": self._encode_video_if_possible(
                 frame_dir, capture_fps, out_dir),
             "note": ("MRQ unavailable on this editor; frames are REAL Unreal "
-                     "viewport captures along a deterministic camera pose "
-                     "path (" + str(frames_payload.get("width")) + "x" +
-                     str(frames_payload.get("height")) + "). Not an MRQ "
-                     "output."),
+                     "viewport captures (wake->kick->settle->native capture) "
+                     "along a deterministic camera pose path (" +
+                     str(actual[0]) + "x" + str(actual[1]) + "). Not an MRQ "
+                     "output." + (f" PARTIAL ({len(paths)}/{total} frames)"
+                                  if missing else "")),
         }
         return result
 
