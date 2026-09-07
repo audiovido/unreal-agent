@@ -1,0 +1,90 @@
+{
+  "report": "AIVIDO_V1_FINAL_RELEASE",
+  "release_branch": "aivido/v1-release",
+  "release_head": "c080464b80ea3afc975219def581dee60b95981b",
+  "integration": {
+    "productization_branch": "aivido/v1-productization",
+    "productization_sha": "9811a533580c10956748772cb0b828e1698b0714",
+    "defect_closure_branch": "aivido/v1-final-defect-closure",
+    "defect_closure_sha": "c080464b80ea3afc975219def581dee60b95981b",
+    "shape": "linear (closure descendant of productization on RC1.1 base 736042ddafb45f34dfed88607e750be73e2877f2)",
+    "conflicts": 0,
+    "date": "2026-09-07",
+    "host": "shadow-6kckcfdq"
+  },
+  "functionality_preserved": {
+    "productization": {
+      "installer": "PASS",
+      "persistent_backend": "PASS",
+      "watchdog": "PASS",
+      "start_stop_restart": "PASS",
+      "tailscale": "PASS",
+      "doctor": "PASS",
+      "package_builder": "PASS"
+    },
+    "defect_closure": {
+      "explicit_verification_requirements_execute": "PASS",
+      "false_pass_impossible": "PASS",
+      "evidence_objects_render_correctly": "PASS"
+    }
+  },
+  "tests": {"suite": "pytest tests/ (single run)", "passed": 1082, "skipped": 1, "failed": 0, "seconds": 133.9},
+  "doctor": {"overall": "PASS", "pass": 13, "warn": 0, "fail": 0, "mode": "full"},
+  "live_e2e": {
+    "script": "scripts/aivido_smoke.py",
+    "overall": "PASS",
+    "steps_passed": 18,
+    "steps_total": 18,
+    "phases": ["create", "modify", "verify", "capture", "cleanup"],
+    "map": "/Game/Maps/AividoHQ.AividoHQ",
+    "baseline_actors": 166,
+    "final_actors": 166,
+    "no_save": true,
+    "evidence": ["reports/release/AIVIDO_V1_SMOKE_EVIDENCE/AIVIDO_V1_INSTALL_SMOKE_proof.png", "reports/release/AIVIDO_V1_SMOKE_EVIDENCE/mission.json"]
+  },
+  "strict_verification": {
+    "verdict": "PASS",
+    "status": "complete",
+    "mission_id": "mission_570aacfa8a87",
+    "steps_completed": 10,
+    "steps_total": 10,
+    "checks": [
+      {"check": "bridge_ready", "measured": "healthy", "expected": "healthy", "ok": true},
+      {"check": "active_map", "measured": "AividoHQ", "expected": "AividoHQ", "ok": true},
+      {"check": "human_count", "measured": 8, "expected": 8, "ok": true},
+      {"check": "prop_count", "measured": 23, "expected": 23, "ok": true},
+      {"check": "movable_lights", "measured": 41, "expected": 41, "ok": true, "detail": "static=0 stationary=0 unclassified=0"},
+      {"check": "missing_skeletal_meshes", "measured": 0, "expected": 0, "ok": true, "detail": "8 checked"},
+      {"check": "missing_prop_references", "measured": 0, "expected": 0, "ok": true, "detail": "23 checked"},
+      {"check": "viewport_proof", "measured": "fresh PNG 30197 bytes", "ok": true}
+    ]
+  },
+  "ui": {
+    "local": {"url": "http://127.0.0.1:8765/app", "status": 200, "bytes": 21711},
+    "tailscale_https": {"url": "https://shadow-6kckcfdq.tail5f3ac6.ts.net/app", "status": 200},
+    "tailscale_ip": {"url": "http://100.84.156.24:8765/app", "status": 200}
+  },
+  "package": {
+    "path": "dist/Aivido-V1",
+    "files": 132,
+    "version_json": {"branch": "aivido/v1-release", "sha": "c080464b80ea3afc975219def581dee60b95981b", "entrypoint": "install-aivido.ps1"},
+    "junk": [],
+    "secrets": [],
+    "quickstart_actions": 3
+  },
+  "persistence": {
+    "backend_pid": 6872,
+    "watchdog_pid": 8628,
+    "health": "OK",
+    "survives_launcher_exit": "PASS (doctor persistence check + scheduled-task spawn at gate)"
+  },
+  "critical": 0,
+  "major": 0,
+  "warnings": [
+    "sandbox artifact: tool-call-boundary reaping of probe-spawned process trees; certified scheduled-task spawn used for live gate (not a product defect)",
+    "smoke dirty_flag=true is transient in-editor state; level intentionally never saved",
+    "pre-existing cosmetic: duplicate OpenAPI operation IDs + FastAPI on_event deprecations",
+    "runtime restarts counter cumulative (doctor stop/start cycle), not a crash count"
+  ],
+  "AIVIDO_V1_RELEASE_READY": "YES"
+}
