@@ -1,0 +1,50 @@
+[
+  {
+    "id": "QA-6604C7",
+    "severity": "MAJOR",
+    "category": "MISSION_BLACKBOX",
+    "title": "isolated_capture_mission: mission PASS unverified: status='failed'; verdict='FAIL'; 0 executed steps; no real evidence files (0 entries)",
+    "reproduction": "read-only capture mission through the real pipeline",
+    "expected": "complete PASS + screenshot evidence",
+    "actual": "mission PASS unverified: status='failed'; verdict='FAIL'; 0 executed steps; no real evidence files (0 entries)",
+    "evidence": [],
+    "suspected_component": "mission-pipeline",
+    "retryable": false,
+    "blocker": false,
+    "check_name": "isolated_capture_mission",
+    "status": "OPEN",
+    "created_at": 1788810954.062
+  },
+  {
+    "id": "QA-F09F23",
+    "severity": "MAJOR",
+    "category": "UNREAL_STATE_SAFETY",
+    "title": "durable_orientation: cast rotation drifted",
+    "reproduction": "read-only get_actor rotation read-back",
+    "expected": "rotation.z in {0, 180}",
+    "actual": "z=360.0",
+    "evidence": [],
+    "suspected_component": "",
+    "retryable": false,
+    "blocker": false,
+    "check_name": "durable_orientation",
+    "status": "OPEN",
+    "created_at": 1788810989.536
+  },
+  {
+    "id": "QA-E714B0",
+    "severity": "MAJOR",
+    "category": "UI_BLACKBOX",
+    "title": "no_js_fatal_in_pages: response contains fatal markers: <!doctype html>",
+    "reproduction": "run no_js_fatal_in_pages",
+    "expected": "no fatal markers",
+    "actual": "response contains fatal markers: <!doctype html>",
+    "evidence": [],
+    "suspected_component": "ui",
+    "retryable": false,
+    "blocker": false,
+    "check_name": "no_js_fatal_in_pages",
+    "status": "OPEN",
+    "created_at": 1788810989.953
+  }
+]

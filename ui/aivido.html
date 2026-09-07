@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/aivido.css?v=cb503c40">
+<link rel="stylesheet" href="/static/aivido.css?v=eb40c9d4">
 </head>
 <body>
 
@@ -41,6 +41,7 @@
     <button class="rail-item" data-nav="quests"><span class="ri-ic">⚑</span><span class="ri-lb">Quests</span></button>
     <button class="rail-item" data-nav="finance"><span class="ri-ic">◈</span><span class="ri-lb">Finance</span></button>
     <button class="rail-item" data-nav="profile"><span class="ri-ic">♜</span><span class="ri-lb">Profile</span></button>
+    <button class="rail-item" data-nav="qa"><span class="ri-ic">✓</span><span class="ri-lb">QA</span></button>
     <div class="rail-grow"></div>
     <button class="rail-item" data-nav="settings"><span class="ri-ic">⚙</span><span class="ri-lb">Settings</span></button>
     <div id="railBackend" class="rail-backend" title="Backend status">
@@ -375,6 +376,39 @@
           <p class="muted">Aivido Director's Booth · UI/UX Phase 1 + Phase 2<br>
           Shell, navigation, room, crew states, proof vault, quests, finance, profile, live mission dispatch, cast &amp; asset contracts — built on the existing engine. No backend behavior changed.</p>
           <p class="mono" id="setVersion">aivido-uiux-phase1 · bfc6700+ · Phase 2</p>
+      <!-- ===== AUTONOMOUS QA ===== -->
+      <section id="scr-qa" class="screen">
+        <div class="screen-head">
+          <div><h1>Autonomous QA</h1><p class="screen-sub">Black-box release-readiness verdict · every PASS independently verified.</p></div>
+          <button id="qaRun" class="btn primary">⚡ Run QA</button>
+        </div>
+        <div class="qa-banner" id="qaBanner">
+          <div class="qa-verdict" id="qaVerdict">—</div>
+          <div class="qa-banner-meta">
+            <span>run <b id="qaRunId">—</b></span>
+            <span>score <b id="qaScore">—</b></span>
+            <span>status <b id="qaStatus">—</b></span>
+          </div>
+        </div>
+        <div class="qa-stats grid-4" id="qaStats">
+          <div class="card"><div class="stat"><b id="qaPass">0</b><span>PASS</span></div></div>
+          <div class="card"><div class="stat"><b id="qaFail">0</b><span>FAIL</span></div></div>
+          <div class="card"><div class="stat"><b id="qaBlocked">0</b><span>BLOCKED</span></div></div>
+          <div class="card"><div class="stat"><b id="qaSkip">0</b><span>SKIPPED</span></div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2>Defects</h2><span class="card-sub" id="qaDefectCount">—</span></div>
+            <div id="qaDefects" class="qa-defects"><div class="mc-empty">No QA run yet. Run QA to inspect the defect ledger.</div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Checks</h2><span class="card-sub">group matrix</span></div>
+            <div id="qaChecks" class="qa-checks"><div class="mc-empty">No checks yet.</div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-head"><h2>Evidence Links</h2><span class="card-sub">reports &amp; ledger</span></div>
+          <div id="qaEvidence" class="qa-evidence"><div class="muted">Generated report and ledger paths appear here after a run.</div></div>
         </div>
       </section>
 

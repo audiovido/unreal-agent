@@ -1,0 +1,34 @@
+[
+  {
+    "id": "QA-A59E90",
+    "severity": "MAJOR",
+    "category": "MISSION_BLACKBOX",
+    "title": "isolated_capture_mission: mission PASS unverified: status='executing'; verdict=None; 0 executed steps; no real evidence files (0 entries)",
+    "reproduction": "read-only diagnostic capture mission through the real pipeline",
+    "expected": "complete PASS + evidence",
+    "actual": "mission PASS unverified: status='executing'; verdict=None; 0 executed steps; no real evidence files (0 entries)",
+    "evidence": [],
+    "suspected_component": "mission-pipeline",
+    "retryable": false,
+    "blocker": false,
+    "check_name": "isolated_capture_mission",
+    "status": "OPEN",
+    "created_at": 1788812457.802
+  },
+  {
+    "id": "QA-5E8B4B",
+    "severity": "MINOR",
+    "category": "MISSION_BLACKBOX",
+    "title": "plain_capture_phrasing_routing: screenshot request plans 0 steps",
+    "reproduction": "POST a plain 'capture a fresh viewport screenshot' read-only mission",
+    "expected": "a capture/EVIDENCE step is planned",
+    "actual": "planned 0 steps; phases=['ANSWER']",
+    "evidence": [],
+    "suspected_component": "mission-pipeline",
+    "retryable": true,
+    "blocker": false,
+    "check_name": "plain_capture_phrasing_routing",
+    "status": "OPEN",
+    "created_at": 1788812457.858
+  }
+]

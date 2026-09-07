@@ -1,0 +1,18 @@
+[
+  {
+    "id": "QA-91A072",
+    "severity": "MINOR",
+    "category": "MISSION_BLACKBOX",
+    "title": "plain_capture_phrasing_routing: screenshot request plans 0 steps",
+    "reproduction": "POST a plain 'capture a fresh viewport screenshot' read-only mission",
+    "expected": "a capture/EVIDENCE step is planned",
+    "actual": "planned 0 steps; phases=['ANSWER']",
+    "evidence": [],
+    "suspected_component": "mission-pipeline",
+    "retryable": true,
+    "blocker": false,
+    "check_name": "plain_capture_phrasing_routing",
+    "status": "OPEN",
+    "created_at": 1788811163.424
+  }
+]

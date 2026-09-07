@@ -1204,6 +1204,16 @@ from app import final_recovery  # FINAL RECOVERY V3
 from app.session_api import register_session_api
 register_session_api(app)
 
+
+# ============================================================
+# AUTONOMOUS QA BOT — black-box release-readiness runner.
+# Durable runs under memory/qa/runs/{id}, ledger + reports under
+# reports/qa/. Reuses the mission/code/doctor/evidence machinery
+# over HTTP; never mutates certified content. Routes in qa/api.py.
+# ============================================================
+from qa.api import register_qa_api
+register_qa_api(app)
+
 # Construct the session runner when the server actually starts (not at import
 # time) so persisted sessions are re-bound to their allocator ports and
 # relinked into the project registry immediately after a restart (health

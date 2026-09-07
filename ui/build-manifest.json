@@ -6,16 +6,16 @@
   "git_sha": "33ab5beca44e",
   "git_dirty": true,
   "timestamp": "2026-09-05T23:28:41Z",
-  "content_hash": "9078ac3046e8e10d0b49495800268e9cf7f1d9b302b0f6b8937b3dcf302a30fd",
+  "content_hash": "ca8c0e55e673c48321450deee8ab4941f33abe718a0e0fcd1aa7f7eb14e14dcf",
   "routes": {
     "": "ava.html",
     "app": "aivido.html",
     "dev": "index.html"
   },
   "files": {
-    "aivido.css": "cb503c40dcb22f08f42ccc5692bdbb685b8c813fef3014ce1be226dda7a22fa1",
-    "aivido.html": "800f2a139d4cebd87aacfb68193b2138e1dae16d2d549ce5ad65c5aca1d6ec53",
-    "aivido.js": "a32068e3657850ab3733f9eff4798e9ab09a303b6707b976269455094352483a",
+    "aivido.css": "eb40c9d4a83896f86af82a882a88a07e784f5b9649a4e7bc215de44428379bd9",
+    "aivido.html": "e615337f2af2d662ac884fa6ef1c7225c4739b6d3832ee6d998040e3c7ec71fc",
+    "aivido.js": "07909c3dd7b28d3138495b6605af4e655cc18aecbf9e247a27e1723ea28f0de9",
     "app.js": "aaa827f23942da4bce3284c02989bafd4bbfa270812fc59beffd2edf9d266e87",
     "ava.css": "a325495502cb5410845ebe7b4f9c0f91dcd68c68bc921112e9bae86a3977d848",
     "ava.html": "a23af16dda69f63799dc72fe06cf482d452cacdb27bb3f05ab4f59c0339e10ab",

@@ -1,0 +1,2475 @@
+{
+  "id": "qar_1bfa0cbe0765",
+  "target": "Aivido V2 runtime",
+  "status": "COMPLETED",
+  "started_at": 1788810941.7213376,
+  "finished_at": 1788810993.6586454,
+  "checks": [
+    {
+      "name": "backend_status",
+      "category": "RUNTIME_HEALTH",
+      "status": "PASS",
+      "duration": 0.132,
+      "expected": "ok envelope",
+      "observed": {
+        "ok": true,
+        "version": "Adaptive API v5.2",
+        "models": {
+          "fast": "unreal-coder:latest",
+          "reasoning": "unreal-coder:latest",
+          "coder": "unreal-coder:latest",
+          "vision": null,
+          "heavy": "unreal-coder:latest"
+        },
+        "unreal": {
+          "ok": true,
+          "message": "UNREAL_BRIDGE_READY",
+          "engine": "5.8.2-56702186+++UE5+Release-5.8"
+        },
+        "ollama": {
+          "ok": true,
+          "models": [
+            "qwen3-coder:latest",
+            "qwen3-coder:30b",
+            "gpt-oss:20b",
+            "deepseek-coder-v2:16b",
+            "qwen2.5-coder:14b",
+            "qwen3-vl:8b-instruct",
+            "unreal-coder:latest"
+          ]
+        },
+        "pending_approvals": 0,
+        "event_count": 0,
+        "execution_active": false
+      },
+      "verifier": "health_ok",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "status envelope healthy"
+    },
+    {
+      "name": "backend_latency",
+      "category": "RUNTIME_HEALTH",
+      "status": "PASS",
+      "duration": 0.306,
+      "expected": "< 5000ms",
+      "observed": {
+        "latency_ms": 306.1,
+        "ok": true,
+        "http_status": 200
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "WARNING",
+      "detail": "claim 'latency claim' backed by observed data"
+    },
+    {
+      "name": "doctor_report",
+      "category": "RUNTIME_HEALTH",
+      "status": "PASS",
+      "duration": 0.369,
+      "expected": "doctor PASS/DEGRADED",
+      "observed": {
+        "overall": "PASS",
+        "summary": {
+          "PASS": 20,
+          "WARN": 0,
+          "FAIL": 0
+        },
+        "generated_at": 1788810942.576306
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'doctor report' backed by observed data"
+    },
+    {
+      "name": "bridge_identity",
+      "category": "RUNTIME_HEALTH",
+      "status": "PASS",
+      "duration": 0.274,
+      "expected": "ASSET_Showcase2",
+      "observed": {
+        "project_name": "ASSET_Showcase2",
+        "engine": "5.8.2-56702186+++UE5+Release-5.8",
+        "world": "/Game/Maps/AividoHQ.AividoHQ"
+      },
+      "verifier": "registry_match",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "expected 'ASSET_Showcase2' == observed 'ASSET_Showcase2'"
+    },
+    {
+      "name": "bridge_engine_version",
+      "category": "RUNTIME_HEALTH",
+      "status": "PASS",
+      "duration": 0.327,
+      "expected": "UE 5.8",
+      "observed": {
+        "engine": "5.8.2-56702186+++UE5+Release-5.8",
+        "matches_5_8": true
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'UE 5.8' backed by observed data"
+    },
+    {
+      "name": "ports_listening",
+      "category": "RUNTIME_HEALTH",
+      "status": "PASS",
+      "duration": 0.011,
+      "expected": "8765, 6766",
+      "observed": {
+        "backend": true,
+        "bridge": true
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "claim 'ports claim' backed by observed data"
+    },
+    {
+      "name": "single_listener_per_port",
+      "category": "RUNTIME_HEALTH",
+      "status": "PASS",
+      "duration": 0.039,
+      "expected": "no duplicate listener",
+      "observed": {
+        "6766": 1,
+        "8765": 1
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "all observed listeners single-PID"
+    },
+    {
+      "name": "status_endpoint",
+      "category": "API_CONTRACT",
+      "status": "PASS",
+      "duration": 0.269,
+      "expected": "200 ok",
+      "observed": {
+        "ok": true,
+        "http_status": 200,
+        "latency_ms": 268.4,
+        "body": {
+          "ok": true,
+          "version": "Adaptive API v5.2",
+          "models": {
+            "fast": "unreal-coder:latest",
+            "reasoning": "unreal-coder:latest",
+            "coder": "unreal-coder:latest",
+            "vision": null,
+            "heavy": "unreal-coder:latest"
+          },
+          "unreal": {
+            "ok": true,
+            "message": "UNREAL_BRIDGE_READY",
+            "engine": "5.8.2-56702186+++UE5+Release-5.8"
+          },
+          "ollama": {
+            "ok": true,
+            "models": [
+              "qwen3-coder:latest",
+              "qwen3-coder:30b",
+              "gpt-oss:20b",
+              "deepseek-coder-v2:16b",
+              "qwen2.5-coder:14b",
+              "qwen3-vl:8b-instruct",
+              "unreal-coder:latest"
+            ]
+          },
+          "pending_approvals": 0,
+          "event_count": 0,
+          "execution_active": false
+        }
+      },
+      "verifier": "http_ok",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "start_mission_endpoint",
+      "category": "API_CONTRACT",
+      "status": "PASS",
+      "duration": 0.011,
+      "expected": "accepted + mission_id",
+      "observed": {
+        "http_status": 200,
+        "ok": true,
+        "mission_id": "mission_5a914e89dfdd",
+        "status": "accepted"
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "claim 'accepted' backed by observed data"
+    },
+    {
+      "name": "mission_status_endpoint",
+      "category": "API_CONTRACT",
+      "status": "PASS",
+      "duration": 0.004,
+      "expected": "checkpoint payload",
+      "observed": {
+        "http_status": 200,
+        "mission_id": "mission_5a914e89dfdd",
+        "status": "executing",
+        "has_plan": true,
+        "checkpoint_fields": [
+          "evidence",
+          "mission_id",
+          "status",
+          "verdict",
+          "why"
+        ]
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'checkpoint payload' backed by observed data"
+    },
+    {
+      "name": "route_prompt",
+      "category": "API_CONTRACT",
+      "status": "PASS",
+      "duration": 0.022,
+      "expected": "routing decision",
+      "observed": {
+        "http_status": 200,
+        "ok": true,
+        "routing": "code"
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'routing decision' backed by observed data"
+    },
+    {
+      "name": "malformed_input_rejected",
+      "category": "API_CONTRACT",
+      "status": "PASS",
+      "duration": 0.003,
+      "expected": "4xx on malformed body",
+      "observed": {
+        "http_status": 400
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim '4xx' backed by observed data"
+    },
+    {
+      "name": "unknown_mission_id_404",
+      "category": "API_CONTRACT",
+      "status": "PASS",
+      "duration": 0.016,
+      "expected": "404",
+      "observed": {
+        "http_status": 404
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim '404' backed by observed data"
+    },
+    {
+      "name": "timeout_behavior",
+      "category": "API_CONTRACT",
+      "status": "PASS",
+      "duration": 0.276,
+      "expected": "honest timeout/error envelope",
+      "observed": {
+        "http_status": 200,
+        "latency_ok": true
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "WARNING",
+      "detail": "claim 'honest envelope' backed by observed data"
+    },
+    {
+      "name": "readonly_diagnostic_mission",
+      "category": "MISSION_BLACKBOX",
+      "status": "PASS",
+      "duration": 5.07,
+      "expected": "complete PASS + evidence",
+      "observed": {
+        "mission_id": "mission_6e5cfeb3465d",
+        "status": "complete",
+        "verdict": "PASS",
+        "why": "Backend and Unreal bridge probes executed and passed (3 steps) with real evidence (3 item(s)).",
+        "interpretation": {
+          "domains": [
+            "general_unreal"
+          ],
+          "primary_domain": "general_unreal",
+          "quality": "standard",
+          "deliverables": []
+        },
+        "plan": {
+          "phases": [
+            {
+              "phase": "GROUND",
+              "objective": "Resolve and verify the active project and bridge session before any mutation",
+              "stop_condition": "project identity verified or structured blocker PROJECT_CONTEXT_MISSING"
+            }
+          ],
+          "selected_capabilities": [
+            "project_inspection",
+            "bridge_health",
+            "backend_health"
+          ],
+          "visual_gate": {
+            "enabled": false,
+            "score_floor": 6.0,
+            "max_iterations": 3,
+            "policy": "capture -> measure -> repair highest-impact defect -> re-capture; stop on pass, stagnation, or budget"
+          },
+          "steps": [
+            {
+              "step_id": "resolve_project",
+              "phase": "INSPECT",
+              "tool": "inspect_project",
+              "status": "pending",
+              "safety": "READ_ONLY",
+              "blocked": false
+            },
+            {
+              "step_id": "bridge_health",
+              "phase": "INSPECT",
+              "tool": "unreal_ping",
+              "status": "pending",
+              "safety": "READ_ONLY",
+              "blocked": false
+            },
+            {
+              "step_id": "backend_health",
+              "phase": "INSPECT",
+              "tool": "unreal_coder_doctor",
+              "status": "pending",
+              "safety": "READ_ONLY",
+              "blocked": false
+            }
+          ]
+        },
+        "policy": {
+          "mode": "READ_ONLY",
+          "verdict": "OK",
+          "blocked_tools": [],
+          "reason": ""
+        },
+        "completed_work": {
+          "steps_total": 3,
+          "steps_completed": 3,
+          "step_ids": [
+            "resolve_project",
+            "bridge_health",
+            "backend_health"
+          ]
+        },
+        "evidence": [
+          {
+            "kind": "diagnostic_probe",
+            "step_id": "resolve_project",
+            "probe": "resolve_project",
+            "tool": "inspect_project",
+            "ok": true,
+            "detail": ""
+          },
+          {
+            "kind": "diagnostic_probe",
+            "step_id": "bridge_health",
+            "probe": "bridge_health",
+            "tool": "unreal_ping",
+            "ok": true,
+            "detail": ""
+          },
+          {
+            "kind": "diagnostic_probe",
+            "step_id": "backend_health",
+            "probe": "backend_health",
+            "tool": "unreal_coder_doctor",
+            "ok": true,
+            "detail": "",
+            "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\memory\\diagnostics\\backend_doctor_1788810945.json"
+          }
+        ],
+        "warnings": [],
+        "remaining_issues": [],
+        "artifacts": [],
+        "resumable": false,
+        "mission_log": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\memory\\mission_logs\\mission_6e5cfeb3465d.json",
+        "_poll_ok": true
+      },
+      "verifier": "mission_verdict",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "mission complete, verdict PASS, 3 steps, 1 real evidence file(s)"
+    },
+    {
+      "name": "isolated_capture_mission",
+      "category": "MISSION_BLACKBOX",
+      "status": "FAIL",
+      "duration": 5.073,
+      "expected": "complete PASS + screenshot evidence",
+      "observed": {
+        "mission_id": "mission_7fcddd1af4c6",
+        "status": "failed",
+        "verdict": "FAIL",
+        "why": "Mission executed 0 steps; PASS requires real verified work (0-step empty-plan PASS blocked).",
+        "interpretation": {
+          "domains": [
+            "cinematics"
+          ],
+          "primary_domain": "cinematics",
+          "quality": "cinematic",
+          "deliverables": []
+        },
+        "plan": {
+          "phases": [
+            {
+              "phase": "ANSWER",
+              "objective": "Answer/plan the request directly",
+              "stop_condition": "answer produced"
+            }
+          ],
+          "selected_capabilities": [],
+          "visual_gate": {},
+          "steps": []
+        },
+        "policy": {
+          "mode": "READ_ONLY",
+          "verdict": "OK",
+          "blocked_tools": [],
+          "reason": ""
+        },
+        "completed_work": {
+          "steps_total": 0,
+          "steps_completed": 0,
+          "step_ids": []
+        },
+        "evidence": [],
+        "warnings": [],
+        "remaining_issues": [],
+        "artifacts": [],
+        "resumable": true,
+        "mission_log": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\memory\\mission_logs\\mission_7fcddd1af4c6.json",
+        "_poll_ok": true
+      },
+      "verifier": "mission_verdict",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "mission PASS unverified: status='failed'; verdict='FAIL'; 0 executed steps; no real evidence files (0 entries)"
+    },
+    {
+      "name": "code_task_pipeline",
+      "category": "MISSION_BLACKBOX",
+      "status": "PASS",
+      "duration": 12.127,
+      "expected": "PASS + commit + evidence bundle",
+      "observed": {
+        "task_id": "ct0009",
+        "status": "passed",
+        "verdict": "PASS",
+        "error": null,
+        "blocked_reason": null,
+        "commit": "e6de07e7ad4586eb1d27c3d56d71dc9bca032318",
+        "branch": "aivido/code-task/ct0009",
+        "evidence_files": [
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\memory\\code_tasks\\evidence\\ct0009\\evidence.json",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\memory\\code_tasks\\evidence\\ct0009\\change.patch"
+        ],
+        "evidence_bundle_ok": true
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "code task PASS: commit e6de07e7ad45 evidence_files=2"
+    },
+    {
+      "name": "mixed_routing_mission",
+      "category": "MISSION_BLACKBOX",
+      "status": "PASS",
+      "duration": 20.155,
+      "expected": "code stage + unreal stage PASS",
+      "observed": {
+        "task_id": "ct0010",
+        "status": "passed",
+        "verdict": "PASS",
+        "error": null,
+        "unreal_stage": {
+          "status": "complete",
+          "verdict": "PASS",
+          "mission_id": "mission_1cb37ca0e0d8"
+        }
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "WARNING",
+      "detail": "claim 'code stage + unreal stage PASS' backed by observed data"
+    },
+    {
+      "name": "completed_without_evidence",
+      "category": "FALSE_PASS_DEFENSE",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "rejected",
+      "observed": {
+        "outcome": "FAIL",
+        "inner_detail": "mission PASS unverified: no real evidence files (0 entries)"
+      },
+      "verifier": "expect_failure",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "bad case rejected (mission_verdict -> mission PASS unverified: no real evidence files (0 entries))"
+    },
+    {
+      "name": "missing_screenshot",
+      "category": "FALSE_PASS_DEFENSE",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "rejected",
+      "observed": {
+        "outcome": "FAIL",
+        "inner_detail": "screenshot missing: C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\memory\\qa\\no_such_screenshot.png"
+      },
+      "verifier": "expect_failure",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "bad case rejected (screenshot_valid -> screenshot missing: C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\memory\\qa\\no_such_screenshot.png)"
+    },
+    {
+      "name": "invalid_screenshot",
+      "category": "FALSE_PASS_DEFENSE",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "rejected",
+      "observed": {
+        "outcome": "FAIL",
+        "inner_detail": "invalid image: UnidentifiedImageError: cannot identify image file 'C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\.worktrees\\\\v2-autonomous-qa\\\\memory\\\\qa\\\\fake_screenshot.png'"
+      },
+      "verifier": "expect_failure",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "bad case rejected (screenshot_valid -> invalid image: UnidentifiedImageError: cannot identify image file 'C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\.worktrees\\\\v2-autonomous-qa\\\\memory\\\\qa\\\\fake_screenshot.png')"
+    },
+    {
+      "name": "stale_duplicate_evidence",
+      "category": "FALSE_PASS_DEFENSE",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "rejected",
+      "observed": {
+        "outcome": "FAIL",
+        "inner_detail": "stale duplicate evidence (identical sha256): C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\memory\\qa\\dup_a.png; C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\memory\\qa\\dup_b.png"
+      },
+      "verifier": "expect_failure",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "bad case rejected (no_stale_duplicate -> stale duplicate evidence (identical sha256): C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\memory\\qa\\dup_a.png; C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\memory\\qa\\dup_b.png)"
+    },
+    {
+      "name": "wrong_task_id_rejected",
+      "category": "FALSE_PASS_DEFENSE",
+      "status": "PASS",
+      "duration": 0.006,
+      "expected": "404",
+      "observed": {
+        "http_status": 404
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim '404' backed by observed data"
+    },
+    {
+      "name": "blocked_task_not_pass",
+      "category": "FALSE_PASS_DEFENSE",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "rejected",
+      "observed": {
+        "outcome": "FAIL",
+        "inner_detail": "mission PASS unverified: status='blocked'; verdict='BLOCKED'; 0 executed steps; no real evidence files (0 entries)"
+      },
+      "verifier": "expect_failure",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "bad case rejected (mission_verdict -> mission PASS unverified: status='blocked'; verdict='BLOCKED'; 0 executed steps; no real evidence files (0 entries))"
+    },
+    {
+      "name": "timed_out_task_not_pass",
+      "category": "FALSE_PASS_DEFENSE",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "rejected",
+      "observed": {
+        "outcome": "FAIL",
+        "inner_detail": "mission PASS unverified: status='executing'; verdict=None; 0 executed steps; no real evidence files (0 entries)"
+      },
+      "verifier": "expect_failure",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "bad case rejected (mission_verdict -> mission PASS unverified: status='executing'; verdict=None; 0 executed steps; no real evidence files (0 entries))"
+    },
+    {
+      "name": "bridge_unavailable_fails",
+      "category": "FALSE_PASS_DEFENSE",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "rejected",
+      "observed": {
+        "outcome": "FAIL",
+        "inner_detail": "expected 'ASSET_Showcase2' != observed ''"
+      },
+      "verifier": "expect_failure",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "bad case rejected (registry_match -> expected 'ASSET_Showcase2' != observed '')"
+    },
+    {
+      "name": "impossible_claim_rejected",
+      "category": "FALSE_PASS_DEFENSE",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "rejected",
+      "observed": {
+        "outcome": "FAIL",
+        "inner_detail": "claim 'the mission created 12 blueprints' has NO independent evidence"
+      },
+      "verifier": "expect_failure",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "bad case rejected (truthful_claim -> claim 'the mission created 12 blueprints' has NO independent evidence)"
+    },
+    {
+      "name": "evidence_files_exist",
+      "category": "EVIDENCE_INTEGRITY",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "real files",
+      "observed": {
+        "count": 1,
+        "missing": []
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "claim 'real files' backed by observed data"
+    },
+    {
+      "name": "no_object_object_in_evidence",
+      "category": "EVIDENCE_INTEGRITY",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "no [object Object]",
+      "observed": {
+        "clean": true,
+        "hits": []
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'no [object Object]' backed by observed data"
+    },
+    {
+      "name": "mrq_not_viewport_fallback",
+      "category": "EVIDENCE_INTEGRITY",
+      "status": "PASS",
+      "duration": 0.001,
+      "expected": "real MRQ artifact",
+      "observed": {
+        "video_exists": true,
+        "report_exists": true,
+        "report_says_mrq": true
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "claim 'real MRQ artifact' backed by observed data"
+    },
+    {
+      "name": "evidence_timestamps_relevant",
+      "category": "EVIDENCE_INTEGRITY",
+      "status": "PASS",
+      "duration": 0.001,
+      "expected": "recent artifacts",
+      "observed": {
+        "stale": [],
+        "window_h": 6.0
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'recent artifacts' backed by observed data"
+    },
+    {
+      "name": "proof_stills_valid",
+      "category": "EVIDENCE_INTEGRITY",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "decodable 1920x1080",
+      "observed": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\reports\\cinematic\\headless_mrq\\proof\\proof_start.png",
+      "verifier": "screenshot_valid",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "1920x1080 decodable image, 2205300 bytes"
+    },
+    {
+      "name": "certified_level_open",
+      "category": "UNREAL_STATE_SAFETY",
+      "status": "PASS",
+      "duration": 0.335,
+      "expected": "/Game/Maps/AividoHQ",
+      "observed": {
+        "ok": true,
+        "world": "/Game/Maps/AividoHQ.AividoHQ"
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "claim 'AividoHQ level' backed by observed data"
+    },
+    {
+      "name": "actor_count",
+      "category": "UNREAL_STATE_SAFETY",
+      "status": "PASS",
+      "duration": 0.327,
+      "expected": 166,
+      "observed": 166,
+      "verifier": "actor_count_ok",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "actor count 166"
+    },
+    {
+      "name": "cast_8_of_8_present",
+      "category": "UNREAL_STATE_SAFETY",
+      "status": "PASS",
+      "duration": 0.311,
+      "expected": [
+        "AVIDO_Human_Animation",
+        "AVIDO_Human_Audio",
+        "AVIDO_Human_Creative",
+        "AVIDO_Human_Lighting",
+        "AVIDO_Human_Master",
+        "AVIDO_Human_Technical",
+        "AVIDO_Human_VFX",
+        "AVIDO_Human_Visual"
+      ],
+      "observed": [
+        "AVIDO_SkyLight",
+        "AVIDO_Ring_Outer",
+        "AVIDO_Ring_Inner",
+        "AVIDO_Column_Base",
+        "AVIDO_Column_Core",
+        "AVIDO_Dais_Master",
+        "AVIDO_Hub_Wall",
+        "AVIDO_Hub_Screen",
+        "AVIDO_CD_Wall",
+        "AVIDO_CD_Swatch_0",
+        "AVIDO_CD_Swatch_1",
+        "AVIDO_CD_Swatch_2",
+        "AVIDO_CD_Swatch_3",
+        "AVIDO_CD_Swatch_4",
+        "AVIDO_CD_Swatch_5",
+        "AVIDO_CD_BriefStand",
+        "AVIDO_CD_Accent",
+        "AVIDO_VD_Wall",
+        "AVIDO_VD_Screen_A",
+        "AVIDO_VD_Screen_B",
+        "AVIDO_VD_GradeStrip",
+        "AVIDO_Pylon_Master",
+        "AVIDO_Pylon_Creative",
+        "AVIDO_Pylon_Visual",
+        "AVIDO_KeyLight",
+        "AVIDO_Sign_Entry",
+        "AVIDO_Sign_Central",
+        "AVIDO_Sign_Master",
+        "AVIDO_Sign_Creative",
+        "AVIDO_Sign_Visual",
+        "AVIDO_Exposure",
+        "AVIDO_Shell",
+        "AVIDO_Light_Center",
+        "AVIDO_Light_Master",
+        "AVIDO_Light_Creative",
+        "AVIDO_Light_Visual",
+        "AVIDO_Light_Fill",
+        "AVIDO_Key_Face",
+        "AVIDO_PlayerStart",
+        "AVIDO_Fill_Face",
+        "AVIDO_Rim_Face",
+        "AVIDO_ShotCam",
+        "AVIDO_SkyDome",
+        "AVIDO_FaceLight_Master",
+        "AVIDO_FaceLight_Creative",
+        "AVIDO_FaceLight_Visual",
+        "AVIDO_FaceLight_Technical",
+        "AVIDO_FaceLight_Audio",
+        "AVIDO_FaceLight_Animation",
+        "AVIDO_FaceLight_Lighting",
+        "AVIDO_FaceLight_VFX",
+        "AVIDO_Human_Master",
+        "AVIDO_Human_Creative",
+        "AVIDO_Human_Visual",
+        "AVIDO_Human_Technical",
+        "AVIDO_Human_Audio",
+        "AVIDO_Human_Animation",
+        "AVIDO_Human_Lighting",
+        "AVIDO_Human_VFX",
+        "AVIDO_KeyLight_Char_Master",
+        "AVIDO_KeyLight_Char_Creative",
+        "AVIDO_KeyLight_Char_Visual",
+        "AVIDO_KeyLight_Char_Technical",
+        "AVIDO_KeyLight_Char_Audio",
+        "AVIDO_KeyLight_Char_Animation",
+        "AVIDO_KeyLight_Char_Lighting",
+        "AVIDO_KeyLight_Char_VFX",
+        "W3I_Station_W_Desk",
+        "W3I_Station_W_Chair",
+        "W3I_Station_W_Monitor",
+        "W3I_Station_N_Desk",
+        "W3I_Station_N_Chair",
+        "W3I_Station_N_Monitor",
+        "W3I_Station_E_Desk",
+        "W3I_Station_E_Chair",
+        "W3I_Station_E_Monitor",
+        "W3I_Station_S_Desk",
+        "W3I_Station_S_Chair",
+        "W3I_Station_S_Monitor",
+        "W3I_Terminal_W",
+        "W3I_Terminal_E",
+        "W3I_PresentationBoard",
+        "W3I_Cabinet_E1",
+        "W3I_Cabinet_E2",
+        "W3I_Plant_SW",
+        "W3I_Plant_SE",
+        "W3I_ServerRack",
+        "W3I_Lantern_Body",
+        "W3I_Lantern_Chain",
+        "W3I_Lantern_Lantern",
+        "AVIDO_Room_Floor_Main",
+        "AVIDO_Room_Floor_Wing_E",
+        "AVIDO_Room_Floor_Wing_W",
+        "AVIDO_Room_Wing_E_Wall_E",
+        "AVIDO_Room_Wing_E_Wall_W",
+        "AVIDO_Room_Wing_W_Wall_E",
+        "AVIDO_Room_Wing_W_Wall_W",
+        "AVIDO_Room_Ceil_Center",
+        "AVIDO_Room_Ceil_Wing_E",
+        "AVIDO_Room_Ceil_Wing_W",
+        "AVIDO_Room_Cove_Outer",
+        "AVIDO_Room_Cove_Inner",
+        "AVIDO_Portal_Col_E",
+        "AVIDO_Portal_Col_W",
+        "AVIDO_Portal_Lintel",
+        "AVIDO_Entry_Strip",
+        "AVIDO_Room_Wing_E_FrontTrim",
+        "AVIDO_Room_Wing_W_FrontTrim",
+        "AVIDO_Pad_Master",
+        "AVIDO_Pad_Ring_Master",
+        "AVIDO_Pad_Creative",
+        "AVIDO_Pad_Ring_Creative",
+        "AVIDO_Pad_Visual",
+        "AVIDO_Pad_Ring_Visual",
+        "AVIDO_Pad_Technical",
+        "AVIDO_Pad_Ring_Technical",
+        "AVIDO_Pad_Audio",
+        "AVIDO_Pad_Ring_Audio",
+        "AVIDO_Pad_Animation",
+        "AVIDO_Pad_Ring_Animation",
+        "AVIDO_Pad_Lighting",
+        "AVIDO_Pad_Ring_Lighting",
+        "AVIDO_Pad_VFX",
+        "AVIDO_Pad_Ring_VFX",
+        "AVIDO_Table_Planning",
+        "AVIDO_Table_Planning_Rim",
+        "AVIDO_Chair_320_2800",
+        "AVIDO_Chair_-320_2800",
+        "AVIDO_Chair_0_2480",
+        "AVIDO_Chair_0_3120",
+        "AVIDO_Console_Center",
+        "AVIDO_Console_Screen",
+        "AVIDO_Console_Left",
+        "AVIDO_Console_Right",
+        "AVIDO_Command_Pylon_E",
+        "AVIDO_Command_Pylon_W",
+        "AVIDO_Command_DeckRing",
+        "AVIDO_Command_SideScreen_E",
+        "AVIDO_Command_SideScreen_W",
+        "AVIDO_Lounge_Bench_N",
+        "AVIDO_Lounge_Bench_S",
+        "AVIDO_Lounge_Table",
+        "AVIDO_Lounge_Trim",
+        "AVIDO_Lounge_Pad_N",
+        "AVIDO_Lounge_Pad_S",
+        "AVIDO_Light_Room_Cove_0",
+        "AVIDO_Light_Room_Cove_1",
+        "AVIDO_Light_Room_Cove_2",
+        "AVIDO_Light_Room_Cove_3",
+        "AVIDO_Light_Room_Cove_4",
+        "AVIDO_Light_Room_Cove_5",
+        "AVIDO_Light_Room_Cove_6",
+        "AVIDO_Light_Room_Cove_7",
+        "AVIDO_Light_Room_Collab",
+        "AVIDO_Light_Room_Cmd_E",
+        "AVIDO_Light_Room_Cmd_W",
+        "AVIDO_Light_Room_Wing_E",
+        "AVIDO_Light_Room_Wing_W",
+        "AVIDO_Light_Room_Lounge",
+        "AVIDO_Light_Room_Entry",
+        "AIVIDO_UI_Agents_Panel",
+        "AIVIDO_UI_Agents_Text",
+        "AIVIDO_UI_Missions_Panel",
+        "AIVIDO_UI_Missions_Text",
+        "AIVIDO_UI_Status_Panel",
+        "AIVIDO_UI_Status_Text"
+      ],
+      "verifier": "list_members_present",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "all 8 members present"
+    },
+    {
+      "name": "no_whiteh",
+      "category": "UNREAL_STATE_SAFETY",
+      "status": "PASS",
+      "duration": 0.337,
+      "expected": [
+        "WhiteH"
+      ],
+      "observed": [
+        "AVIDO_SkyLight",
+        "AVIDO_Ring_Outer",
+        "AVIDO_Ring_Inner",
+        "AVIDO_Column_Base",
+        "AVIDO_Column_Core",
+        "AVIDO_Dais_Master",
+        "AVIDO_Hub_Wall",
+        "AVIDO_Hub_Screen",
+        "AVIDO_CD_Wall",
+        "AVIDO_CD_Swatch_0",
+        "AVIDO_CD_Swatch_1",
+        "AVIDO_CD_Swatch_2",
+        "AVIDO_CD_Swatch_3",
+        "AVIDO_CD_Swatch_4",
+        "AVIDO_CD_Swatch_5",
+        "AVIDO_CD_BriefStand",
+        "AVIDO_CD_Accent",
+        "AVIDO_VD_Wall",
+        "AVIDO_VD_Screen_A",
+        "AVIDO_VD_Screen_B",
+        "AVIDO_VD_GradeStrip",
+        "AVIDO_Pylon_Master",
+        "AVIDO_Pylon_Creative",
+        "AVIDO_Pylon_Visual",
+        "AVIDO_KeyLight",
+        "AVIDO_Sign_Entry",
+        "AVIDO_Sign_Central",
+        "AVIDO_Sign_Master",
+        "AVIDO_Sign_Creative",
+        "AVIDO_Sign_Visual",
+        "AVIDO_Exposure",
+        "AVIDO_Shell",
+        "AVIDO_Light_Center",
+        "AVIDO_Light_Master",
+        "AVIDO_Light_Creative",
+        "AVIDO_Light_Visual",
+        "AVIDO_Light_Fill",
+        "AVIDO_Key_Face",
+        "AVIDO_PlayerStart",
+        "AVIDO_Fill_Face",
+        "AVIDO_Rim_Face",
+        "AVIDO_ShotCam",
+        "AVIDO_SkyDome",
+        "AVIDO_FaceLight_Master",
+        "AVIDO_FaceLight_Creative",
+        "AVIDO_FaceLight_Visual",
+        "AVIDO_FaceLight_Technical",
+        "AVIDO_FaceLight_Audio",
+        "AVIDO_FaceLight_Animation",
+        "AVIDO_FaceLight_Lighting",
+        "AVIDO_FaceLight_VFX",
+        "AVIDO_Human_Master",
+        "AVIDO_Human_Creative",
+        "AVIDO_Human_Visual",
+        "AVIDO_Human_Technical",
+        "AVIDO_Human_Audio",
+        "AVIDO_Human_Animation",
+        "AVIDO_Human_Lighting",
+        "AVIDO_Human_VFX",
+        "AVIDO_KeyLight_Char_Master",
+        "AVIDO_KeyLight_Char_Creative",
+        "AVIDO_KeyLight_Char_Visual",
+        "AVIDO_KeyLight_Char_Technical",
+        "AVIDO_KeyLight_Char_Audio",
+        "AVIDO_KeyLight_Char_Animation",
+        "AVIDO_KeyLight_Char_Lighting",
+        "AVIDO_KeyLight_Char_VFX",
+        "W3I_Station_W_Desk",
+        "W3I_Station_W_Chair",
+        "W3I_Station_W_Monitor",
+        "W3I_Station_N_Desk",
+        "W3I_Station_N_Chair",
+        "W3I_Station_N_Monitor",
+        "W3I_Station_E_Desk",
+        "W3I_Station_E_Chair",
+        "W3I_Station_E_Monitor",
+        "W3I_Station_S_Desk",
+        "W3I_Station_S_Chair",
+        "W3I_Station_S_Monitor",
+        "W3I_Terminal_W",
+        "W3I_Terminal_E",
+        "W3I_PresentationBoard",
+        "W3I_Cabinet_E1",
+        "W3I_Cabinet_E2",
+        "W3I_Plant_SW",
+        "W3I_Plant_SE",
+        "W3I_ServerRack",
+        "W3I_Lantern_Body",
+        "W3I_Lantern_Chain",
+        "W3I_Lantern_Lantern",
+        "AVIDO_Room_Floor_Main",
+        "AVIDO_Room_Floor_Wing_E",
+        "AVIDO_Room_Floor_Wing_W",
+        "AVIDO_Room_Wing_E_Wall_E",
+        "AVIDO_Room_Wing_E_Wall_W",
+        "AVIDO_Room_Wing_W_Wall_E",
+        "AVIDO_Room_Wing_W_Wall_W",
+        "AVIDO_Room_Ceil_Center",
+        "AVIDO_Room_Ceil_Wing_E",
+        "AVIDO_Room_Ceil_Wing_W",
+        "AVIDO_Room_Cove_Outer",
+        "AVIDO_Room_Cove_Inner",
+        "AVIDO_Portal_Col_E",
+        "AVIDO_Portal_Col_W",
+        "AVIDO_Portal_Lintel",
+        "AVIDO_Entry_Strip",
+        "AVIDO_Room_Wing_E_FrontTrim",
+        "AVIDO_Room_Wing_W_FrontTrim",
+        "AVIDO_Pad_Master",
+        "AVIDO_Pad_Ring_Master",
+        "AVIDO_Pad_Creative",
+        "AVIDO_Pad_Ring_Creative",
+        "AVIDO_Pad_Visual",
+        "AVIDO_Pad_Ring_Visual",
+        "AVIDO_Pad_Technical",
+        "AVIDO_Pad_Ring_Technical",
+        "AVIDO_Pad_Audio",
+        "AVIDO_Pad_Ring_Audio",
+        "AVIDO_Pad_Animation",
+        "AVIDO_Pad_Ring_Animation",
+        "AVIDO_Pad_Lighting",
+        "AVIDO_Pad_Ring_Lighting",
+        "AVIDO_Pad_VFX",
+        "AVIDO_Pad_Ring_VFX",
+        "AVIDO_Table_Planning",
+        "AVIDO_Table_Planning_Rim",
+        "AVIDO_Chair_320_2800",
+        "AVIDO_Chair_-320_2800",
+        "AVIDO_Chair_0_2480",
+        "AVIDO_Chair_0_3120",
+        "AVIDO_Console_Center",
+        "AVIDO_Console_Screen",
+        "AVIDO_Console_Left",
+        "AVIDO_Console_Right",
+        "AVIDO_Command_Pylon_E",
+        "AVIDO_Command_Pylon_W",
+        "AVIDO_Command_DeckRing",
+        "AVIDO_Command_SideScreen_E",
+        "AVIDO_Command_SideScreen_W",
+        "AVIDO_Lounge_Bench_N",
+        "AVIDO_Lounge_Bench_S",
+        "AVIDO_Lounge_Table",
+        "AVIDO_Lounge_Trim",
+        "AVIDO_Lounge_Pad_N",
+        "AVIDO_Lounge_Pad_S",
+        "AVIDO_Light_Room_Cove_0",
+        "AVIDO_Light_Room_Cove_1",
+        "AVIDO_Light_Room_Cove_2",
+        "AVIDO_Light_Room_Cove_3",
+        "AVIDO_Light_Room_Cove_4",
+        "AVIDO_Light_Room_Cove_5",
+        "AVIDO_Light_Room_Cove_6",
+        "AVIDO_Light_Room_Cove_7",
+        "AVIDO_Light_Room_Collab",
+        "AVIDO_Light_Room_Cmd_E",
+        "AVIDO_Light_Room_Cmd_W",
+        "AVIDO_Light_Room_Wing_E",
+        "AVIDO_Light_Room_Wing_W",
+        "AVIDO_Light_Room_Lounge",
+        "AVIDO_Light_Room_Entry",
+        "AIVIDO_UI_Agents_Panel",
+        "AIVIDO_UI_Agents_Text",
+        "AIVIDO_UI_Missions_Panel",
+        "AIVIDO_UI_Missions_Text",
+        "AIVIDO_UI_Status_Panel",
+        "AIVIDO_UI_Status_Text"
+      ],
+      "verifier": "list_members_absent",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "no forbidden members (WhiteH)"
+    },
+    {
+      "name": "no_avcam_residue",
+      "category": "UNREAL_STATE_SAFETY",
+      "status": "PASS",
+      "duration": 0.31,
+      "expected": [
+        "AVCam",
+        "UA_Test",
+        "BP_ProdProbe",
+        "RenderMap"
+      ],
+      "observed": [
+        "AVIDO_SkyLight",
+        "AVIDO_Ring_Outer",
+        "AVIDO_Ring_Inner",
+        "AVIDO_Column_Base",
+        "AVIDO_Column_Core",
+        "AVIDO_Dais_Master",
+        "AVIDO_Hub_Wall",
+        "AVIDO_Hub_Screen",
+        "AVIDO_CD_Wall",
+        "AVIDO_CD_Swatch_0",
+        "AVIDO_CD_Swatch_1",
+        "AVIDO_CD_Swatch_2",
+        "AVIDO_CD_Swatch_3",
+        "AVIDO_CD_Swatch_4",
+        "AVIDO_CD_Swatch_5",
+        "AVIDO_CD_BriefStand",
+        "AVIDO_CD_Accent",
+        "AVIDO_VD_Wall",
+        "AVIDO_VD_Screen_A",
+        "AVIDO_VD_Screen_B",
+        "AVIDO_VD_GradeStrip",
+        "AVIDO_Pylon_Master",
+        "AVIDO_Pylon_Creative",
+        "AVIDO_Pylon_Visual",
+        "AVIDO_KeyLight",
+        "AVIDO_Sign_Entry",
+        "AVIDO_Sign_Central",
+        "AVIDO_Sign_Master",
+        "AVIDO_Sign_Creative",
+        "AVIDO_Sign_Visual",
+        "AVIDO_Exposure",
+        "AVIDO_Shell",
+        "AVIDO_Light_Center",
+        "AVIDO_Light_Master",
+        "AVIDO_Light_Creative",
+        "AVIDO_Light_Visual",
+        "AVIDO_Light_Fill",
+        "AVIDO_Key_Face",
+        "AVIDO_PlayerStart",
+        "AVIDO_Fill_Face",
+        "AVIDO_Rim_Face",
+        "AVIDO_ShotCam",
+        "AVIDO_SkyDome",
+        "AVIDO_FaceLight_Master",
+        "AVIDO_FaceLight_Creative",
+        "AVIDO_FaceLight_Visual",
+        "AVIDO_FaceLight_Technical",
+        "AVIDO_FaceLight_Audio",
+        "AVIDO_FaceLight_Animation",
+        "AVIDO_FaceLight_Lighting",
+        "AVIDO_FaceLight_VFX",
+        "AVIDO_Human_Master",
+        "AVIDO_Human_Creative",
+        "AVIDO_Human_Visual",
+        "AVIDO_Human_Technical",
+        "AVIDO_Human_Audio",
+        "AVIDO_Human_Animation",
+        "AVIDO_Human_Lighting",
+        "AVIDO_Human_VFX",
+        "AVIDO_KeyLight_Char_Master",
+        "AVIDO_KeyLight_Char_Creative",
+        "AVIDO_KeyLight_Char_Visual",
+        "AVIDO_KeyLight_Char_Technical",
+        "AVIDO_KeyLight_Char_Audio",
+        "AVIDO_KeyLight_Char_Animation",
+        "AVIDO_KeyLight_Char_Lighting",
+        "AVIDO_KeyLight_Char_VFX",
+        "W3I_Station_W_Desk",
+        "W3I_Station_W_Chair",
+        "W3I_Station_W_Monitor",
+        "W3I_Station_N_Desk",
+        "W3I_Station_N_Chair",
+        "W3I_Station_N_Monitor",
+        "W3I_Station_E_Desk",
+        "W3I_Station_E_Chair",
+        "W3I_Station_E_Monitor",
+        "W3I_Station_S_Desk",
+        "W3I_Station_S_Chair",
+        "W3I_Station_S_Monitor",
+        "W3I_Terminal_W",
+        "W3I_Terminal_E",
+        "W3I_PresentationBoard",
+        "W3I_Cabinet_E1",
+        "W3I_Cabinet_E2",
+        "W3I_Plant_SW",
+        "W3I_Plant_SE",
+        "W3I_ServerRack",
+        "W3I_Lantern_Body",
+        "W3I_Lantern_Chain",
+        "W3I_Lantern_Lantern",
+        "AVIDO_Room_Floor_Main",
+        "AVIDO_Room_Floor_Wing_E",
+        "AVIDO_Room_Floor_Wing_W",
+        "AVIDO_Room_Wing_E_Wall_E",
+        "AVIDO_Room_Wing_E_Wall_W",
+        "AVIDO_Room_Wing_W_Wall_E",
+        "AVIDO_Room_Wing_W_Wall_W",
+        "AVIDO_Room_Ceil_Center",
+        "AVIDO_Room_Ceil_Wing_E",
+        "AVIDO_Room_Ceil_Wing_W",
+        "AVIDO_Room_Cove_Outer",
+        "AVIDO_Room_Cove_Inner",
+        "AVIDO_Portal_Col_E",
+        "AVIDO_Portal_Col_W",
+        "AVIDO_Portal_Lintel",
+        "AVIDO_Entry_Strip",
+        "AVIDO_Room_Wing_E_FrontTrim",
+        "AVIDO_Room_Wing_W_FrontTrim",
+        "AVIDO_Pad_Master",
+        "AVIDO_Pad_Ring_Master",
+        "AVIDO_Pad_Creative",
+        "AVIDO_Pad_Ring_Creative",
+        "AVIDO_Pad_Visual",
+        "AVIDO_Pad_Ring_Visual",
+        "AVIDO_Pad_Technical",
+        "AVIDO_Pad_Ring_Technical",
+        "AVIDO_Pad_Audio",
+        "AVIDO_Pad_Ring_Audio",
+        "AVIDO_Pad_Animation",
+        "AVIDO_Pad_Ring_Animation",
+        "AVIDO_Pad_Lighting",
+        "AVIDO_Pad_Ring_Lighting",
+        "AVIDO_Pad_VFX",
+        "AVIDO_Pad_Ring_VFX",
+        "AVIDO_Table_Planning",
+        "AVIDO_Table_Planning_Rim",
+        "AVIDO_Chair_320_2800",
+        "AVIDO_Chair_-320_2800",
+        "AVIDO_Chair_0_2480",
+        "AVIDO_Chair_0_3120",
+        "AVIDO_Console_Center",
+        "AVIDO_Console_Screen",
+        "AVIDO_Console_Left",
+        "AVIDO_Console_Right",
+        "AVIDO_Command_Pylon_E",
+        "AVIDO_Command_Pylon_W",
+        "AVIDO_Command_DeckRing",
+        "AVIDO_Command_SideScreen_E",
+        "AVIDO_Command_SideScreen_W",
+        "AVIDO_Lounge_Bench_N",
+        "AVIDO_Lounge_Bench_S",
+        "AVIDO_Lounge_Table",
+        "AVIDO_Lounge_Trim",
+        "AVIDO_Lounge_Pad_N",
+        "AVIDO_Lounge_Pad_S",
+        "AVIDO_Light_Room_Cove_0",
+        "AVIDO_Light_Room_Cove_1",
+        "AVIDO_Light_Room_Cove_2",
+        "AVIDO_Light_Room_Cove_3",
+        "AVIDO_Light_Room_Cove_4",
+        "AVIDO_Light_Room_Cove_5",
+        "AVIDO_Light_Room_Cove_6",
+        "AVIDO_Light_Room_Cove_7",
+        "AVIDO_Light_Room_Collab",
+        "AVIDO_Light_Room_Cmd_E",
+        "AVIDO_Light_Room_Cmd_W",
+        "AVIDO_Light_Room_Wing_E",
+        "AVIDO_Light_Room_Wing_W",
+        "AVIDO_Light_Room_Lounge",
+        "AVIDO_Light_Room_Entry",
+        "AIVIDO_UI_Agents_Panel",
+        "AIVIDO_UI_Agents_Text",
+        "AIVIDO_UI_Missions_Panel",
+        "AIVIDO_UI_Missions_Text",
+        "AIVIDO_UI_Status_Panel",
+        "AIVIDO_UI_Status_Text"
+      ],
+      "verifier": "list_members_absent",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "no forbidden members (AVCam, UA_Test, BP_ProdProbe, RenderMap)"
+    },
+    {
+      "name": "no_transient_z_repair",
+      "category": "UNREAL_STATE_SAFETY",
+      "status": "PASS",
+      "duration": 0.323,
+      "expected": [
+        "ZRepair",
+        "tempz",
+        "zfix"
+      ],
+      "observed": [
+        "AVIDO_SkyLight",
+        "AVIDO_Ring_Outer",
+        "AVIDO_Ring_Inner",
+        "AVIDO_Column_Base",
+        "AVIDO_Column_Core",
+        "AVIDO_Dais_Master",
+        "AVIDO_Hub_Wall",
+        "AVIDO_Hub_Screen",
+        "AVIDO_CD_Wall",
+        "AVIDO_CD_Swatch_0",
+        "AVIDO_CD_Swatch_1",
+        "AVIDO_CD_Swatch_2",
+        "AVIDO_CD_Swatch_3",
+        "AVIDO_CD_Swatch_4",
+        "AVIDO_CD_Swatch_5",
+        "AVIDO_CD_BriefStand",
+        "AVIDO_CD_Accent",
+        "AVIDO_VD_Wall",
+        "AVIDO_VD_Screen_A",
+        "AVIDO_VD_Screen_B",
+        "AVIDO_VD_GradeStrip",
+        "AVIDO_Pylon_Master",
+        "AVIDO_Pylon_Creative",
+        "AVIDO_Pylon_Visual",
+        "AVIDO_KeyLight",
+        "AVIDO_Sign_Entry",
+        "AVIDO_Sign_Central",
+        "AVIDO_Sign_Master",
+        "AVIDO_Sign_Creative",
+        "AVIDO_Sign_Visual",
+        "AVIDO_Exposure",
+        "AVIDO_Shell",
+        "AVIDO_Light_Center",
+        "AVIDO_Light_Master",
+        "AVIDO_Light_Creative",
+        "AVIDO_Light_Visual",
+        "AVIDO_Light_Fill",
+        "AVIDO_Key_Face",
+        "AVIDO_PlayerStart",
+        "AVIDO_Fill_Face",
+        "AVIDO_Rim_Face",
+        "AVIDO_ShotCam",
+        "AVIDO_SkyDome",
+        "AVIDO_FaceLight_Master",
+        "AVIDO_FaceLight_Creative",
+        "AVIDO_FaceLight_Visual",
+        "AVIDO_FaceLight_Technical",
+        "AVIDO_FaceLight_Audio",
+        "AVIDO_FaceLight_Animation",
+        "AVIDO_FaceLight_Lighting",
+        "AVIDO_FaceLight_VFX",
+        "AVIDO_Human_Master",
+        "AVIDO_Human_Creative",
+        "AVIDO_Human_Visual",
+        "AVIDO_Human_Technical",
+        "AVIDO_Human_Audio",
+        "AVIDO_Human_Animation",
+        "AVIDO_Human_Lighting",
+        "AVIDO_Human_VFX",
+        "AVIDO_KeyLight_Char_Master",
+        "AVIDO_KeyLight_Char_Creative",
+        "AVIDO_KeyLight_Char_Visual",
+        "AVIDO_KeyLight_Char_Technical",
+        "AVIDO_KeyLight_Char_Audio",
+        "AVIDO_KeyLight_Char_Animation",
+        "AVIDO_KeyLight_Char_Lighting",
+        "AVIDO_KeyLight_Char_VFX",
+        "W3I_Station_W_Desk",
+        "W3I_Station_W_Chair",
+        "W3I_Station_W_Monitor",
+        "W3I_Station_N_Desk",
+        "W3I_Station_N_Chair",
+        "W3I_Station_N_Monitor",
+        "W3I_Station_E_Desk",
+        "W3I_Station_E_Chair",
+        "W3I_Station_E_Monitor",
+        "W3I_Station_S_Desk",
+        "W3I_Station_S_Chair",
+        "W3I_Station_S_Monitor",
+        "W3I_Terminal_W",
+        "W3I_Terminal_E",
+        "W3I_PresentationBoard",
+        "W3I_Cabinet_E1",
+        "W3I_Cabinet_E2",
+        "W3I_Plant_SW",
+        "W3I_Plant_SE",
+        "W3I_ServerRack",
+        "W3I_Lantern_Body",
+        "W3I_Lantern_Chain",
+        "W3I_Lantern_Lantern",
+        "AVIDO_Room_Floor_Main",
+        "AVIDO_Room_Floor_Wing_E",
+        "AVIDO_Room_Floor_Wing_W",
+        "AVIDO_Room_Wing_E_Wall_E",
+        "AVIDO_Room_Wing_E_Wall_W",
+        "AVIDO_Room_Wing_W_Wall_E",
+        "AVIDO_Room_Wing_W_Wall_W",
+        "AVIDO_Room_Ceil_Center",
+        "AVIDO_Room_Ceil_Wing_E",
+        "AVIDO_Room_Ceil_Wing_W",
+        "AVIDO_Room_Cove_Outer",
+        "AVIDO_Room_Cove_Inner",
+        "AVIDO_Portal_Col_E",
+        "AVIDO_Portal_Col_W",
+        "AVIDO_Portal_Lintel",
+        "AVIDO_Entry_Strip",
+        "AVIDO_Room_Wing_E_FrontTrim",
+        "AVIDO_Room_Wing_W_FrontTrim",
+        "AVIDO_Pad_Master",
+        "AVIDO_Pad_Ring_Master",
+        "AVIDO_Pad_Creative",
+        "AVIDO_Pad_Ring_Creative",
+        "AVIDO_Pad_Visual",
+        "AVIDO_Pad_Ring_Visual",
+        "AVIDO_Pad_Technical",
+        "AVIDO_Pad_Ring_Technical",
+        "AVIDO_Pad_Audio",
+        "AVIDO_Pad_Ring_Audio",
+        "AVIDO_Pad_Animation",
+        "AVIDO_Pad_Ring_Animation",
+        "AVIDO_Pad_Lighting",
+        "AVIDO_Pad_Ring_Lighting",
+        "AVIDO_Pad_VFX",
+        "AVIDO_Pad_Ring_VFX",
+        "AVIDO_Table_Planning",
+        "AVIDO_Table_Planning_Rim",
+        "AVIDO_Chair_320_2800",
+        "AVIDO_Chair_-320_2800",
+        "AVIDO_Chair_0_2480",
+        "AVIDO_Chair_0_3120",
+        "AVIDO_Console_Center",
+        "AVIDO_Console_Screen",
+        "AVIDO_Console_Left",
+        "AVIDO_Console_Right",
+        "AVIDO_Command_Pylon_E",
+        "AVIDO_Command_Pylon_W",
+        "AVIDO_Command_DeckRing",
+        "AVIDO_Command_SideScreen_E",
+        "AVIDO_Command_SideScreen_W",
+        "AVIDO_Lounge_Bench_N",
+        "AVIDO_Lounge_Bench_S",
+        "AVIDO_Lounge_Table",
+        "AVIDO_Lounge_Trim",
+        "AVIDO_Lounge_Pad_N",
+        "AVIDO_Lounge_Pad_S",
+        "AVIDO_Light_Room_Cove_0",
+        "AVIDO_Light_Room_Cove_1",
+        "AVIDO_Light_Room_Cove_2",
+        "AVIDO_Light_Room_Cove_3",
+        "AVIDO_Light_Room_Cove_4",
+        "AVIDO_Light_Room_Cove_5",
+        "AVIDO_Light_Room_Cove_6",
+        "AVIDO_Light_Room_Cove_7",
+        "AVIDO_Light_Room_Collab",
+        "AVIDO_Light_Room_Cmd_E",
+        "AVIDO_Light_Room_Cmd_W",
+        "AVIDO_Light_Room_Wing_E",
+        "AVIDO_Light_Room_Wing_W",
+        "AVIDO_Light_Room_Lounge",
+        "AVIDO_Light_Room_Entry",
+        "AIVIDO_UI_Agents_Panel",
+        "AIVIDO_UI_Agents_Text",
+        "AIVIDO_UI_Missions_Panel",
+        "AIVIDO_UI_Missions_Text",
+        "AIVIDO_UI_Status_Panel",
+        "AIVIDO_UI_Status_Text"
+      ],
+      "verifier": "list_members_absent",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "no forbidden members (ZRepair, tempz, zfix)"
+    },
+    {
+      "name": "cine_mrq_isolated",
+      "category": "UNREAL_STATE_SAFETY",
+      "status": "PASS",
+      "duration": 0.325,
+      "expected": "certified level not RenderMap",
+      "observed": {
+        "render_map_in_level": false,
+        "world": "/Game/Maps/AividoHQ.AividoHQ",
+        "actor_count": 166
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "claim 'certified level not RenderMap' backed by observed data"
+    },
+    {
+      "name": "durable_orientation",
+      "category": "UNREAL_STATE_SAFETY",
+      "status": "FAIL",
+      "duration": 0.322,
+      "expected": "upright cast",
+      "observed": {
+        "ok": true,
+        "rotation": [
+          7.0167092985348704e-15,
+          -7.0167092985348704e-15,
+          -7.016709298534872e-15
+        ]
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "Master rotation.z=360.0 not in {0,180}"
+    },
+    {
+      "name": "headless_mrq_report_exists",
+      "category": "CINEMATIC_ARTIFACT",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "report file",
+      "observed": {
+        "exists": true,
+        "size": 9415
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'report file' backed by observed data"
+    },
+    {
+      "name": "mrq_video_exists_playable",
+      "category": "CINEMATIC_ARTIFACT",
+      "status": "PASS",
+      "duration": 0.0,
+      "expected": "playable MP4",
+      "observed": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\reports\\cinematic\\headless_mrq\\mrq_render_1920x1080_30fps.mp4",
+      "verifier": "video_file_ok",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "562973 bytes, MP4 container header present"
+    },
+    {
+      "name": "mrq_video_resolution_fps_duration",
+      "category": "CINEMATIC_ARTIFACT",
+      "status": "PASS",
+      "duration": 0.066,
+      "expected": "1920x1080 @ 30fps, 8s",
+      "observed": {
+        "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\reports\\cinematic\\headless_mrq\\mrq_render_1920x1080_30fps.mp4",
+        "probe_ok": true,
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "30/1",
+        "duration": 8.0
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "ffprobe: 1920x1080 30/1 8.0s"
+    },
+    {
+      "name": "frame_count_claim_consistent",
+      "category": "CINEMATIC_ARTIFACT",
+      "status": "PASS",
+      "duration": 0.072,
+      "expected": "240 frames consistent",
+      "observed": {
+        "entries": 240,
+        "on_disk_entries": 0,
+        "derived_frames": 240,
+        "artifact_path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\reports\\cinematic\\headless_mrq\\mrq_render_1920x1080_30fps.mp4",
+        "report_claims_240": true,
+        "frames_dir_present": false
+      },
+      "verifier": "report_claim_consistent",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "240-frame claim verified independently via MP4 duration(8.0s) x fps(30); raw frames dir is untracked by repo convention"
+    },
+    {
+      "name": "proof_stills_exist",
+      "category": "CINEMATIC_ARTIFACT",
+      "status": "PASS",
+      "duration": 0.001,
+      "expected": "3 proof stills",
+      "observed": {
+        "count": 3,
+        "paths": [
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\reports\\cinematic\\headless_mrq\\proof\\proof_start.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\reports\\cinematic\\headless_mrq\\proof\\proof_middle.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\reports\\cinematic\\headless_mrq\\proof\\proof_end.png"
+        ]
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim '3 proof stills' backed by observed data"
+    },
+    {
+      "name": "production_routes_serve",
+      "category": "UI_BLACKBOX",
+      "status": "PASS",
+      "duration": 0.176,
+      "expected": "HTTP 200 on all routes",
+      "observed": {
+        "ava.html": {
+          "http_status": 200,
+          "len": 500,
+          "error": null
+        },
+        "aivido.html": {
+          "http_status": 200,
+          "len": 500,
+          "error": null
+        },
+        "index.html": {
+          "http_status": 200,
+          "len": 500,
+          "error": null
+        },
+        "static aivido.html": {
+          "http_status": 200,
+          "len": 500,
+          "error": null
+        },
+        "static product.html": {
+          "http_status": 200,
+          "len": 500,
+          "error": null
+        }
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "claim 'HTTP 200 on all routes' backed by observed data"
+    },
+    {
+      "name": "no_js_fatal_in_pages",
+      "category": "UI_BLACKBOX",
+      "status": "FAIL",
+      "duration": 0.03,
+      "expected": "no fatal markers",
+      "observed": "<!doctype html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">\n<title>Aivido — Autonomous creation OS</title>\n<meta name=\"description\" content=\"Aivido — an autonomous AI creation operating system that plans, builds, and verifies inside Unreal Engine.\">\n<meta name=\"theme-color\" content=\"#04060d\">\n<link rel=\"icon\" href=\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><def\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Aivido — Director's Booth</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap\" rel=\"stylesheet\">\n<link rel=\"style\n<!doctype html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Unreal Agent — Workspace</title>\n<meta name=\"description\" content=\"Unreal Agent — AI development workspace for the Unreal Editor.\">\n<link rel=\"icon\" href=\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230c1017'/><text x='16' y='21' font-family='Arial' font-size='13' font-weig",
+      "verifier": "no_js_fatal",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "response contains fatal markers: <!doctype html>"
+    },
+    {
+      "name": "api_state_renders",
+      "category": "UI_BLACKBOX",
+      "status": "PASS",
+      "duration": 2.9,
+      "expected": "API-backed state present",
+      "observed": {
+        "status": {
+          "http_status": 200,
+          "ok": true
+        },
+        "workspace": {
+          "http_status": 200,
+          "ok": true
+        },
+        "code_tasks": {
+          "http_status": 200,
+          "ok": true
+        },
+        "session": {
+          "http_status": 200,
+          "ok": true
+        }
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'API-backed state present' backed by observed data"
+    },
+    {
+      "name": "no_false_pass_labels",
+      "category": "UI_BLACKBOX",
+      "status": "PASS",
+      "duration": 0.006,
+      "expected": "no contradictory PASS labels",
+      "observed": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Aivido — Director's Booth</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap\" rel=\"stylesheet\">\n<link rel=\"style",
+      "verifier": "no_false_pass_label",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "no contradictory PASS label found"
+    },
+    {
+      "name": "evidence_fields_readable",
+      "category": "UI_BLACKBOX",
+      "status": "PASS",
+      "duration": 0.011,
+      "expected": "no [object Object]",
+      "observed": "{\"ok\": true, \"tasks\": [{\"id\": \"ct0001\", \"title\": \"demo T1 module + hermetic test\", \"prompt\": \"code task: add app/code_task_demo_hello.py module and its hermetic pytest, run tests, evidence, isolated commit\", \"routing\": \"code\", \"priority\": 50, \"depends_on\": [], \"steps\": [{\"op\": \"create_file\", \"path\": \"app/code_task_demo_hello.py\", \"content\": \"def greeting(name: str = \\\"Aivido\\\") -> str:\\n    return f\\\"hello {name} from the autonomous code worker\\\"\\n\"}, {\"op\": \"create_file\", \"path\": \"tests/test_code_task_demo_hello.py\", \"content\": \"from app.code_task_demo_hello import greeting\\n\\ndef test_greeting():\\n    assert greeting() == \\\"hello Aivido from the autonomous code worker\\\"\\n    assert \\\"world\\\" in greeting(\\\"world\\\")\\n\"}], \"tests\": [\"pytest tests/test_code_task_demo_hello.py\", \"py_compile app/code_task_demo_hello.py\"], \"acceptance\": [\"exists app/code_task_demo_hello.py\", \"exists tests/test_code_task_demo_hello.py\", \"contains tests/test_code_task_demo_hello.py|def test_greeting\"], \"scope\": [\"app/code_task_demo_hello.py\", \"tests/test_code_task_demo_hello.py\"], \"status\": \"passed\", \"attempt\": 1, \"max_attempts\": 3, \"created_at\": 1788546258.1230083, \"updated_at\": 1788546260.5610244, \"started_at\": 1788546258.1405027, \"finished_at\": 1788546260.5602238, \"verdict\": \"PASS\", \"result\": {\"summary\": \"code task completed: 2 checks, 3 acceptance conditions, commit 4b44277ee2e58030bd2dc8e637de6c9710806a9b\", \"branch\": \"aivido/code-task/ct0001\", \"commit\": \"4b44277ee2e58030bd2dc8e637de6c9710806a9b\", \"evidence_files\": [\"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0001\\\\evidence.json\", \"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0001\\\\change.patch\"]}, \"error\": null, \"evidence\": [\"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0001\\\\evidence.json\", \"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0001\\\\change.patch\"], \"blocked_reason\": null, \"next_task_id\": null}, {\"id\": \"ct0002\", \"title\": \"demo T3 blocked (path outside allowed roots)\", \"prompt\": \"code task: write a file under memory/ - must be blocked\", \"routing\": \"code\", \"priority\": 50, \"depends_on\": [], \"steps\": [{\"op\": \"create_file\", \"path\": \"memory/nope.txt\", \"content\": \"x\"}], \"tests\": [], \"acceptance\": [\"exists memory/nope.txt\"], \"scope\": [], \"status\": \"blocked\", \"attempt\": 2, \"max_attempts\": 3, \"created_at\": 1788546258.1454186, \"updated_at\": 1788546270.6707685, \"started_at\": 1788546270.646565, \"finished_at\": 1788546270.6698382, \"verdict\": \"BLOCKED\", \"result\": null, \"error\": \"path 'memory/nope.txt' outside allowed roots ('app', 'core', 'tests', 'tools', 'scripts', 'docs', 'supervisor')\", \"evidence\": [], \"blocked_reason\": \"path 'memory/nope.txt' outside allowed roots ('app', 'core', 'tests', 'tools', 'scripts', 'docs', 'supervisor')\", \"next_task_id\": null, \"cancel_requested\": false}, {\"id\": \"ct0003\", \"title\": \"demo T2 autopilot note\", \"prompt\": \"code task: add docs/code_worker_autopilot_note.md describing the autonomous code worker routing\", \"routing\": \"code\", \"priority\": 50, \"depends_on\": [], \"steps\": [{\"op\": \"create_file\", \"path\": \"docs/code_worker_autopilot_note.md\", \"content\": \"# Aivido autonomous code worker\\n\\nRepo/code tasks run through the isolated code worker (worktree + branch, verified commit). Unreal tasks keep using the mission pipeline.\\n\"}], \"tests\": [], \"acceptance\": [\"exists docs/code_worker_autopilot_note.md\", \"contains docs/code_worker_autopilot_note.md|isolated\"], \"scope\": [\"docs/code_worker_autopilot_note.md\"], \"status\": \"passed\", \"attempt\": 1, \"max_attempts\": 3, \"created_at\": 1788546258.184431, \"updated_at\": 1788546261.8691561, \"started_at\": 1788546260.603519, \"finished_at\": 1788546261.868094, \"verdict\": \"PASS\", \"result\": {\"summary\": \"code task completed: 0 checks, 2 acceptance conditions, commit a9db08ad84cd96dddd2305097bf37ff23909fa3e\", \"branch\": \"aivido/code-task/ct0003\", \"commit\": \"a9db08ad84cd96dddd2305097bf37ff23909fa3e\", \"evidence_files\": [\"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0003\\\\evidence.json\", \"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0003\\\\change.patch\"]}, \"error\": null, \"evidence\": [\"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0003\\\\evidence.json\", \"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0003\\\\change.patch\"], \"blocked_reason\": null, \"next_task_id\": null}, {\"id\": \"ct0004\", \"title\": \"cancelled-before-run\", \"prompt\": \"code task: doc that never runs\", \"routing\": \"code\", \"priority\": 50, \"depends_on\": [], \"steps\": [{\"op\": \"create_file\", \"path\": \"docs/code_cancel_probe.md\", \"content\": \"x\"}], \"tests\": [], \"acceptance\": [\"exists docs/code_cancel_probe.md\"], \"scope\": [], \"status\": \"cancelled\", \"attempt\": 1, \"max_attempts\": 3, \"created_at\": 1788546270.6874905, \"updated_at\": 1788546270.7230785, \"started_at\": 1788546270.7011433, \"finished_at\": 1788546270.7230778, \"verdict\": \"CANCELLED\", \"result\": null, \"error\": \"cancelled by request\", \"evidence\": [], \"blocked_reason\": null, \"next_task_id\": null, \"cancel_requested\": true}, {\"id\": \"ct0005\", \"title\": \"Phase-2 proof: phase2_pektz\", \"prompt\": \"Phase-2 UI verification: add a small proof module with a greeting function and its test, isolated worktree only.\", \"routing\": \"code\", \"priority\": 50, \"depends_on\": [], \"steps\": [{\"op\": \"create_file\", \"path\": \"app/code_task_phase2_pektz.py\", \"content\": \"def greeting(name=\\\"Aivido\\\"):\\n    return f\\\"hello {name} from the phase-2 crew\\\"\\n\"}, {\"op\": \"create_file\", \"path\": \"tests/test_code_task_phase2_pektz.py\", \"content\": \"from app.code_task_phase2_pektz import greeting\\n\\ndef test_greeting():\\n    assert \\\"phase-2\\\" in greeting()\\n\"}], \"tests\": [\"pytest tests/test_code_task_phase2_pektz.py\", \"py_compile app/code_task_phase2_pektz.py\"], \"acceptance\": [\"exists app/code_task_phase2_pektz.py\", \"exists tests/test_code_task_phase2_pektz.py\"], \"scope\": [\"app/code_task_phase2_pektz.py\", \"tests/test_code_task_phase2_pektz.py\"], \"unreal_prompt\": null, \"status\": \"passed\", \"attempt\": 1, \"max_attempts\": 3, \"created_at\": 1788632156.6887581, \"updated_at\": 1788632166.4508405, \"started_at\": 1788632156.708366, \"finished_at\": 1788632166.4490383, \"verdict\": \"PASS\", \"result\": {\"summary\": \"code stage completed: 2 checks, 2 acceptance conditions, commit 5c99b5fce35f079bdb43c1a81492d5d2818a538d\", \"branch\": \"aivido/code-task/ct0005\", \"commit\": \"5c99b5fce35f079bdb43c1a81492d5d2818a538d\", \"evidence_files\": [\"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0005\\\\evidence.json\", \"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0005\\\\change.patch\"]}, \"error\": null, \"evidence\": [\"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0005\\\\evidence.json\", \"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0005\\\\change.patch\"], \"blocked_reason\": null, \"next_task_id\": null}, {\"id\": \"ct0006\", \"title\": \"Phase-2 proof: phase2_tuyy3\", \"prompt\": \"AIVIDO UI/UX PHASE 3 \\u2014 FINAL PRODUCT EXPERIENCE  Goal: Finish the Aivido UI/UX into a production-grade final product interface.  Current baseline: - Phase 1 complete - Phase 2 complete - Director's Booth live - /app production route live - Mission Control live - Sessions screen live - multi-client / multi-project live - Visual Director evidence live - planner safety live - browser-only workflow works - backend and Unreal remain on Shadow  Do NOT redesign the entire product from scratch. Preserve the current visual identity and existing working routes.  MISSION: Finish the full user-facing experience to a polished final product level.  1. HOME / COMMAND CENTER - stronger visual hierarchy - clear current project/session - active mission summary - Unreal connection state - recent proof - quick prompt entry - zero clutter  2. PROJECT / SESSION EXPERIENCE - beautiful project cards - active project clearly highlighted - bridge/PID/map/engine status - project health - start/connect/restart controls - clear multi-project separation - no developer-looking raw data unless expanded  3. PROMPT EXPERIENCE Create a polished main prompt composer: - large natural-language input - attach/reference project assets - safe mode / read-only indicator - execution mode indicator - project target - visible send state - queued/running feedback - cancel/retry - prompt history  4. MISSION CONTROL Make Mission Control feel like the core of the product: - live mission cards - clear lifecycle - QUEUED / PLANNING / RUNNING / VALIDATING / FIXING / COMPLETE / FAILED / BLOCKED - current worker/agent - elapsed time - progress - proof preview - visual score - acceptance verdict - recovery/retry state - expandable technical detail  5. AGENT ROOM Polish the worker/agent presentation: - 7 role identities preserved - clearer role differentiation - richer animation/state presentation - less placeholder feel - MetaHuman-ready slots - better lighting/depth - live activity indicators - hover/inspect interactions - no fake activity  6. PROOF VAULT Make Proof Vault production-grade: - grid/list view - latest proof highlighted - compare before/after - full-screen proof review - score - defects - hashes/freshness hidden by default but available - approve/request changes - session/project filter - task filter - chronological history  7. VISUAL DIRECTOR PANEL Create a dedicated readable visual-quality panel: - profile - score - required floor - PASS/FAILED/BLOCKED - top defects - correction passes - before/after - current camera/scene strategy - no frontend-generated score logic  8. ERROR / RECOVERY UX Make failures clear and calm: - backend offline - Unreal offline - wrong project - bridge disconnected - editor hidden - stale proof - blocked plan - read-only policy violation - resource queue - crash recovery - retry available / retry unavailable Never show fake success.  9. MULTI-CLIENT / MULTI-PROJECT UX Make simultaneous projects easy to understand: - client/session identity - project identity - bridge identity hidden in advanced details - no cross-project ambiguity - clear active target before send - warn before switching active project during a running mutation task - independent task histories  10. ONBOARDING Create first-run onboarding: - connect to Shadow - detect backend - detect registered projects - choose project - start session - first prompt - first proof - done Keep it extremely simple.  11. SETTINGS Polish settings: - connections - Unreal - ClickUp - audio - appearance - advanced - diagnostics - clear connected/blocked/unavailable states Do not expose secrets.  12. RESPONSIVE MAC UX Optimize specifically for: - MacBook 13\\u201316 inch - desktop Safari/Chrome - 1440px and narrower widths - Retina scaling - keyboard navigation - trackpad - no horizontal overflow  13. MOTION / MICROINTERACTIONS Add restrained product-quality motion: - route transitions - mission state changes - success/error feedback - proof arrival - session connect - hover Avoid excessive animation.  14. VISUAL CONSISTENCY Create one consistent design system: - typography - spacing - radius - surfaces - shadows - status colors - icon treatment - component states - skeleton/loading states - empty states  15. DEVELOPER DATA HIDING Move low-level data behind \\\"Advanced\\\": - hashes - raw IDs - ports - PIDs - internal paths Keep primary UI user-friendly.  16. PRODUCT ROUTE WALK Walk and polish every route: - Home - Workspaces - Sessions - Mission Control - Agent Room - Proof Vault - Quests - Finance - Profile - Settings  17. TRUTHFULNESS Every piece of UI data must be explicitly: LIVE DEMO BLOCKED UNAVAILABLE  Never present demo content as live.  18. ACCESSIBILITY - keyboard usable - focus states - readable contrast - reduced motion preference - sensible labels - no inaccessible icon-only critical actions  19. VALIDATION Run: - node --check - HTML/JS reference validation - git diff --check - browser console check - full route walk - Mac-width responsive check - one real session - one real mission - one proof flow  20. FINAL POLISH Do a final screenshot-driven visual pass. Fix: - spacing inconsistencies - awkward empty areas - weak hierarchy - overflow - text clipping - RTL/LTR numeric issues - inconsistent badges - unpolished placeholders  FINAL DELIVERABLE: - final UI completion % - files changed - routes completed - real flows verified - remaining external blockers - screenshots/evidence - final commit hash - worktree status - safe for push review YES/NO  Do not push. Work autonomously until the UI/UX is complete or only external blockers remain.\", \"routing\": \"code\", \"priority\": 50, \"depends_on\": [], \"steps\": [{\"op\": \"create_file\", \"path\": \"app/code_task_phase2_tuyy3.py\", \"content\": \"def greeting(name=\\\"Aivido\\\"):\\n    return f\\\"hello {name} from the phase-2 crew\\\"\\n\"}, {\"op\": \"create_file\", \"path\": \"tests/test_code_task_phase2_tuyy3.py\", \"content\": \"from app.code_task_phase2_tuyy3 import greeting\\n\\ndef test_greeting():\\n    assert \\\"phase-2\\\" in greeting()\\n\"}], \"tests\": [\"pytest tests/test_code_task_phase2_tuyy3.py\", \"py_compile app/code_task_phase2_tuyy3.py\"], \"acceptance\": [\"exists app/code_task_phase2_tuyy3.py\", \"exists tests/test_code_task_phase2_tuyy3.py\"], \"scope\": [\"app/code_task_phase2_tuyy3.py\", \"tests/test_code_task_phase2_tuyy3.py\"], \"unreal_prompt\": null, \"status\": \"passed\", \"attempt\": 1, \"max_attempts\": 3, \"created_at\": 1788639639.9776473, \"updated_at\": 1788639643.5504973, \"started_at\": 1788639639.9963126, \"finished_at\": 1788639643.5490136, \"verdict\": \"PASS\", \"result\": {\"summary\": \"code stage completed: 2 checks, 2 acceptance conditions, commit ebe1fd949a3d033265290368a01ad32ece02a3bf\", \"branch\": \"aivido/code-task/ct0006\", \"commit\": \"ebe1fd949a3d033265290368a01ad32ece02a3bf\", \"evidence_files\": [\"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0006\\\\evidence.json\", \"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0006\\\\change.patch\"]}, \"error\": null, \"evidence\": [\"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0006\\\\evidence.json\", \"C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\memory\\\\code_tasks\\\\evidence\\\\ct0006\\\\change.patch\"], \"blocked_reason\": null, \"next_task_id\": null}, {\"id\": \"ct0007\", \"title\": \"Phase-2 proof: phase2_tv0uw\", \"prompt\": \"AIVIDO UI/UX PHASE 3 \\u2014 FINAL PRODUCT EXPERIENCE  Goal: Finish the Aivido UI/UX into a production-grade final product interface.  Current baseline: - Phase 1 complete - Phase 2 complete - Director's Booth live - /app production route live - Mission Control live - Sessions screen live - multi-client / multi-project live - Visual Director evidence live - planner safety live - browser-only workflow works - backend and Unreal remain on Shadow  Do NOT redesign the entire product from scratch. Preserve the current visual identity and existing working routes.  MISSION: Finish the full user-facing experience to a polished final product level.  1. HOME / COMMAND CENTER - stronger visual hierarchy - clear current project/session - active mission summary - Unreal connection state - recent proof - quick prompt entry - zero clutter  2. PROJECT / SESSION EXPERIENCE - beautiful project cards - active project clearly highlighted - bridge/PID/map/engine status - project health - start/connect/restart controls - clear multi-project separation - no developer-looking raw data unless expanded  3. PROMPT EXPERIENCE Create a polished main prompt composer: - large natural-language input - attach/reference project assets - safe mode / read-only indicator - execution mode indicator - project target - visible send state - queued/running feedback - cancel/retry - prompt history  4. MISSION CONTROL Make Mission Control feel like the core of the product: - live mission cards - clear lifecycle - QUEUED / PLANNING / RUNNING / VALIDATING / FIXING / COMPLETE / FAILED / BLOCKED - current worker/agent - elapsed time - progress - proof preview - visual score - acceptance verdict - recovery/retry state - expandable technical detail  5. AGENT ROOM Polish the worker/agent presentation: - 7 role identities preserved - clearer role differentiation - richer animation/state presentation - less placeholder feel - MetaHuman-ready slots - better lighting/depth - live activity indicators - hover/inspect interactions - no fake activity  6. PROOF VAULT Make Proof Vault production-grade: - grid/list view - latest proof highlighted - compare before/after - full-screen proof review - score - defects - hashes/freshness hidden by default but available - approve/request changes - session/project filter - task filter - chronological history  7. VISUAL DIRECTOR PANEL Create a dedicated readable visual-quality panel: - profile - score - required floor - PASS/FAILED/BLOCKED - top defects - correction passes - before/after - current camera/scene strategy - no frontend-generated score logic  8. ERROR / RECOVERY UX Make failures clear and calm: - backend offline - Unreal offline - wrong project - bridge disconnected - editor hidden - stale proof - blocked plan - read-only policy violation - resource queue - crash recovery - retry available / retry unavailable Never show fake success.  9. MULTI-CLIENT / MULTI-PROJECT UX Make simultaneous projects easy to understand: - client/session identity - project identity - bridge identity hidden in advanced details - no cross-project ambiguity - clear active target before send - warn before switching active project during a running mutation task - independent task histories  10. ONBOARDING Create first-run onboarding: - connect to Shadow - detect backend - detect registered projects - choose project - start session - first prompt - first proof - done Keep it extremely simple.  11. SETTINGS Polish settings: - connections - Unreal - ClickUp - audio - appearance - advanced - diagnostics - clear connected/blocked/unavailable states Do not expose secrets.  12. RESPONSIVE MAC UX Optimize specifically for: - MacBook 13\\u201316 inch - desktop Safari/Chrome - 1440px and narrower widths - Retina scaling - keyboard navigation - trackpad - no horizontal overflow  13. MOTION / MICROINTERACTIONS Add restrained product-quality motion: - route transitions - mission state changes - success/error feedback - proof arrival - session connect - hover Avoid excessive animation.  14. VISUAL CONSISTENCY Create one consistent design system: - typography - spacing - radius - surfaces - shadows - status colors - icon treatment - component states - skeleton/loading states - empty states  15. DEVELOPER DATA HIDING Move low-level data behind \\\"Advanced\\\": - hashes - raw IDs - ports - PIDs - internal paths Keep primary UI user-friendly.  16. PRODUCT ROUTE WALK Walk and polish every route: - Home - Workspaces - Sessions - Mission Control - Agent Room - Proof Vault - Quests - Finance - Profile - Settings  17. TRUTHFULNESS Every piece of UI data must be explicitly: LIVE DEMO BLOCKED UNAVAILABLE  Never present demo content as live.  18. ACCESSIBILITY - keyboard usable - focus states - readable contrast - reduced motion preference - sensible labels - no inaccessible icon-only critical actions  19. VALIDATION Run: - node --check - HTML/JS reference validation - git diff --check - browser console check - full route walk - Mac-width responsive check - one real session - one real mission - one proof flow  20. FINAL POLISH Do a final screenshot-driven visual pass. Fix: - spacing inconsistencies - awkward empty areas - weak hierarchy - overflow - text clipping - RTL/LTR numeric issues - inconsistent badges - unpolished placeholders  FINAL DELIVERABLE: - final UI completion % - files changed - routes completed - real flows verified - remaining external blockers - screenshots/evidence - final commit hash - worktree status - safe for push review YES/NO  Do not push. Work autonomously until the UI/UX is complete or only external blockers remain.\", \"routing\": \"code\", \"priority\": 50, \"depends_on\": [], \"steps\": [{\"op\": \"create_file\", \"path\": \"a",
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'no [object Object]' backed by observed data"
+    },
+    {
+      "name": "retry_unknown_mission_404",
+      "category": "RECOVERY",
+      "status": "PASS",
+      "duration": 0.006,
+      "expected": "404 on unknown retry",
+      "observed": {
+        "http_status": 404
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "WARNING",
+      "detail": "claim '404' backed by observed data"
+    },
+    {
+      "name": "cancel_unknown_mission_404",
+      "category": "RECOVERY",
+      "status": "PASS",
+      "duration": 0.02,
+      "expected": "404 on unknown cancel",
+      "observed": {
+        "http_status": 404
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "WARNING",
+      "detail": "claim '404' backed by observed data"
+    },
+    {
+      "name": "duplicate_submission_protected",
+      "category": "RECOVERY",
+      "status": "PASS",
+      "duration": 0.029,
+      "expected": "repeated submission rejected or idempotent",
+      "observed": {
+        "ok": true,
+        "queue_size": 10,
+        "current_task_id": null,
+        "loop_running": false
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'repeated submission rejected or idempotent' backed by observed data"
+    },
+    {
+      "name": "stale_task_recovery",
+      "category": "RECOVERY",
+      "status": "PASS",
+      "duration": 0.034,
+      "expected": "no stale running tasks",
+      "observed": {
+        "running_count": 0,
+        "running_ids": []
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'no stale running tasks' backed by observed data"
+    },
+    {
+      "name": "watchdog_supervisor_present",
+      "category": "RECOVERY",
+      "status": "PASS",
+      "duration": 0.022,
+      "expected": "supervisor alive",
+      "observed": {
+        "loop_running": false,
+        "by_status": {
+          "passed": 8,
+          "blocked": 1,
+          "cancelled": 1
+        }
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "WARNING",
+      "detail": "claim 'supervisor alive' backed by observed data"
+    },
+    {
+      "name": "secrets_not_in_committed_files",
+      "category": "RELEASE_SAFETY",
+      "status": "PASS",
+      "duration": 0.002,
+      "expected": "no secret markers",
+      "observed": "﻿{\n  \"unreal_engine\": \"D:\\\\Program Files\\\\Epic Games\\\\UE_5.8\",\n  \"ollama_url\": \"http://127.0.0.1:11434\",\n  \"fast_model\": \"qwen2.5-coder:14b\",\n  \"expert_model\": \"unreal-coder:latest\",\n  \"default_context\": 16384,\n  \"autonomy\": {\n    \"read_files\": true,\n    \"write_project_files\": true,\n    \"run_safe_commands\": true,\n    \"require_confirmation_for_destructive_actions\": true\n  }\n}\n\n{\n  \"build_id\": \"20260906-polish90\",\n  \"aivido_version\": \"0.1.1\",\n  \"ui_version\": \"1.0.0\",\n  \"product\": \"Aivido\",\n  \"git_sha\": \"33ab5beca44e\",\n  \"git_dirty\": true,\n  \"timestamp\": \"2026-09-05T23:28:41Z\",\n  \"content_hash\": \"9078ac3046e8e10d0b49495800268e9cf7f1d9b302b0f6b8937b3dcf302a30fd\",\n  \"routes\": {\n    \"\": \"ava.html\",\n    \"app\": \"aivido.html\",\n    \"dev\": \"index.html\"\n  },\n  \"files\": {\n    \"aivido.css\": \"cb503c40dcb22f08f42ccc5692bdbb685b8c813fef3014ce1be226dda7a22fa1\",\n    \"aivido.html\": \"800f2a139d4cebd87aacfb68193b2138e1dae16d2d549ce5ad65c5aca1d6ec53\",\n    \"aivido.js\": \"a32068e3657850ab3733f9eff4798e9ab09a303b6707b976269455094352483a\",\n    \"app.js\": \"aaa827f23942da4bce3284c02989bafd4bbfa270812fc59beffd2edf9d266e87\",\n    \"ava.css\": \"a325495502cb5410845ebe7b4f9c0f91dcd68c68bc921112e9bae86a3977d848\",\n    \"ava.html\": \"a23af16dda69f63799dc72fe06cf482d452cacdb27bb3f05ab4f59c0339e10ab\",\n    \"ava.js\": \"f798bbc2062d4bbbefc7c258ace06e76f43778469ebedafd2803862c16185051\",\n    \"ava_widget.js\": \"8a45e149c7e7413882de961d73f1c71f0984df075ce859ee1d2eccb924d13229\",\n    \"devboard.html\": \"52785005a2feb1b5e3f08fe0501bab7992d934d6e7baa14efa89a85c601c06e2\",\n    \"index.html\": \"4f25ac2973bbfb61576a1c8966de7a05c4dbf4e7d8c9ab0a7d3db792bc43e194\",\n    \"product.css\": \"596363ae27f43adc7fa581a9db83773356be945d9e18f2c833c5547803b70d02\",\n    \"product.html\": \"aa35b042dc08f6c46ee249406627b58204790f3b5206e046771a028cc8e76eda\",\n    \"product.js\": \"15accd5a87f60983962c94db13b890aff846ec588e20efa7d53d6c9ea95fd0ec\",\n    \"styles.css\": \"e906e7b257403fb54b2176c5997b33f3f4ba6fa33704703df238acfc9305ab9a\",\n    \"widget_harness.html\": \"2c7406477ffcbe016c49ea951640ab0cd59ca07e0cab19c65a0c9c2a7da63abb\"\n  }\n}\n\n﻿.venv/\nvenv/\n__pycache__/\n*.pyc\n.env\n.env.*\n*.pem\n*.key\n*.pfx\n*.p12\ncredentials*\nsecrets*\ntokens*\nnode_modules/\nlogs/\n*.log\nbackups/\n*.bak\n*.backup\n*.before-*\n.DS_Store\nThumbs.db\n__pycache__/\n*.pyc\nmemory/conversation.json\nui/*.agentboard_backup\n\n# Native packaging outputs (generated — never committed)\ndist/\nbuild/\n\n# MCP gateway API key (auto-generated on first run; never commit)\nconfig/mcp_gateway.key\nconfig/mcp_gateway.key.*\nconfig/mcp_gateway.public_host\n\n# Locally-downloaded tunnel binary (never commit)\ntools/bin/\ntools/cloudflared*\n\n# Local workspace / recovery artifacts (not product code)\n.freebuff/\n.tmp-browser/\nMicrosoft/\nbackup/\nmemory/task_goal.json\nmemory/active_project_context.json\napp/api.before_*\napp/api.pre_*\napp/api.backup_*\n\n# FREEBUFF ASSET library - bulk/generated content (code + catalog stay tracked)\nassetlib/content/\nassetlib/source/\nassetlib/downloads/\nassetlib/projects/\nassetlib/tests/ue/*/Intermediate/\nassetlib/tests/ue/*/Saved/\nassetlib/tests/ue/*/DerivedDataCache/\nassetlib/proof/*.png\nvendor/\n\n# Generated proof/report evidence (tracked historical evidence remains tracked)\nassetlib/proof/**\nassetlib/reports/*.json\nassetlib/reports/*.md\n\n# Local runtime state and downloaded workspace artifacts\nconfig/leases/\nconfig/first_run.json\nconfig/product.json\nconfig/product_state.json\ndownloads/\nworkspace/\nmemory/checkpoints/\nmemory/code_tasks/\nmemory/diagnostics/\nmemory/mission_logs/\n*.pid\n*.err\n\n# Multi-client runtime state (generated per machine — never committed)\nmemory/sessions/\nconfig/runtime/\nconfig/project_registry.json\nassetlib/proof/product/\n",
+      "verifier": "secrets_hygiene",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "no secret markers found"
+    },
+    {
+      "name": "no_absolute_local_paths_in_product",
+      "category": "RELEASE_SAFETY",
+      "status": "PASS",
+      "duration": 0.002,
+      "expected": "no C:/Users paths",
+      "observed": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Aivido — Director's Booth</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap\" rel=\"stylesheet\">\n<link rel=\"stylesheet\" href=\"/static/aivido.css?v=cb503c40\">\n</head>\n<body>\n\n<!-- ============ CINEMATIC INTRO ============ -->\n<div id=\"sting\" class=\"sting\" aria-hidden=\"true\">\n  <div class=\"sting-letterbox top\"></div>\n  <div class=\"sting-letterbox bottom\"></div>\n  <div class=\"sting-core\">\n    <div class=\"sting-mark\">◈</div>\n    <h1 class=\"sting-name\">A I V I D O</h1>\n    <p class=\"sting-tag\">DIRECTOR'S BOOTH · PHASE 1</p>\n  </div>\n</div>\n\n<!-- ============ APP SHELL ============ -->\n<div id=\"app\" class=\"app hidden\">\n\n  <!-- left rail -->\n  <nav id=\"rail\" class=\"rail\">\n    <div class=\"rail-brand\" data-nav=\"home\" title=\"Aivido\">\n      <span class=\"rail-logo\">◈</span>\n      <span class=\"rail-name\">AIVIDO</span>\n    </div>\n    <div class=\"rail-sep\"></div>\n    <button class=\"rail-item\" data-nav=\"home\"><span class=\"ri-ic\">⌂</span><span class=\"ri-lb\">Booth</span></button>\n    <button class=\"rail-item\" data-nav=\"workspaces\"><span class=\"ri-ic\">▦</span><span class=\"ri-lb\">Workspaces</span></button>\n    <button class=\"rail-item\" data-nav=\"sessions\"><span class=\"ri-ic\">◫</span><span class=\"ri-lb\">Sessions</span></button>\n    <button class=\"rail-item\" data-nav=\"mission\"><span class=\"ri-ic\">☩</span><span class=\"ri-lb\">Mission Control</span></button>\n    <button class=\"rail-item\" data-nav=\"room\"><span class=\"ri-ic\">✪</span><span class=\"ri-lb\">Agent Room</span></button>\n    <button class=\"rail-item\" data-nav=\"proof\"><span class=\"ri-ic\">▣</span><span class=\"ri-lb\">Proof Vault</span></button>\n    <button class=\"rail-item\" data-nav=\"quests\"><span class=\"ri-ic\">⚑</span><span class=\"ri-lb\">Quests</span></button>\n    <button class=\"rail-item\" data-nav=\"finance\"><span class=\"ri-ic\">◈</span><span class=\"ri-lb\">Finance</span></button>\n    <button class=\"rail-item\" data-nav=\"profile\"><span class=\"ri-ic\">♜</span><span class=\"ri-lb\">Profile</span></button>\n    <button class=\"rail-item\" data-nav=\"qa\"><span class=\"ri-ic\">✓</span><span class=\"ri-lb\">QA</span></button>\n    <div class=\"rail-grow\"></div>\n    <button class=\"rail-item\" data-nav=\"settings\"><span class=\"ri-ic\">⚙</span><span class=\"ri-lb\">Settings</span></button>\n    <div id=\"railBackend\" class=\"rail-backend\" title=\"Backend status\">\n      <span id=\"railDot\" class=\"dot-sm\"></span>\n      <span id=\"railBackendTxt\">Linking…</span>\n    </div>\n  </nav>\n\n  <!-- main -->\n  <div class=\"stage-wrap\">\n    <div id=\"sysStrip\" class=\"sys-strip\">\n      <span class=\"ss-chip\" id=\"ssEngine\"><i class=\"dot-sm bad\"></i> engine probing…</span>\n      <span class=\"ss-chip\" id=\"ssBridge\">bridge —</span>\n      <span class=\"ss-chip\" id=\"ssMap\">map —</span>\n      <span class=\"ss-chip\" id=\"ssProof\">proof —</span>\n      <span class=\"ss-grow\"></span>\n      <span class=\"ss-chip\" id=\"ssExec\">no execution</span>\n    </div>\n    <header id=\"hud\" class=\"hud\">\n      <div class=\"hud-left\">\n        <span id=\"hudScreen\" class=\"hud-screen\">BOOTH</span>\n        <span id=\"hudWorkspace\" class=\"hud-ws\">—</span>\n      </div>\n      <div class=\"hud-right\">\n        <span id=\"hudMode\" class=\"hud-mode pill-sm\">SIMULATION</span>\n        <span id=\"hudCredits\" class=\"hud-credits pill-sm\">◈ 0</span>\n        <span id=\"hudClock\" class=\"hud-clock\">--:--</span>\n        <button id=\"hudSnd\" class=\"hud-snd\" title=\"Toggle sound\">♪</button>\n        <button id=\"hudAvatar\" class=\"hud-avatar\" title=\"Creator profile\">D</button>\n      </div>\n    </header>\n\n    <main id=\"view\" class=\"view\">\n\n      <!-- ===== HOME / BOOTH ===== -->\n      <section id=\"scr-home\" class=\"screen\">\n        <div class=\"hero\">\n          <div class=\"hero-art\">\n            <div class=\"hero-sun\"></div>\n            <div class=\"hero-mesas m1\"></div><div class=\"hero-mesas m2\"></div><div class=\"hero-mesas m3\"></div>\n            <div class=\"hero-cabin\"></div>\n            <div class=\"hero-title\">\n              <p class=\"hero-eyebrow\">DIRECTOR'S BOOTH</p>\n              <h1>Welcome back, <span id=\"homeName\">Director</span></h1>\n              <p class=\"hero-sub\">The crew is ready. The engine is warm. One word from you and the workshop lights up.</p>\n            </div>\n          </div>\n          <div class=\"hero-cta\">\n            <button id=\"homeEnterRoom\" class=\"btn-hero\">Enter the Agent Room <span class=\"btn-arrow\">➜</span></button>\n            <button id=\"homeNewMission\" class=\"btn-hero ghost\">Start a Mission</button>\n          </div>\n        </div>\n\n        <div class=\"grid-2\">\n          <div class=\"card\">\n            <div class=\"card-head\"><h2>Crew Status</h2><span class=\"card-sub\" id=\"homeCrewState\">—</span></div>\n            <div id=\"homeCrew\" class=\"crew-strip\"></div>\n            <p class=\"foreman-quote\" id=\"homeQuote\">“Every shot is a promise. We aim to keep it.”</p>\n          </div>\n          <div class=\"card\">\n            <div class=\"card-head\"><h2>Latest Proof</h2><span class=\"card-sub\">fresh from the viewport</span></div>\n            <div id=\"homeProof\" class=\"proof-thumb\"><div class=\"proof-thumb-empty\">No capture yet — run a mission to mint fresh proof.</div></div>\n            <div class=\"card-foot\"><button class=\"btn small ghost\" data-nav=\"proof\">Open Proof Vault →</button></div>\n          </div>\n        </div>\n\n        <div class=\"grid-2\">\n          <div class=\"card\">\n            <div class=\"card-head\"><h2>Active Mission</h2><span id=\"homeMissionPill\" class=\"pill-sm\">—</span></div>\n            <div id=\"homeMission\" class=\"mission-snap\">No mission running. The crew awaits orders.</div>\n          </div>\n          <div class=\"card\">\n            <div class=\"card-head\"><h2>Ledger</h2><span class=\"card-sub\">credits &amp; quests</span></div>\n            <div id=\"homeLedger\" class=\"ledger\">\n              <div class=\"ledger-row\"><span>Local Free balance</span><b id=\"ledgerFree\">∞</b></div>\n              <div class=\"ledger-row\"><span>Cloud credits</span><b id=\"ledgerCredits\">0</b></div>\n              <div class=\"ledger-row\"><span>Quests active</span><b id=\"ledgerQuests\">0</b></div>\n            </div>\n          </div>\n        </div>\n      </section>\n\n      <!-- ===== WORKSPACES ===== -->\n      <section id=\"scr-workspaces\" class=\"screen\">\n        <div class=\"screen-head\">\n          <div><h1>Workspaces</h1><p class=\"screen-sub\">Projects your crew can walk into. One engine, many worlds.</p></div>\n          <button id=\"wsNew\" class=\"btn primary\">＋ New Workspace</button>\n        </div>\n        <div id=\"wsGrid\" class=\"ws-grid\"></div>\n        <h2 class=\"block-h\">Cast &amp; Assets</h2>\n        <p class=\"muted\" style=\"font-size:12px;margin-top:-8px\">Seven specialist slots. Ready-made MetaHuman presets land in Phase 2 — the import contract and fallback are live below.</p>\n        <div id=\"castGrid\" class=\"cast-grid\"></div>\n      </section>\n\n      <!-- ===== MULTI-CLIENT SESSIONS ===== -->\n      <section id=\"scr-sessions\" class=\"screen\">\n        <div class=\"screen-head\">\n          <div><h1>Sessions</h1><p class=\"screen-sub\">One browser client · one Unreal project — isolated editors, bridges, proofs and task queues.</p></div>\n          <button id=\"ssRefresh\" class=\"btn ghost small\">⟳ Refresh</button>\n        </div>\n        <div class=\"ss-layout\">\n          <div id=\"ssList\" class=\"ss-list\"></div>\n          <aside id=\"ssDetail\" class=\"ss-detail\"><div class=\"mc-empty\">Select a session to drive it — prompt, task history, proofs and live identity.</div></aside>\n        </div>\n        <div id=\"ssReg\" class=\"card\" style=\"margin-top:16px\">\n          <div class=\"card-head\"><h2>Project Registry</h2><span class=\"card-sub\">persistent · validated .uproject paths only</span></div>\n          <div class=\"row\" style=\"gap:10px;flex-wrap:wrap\">\n            <input id=\"ssRegPath\" class=\"textinput\" style=\"flex:1;min-width:300px\" placeholder=\"C:/path/to/YourProject.uproject\">\n            <button id=\"ssRegBtn\" class=\"btn primary\">Register</button>\n            <select id=\"ssProjSel\" class=\"textinput\" style=\"flex:1;min-width:220px\"></select>\n            <button id=\"ssConnectBtn\" class=\"btn\">＋ New Session</button>\n          </div>\n        </div>\n      </section>\n\n      <!-- ===== MISSION CONTROL ===== -->\n      <section id=\"scr-mission\" class=\"screen\">\n        <div class=\"screen-head\">\n          <div><h1>Mission Control</h1><p class=\"screen-sub\">Dispatch work, watch the crew, read the verdicts.</p></div>\n          <button id=\"mcNew\" class=\"btn primary\">＋ Dispatch Mission</button>\n        </div>\n        <div class=\"mc-layout\">\n          <div id=\"mcList\" class=\"mc-list\"></div>\n          <aside id=\"mcDetail\" class=\"mc-detail\">\n            <div class=\"mc-empty\">Select a mission to inspect its stages, crew and evidence.</div>\n          </aside>\n        </div>\n        <div id=\"mcDispatch\" class=\"mc-dispatch card\">\n          <div class=\"card-head\"><h2>Dispatch Lane</h2><span class=\"card-sub\">real engine execution · no fake states</span></div>\n          <div class=\"dl-modes\">\n            <label class=\"dl-mode\"><input type=\"radio\" name=\"dlMode\" value=\"code\" checked><b>Code task</b><span>safe · isolated worktree · repo only</span></label>\n            <label class=\"dl-mode\"><input type=\"radio\" name=\"dlMode\" value=\"unreal\"><b>Unreal mission</b><span>live editor · may mutate the scene</span></label>\n          </div>\n          <div class=\"dl-fields\">\n            <input id=\"dlPrompt\" class=\"textinput\" placeholder=\"Describe the work for the crew…\">\n            <div class=\"row\">\n              <button id=\"dlDispatch\" class=\"btn primary\">⚡ Dispatch via Engine</button>\n              <button id=\"dlPlan\" class=\"btn ghost\">Preview plan · no changes</button>\n              <span id=\"dlWarn\" class=\"dl-warn hidden\">⚠ Unreal missions run the live editor and can spawn or change actors. Preview the plan first, and cancel if it looks wrong.</span>\n            </div>\n          </div>\n        </div>\n      </section>\n\n      <!-- ===== AGENT ROOM ===== -->\n      <section id=\"scr-room\" class=\"screen room-screen\">\n        <div class=\"room-toolbar\">\n          <div>\n            <h1 class=\"room-title\">The Workshop</h1>\n            <p class=\"room-sub\" id=\"roomSub\">Prestige western workshop · hidden tech awake</p>\n          </div>\n          <div class=\"room-actions\">\n            <span id=\"roomModePill\" class=\"pill-sm\">SIMULATION</span>\n            <button id=\"roomDispatch\" class=\"btn primary\">Dispatch Crew</button>\n            <button id=\"roomReset\" class=\"btn ghost\">Reset Stations</button>\n          </div>\n        </div>\n\n        <div id=\"roomStage\" class=\"room-stage\">\n          <div class=\"room-window\">\n            <div class=\"window-sky\"></div>\n            <div class=\"window-sun\"></div>\n            <div class=\"window-mesas wm1\"></div><div class=\"window-mesas wm2\"></div>\n          </div>\n          <div class=\"room-shelf\">\n            <div class=\"shelf-plank\"></div>\n            <div class=\"prop book b1\"></div><div class=\"prop book b2\"></div><div class=\"prop book b3\"></div>\n            <div class=\"prop lantern\"></div><div class=\"prop cactus\"></div><div class=\"prop gear g1\"></div><div class=\"prop gear g2\"></div>\n            <div class=\"prop pot\"></div>\n          </div>\n          <div class=\"room-holo\">\n            <div class=\"holo-frame\">\n              <div class=\"holo-line\"></div><div class=\"holo-line\"></div><div class=\"holo-line\"></div>\n              <div class=\"holo-core\"></div>\n              <div class=\"holo-data\" id=\"holoData\">LINKING…</div>\n            </div>\n            <div class=\"holo-label\">AIVIDO·CORE <span class=\"holo-dot\"></span></div>\n          </div>\n          <div class=\"room-poster p-left\"></div>\n          <div class=\"room-poster p-right\"></div>\n          <div class=\"room-lamp lamp-l\"></div>\n          <div class=\"room-lamp lamp-r\"></div>\n\n          <!-- foreman -->\n          <div class=\"foreman-zone\">\n            <div class=\"foreman-desk\"></div>\n            <div id=\"foreman\" class=\"person foreman\" data-state=\"IDLE\">\n              <div class=\"person-bubble\"></div>\n              <div class=\"hat\"></div>\n              <div class=\"head\"></div>\n              <div class=\"body fore-body\"></div>\n              <div class=\"arm a-l\"></div><div class=\"arm a-r\"></div>\n              <div class=\"desk-mug\"></div>\n              <div class=\"steam\"></div>\n            </div>\n            <div class=\"foreman-name\"><b>The Foreman</b><span>— crew boss &amp; your voice in the room</span></div>\n          </div>\n\n          <!-- workers -->\n          <div id=\"workersRow\" class=\"workers-row\"></div>\n\n          <div class=\"room-floor\"></div>\n          <div class=\"room-rug\"></div>\n          <div class=\"room-dust\" aria-hidden=\"true\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>\n          <div class=\"vignette\"></div>\n          <div class=\"grain\"></div>\n        </div>\n\n        <div id=\"foremanBar\" class=\"foreman-bar\">\n          <span class=\"fb-portrait\">☺</span>\n          <div class=\"fb-text\"><span id=\"fbName\">The Foreman</span><span id=\"fbLine\" class=\"fb-line\">…</span></div>\n          <span class=\"fb-keys\">click a worker to check in</span>\n        </div>\n      </section>\n\n      <!-- ===== PROOF VAULT ===== -->\n      <section id=\"scr-proof\" class=\"screen\">\n        <div class=\"screen-head\">\n          <div><h1>Proof Vault</h1><p class=\"screen-sub\">Game-quality screenshots. Every claim backed by a frame.</p></div>\n          <div class=\"proof-actions\">\n            <label class=\"auto\"><input type=\"checkbox\" id=\"pvAuto\" checked> auto-refresh</label>\n            <button id=\"pvCapture\" class=\"btn primary\">◉ Capture Fresh Proof</button>\n          </div>\n        </div>\n        <div id=\"pvStage\" class=\"pv-stage\">\n          <div id=\"pvViewport\" class=\"pv-viewport\">\n            <img id=\"pvImg\" alt=\"Latest proof frame\" hidden>\n            <div id=\"pvEmpty\" class=\"pv-empty\">\n              <div class=\"pv-empty-art\">▣</div>\n              <p>No proof in the vault yet.</p>\n              <p class=\"muted\">Capture a fresh frame from the live engine — or run the demo capture.</p>\n            </div>\n            <span id=\"pvBadge\" class=\"pv-badge hidden\"></span>\n            <span id=\"pvAge\" class=\"pv-age\"></span>\n            <button id=\"pvFull\" class=\"pv-full\" title=\"Fullscreen\">⤢</button>\n            <button id=\"pvPrev\" class=\"pv-nav pv-prev\" title=\"Previous frame\">‹</button>\n            <button id=\"pvNext\" class=\"pv-nav pv-next\" title=\"Next frame\">›</button>\n            <span id=\"pvIdx\" class=\"pv-idx\"></span>\n          </div>\n          <div class=\"pv-meta\">\n            <div><span class=\"pv-k\">VERDICT</span><b id=\"pvVerdict\" class=\"pv-v\">—</b></div>\n            <div><span class=\"pv-k\">SCORE</span><b id=\"pvScore\">—</b></div>\n            <div><span class=\"pv-k\">CAPTURE</span><b id=\"pvTime\">—</b></div>\n            <div><span class=\"pv-k\">SOURCE</span><b id=\"pvSource\">—</b></div>\n          </div>\n          <div class=\"pv-foot\">\n            <div id=\"pvDefects\" class=\"pv-defects\"></div>\n            <div class=\"pv-actions\">\n              <button id=\"pvApprove\" class=\"btn small\">✓ Approve</button>\n              <button id=\"pvChange\" class=\"btn small ghost\">✗ Request change</button>\n            </div>\n          </div>\n        </div>\n        <div class=\"pv-thumbs-head\"><h2>Gallery</h2><span class=\"card-sub\">recent frames</span></div>\n        <div id=\"pvGallery\" class=\"pv-gallery\"></div>\n      </section>\n\n      <!-- ===== QUESTS ===== -->\n      <section id=\"scr-quests\" class=\"screen\">\n        <div class=\"screen-head\"><div><h1>Quests</h1><p class=\"screen-sub\">Long roads worth walking. Rewards in credits and craft.</p></div></div>\n        <div id=\"questActive\" class=\"quest-active\"></div>\n        <h2 class=\"block-h\">Completed</h2>\n        <div id=\"questDone\" class=\"quest-done\"></div>\n      </section>\n\n      <!-- ===== FINANCE ===== -->\n      <section id=\"scr-finance\" class=\"screen\">\n        <div class=\"screen-head\"><div><h1>Finance</h1><p class=\"screen-sub\">Local free power, or cloud firepower. Your call.</p></div></div>\n        <div id=\"finBalance\" class=\"fin-balance\"></div>\n        <h2 class=\"block-h\">Credit Packs</h2>\n        <div id=\"finPacks\" class=\"fin-packs\"></div>\n        <div class=\"grid-2\">\n          <div class=\"card\"><div class=\"card-head\"><h2>Spend this week</h2></div><div id=\"finChart\" class=\"fin-chart\"></div></div>\n          <div class=\"card\"><div class=\"card-head\"><h2>Ledger</h2></div><div id=\"finLedger\" class=\"fin-ledger\"></div></div>\n        </div>\n      </section>\n\n      <!-- ===== PROFILE ===== -->\n      <section id=\"scr-profile\" class=\"screen\">\n        <div class=\"prof-hero card\">\n          <div id=\"profAvatar\" class=\"prof-avatar\">D</div>\n          <div class=\"prof-info\">\n            <h1 id=\"profName\">Director</h1>\n            <p class=\"prof-title\">Director of Unreal Operations</p>\n            <div class=\"prof-xp\"><div class=\"prof-xp-fill\" id=\"profXpFill\"></div></div>\n            <p class=\"muted\" id=\"profXpTxt\">Level 7 · 640 / 900 XP</p>\n          </div>\n          <div class=\"prof-stats\">\n            <div class=\"stat\"><b id=\"stMissions\">0</b><span>Missions</span></div>\n            <div class=\"stat\"><b id=\"stSuccess\">0%</b><span>Success</span></div>\n            <div class=\"stat\"><b id=\"stHours\">0</b><span>Hours</span></div>\n          </div>\n        </div>\n        <div class=\"grid-2\">\n          <div class=\"card\"><div class=\"card-head\"><h2>Specializations</h2></div><div id=\"profSkills\" class=\"prof-skills\"></div></div>\n          <div class=\"card\"><div class=\"card-head\"><h2>Achievements</h2></div><div id=\"profAch\" class=\"prof-ach\"></div></div>\n        </div>\n      </section>\n\n      <!-- ===== SETTINGS ===== -->\n      <section id=\"scr-settings\" class=\"screen\">\n        <div class=\"screen-head\"><div><h1>Settings</h1><p class=\"screen-sub\">Tune the booth. Nothing here touches the engine core.</p></div></div>\n        <div class=\"card\">\n          <div class=\"field\"><label for=\"setBase\">Engine base URL</label>\n            <input id=\"setBase\" class=\"textinput\" autocomplete=\"off\" placeholder=\"http://127.0.0.1:8765 (empty = same origin)\"></div>\n          <div class=\"field\"><label for=\"setName\">Your name</label><input id=\"setName\" class=\"textinput\" autocomplete=\"off\" placeholder=\"Director\"></div>\n          <div class=\"row\"><button id=\"setSave\" class=\"btn primary\">Save Settings</button><span id=\"setSaved\" class=\"note hidden\">Saved ✓</span></div>\n        </div>\n        <div class=\"card\">\n          <div class=\"card-head\"><h2>ClickUp Sync</h2><span class=\"card-sub\" id=\"cuStatus\">BLOCKED</span></div>\n          <p class=\"muted\" id=\"cuDetail\">No ClickUp credentials or integration tool were found in this environment. Sync stays BLOCKED — nothing is faked.</p>\n          <div class=\"mono cu-contract\">Contract: set env <b>CLICKUP_API_TOKEN</b> + <b>CLICKUP_LIST_ID</b> (or expose a ClickUp tool on the gateway), then this screen flips to LIVE. Never hardcode tokens in the repo.</div>\n        </div>\n        <div class=\"card\">\n          <div class=\"card-head\"><h2>Preferences</h2></div>\n          <label class=\"toggle\"><input type=\"checkbox\" id=\"setAutoProof\" checked><span>Auto-refresh proof in the vault</span></label>\n          <label class=\"toggle\"><input type=\"checkbox\" id=\"setCinematic\" checked><span>Cinematic transitions (letterbox)</span></label>\n          <label class=\"toggle\"><input type=\"checkbox\" id=\"setIdle\" checked><span>Workers idle naturally when unassigned</span></label>\n          <label class=\"toggle\"><input type=\"checkbox\" id=\"setSound\" checked><span>UI sound feedback (soft, synthesized)</span></label>\n        </div>\n        <div class=\"card\">\n          <div class=\"card-head\"><h2>Live Integrations</h2><span class=\"card-sub\">read-only links to the running engine</span></div>\n          <div id=\"liRows\" class=\"li-rows\">\n            <div class=\"li-row\"><span>Engine gateway</span><b id=\"liEngine\" class=\"li-v\">probing…</b></div>\n            <div class=\"li-row\"><span>Code task store</span><b id=\"liCode\" class=\"li-v\">probing…</b></div>\n            <div class=\"li-row\"><span>Workboard</span><b id=\"liWb\" class=\"li-v\">probing…</b></div>\n            <div class=\"li-row\"><span>ClickUp sync</span><b id=\"liClickup\" class=\"li-v\">no credentials</b></div>\n          </div>\n        </div>\n        <div class=\"card\">\n          <div class=\"card-head\"><h2>About</h2></div>\n          <p class=\"muted\">Aivido Director's Booth · UI/UX Phase 1 + Phase 2<br>\n          Shell, navigation, room, crew states, proof vault, quests, finance, profile, live mission dispatch, cast &amp; asset contracts — built on the existing engine. No backend behavior changed.</p>\n          <p class=\"mono\" id=\"setVersion\">aivido-uiux-phase1 · bfc6700+ · Phase 2</p>\n      <!-- ===== AUTONOMOUS QA ===== -->\n      <section id=\"scr-qa\" class=\"screen\">\n        <div class=\"screen-head\">\n          <div><h1>Autonomous QA</h1><p class=\"screen-sub\">Black-box release-readiness verdict · every PASS independently verified.</p></div>\n          <button id=\"qaRun\" class=\"btn primary\">⚡ Run QA</button>\n        </div>\n        <div class=\"qa-banner\" id=\"qaBanner\">\n          <div class=\"qa-verdict\" id=\"qaVerdict\">—</div>\n          <div class=\"qa-banner-meta\">\n            <span>run <b id=\"qaRunId\">—</b></span>\n            <span>score <b id=\"qaScore\">—</b></span>\n            <span>status <b id=\"qaStatus\">—</b></span>\n          </div>\n        </div>\n        <div class=\"qa-stats grid-4\" id=\"qaStats\">\n          <div class=\"card\"><div class=\"stat\"><b id=\"qaPass\">0</b><span>PASS</span></div></div>\n          <div class=\"card\"><div class=\"stat\"><b id=\"qaFail\">0</b><span>FAIL</span></div></div>\n          <div class=\"card\"><div class=\"stat\"><b id=\"qaBlocked\">0</b><span>BLOCKED</span></div></div>\n          <div class=\"card\"><div class=\"stat\"><b id=\"qaSkip\">0</b><span>SKIPPED</span></div></div>\n        </div>\n        <div class=\"grid-2\">\n          <div class=\"card\">\n            <div class=\"card-head\"><h2>Defects</h2><span class=\"card-sub\" id=\"qaDefectCount\">—</span></div>\n            <div id=\"qaDefects\" class=\"qa-defects\"><div class=\"mc-empty\">No QA run yet. Run QA to inspect the defect ledger.</div></div>\n          </div>\n          <div class=\"card\">\n            <div class=\"card-head\"><h2>Checks</h2><span class=\"card-sub\">group matrix</span></div>\n            <div id=\"qaChecks\" class=\"qa-checks\"><div class=\"mc-empty\">No checks yet.</div></div>\n          </div>\n        </div>\n        <div class=\"card\" style=\"margin-top:16px\">\n          <div class=\"card-head\"><h2>Evidence Links</h2><span class=\"card-sub\">reports &amp; ledger</span></div>\n          <div id=\"qaEvidence\" class=\"qa-evidence\"><div class=\"muted\">Generated report and ledger paths appear here after a run.</div></div>\n        </div>\n      </section>\n\n    </main>\n  </div>\n</div>\n\n<!-- ============ OVERLAYS ============ -->\n<div id=\"letterbox\" class=\"letterbox hidden\"><div class=\"lb-bar top\"></div><div class=\"lb-bar bottom\"></div></div>\n<div id=\"modalRoot\" class=\"modal-root hidden\"></div>\n<div id=\"toastRoot\" class=\"toast-root\"></div>\n\n<!-- ===== CHOICE CARD MODAL (AAA choice) ===== -->\n<template id=\"tplChoice\">\n  <div class=\"choice-modal\">\n    <p class=\"choice-eyebrow\" data-c=\"eyebrow\">THE FOREMAN ASKS</p>\n    <h2 data-c=\"title\">How do we play this?</h2>\n    <div class=\"choice-grid\" data-c=\"grid\"></div>\n  </div>\n</template>\n\n<script src=\"/static/aivido.js?v=10baa905\"></script>\n</body>\n</html>\n/* ============================================================\n   AIVIDO — Director's Booth · UI/UX Phase 1\n   Vanilla JS SPA: shell, navigation, agent room + crew states,\n   mission driver, choice cards, proof vault, quests, finance,\n   profile, settings. Talks to the existing engine where reachable;\n   otherwise falls back to a self-contained simulation so every\n   screen stays clickable. No backend behavior is modified.\n   ============================================================ */\n(() => {\n  \"use strict\";\n\n  const $ = (id) => document.getElementById(id);\n  const LS = \"aivido_phase1_v1\";\n\n  /* ---------------- state ---------------- */\n  const DEFAULT = {\n    name: \"Director\",\n    base: \"\",\n    autoProof: true,\n    cinematic: true,\n    idle: true,\n    sound: true,\n    workspace: \"AvaLive Living City\",\n    balance: 120,\n    spent: [4, 2, 7, 3, 5, 2, 6],\n    achievements: { firstCube: true, goldenHour: true, nightPass: false, fullCrew: true, cleanRun: false, vault5: true },\n    missions: [\n      { id: \"m1\", title: \"Frontier Garage Showcase\", ws: \"AvaLive Living City\", status: \"ACTIVE\", progress: 0.55,\n        stages: [\"Interpret\", \"Plan\", \"Assign\", \"Build\", \"Verify\", \"Proof\"], cur: 3, verdict: null,\n        crew: [\"Mason\", \"Volt\", \"Ember\"], evidence: [] },\n      { id: \"m2\", title: \"Living City — Night Pass\", ws: \"AvaLive Living City\", status: \"ACTIVE\", progress: 0.2,\n        stages: [\"Interpret\", \"Plan\", \"Assign\", \"Build\", \"Verify\", \"Proof\"], cur: 1, verdict: null,\n        crew: [\"Reel\", \"Veil\", \"Stride\"], evidence: [] },\n      { id: \"m3\", title: \"Graduation Showcase\", ws: \"UA_GradAudit\", status: \"COMPLETE\", progress: 1,\n        stages: [\"Interpret\", \"Plan\", \"Assign\", \"Build\", \"Verify\", \"Proof\"], cur: 6, verdict: \"PASS\",\n        crew: [\"Mason\", \"Reel\", \"Volt\", \"Ember\", \"Veil\", \"Stride\", \"Patina\"], evidence: [\"graduation_proof.png\"] },\n      { id: \"m4\", title: \"Showcase2 — Accent Pass\", ws: \"ASSET_Showcase2\", status: \"QUEUED\", progress: 0,\n        stages: [\"Interpret\", \"Plan\", \"Assign\", \"Build\", \"Verify\", \"Proof\"], cur: 0, verdict: null,\n        crew: [\"Patina\", \"Ember\"], evidence: [] },\n    ],\n    quests: [\n      { id: \"q1\", title: \"The Long Road — Graduate Showcase\", active: true, steps: [\n          { t: \"Frame the hero garage\", done: true }, { t: \"Light for golden hour\", done: true },\n          { t: \"Crew of four on one shot\", done: true }, { t: \"Final proof at ≥ 8.5\", done: false }],\n        reward: \"150 credits · Director Badge\" },\n      { id: \"q2\", title: \"Daily — First Light\", active: true, steps: [\n          { t: \"Capture one fresh proof\", done: true }, { t: \"Dispatch the crew once\", done: false }],\n        reward: \"20 credits\" },\n      { id: \"q3\", title: \"Rite of Passage — First Cube\", active: false, steps: [\n          { t: \"Spawn your first actor\", done: true }, { t: \"Proof it\", done: true }], reward: \"Badge · First Cube\" },\n      { id: \"q4\", title: \"Golden Hour\", active: false, steps: [\n          { t: \"Score a shot ≥ 8.5\", done: true }, { t: \"No blocking defects\", done: true }], reward: \"Badge · Golden Hour\" },\n    ],\n    gallery: [],\n  };\n\n  let S;\n  try { S = Object.assign({}, JSON.parse(localStorage.getItem(LS) || \"null\") || JSON.parse(JSON.stringify(DEFAULT))); } catch (_) { S = JSON.parse(JSON.stringify(DEFAULT)); }\n\n  /* ---------------- crew ---------------- */\n  const WORKERS = [\n    { id: \"mason\", name: \"Mason\", role: \"Environment\", color: \"#a96b42\", ic: \"⌂\" },\n    { id: \"patina\", name: \"Patina\", role: \"Materials\", color: \"#8a6f35\", ic: \"▦\" },\n    { id: \"reel\", name: \"Reel\", role: \"Cinematics\", color: \"#c46a3a\", ic: \"◉\" },\n    { id: \"volt\", name: \"Volt\", role: \"Blueprint\", color: \"#4f8cff\", ic: \"⚡\" },\n    { id: \"ember\", name: \"Ember\", role: \"VFX\", color: \"#e2703a\", ic: \"✸\" },\n    { id: \"veil\", name: \"Veil\", role: \"Metahuman\", color: \"#b98ae0\", ic: \"♜\" },\n    { id: \"stride\", name: \"Stride\", role: \"Animation\", color: \"#3d9a6b\", ic: \"➶\" },\n  ];\n\n  // station tool glyphs — ready-made props, no bespoke modeling\n  const TOOLS = { mason: \"🧱\", patina: \"🎨\", reel: \"🎥\", volt: \"🔌\", ember: \"✨\", veil: \"🪞\", stride: \"🎞\" };\n\n  // worker state: IDLE ASSIGNED THINKING WORKING WAITING ERROR DONE\n  let W = WORKERS.map((w) => ({ ...w, state: \"IDLE\", task: null, err: null, bubble: null, speaking: false }));\n\n  const FOREMAN_LINES = {\n    greet: \"Welcome back. Crew's been patient — good crew, patient crew.\",\n    idle: \"They ain't idle, they're restin' the wrist. Big job's the real work.\",\n    dispatch: \"Alright! Hands up — we got work. Mason, light the forge. Volt, mind the wiring.\",\n    thinking: \"Think it through. I'd rather you think slow and strike true.\",\n    working: \"There it is. Hear that? That's a crew earnin' its keep.\",\n    waiting: \"Hold steady. Gate's slow, not shut. Waiting's part of the trade.\",\n    error: \"Hold up! Something's burnin' and it ain't the coffee. Let's talk.\",\n    done: \"Clean work. That's how we leave a town — better than we found it.\",\n    choice: \"Your call, boss. Every road pays, but they don't all pay the same.\",\n    low: \"I seen this before — shot's got no bones. We add bones.\",\n    proof: \"That frame's the honest truth. Look close; it don't lie.\",\n    worker: (n, st) => ({ IDLE: n + \"? Sharp eyes, soft hands. Ready when you are.\",\n      ASSIGNED: n + \" knows the job. Just point at the wall.\",\n      THINKING: \"Don't rush \" + n + \" — that's a plan cookin', not a nap.\",\n      WORKING: n + \"'s got the bit between their teeth now.\",\n      WAITING: n + \" is waitin' on the gate. Patience is a tool too.\",\n      ERROR: \"Talk to \" + n + \". Somethin' went sideways and they ain't one to hide it.\",\n      DONE: n + \" finished clean. Check the proof — it'll show.\" }[st] || n + \"'s at the station.\"),\n  };\n\n  /* ---------------- dom refs ---------------- */\n  const el = {};\n  const REFS = [\"app\",\"sting\",\"letterbox\",\"modalRoot\",\"toastRoot\",\"rail\",\"hudScreen\",\"hudWorkspace\",\"hudMode\",\"hudCredits\",\"hudClock\",\"hudSnd\",\"hudAvatar\",\n    \"homeName\",\"homeEnterRoom\",\"homeNewMission\",\"homeCrew\",\"homeCrewState\",\"homeQuote\",\"homeProof\",\"homeMissionPill\",\"homeMission\",\"ledgerFree\",\"ledgerCredits\",\"ledgerQuests\",\n    \"wsGrid\",\"wsNew\",\"mcList\",\"mcDetail\",\"mcNew\",\"roomStage\",\"workersRow\",\"roomDispatch\",\"roomReset\",\"roomSub\",\"roomModePill\",\n    \"foreman\",\"foremanBar\",\"fbLine\",\"fbName\",\"pvStage\",\"pvViewport\",\"pvImg\",\"pvEmpty\",\"pvVerdict\",\"pvScore\",\"pvTime\",\"pvSource\",\"pvDefects\",\"pvGallery\",\"pvCapture\",\"pvAuto\",\n    \"questActive\",\"questDone\",\"finBalance\",\"finPacks\",\"finChart\",\"finLedger\",\n    \"profAvatar\",\"profName\",\"profXpFill\",\"profXpTxt\",\"stMissions\",\"stSuccess\",\"stHours\",\"profSkills\",\"profAch\",\n    \"setBase\",\"setName\",\"setSave\",\"setSaved\",\"setAutoProof\",\"setCinematic\",\"setIdle\",\"setSound\",\"setVersion\",\"railDot\",\"railBackendTxt\",\n    \"holoData\",\"pvPrev\",\"pvNext\",\"pvFull\",\"pvIdx\",\"pvBadge\",\"pvAge\",\"pvApprove\",\"pvChange\",\"liEngine\",\"liCode\",\"liWb\",\"liClickup\",\n    \"ssEngine\",\"ssBridge\",\"ssMap\",\"ssProof\",\"ssExec\",\"dlPrompt\",\"dlDispatch\",\"dlPlan\",\"dlWarn\",\"castGrid\",\"cuStatus\",\"cuDetail\",\n    \"ssList\",\"ssDetail\",\"ssRegPath\",\"ssRegBtn\",\"ssProjSel\",\"ssConnectBtn\",\"ssRefresh\",\n    \"qaRun\",\"qaBanner\",\"qaVerdict\",\"qaRunId\",\"qaScore\",\"qaStatus\",\"qaPass\",\"qaFail\",\"qaBlocked\",\"qaSkip\",\"qaDefectCount\",\"qaDefects\",\"qaChecks\",\"qaEvidence\"];\n  REFS.forEach((r) => (el[r] = $(r)));\n\n  /* ---------------- helpers ---------------- */\n  const esc = (s) => String(s ?? \"\").replace(/[&<>\"']/g, (c) => ({ \"&\": \"&amp;\", \"<\": \"&lt;\", \">\": \"&gt;\", '\"': \"&quot;\", \"'\": \"&#39;\" }[c]));\n  const stClass = (s) => ({ IDLE: \"IDLE\", ASSIGNED: \"ASSIGNED\", THINKING: \"THINKING\", WORKING: \"WORKING\", WAITING: \"WAITING\", ERROR: \"ERROR\", DONE: \"DONE\" }[s] || \"IDLE\");\n  const workerById = (id) => W.find((w) => w.id === id);\n  const persist = () => { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (_) {} };\n\n  /* ---------------- sound (lightweight WebAudio, no assets) ---------------- */\n  const SFX = (() => {\n    let ctx = null, enabled = true;\n    function ac() {\n      if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {} }\n      if (ctx && ctx.state === \"suspended\") ctx.resume().catch(() => {});\n      return ctx;\n    }\n    function tone(f, dur = .08, type = \"sine\", vol = .04, slide = 0) {\n      if (!enabled) return;\n      const c = ac(); if (!c) return;\n      try {\n        const o = c.createOscillator(), g = c.createGain();\n        o.type = type;\n        o.frequency.setValueAtTime(f, c.currentTime);\n        if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), c.currentTime + dur);\n        g.gain.setValueAtTime(vol, c.currentTime);\n        g.gain.exponentialRampToValueAtTime(.0001, c.currentTime + dur);\n        o.connect(g).connect(c.destination);\n        o.start(); o.stop(c.currentTime + dur + .02);\n      } catch (_) {}\n    }\n    return {\n      set(v) { enabled = v; },\n      on() { ac(); },\n      click() { tone(520, .05, \"triangle\", .028); },\n      hover() { tone(760, .04, \"sine\", .01); },\n      confirm() { tone(392, .1, \"triangle\", .035); setTimeout(() => tone(587, .12, \"triangle\", .035), 90); },\n      error() { tone(220, .18, \"sawtooth\", .026, -60); },\n      success() { tone(523, .09, \"triangle\", .035); setTimeout(() => tone(659, .09, \"triangle\", .035), 80); setTimeout(() => tone(784, .14, \"triangle\", .035), 160); },\n      open() { tone(330, .12, \"sine\", .028, 120); },\n      capture() { tone(880, .07, \"sine\", .03); setTimeout(() => tone(660, .1, \"sine\", .028, -120), 60); },\n    };\n  })();\n\n  function toast(title, msg, kind = \"info\") {\n    const t = document.createElement(\"div\");\n    t.className = \"toast \" + kind;\n    t.innerHTML = `<div class=\"t-title\">${esc(title)}</div>${msg ? `<div>${esc(msg)}</div>` : \"\"}`;\n    el.toastRoot.appendChild(t);\n    ({ good: SFX.success, bad: SFX.error, info: SFX.open }[kind] || SFX.click)();\n    setTimeout(() => { t.style.transition = \"opacity .4s\"; t.style.opacity = \"0\"; setTimeout(() => t.remove(), 420); }, 3800);\n  }\n\n  /* ---------------- router ---------------- */\n  const SCREENS = { home: \"scr-home\", workspaces: \"scr-workspaces\", sessions: \"scr-sessions\", mission: \"scr-mission\", room: \"scr-room\", proof: \"scr-proof\", quests: \"scr-quests\", finance: \"scr-finance\", profile: \"scr-profile\", qa: \"scr-qa\", settings: \"scr-settings\" };\n  const TITLES = { home: \"BOOTH\", workspaces: \"WORKSPACES\", sessions: \"SESSIONS\", mission: \"MISSION CONTROL\", room: \"AGENT ROOM\", proof: \"PROOF VAULT\", quests: \"QUESTS\", finance: \"FINANCE\", profile: \"CREATOR PROFILE\", qa: \"AUTONOMOUS QA\", settings: \"SETTINGS\" };\n\n  function route() {\n    const nav = (location.hash || \"#/home\").replace(/^#\\/?/, \"\").split(\"?\")[0];\n    return SCREENS[nav] ? nav : \"home\";\n  }\n\n  function show(nav, opts = {}) {\n    SFX.click();\n    const cur = route();\n    Object.keys(SCREENS).forEach((k) => $(SCREENS[k]).classList.remove(\"on\"));\n    document.querySelectorAll(\".rail-item\").forEach((b) => b.classList.toggle(\"active\", b.dataset.nav === nav));\n    $(SCREENS[nav]).classList.add(\"on\");\n    el.hudScreen.textContent = TITLES[nav];\n    if (nav === \"room\" && opts.zoom) {\n      el.roomStage.classList.remove(\"room-zoom\");\n      void el.roomStage.offsetWidth;\n      el.roomStage.classList.add(\"room-zoom\");\n    }\n    render(nav);\n    if (location.hash !== \"#/\" + nav) history.replaceState(null, \"\", \"#/\" + nav);\n    if (nav !== cur) window.scrollTo && $(SCREENS[nav]).scrollTo && $(SCREENS[nav]).scrollTo(0, 0);\n  }\n\n  function navWithCinematic(nav) {\n    if (nav === \"room\" && S.cinematic) {\n      el.letterbox.classList.remove(\"hidden\");\n      requestAnimationFrame(() => requestAnimationFrame(() => el.letterbox.classList.add(\"on\")));\n      setTimeout(() => { show(nav, { zoom: true }); setTimeout(() => { el.letterbox.classList.remove(\"on\"); setTimeout(() => el.letterbox.classList.add(\"hidden\"), 600); }, 420); }, 560);\n    } else {\n      show(nav);\n    }\n  }\n\n  /* ---------------- backend ---------------- */\n  const apiBase = () => S.base.replace(/\\/+$/, \"\");\n  let backend = { online: false, busy: false, mode: \"SIMULATION\", last: null };\n  let live = { session: null, ws: null, tasks: [], wb: null, missions: [], tools: [], proofAge: null, sessions: [], projects: [], resources: null };\n  const SESS = { selected: null, timer: null };\n\n  async function api(path, opts = {}) {\n    const r = await fetch(apiBase() + path, { headers: { \"Content-Type\": \"application/json\" }, ...opts });\n    if (!r.ok) throw new Error(\"HTTP \" + r.status);\n    const ct = r.headers.get(\"content-type\") || \"\";\n    return ct.includes(\"json\") ? r.json() : r;\n  }\n\n  async function pollHealth() {\n    try {\n      const s = await api(\"/api/status\");\n      backend.online = true;\n      backend.busy = !!s.execution_active;\n      backend.mode = \"LIVE\";\n      backend.last = s;\n    } catch (_) {\n      backend.online = false;\n      backend.busy = false;\n      backend.mode = \"SIMULATION\";\n    }\n    const dot = el.railDot, txt = el.railBackendTxt, mode = el.hudMode;\n    dot.className = \"dot-sm \" + (backend.online ? (backend.busy ? \"busy\" : \"ready\") : \"bad\");\n    txt.textContent = backend.online ? (backend.busy ? \"engine busy\" : \"engine linked\") : \"simulation mode\";\n    mode.textContent = backend.mode;\n    mode.className = \"hud-mode pill-sm \" + (backend.mode === \"LIVE\" ? \"live\" : \"sim\");\n    el.roomModePill.textContent = backend.mode === \"LIVE\" ? \"LIVE ENGINE\" : \"SIMULATION\";\n    el.roomModePill.style.cssText = backend.mode === \"LIVE\" ? \"color:var(--ok);border-color:rgba(110,207,142,.4)\" : \"\";\n    if (backend.online) refreshBackendProof(false);\n    if (backend.online) pollLive();\n    if (backend.online && !live.tools.length) detectClickUp();\n    renderSysStrip();\n  }\n\n  /* ---------------- live engine data (read-only) ---------------- */\n  async function pollLive() {\n    if (!backend.online) return;\n    try { const r = await api(\"/api/unreal-coder/session\"); live.session = (r && r.session) || null; } catch (_) {}\n    try { live.ws = await api(\"/api/workspace\"); } catch (_) {}\n    try { const r = await api(\"/api/code/tasks\"); live.tasks = (r && r.tasks) || []; } catch (_) {}\n    try { const r = await api(\"/api/workboard/state\"); live.wb = (r && r.data) || null; } catch (_) {}\n    try { const m = await api(\"/api/multiclient/status\"); live.sessions = (m && m.sessions) || []; live.projects = (m && m.projects) || []; live.resources = (m && m.resources) || null; } catch (_) {}\n    if (route() === \"room\") renderHoloData();\n    if (route() === \"mission\") renderMission();\n    if (route() === \"workspaces\") renderWorkspaces();\n    if (route() === \"settings\") renderLiveIntegrations();\n    if (route() === \"sessions\") renderSessions();\n  }\n\n  function renderHoloData() {\n    const d = el.holoData; if (!d) return;\n    if (backend.online && live.session) {\n      d.innerHTML = `${esc(live.session.project_name || \"—\")}<br>${esc(live.session.active_map || \"no map loaded\")}<br>UE ${esc(String(live.session.engine_version || \"\").split(\"+\")[0])}`;\n    } else if (backend.online) {\n      d.innerHTML = `ENGINE LINKED<br>SESSION …<br>AWAITING MAP`;\n    } else {\n      d.innerHTML = `SIMULATION<br>NO ENGINE LINK<br>CREW AT REST`;\n    }\n  }\n\n  function renderLiveIntegrations() {\n    const set = (id, txt, cls) => { const e = $(id); if (e) { e.textContent = txt; e.className = \"li-v \" + cls; } };\n    set(\"liEngine\", backend.online ? (backend.busy ? \"LIVE · engine busy\" : \"LIVE · engine ready\") : \"SIMULATION · offline\", backend.online ? \"ok\" : \"off\");\n    const nCode = live.tasks.length;\n    set(\"liCode\", backend.online ? (nCode ? nCode + \" real task\" + (nCode > 1 ? \"s\" : \"\") + \" on file\" : \"LIVE · empty store\") : \"offline\", backend.online ? (nCode ? \"ok\" : \"warn\") : \"off\");\n    const wb = live.wb; const nWb = wb ? (wb.tasks || []).length + (wb.sprints || []).length : 0;\n    set(\"liWb\", backend.online ? (nWb ? nWb + \" workboard entries\" : \"LIVE · empty board\") : \"offline\", backend.online ? (nWb ? \"ok\" : \"warn\") : \"off\");\n    set(\"liClickup\", \"blocked — no API credentials in this environment\", \"blocked\");\n  }\n\n  /* ---------------- proof ---------------- */\n  function demoCapture(name = \"demo\") {\n    const c = document.createElement(\"canvas\");\n    c.width = 1280; c.height = 720;\n    const x = c.getContext(\"2d\");\n    // dusk sky\n    const g = x.createLinearGradient(0, 0, 0, 720);\n    g.addColorStop(0, \"#3d2a1a\"); g.addColorStop(.45, \"#e8895a\"); g.addColorStop(.75, \"#ffb46b\"); g.addColorStop(1, \"#241609\");\n    x.fillStyle = g; x.fillRect(0, 0, 1280, 720);\n    // sun\n    x.fillStyle = \"rgba(255,240,210,.95)\";\n    x.beginPath(); x.arc(940, 190, 70, 0, 7); x.fill();\n    x.fillStyle = \"rgba(255,217,160,.25)\";\n    x.beginPath(); x.arc(940, 190, 120, 0, 7); x.fill();\n    // mesas\n    x.fillStyle = \"#2a1c10\"; x.beginPath();\n    x.moveTo(0, 460); x.lineTo(160, 260); x.lineTo(330, 430); x.lineTo(560, 190); x.lineTo(760, 440); x.lineTo(980, 240); x.lineTo(1280, 420); x.lineTo(1280, 720); x.lineTo(0, 720); x.fill();\n    x.fillStyle = \"#1c1208\"; x.beginPath();\n    x.moveTo(0, 560); x.lineTo(240, 360); x.lineTo(480, 540); x.lineTo(760, 330); x.lineTo(1280, 520); x.lineTo(1280, 720); x.lineTo(0, 720); x.fill();\n    // garage cabin\n    x.fillStyle = \"#3a2813\"; x.fillRect(150, 400, 260, 200);\n    x.fillStyle = \"#2a1c10\"; x.beginPath(); x.moveTo(120, 400); x.lineTo(280, 300); x.lineTo(440, 400); x.fill();\n    x.fillStyle = \"#ffb76b\"; x.fillRect(250, 440, 60, 60);\n    x.fillStyle = \"#241609\"; x.fillRect(170, 470, 60, 90); x.fillRect(330, 470, 60, 90);\n    // score HUD\n    x.fillStyle = \"rgba(10,7,4,.72)\"; x.fillRect(0, 0, 1280, 64);\n    x.font = \"600 22px Inter, sans-serif\"; x.fillStyle = \"#e8c878\";\n    x.fillText(\"◈ AIVIDO · FRESH PROOF\", 24, 40);\n    x.font = \"600 18px JetBrains Mono, monospace\"; x.fillStyle = \"#6ecf8e\";\n    x.fillText(\"SCORE 8.7 / 10\", 1010, 40);\n    x.font = \"14px JetBrains Mono, monospace\"; x.fillStyle = \"rgba(242,233,216,.75)\";\n    x.fillText(\"no blocking defects · subject coverage 41% · \" + new Date().toLocaleTimeString(), 24, 706);\n    return c.toDataURL(\"image/png\");\n  }\n\n  function pushGallery(entry) {\n    S.gallery = [entry, ...S.gallery].slice(0, 6);\n    persist();\n    renderGallery();\n  }\n\n  async function captureProof() {\n    toast(\"Capture started\", \"Framing the shot and pulling a fresh frame…\", \"info\");\n    const start = Date.now();\n    let entry;\n    try {\n      const res = await api(\"/api/unreal/frame-and-proof\", {\n        method: \"POST\", body: JSON.stringify({ location: [0, 0, 200] }),\n      });\n      const img = new Image();\n      await new Promise((ok, no) => { img.onload = ok; img.onerror = no; img.src = apiBase() + (res.url || \"/api/proof/latest\") + \"?t=\" + Date.now(); });\n      const d = res.framing || res.proof || {};\n      entry = { src: img.src, verdict: \"PASS\", score: d.score != null ? Number(d.score).toFixed(1) : \"—\", at: new Date().toISOString(), source: \"LIVE\", defects: d.defects || [], meta: (d.path || d.url || \"live frame\") + \" · \" + (d.size || img.naturalWidth + \"×\" + img.naturalHeight) + \" bytes\" };\n    } catch (_) {\n      // engine unreachable → simulation capture so the UX stays functional\n      await new Promise((r) => setTimeout(r, 1100));\n      const d = demoCapture();\n      entry = { src: d, verdict: \"PASS\", score: \"8.7\", at: new Date().toISOString(), source: \"DEMO\", defects: [], meta: \"1280×720 · simulation frame · engine offline\" };\n      toast(\"Demo capture\", \"Engine unreachable — captured a simulation frame instead.\", \"info\");\n    }\n    const ms = Date.now() - start;\n    questTick(\"capture\"); ledgerAdd(\"capture\", \"Proof capture (\" + entry.source + \")\", 0);\n    pushGallery(entry);\n    showProofEntry(entry);\n    foremanSay(FOREMAN_LINES.proof, 5200);\n    toast(\"Proof minted\", entry.source + \" frame in \" + (ms / 1000).toFixed(1) + \"s · score \" + entry.score, \"good\");\n  }\n\n  async function refreshBackendProof(force) {\n    if (!backend.online) return;\n    try {\n      const st = await api(\"/api/proof/status\");\n      if (st && st.ok && st.path) {\n        live.proofAge = Math.max(0, (Date.now() / 1000) - (st.mtime || Date.now() / 1000));\n        renderSysStrip();\n        const entry = { src: apiBase() + \"/api/proof/latest?t=\" + Date.now(), verdict: st.verdict || \"—\", score: st.score != null ? Number(st.score).toFixed(1) : \"—\", at: new Date().toISOString(), source: \"LIVE\", defects: st.defects || [], meta: st.path };\n        showProofEntry(entry);\n      }      } catch (_) { /* engine proof not ready yet */ }\n  }\n\n  function showProofEntry(entry, idx) {\n    if (idx != null) { S._pvIdx = idx; }\n    else if (S.gallery.length) {\n      const found = S.gallery.indexOf(entry);\n      S._pvIdx = found >= 0 ? found : 0;\n    }\n    const img = el.pvImg;\n    img.onload = () => { el.pvEmpty.hidden = true; img.hidden = false; };\n    img.src = entry.src;\n    el.pvVerdict.textContent = entry.verdict || \"—\";\n    el.pvVerdict.className = \"pv-v \" + String(entry.verdict || \"\").toLowerCase();\n    el.pvScore.textContent = entry.score || \"—\";\n    el.pvTime.textContent = entry.at ? new Date(entry.at).toLocaleTimeString() : \"—\";\n    el.pvSource.textContent = (entry.source || \"—\") + (entry.approved ? \" · approved ✓\" : \"\");\n    el.pvDefects.innerHTML = (entry.defects && entry.defects.length)\n      ? \"<b>Notes:</b> \" + entry.defects.map(esc).join(\" · \") : \"<i>No blocking defects.</i>\";\n    const isLive = entry.source === \"LIVE\";\n    el.pvBadge.textContent = isLive ? \"LIVE FRAME\" : \"DEMO FRAME\";\n    el.pvBadge.className = \"pv-badge \" + (isLive ? \"live\" : \"demo\");\n    el.pvIdx.textContent = S.gallery.length ? (S._pvIdx + 1) + \" / \" + S.gallery.length : \"\";\n    if (el.pvAge) {\n      if (isLive && live.proofAge != null) {\n        const mins = Math.floor(live.proofAge / 60);\n        el.pvAge.textContent = live.proofAge < 90 ? \"fresh · \" + Math.max(1, Math.round(live.proofAge)) + \"s\" : \"fresh · \" + mins + \"m old\";\n        el.pvAge.className = \"pv-age \" + (live.proofAge < 900 ? \"fresh\" : \"stale\");\n      } else if (isLive) {\n        el.pvAge.textContent = \"freshness unknown\";\n        el.pvAge.className = \"pv-age\";\n      } else {\n        el.pvAge.textContent = \"simulation frame\";\n        el.pvAge.className = \"pv-age\";\n      }\n    }\n  }\n\n  function proofStep(dir) {\n    if (!S.gallery.length) return;\n    const n = S.gallery.length;\n    const i = ((S._pvIdx == null ? 0 : S._pvIdx) + dir + n) % n;\n    showProofEntry(S.gallery[i], i);\n    SFX.click();\n  }\n\n  function approveProof() {\n    const i = S._pvIdx == null ? 0 : S._pvIdx;\n    const e = S.gallery[i];\n    if (!e) return;\n    e.approved = true;\n    persist(); renderGallery(); showProofEntry(e, i);\n    toast(\"Proof approved\", \"Reviewed and kept for the record.\", \"good\");\n  }\n\n  function requestChange() {\n    const i = S._pvIdx == null ? 0 : S._pvIdx;\n    const e = S.gallery[i];\n    if (!e) return;\n    e.approved = false;\n    persist(); renderGallery(); showProofEntry(e, i);\n    toast(\"Change requested\", \"Rework flag set — noted on the mission board.\", \"info\");\n  }\n\n  function renderGallery() {\n    el.pvGallery.innerHTML = \"\";\n    if (!S.gallery.length) {\n      const d = document.createElement(\"div\");\n      d.className = \"pv-thumb pv-thumb-add\"; d.textContent = \"＋\";\n      d.title = \"Capture your first proof\";\n      d.onclick = captureProof;\n      el.pvGallery.appendChild(d);\n      return;\n    }\n    S.gallery.forEach((g, i) => {\n      const t = document.createElement(\"div\");\n      t.className = \"pv-thumb\" + (i === 0 ? \" sel\" : \"\");\n      t.innerHTML = `<img src=\"${g.src}\" alt=\"proof ${i + 1}\"><div class=\"pv-cap\">${g.approved ? \"✓ \" : \"\"}${esc(g.source)} · ${esc(g.score)}</div>`;\n      t.onclick = () => { showProofEntry(g, i); document.querySelectorAll(\".pv-thumb\").forEach((x) => x.classList.remove(\"sel\")); t.classList.add(\"sel\"); };\n      el.pvGallery.appendChild(t);\n    });\n    const add = document.createElement(\"div\");\n    add.className = \"pv-thumb pv-thumb-add\"; add.textContent = \"＋\"; add.title = \"Capture fresh proof\";\n    add.onclick = captureProof;\n    el.pvGallery.appendChild(add);\n  }\n\n  /* ---------------- room / crew ---------------- */\n  function foremanSay(line, ms = 4200) {\n    const f = el.foreman;\n    el.fbLine.textContent = line;\n    f.classList.add(\"speaking\");\n    const bb = f.querySelector(\".person-bubble\");\n    if (bb) bb.textContent = line.length > 46 ? line.slice(0, 44) + \"…\" : line;\n    clearTimeout(foremanSay._t);\n    foremanSay._t = setTimeout(() => f.classList.remove(\"speaking\"), ms);\n  }\n\n  function renderRoom() {\n    el.workersRow.innerHTML = \"\";\n    W.forEach((w) => {\n      const st = stClass(w.state);\n      const stn = document.createElement(\"div\");\n      stn.className = \"worker-station wk p-\" + w.id + \" \" + st + (st === \"WORKING\" ? \" striking\" : \"\");\n      stn.id = \"wk-\" + w.id;\n      stn.style.setProperty(\"--wk-c\", w.color);\n      stn.innerHTML = `\n        <div class=\"person wk\">\n          ${st === \"THINKING\" ? '<div class=\"wk-think\">···</div>' : \"\"}\n          ${st === \"WAITING\" ? '<div class=\"wk-wait\">⧗</div>' : \"\"}\n          ${st === \"ERROR\" ? '<div class=\"wk-alert\">!</div>' : \"\"}\n          ${st === \"DONE\" ? '<div class=\"wk-done\">✓</div>' : \"\"}\n          ${st === \"WORKING\" ? '<div class=\"wk-spark\">✦</div>' : \"\"}\n          <div class=\"head\"></div>\n          <div class=\"wk-hair\"></div>\n          <div class=\"wk-cap\"></div>\n          <div class=\"wk-band\"></div>\n          <div class=\"body\"></div>\n          <div class=\"arm a-l\"></div><div class=\"arm a-r\"></div>\n          <div class=\"wk-tool\">${TOOLS[w.id] || \"\"}</div>\n        </div>\n        <div class=\"worker-name\"><b>${w.name}</b></div>\n        <div class=\"worker-role\">${w.role}</div>\n        <span class=\"wk-badge\">${w.state}${w.task ? \" · \" + w.task : \"\"}</span>\n        <div class=\"worker-desk\"></div>`;\n      stn.onclick = () => openDossier(w);\n      el.workersRow.appendChild(stn);\n    });\n  }\n\n  function workerCheckIn(w) {\n    const st = stClass(w.state);\n    foremanSay(FOREMAN_LINES.worker(w.name, st), 4600);\n    const node = document.getElementById(\"wk-\" + w.id);\n    const p = node && node.querySelector(\".person\");\n    if (p) {\n      p.classList.add(\"speaking\");\n      const bb = document.createElement(\"div\");\n      bb.className = \"person-bubble\";\n      bb.textContent = st === \"ERROR\" ? \"fault on my station!\" : st === \"DONE\" ? \"clean handoff.\" : \"on it, boss.\";\n      p.appendChild(bb);\n      setTimeout(() => { p.classList.remove(\"speaking\"); const b = p.querySelector(\".person-bubble\"); if (b) b.remove(); }, 2400);\n    }\n    if (st === \"ERROR\") toast(w.name + \" hit a snag\", w.err || \"Station fault — inspect before proceeding.\", \"bad\");\n    if (st === \"DONE\") toast(w.name + \" finished\", \"Clean handoff recorded.\", \"good\");\n  }\n\n  function setState(w, state, task, err) {\n    w.state = state; w.task = task || null; w.err = err || null;\n    if (state === \"ERROR\") SFX.error();\n    if (state === \"DONE\") SFX.success();\n    const node = document.getElementById(\"wk-\" + w.id);\n    if (node) {\n      node.className = \"worker-station wk p-\" + w.id + \" \" + stClass(state) + (state === \"WORKING\" ? \" striking\" : \"\");\n      const badge = node.querySelector(\".wk-badge\");\n      if (badge) badge.textContent = state + (task ? \" · \" + task : \"\");\n      // swap status glyphs\n      const p = node.querySelector(\".person\");\n      [\"wk-think\", \"wk-wait\", \"wk-alert\", \"wk-done\", \"wk-spark\"].forEach((c) => { const e = p.querySelector(\".\" + c); if (e) e.remove(); });\n      if (state === \"THINKING\") p.insertAdjacentHTML(\"beforeend\", '<div class=\"wk-think\">···</div>');\n      if (state === \"WAITING\") p.insertAdjacentHTML(\"beforeend\", '<div class=\"wk-wait\">⧗</div>');\n      if (state === \"ERROR\") p.insertAdjacentHTML(\"beforeend\", '<div class=\"wk-alert\">!</div>');\n      if (state === \"DONE\") p.insertAdjacentHTML(\"beforeend\", '<div class=\"wk-done\">✓</div>');\n      if (state === \"WORKING\") p.insertAdjacentHTML(\"beforeend\", '<div class=\"wk-spark\">✦</div>');\n    }\n    if (route() === \"home\") renderHomeCrew();\n    if (route() === \"mission\") renderMissionList();\n  }\n\n  function renderHomeCrew() {\n    if (!el.homeCrew) return;\n    el.homeCrew.innerHTML = \"\";\n    W.forEach((w) => {\n      const c = document.createElement(\"div\");\n      c.className = \"crew-chip\";\n      c.innerHTML = `<span class=\"st-dot ${stClass(w.state)}\"></span> ${esc(w.name)} <span class=\"muted\">${w.state}</span>`;\n      el.homeCrew.appendChild(c);\n    });\n    const active = W.filter((w) => w.state !== \"IDLE\" && w.state !== \"DONE\").length;\n    el.homeCrewState.textContent = active ? active + \" of \" + W.length + \" busy\" : \"crew at rest\";\n    el.homeQuote.textContent = [\"“Every shot is a promise. We aim to keep it.”\", \"“Slow is smooth, smooth is fast — same in the editor.”\", \"“A clean frame is worth a hundred clean excuses.”\", \"“The engine don't lie. The proof don't either.”\"][Math.floor(Math.random() * 4)];\n  }\n\n  /* ambient idle life: workers naturally fidget, foreman mutters */\n  let ambientTimer = null;\n  function startAmbient() {\n    stopAmbient();\n    ambientTimer = setInterval(() => {\n      if (route() !== \"room\" || !S.idle) return;\n      const idle = W.filter((w) => w.state === \"IDLE\");\n      if (idle.length && Math.random() < .5) {\n        const w = idle[Math.floor(Math.random() * idle.length)];\n        const f = document.getElementById(\"wk-\" + w.id);\n        const p = f && f.querySelector(\".person\");\n        if (p) {\n          p.classList.remove(\"speaking\");\n          void p.offsetWidth;\n          p.classList.add(\"speaking\");\n          const bb = document.createElement(\"div\");\n          bb.className = \"person-bubble\";\n          bb.textContent = [\"…\", \"restin' the wrist\", \"hot coffee nearby\", \"saw a good shot yesterday\", \"just thinkin'\"].sort(() => Math.random() - .5)[0];\n          p.appendChild(bb);\n          setTimeout(() => { const b = p.querySelector(\".person-bubble\"); if (b && !p.classList.contains(\"speaking\")) b.remove(); }, 2600);\n        }\n      }\n      if (Math.random() < .22) foremanSay([\"…\", \"Crew's quiet. I like quiet.\", \"That lamp flicker? It's the tech breathin'.\", \"Proof before promises, boss.\", \"The gate's warm — someone's been workin'.\"].sort(() => Math.random() - .5)[0], 3000);\n    }, 5200);\n  }\n  function stopAmbient() { if (ambientTimer) { clearInterval(ambientTimer); ambientTimer = null; } }\n\n  /* ---------------- mission driver ---------------- */\n  let missionTimer = null;\n  const MISSION_STAGES = [\"Interpret\", \"Plan\", \"Assign\", \"Build\", \"Verify\", \"Proof\", \"Complete\"];\n  const CHOICES = [\n    { title: \"Steady Hand\", rarity: \"common\", ic: \"🛠\", desc: \"Refine the lighting pass first. Slow, safe, clean.\", tags: [[\"risk\", \"LOW\"], [\"reward\", \"SAFE\"]], path: \"safe\" },\n    { title: \"Bold Play\", rarity: \"rare\", ic: \"⚔\", desc: \"Rebuild the hero prop with the full crew. Bigger swing, bigger payoff.\", tags: [[\"risk\", \"HIGH\"], [\"reward\", \"EPIC\"]], path: \"bold\" },\n    { title: \"Delegate\", rarity: \"epic\", ic: \"☩\", desc: \"Split the work across specialist stations and run parallel.\", tags: [[\"risk\", \"MED\"], [\"reward\", \"FAME\"]], path: \"split\" },\n  ];\n\n  function startDemoMission(mId = \"m1\") {\n    if (missionTimer) return toast(\"Mission running\", \"The crew is already at work — check Mission Control.\", \"info\");\n    const m = S.missions.find((x) => x.id === mId) || S.missions.find((x) => x.id === \"m1\");\n    m.cur = 2; m.status = \"ACTIVE\"; m.progress = 0.28;\n    foremanSay(FOREMAN_LINES.dispatch, 5200);\n    toast(\"Crew dispatched\", \"Frontier Garage Showcase is underway.\", \"good\");\n    // assign crew\n    questTick(\"dispatch\"); ledgerAdd(\"dispatch\", \"Crew dispatch (simulation)\", 0);\n    const crew = W.filter((w) => [\"mason\", \"volt\", \"ember\"].includes(w.id));\n    crew.forEach((w, i) => setTimeout(() => setState(w, \"ASSIGNED\", \"intake\", null), 300 * i));\n    setTimeout(() => crew.forEach((w) => setState(w, \"THINKING\", \"plan\", null)), 1400);\n    foremanSay(FOREMAN_LINES.thinking, 4800);\n    setTimeout(() => crew.forEach((w) => setState(w, \"WORKING\", \"build\", null)), 3000);\n    foremanSay(FOREMAN_LINES.working, 5000);\n    m.cur = 3; m.progress = 0.55; renderMissionList();\n    // choice moment at plan review\n    missionTimer = setTimeout(() => { openChoices(); missionTimer = null; }, 5600);\n  }\n\n  function openChoices() {\n    const tpl = document.getElementById(\"tplChoice\");\n    const frag = tpl.content.cloneNode(true);\n    const grid = frag.querySelector('[data-c=\"grid\"]');\n    CHOICES.forEach((c) => {\n      const b = document.createElement(\"button\");\n      b.className = \"choice-card rarity-\" + c.rarity;\n      b.innerHTML = `<span class=\"cc-rarity\">${c.rarity.toUpperCase()}</span><div class=\"cc-ic\">${c.ic}</div><h3>${esc(c.title)}</h3><p>${esc(c.desc)}</p><div class=\"cc-tags\">${c.tags.map(([k, v]) => `<span class=\"${k}\">${v}</span>`).join(\"\")}</div>`;\n      b.onclick = () => resolveChoice(c);\n      grid.appendChild(b);\n    });\n    el.modalRoot.innerHTML = \"\";\n    el.modalRoot.appendChild(frag);\n    el.modalRoot.classList.remove(\"hidden\");\n    foremanSay(FOREMAN_LINES.choice, 5000);\n  }\n\n  function resolveChoice(c) {\n    el.modalRoot.classList.add(\"hidden\");\n    const m = S.missions.find((x) => x.id === \"m1\");\n    toast(\"Plan locked — \" + c.title, c.rarity.toUpperCase() + \" play. Crew adjusts.\", c.rarity === \"common\" ? \"info\" : \"good\");\n    if (c.path === \"bold\") {\n      // high risk: ember blows a fuse, recovers\n      const ember = workerById(\"ember\");\n      setState(ember, \"ERROR\", \"VFX\", \"Niagara burst overflowed the budget — gate caught it.\");\n      foremanSay(FOREMAN_LINES.error, 4600);\n      toast(\"Station fault\", \"Ember flagged a VFX overflow. The gate held.\", \"bad\");\n      setTimeout(() => { setState(ember, \"WAITING\", \"retry\", null); setState(workerById(\"volt\"), \"WAITING\", \"verify\", null); foremanSay(\"Breathe, crew. Volt, walk it back. We retry clean.\", 4400); }, 2600);\n      setTimeout(() => { setState(ember, \"WORKING\", \"rework\", null); setState(workerById(\"volt\"), \"WORKING\", \"verify\", null); }, 5200);\n    } else if (c.path === \"split\") {\n      const extra = W.filter((w) => [\"patina\", \"reel\"].includes(w.id));\n      extra.forEach((w) => setState(w, \"ASSIGNED\", \"parallel\", null));\n      setTimeout(() => extra.forEach((w) => setState(w, \"WORKING\", \"build\", null)), 900);\n      foremanSay(\"Parallel hands! Watch the seams — two artists, one shot.\", 4600);\n    } else {\n      const mason = workerById(\"mason\");\n      setState(mason, \"WAITING\", \"lighting gate\", null);\n      foremanSay(\"Steady it is. Mason, hold that key light where I can see it.\", 4400);\n      setTimeout(() => setState(mason, \"WORKING\", \"light pass\", null), 2400);\n    }\n    // advance to verify\n    setTimeout(() => {\n      W.forEach((w) => { if ([\"WORKING\", \"ASSIGNED\", \"THINKING\"].includes(w.state)) setState(w, \"WAITING\", \"verify gate\", null); });\n      foremanSay(\"Build's in. Gate's turnin'. Let the machine look at it.\", 4400);\n      m.cur = 4; m.progress = 0.8; renderMissionList();\n      setTimeout(() => {\n        W.forEach((w) => { if (w.state === \"WAITING\") setState(w, \"DONE\", null, null); });\n        m.cur = 6; m.progress = 1; m.status = \"COMPLETE\"; m.verdict = \"PASS\";\n        m.evidence = [\"frontier_garage_proof.png\"];\n        renderMissionList(); renderHome();\n        foremanSay(FOREMAN_LINES.done, 5200);\n        toast(\"Mission complete\", \"Frontier Garage Showcase · PASS · proof minted to the vault.\", \"good\");\n        S.balance += 40; S.achievements.cleanRun = true; persist();\n        ledgerAdd(\"reward\", \"Mission reward — Frontier Garage (demo)\", +40);\n        setTimeout(() => captureProof(), 900);\n      }, 3600);\n    }, 5600);\n  }\n\n  /* ---------------- screen renders ---------------- */\n  function render(nav) {\n    ({ home: renderHome, workspaces: renderWorkspaces, sessions: renderSessions, mission: renderMission, room: renderRoomScreen, proof: renderProofScreen, quests: renderQuests, finance: renderFinance, profile: renderProfile, qa: renderQA, settings: renderSettings }[nav] || (() => {}))();\n  }\n\n  function renderHome() {\n    el.homeName.textContent = S.name;\n    renderHomeCrew();\n    el.homeMissionPill.textContent = (S.missions.find((m) => m.status === \"ACTIVE\") ? \"RUNNING\" : \"STANDBY\");\n    const active = S.missions.find((m) => m.status === \"ACTIVE\");\n    el.homeMission.textContent = active ? active.title + \" — stage \" + active.stages[Math.",
+      "verifier": "no_absolute_local_path",
+      "evidence": [],
+      "severity_if_failed": "MINOR",
+      "detail": "no absolute local path markers"
+    },
+    {
+      "name": "certified_files_clean",
+      "category": "RELEASE_SAFETY",
+      "status": "PASS",
+      "duration": 0.068,
+      "expected": "no dirty certified files",
+      "observed": {
+        "dirty": false,
+        "lines": []
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "CRITICAL",
+      "detail": "claim 'no dirty certified files' backed by observed data"
+    },
+    {
+      "name": "correct_branch_assumption",
+      "category": "RELEASE_SAFETY",
+      "status": "PASS",
+      "duration": 0.084,
+      "expected": "aivido/v2-autonomous-qa",
+      "observed": {
+        "branch": "aivido/v2-autonomous-qa"
+      },
+      "verifier": "registry_match",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "expected 'aivido/v2-autonomous-qa' == observed 'aivido/v2-autonomous-qa'"
+    },
+    {
+      "name": "junk_build_artifacts",
+      "category": "RELEASE_SAFETY",
+      "status": "PASS",
+      "duration": 0.064,
+      "expected": "no junk in tracked tree",
+      "observed": {
+        "junk": [
+          "ui/backup-20260820-081408/app.js",
+          "ui/backup-20260820-081408/index.html",
+          "ui/backup-20260820-081408/styles.css"
+        ]
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "WARNING",
+      "detail": "claim 'no junk in tracked tree' backed by observed data"
+    },
+    {
+      "name": "startup_doctor_sanity",
+      "category": "RELEASE_SAFETY",
+      "status": "PASS",
+      "duration": 0.251,
+      "expected": "doctor reachable",
+      "observed": {
+        "http_status": 200,
+        "overall": "PASS",
+        "checks": 20
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "MAJOR",
+      "detail": "claim 'doctor reachable' backed by observed data"
+    },
+    {
+      "name": "release_prerequisites",
+      "category": "RELEASE_SAFETY",
+      "status": "PASS",
+      "duration": 0.001,
+      "expected": "install/start scripts + README",
+      "observed": {
+        "README.md": true,
+        "requirements.txt": true,
+        "start-aivido.ps1": true,
+        "start-aivido.cmd": true,
+        "install-aivido.ps1": true,
+        "install-aivido.cmd": true
+      },
+      "verifier": "truthful_claim",
+      "evidence": [],
+      "severity_if_failed": "WARNING",
+      "detail": "claim 'install/start scripts + README' backed by observed data"
+    }
+  ],
+  "defects": [
+    {
+      "id": "QA-6604C7",
+      "severity": "MAJOR",
+      "category": "MISSION_BLACKBOX",
+      "title": "isolated_capture_mission: mission PASS unverified: status='failed'; verdict='FAIL'; 0 executed steps; no real evidence files (0 entries)",
+      "reproduction": "read-only capture mission through the real pipeline",
+      "expected": "complete PASS + screenshot evidence",
+      "actual": "mission PASS unverified: status='failed'; verdict='FAIL'; 0 executed steps; no real evidence files (0 entries)",
+      "evidence": [],
+      "suspected_component": "mission-pipeline",
+      "retryable": false,
+      "blocker": false,
+      "check_name": "isolated_capture_mission",
+      "status": "OPEN",
+      "created_at": 1788810954.062
+    },
+    {
+      "id": "QA-F09F23",
+      "severity": "MAJOR",
+      "category": "UNREAL_STATE_SAFETY",
+      "title": "durable_orientation: cast rotation drifted",
+      "reproduction": "read-only get_actor rotation read-back",
+      "expected": "rotation.z in {0, 180}",
+      "actual": "z=360.0",
+      "evidence": [],
+      "suspected_component": "",
+      "retryable": false,
+      "blocker": false,
+      "check_name": "durable_orientation",
+      "status": "OPEN",
+      "created_at": 1788810989.536
+    },
+    {
+      "id": "QA-E714B0",
+      "severity": "MAJOR",
+      "category": "UI_BLACKBOX",
+      "title": "no_js_fatal_in_pages: response contains fatal markers: <!doctype html>",
+      "reproduction": "run no_js_fatal_in_pages",
+      "expected": "no fatal markers",
+      "actual": "response contains fatal markers: <!doctype html>",
+      "evidence": [],
+      "suspected_component": "ui",
+      "retryable": false,
+      "blocker": false,
+      "check_name": "no_js_fatal_in_pages",
+      "status": "OPEN",
+      "created_at": 1788810989.953
+    }
+  ],
+  "score": 95.16,
+  "verdict": "NOT_READY",
+  "verdict_why": "NOT_READY: 3 MAJOR defect(s) open; core black-box mission group FAIL: isolated_capture_mission; Unreal preservation group FAIL: durable_orientation",
+  "evidence": [
+    {
+      "check": "backend_status",
+      "at": 1788810941.8871453,
+      "verifier": "health_ok",
+      "detail": "status envelope healthy",
+      "expected": "ok envelope"
+    },
+    {
+      "check": "backend_latency",
+      "at": 1788810942.199875,
+      "verifier": "truthful_claim",
+      "detail": "claim 'latency claim' backed by observed data",
+      "expected": "latency claim"
+    },
+    {
+      "check": "doctor_report",
+      "at": 1788810942.5776427,
+      "verifier": "truthful_claim",
+      "detail": "claim 'doctor report' backed by observed data",
+      "expected": "doctor report"
+    },
+    {
+      "check": "bridge_identity",
+      "at": 1788810942.8573108,
+      "verifier": "registry_match",
+      "detail": "expected 'ASSET_Showcase2' == observed 'ASSET_Showcase2'",
+      "expected": "ASSET_Showcase2"
+    },
+    {
+      "check": "bridge_engine_version",
+      "at": 1788810943.1907032,
+      "verifier": "truthful_claim",
+      "detail": "claim 'UE 5.8' backed by observed data",
+      "expected": "UE 5.8"
+    },
+    {
+      "check": "ports_listening",
+      "at": 1788810943.2087069,
+      "verifier": "truthful_claim",
+      "detail": "claim 'ports claim' backed by observed data",
+      "expected": "ports claim"
+    },
+    {
+      "check": "single_listener_per_port",
+      "at": 1788810943.2538185,
+      "verifier": "truthful_claim",
+      "detail": "claim 'listener claim' backed by observed data",
+      "expected": "listener claim"
+    },
+    {
+      "check": "status_endpoint",
+      "at": 1788810943.5340745,
+      "verifier": "http_ok",
+      "detail": "HTTP 200",
+      "expected": "200 ok"
+    },
+    {
+      "check": "start_mission_endpoint",
+      "at": 1788810943.552754,
+      "verifier": "truthful_claim",
+      "detail": "claim 'accepted' backed by observed data",
+      "expected": "accepted"
+    },
+    {
+      "check": "start_mission_endpoint",
+      "mission_id": "mission_5a914e89dfdd",
+      "at": 1788810943.5613978
+    },
+    {
+      "check": "mission_status_endpoint",
+      "at": 1788810943.5658147,
+      "verifier": "truthful_claim",
+      "detail": "claim 'checkpoint payload' backed by observed data",
+      "expected": "checkpoint payload"
+    },
+    {
+      "check": "route_prompt",
+      "at": 1788810943.5942209,
+      "verifier": "truthful_claim",
+      "detail": "claim 'routing decision' backed by observed data",
+      "expected": "routing decision"
+    },
+    {
+      "check": "malformed_input_rejected",
+      "at": 1788810943.6031709,
+      "verifier": "truthful_claim",
+      "detail": "claim '4xx' backed by observed data",
+      "expected": "4xx"
+    },
+    {
+      "check": "unknown_mission_id_404",
+      "at": 1788810943.6246617,
+      "verifier": "truthful_claim",
+      "detail": "claim '404' backed by observed data",
+      "expected": "404"
+    },
+    {
+      "check": "timeout_behavior",
+      "at": 1788810943.9069777,
+      "verifier": "truthful_claim",
+      "detail": "claim 'honest envelope' backed by observed data",
+      "expected": "honest envelope"
+    },
+    {
+      "check": "readonly_diagnostic_mission",
+      "mission_id": "mission_6e5cfeb3465d",
+      "at": 1788810943.9403887
+    },
+    {
+      "check": "readonly_diagnostic_mission",
+      "at": 1788810948.9830732,
+      "verifier": "mission_verdict",
+      "detail": "mission complete, verdict PASS, 3 steps, 1 real evidence file(s)",
+      "expected": "complete PASS + evidence"
+    },
+    {
+      "check": "isolated_capture_mission",
+      "mission_id": "mission_7fcddd1af4c6",
+      "at": 1788810949.0205245
+    },
+    {
+      "check": "isolated_capture_mission",
+      "at": 1788810954.061633,
+      "verifier": "mission_verdict",
+      "detail": "mission PASS unverified: status='failed'; verdict='FAIL'; 0 executed steps; no real evidence files (0 entries)",
+      "expected": "complete PASS + screenshot evidence"
+    },
+    {
+      "check": "code_task_pipeline",
+      "task_id": "ct0009",
+      "at": 1788810954.10325
+    },
+    {
+      "check": "code_task_pipeline",
+      "at": 1788810966.1959314,
+      "verifier": "truthful_claim",
+      "detail": "claim 'PASS + commit + evidence bundle' backed by observed data",
+      "expected": "PASS + commit + evidence bundle"
+    },
+    {
+      "check": "code_task_pipeline",
+      "at": 1788810966.225466,
+      "verifier": "truthful_claim",
+      "detail": "code task PASS: commit e6de07e7ad45 evidence_files=2",
+      "evidence_bundle_ok": true
+    },
+    {
+      "check": "mixed_routing_mission",
+      "at": 1788810986.3874054,
+      "verifier": "truthful_claim",
+      "detail": "claim 'code stage + unreal stage PASS' backed by observed data",
+      "expected": "code stage + unreal stage PASS"
+    },
+    {
+      "check": "completed_without_evidence",
+      "at": 1788810986.395025,
+      "verifier": "expect_failure",
+      "outcome": "FAIL"
+    },
+    {
+      "check": "missing_screenshot",
+      "at": 1788810986.4040167,
+      "verifier": "expect_failure",
+      "outcome": "FAIL"
+    },
+    {
+      "check": "invalid_screenshot",
+      "at": 1788810986.5162911,
+      "verifier": "expect_failure",
+      "outcome": "FAIL"
+    },
+    {
+      "check": "stale_duplicate_evidence",
+      "at": 1788810986.5300581,
+      "verifier": "expect_failure",
+      "outcome": "FAIL"
+    },
+    {
+      "check": "wrong_task_id_rejected",
+      "at": 1788810986.5489292,
+      "verifier": "truthful_claim",
+      "detail": "claim '404' backed by observed data",
+      "expected": "404"
+    },
+    {
+      "check": "blocked_task_not_pass",
+      "at": 1788810986.5597572,
+      "verifier": "expect_failure",
+      "outcome": "FAIL"
+    },
+    {
+      "check": "timed_out_task_not_pass",
+      "at": 1788810986.5692346,
+      "verifier": "expect_failure",
+      "outcome": "FAIL"
+    },
+    {
+      "check": "bridge_unavailable_fails",
+      "at": 1788810986.5810657,
+      "verifier": "expect_failure",
+      "outcome": "FAIL"
+    },
+    {
+      "check": "impossible_claim_rejected",
+      "at": 1788810986.5893967,
+      "verifier": "expect_failure",
+      "outcome": "FAIL"
+    },
+    {
+      "check": "evidence_files_exist",
+      "at": 1788810986.598869,
+      "verifier": "truthful_claim",
+      "detail": "claim 'real files' backed by observed data",
+      "expected": "real files"
+    },
+    {
+      "check": "no_object_object_in_evidence",
+      "at": 1788810986.6067502,
+      "verifier": "truthful_claim",
+      "detail": "claim 'no [object Object]' backed by observed data",
+      "expected": "no [object Object]"
+    },
+    {
+      "check": "mrq_not_viewport_fallback",
+      "at": 1788810986.6156654,
+      "verifier": "truthful_claim",
+      "detail": "claim 'real MRQ artifact' backed by observed data",
+      "expected": "real MRQ artifact"
+    },
+    {
+      "check": "evidence_timestamps_relevant",
+      "at": 1788810986.6254418,
+      "verifier": "truthful_claim",
+      "detail": "claim 'recent artifacts' backed by observed data",
+      "expected": "recent artifacts"
+    },
+    {
+      "check": "proof_stills_valid",
+      "at": 1788810986.640322,
+      "verifier": "screenshot_valid",
+      "detail": "1920x1080 decodable image, 2205300 bytes",
+      "expected": "decodable 1920x1080"
+    },
+    {
+      "check": "certified_level_open",
+      "at": 1788810987.195696,
+      "verifier": "truthful_claim",
+      "detail": "claim 'AividoHQ level' backed by observed data",
+      "expected": "AividoHQ level"
+    },
+    {
+      "check": "actor_count",
+      "at": 1788810987.533566,
+      "verifier": "actor_count_ok",
+      "detail": "actor count 166",
+      "expected": 166
+    },
+    {
+      "check": "cast_8_of_8_present",
+      "at": 1788810987.861917,
+      "verifier": "list_members_present",
+      "detail": "all 8 members present",
+      "expected": [
+        "AVIDO_Human_Animation",
+        "AVIDO_Human_Audio",
+        "AVIDO_Human_Creative",
+        "AVIDO_Human_Lighting",
+        "AVIDO_Human_Master",
+        "AVIDO_Human_Technical",
+        "AVIDO_Human_VFX",
+        "AVIDO_Human_Visual"
+      ]
+    },
+    {
+      "check": "no_whiteh",
+      "at": 1788810988.2091272,
+      "verifier": "list_members_absent",
+      "detail": "no forbidden members (WhiteH)",
+      "expected": [
+        "WhiteH"
+      ]
+    },
+    {
+      "check": "no_avcam_residue",
+      "at": 1788810988.528969,
+      "verifier": "list_members_absent",
+      "detail": "no forbidden members (AVCam, UA_Test, BP_ProdProbe, RenderMap)",
+      "expected": [
+        "AVCam",
+        "UA_Test",
+        "BP_ProdProbe",
+        "RenderMap"
+      ]
+    },
+    {
+      "check": "no_transient_z_repair",
+      "at": 1788810988.8613212,
+      "verifier": "list_members_absent",
+      "detail": "no forbidden members (ZRepair, tempz, zfix)",
+      "expected": [
+        "ZRepair",
+        "tempz",
+        "zfix"
+      ]
+    },
+    {
+      "check": "cine_mrq_isolated",
+      "at": 1788810989.1963904,
+      "verifier": "truthful_claim",
+      "detail": "claim 'certified level not RenderMap' backed by observed data",
+      "expected": "certified level not RenderMap"
+    },
+    {
+      "check": "durable_orientation",
+      "at": 1788810989.5277302,
+      "verifier": "truthful_claim",
+      "detail": "claim 'upright cast' backed by observed data",
+      "expected": "upright cast"
+    },
+    {
+      "check": "durable_orientation",
+      "at": 1788810989.5360518,
+      "verifier": "truthful_claim",
+      "detail": "Master rotation.z=360.0 not in {0,180}"
+    },
+    {
+      "check": "headless_mrq_report_exists",
+      "at": 1788810989.5446246,
+      "verifier": "truthful_claim",
+      "detail": "claim 'report file' backed by observed data",
+      "expected": "report file"
+    },
+    {
+      "check": "mrq_video_exists_playable",
+      "at": 1788810989.5525663,
+      "verifier": "video_file_ok",
+      "detail": "562973 bytes, MP4 container header present",
+      "expected": "playable MP4"
+    },
+    {
+      "check": "mrq_video_resolution_fps_duration",
+      "at": 1788810989.6254463,
+      "verifier": "truthful_claim",
+      "detail": "claim '1920x1080 @ 30fps, 8s' backed by observed data",
+      "expected": "1920x1080 @ 30fps, 8s"
+    },
+    {
+      "check": "mrq_video_resolution_fps_duration",
+      "at": 1788810989.6328306,
+      "verifier": "truthful_claim",
+      "detail": "ffprobe: 1920x1080 30/1 8.0s"
+    },
+    {
+      "check": "frame_count_claim_consistent",
+      "at": 1788810989.7125733,
+      "verifier": "report_claim_consistent",
+      "detail": "claim consistent: 240 frames consistent",
+      "expected": "240 frames consistent"
+    },
+    {
+      "check": "frame_count_claim_consistent",
+      "at": 1788810989.7203653,
+      "verifier": "report_claim_consistent",
+      "detail": "240-frame claim verified independently via MP4 duration(8.0s) x fps(30); raw frames dir is untracked by repo convention"
+    },
+    {
+      "check": "proof_stills_exist",
+      "at": 1788810989.7290592,
+      "verifier": "truthful_claim",
+      "detail": "claim '3 proof stills' backed by observed data",
+      "expected": "3 proof stills"
+    },
+    {
+      "check": "production_routes_serve",
+      "at": 1788810989.9127107,
+      "verifier": "truthful_claim",
+      "detail": "claim 'HTTP 200 on all routes' backed by observed data",
+      "expected": "HTTP 200 on all routes"
+    },
+    {
+      "check": "no_js_fatal_in_pages",
+      "at": 1788810989.952575,
+      "verifier": "no_js_fatal",
+      "detail": "response contains fatal markers: <!doctype html>",
+      "expected": "no fatal markers"
+    },
+    {
+      "check": "api_state_renders",
+      "at": 1788810992.86154,
+      "verifier": "truthful_claim",
+      "detail": "claim 'API-backed state present' backed by observed data",
+      "expected": "API-backed state present"
+    },
+    {
+      "check": "no_false_pass_labels",
+      "at": 1788810992.8768456,
+      "verifier": "no_false_pass_label",
+      "detail": "no contradictory PASS label found",
+      "expected": "no contradictory PASS labels"
+    },
+    {
+      "check": "evidence_fields_readable",
+      "at": 1788810992.8972213,
+      "verifier": "truthful_claim",
+      "detail": "claim 'no [object Object]' backed by observed data",
+      "expected": "no [object Object]"
+    },
+    {
+      "check": "retry_unknown_mission_404",
+      "at": 1788810992.9144928,
+      "verifier": "truthful_claim",
+      "detail": "claim '404' backed by observed data",
+      "expected": "404"
+    },
+    {
+      "check": "cancel_unknown_mission_404",
+      "at": 1788810992.9443552,
+      "verifier": "truthful_claim",
+      "detail": "claim '404' backed by observed data",
+      "expected": "404"
+    },
+    {
+      "check": "duplicate_submission_protected",
+      "at": 1788810992.981907,
+      "verifier": "truthful_claim",
+      "detail": "claim 'repeated submission rejected or idempotent' backed by observed data",
+      "expected": "repeated submission rejected or idempotent"
+    },
+    {
+      "check": "stale_task_recovery",
+      "at": 1788810993.026924,
+      "verifier": "truthful_claim",
+      "detail": "claim 'no stale running tasks' backed by observed data",
+      "expected": "no stale running tasks"
+    },
+    {
+      "check": "watchdog_supervisor_present",
+      "at": 1788810993.0583403,
+      "verifier": "truthful_claim",
+      "detail": "claim 'supervisor alive' backed by observed data",
+      "expected": "supervisor alive"
+    },
+    {
+      "check": "secrets_not_in_committed_files",
+      "at": 1788810993.0705497,
+      "verifier": "secrets_hygiene",
+      "detail": "no secret markers found",
+      "expected": "no secret markers"
+    },
+    {
+      "check": "no_absolute_local_paths_in_product",
+      "at": 1788810993.083882,
+      "verifier": "no_absolute_local_path",
+      "detail": "no absolute local path markers",
+      "expected": "no C:/Users paths"
+    },
+    {
+      "check": "certified_files_clean",
+      "at": 1788810993.1640186,
+      "verifier": "truthful_claim",
+      "detail": "claim 'no dirty certified files' backed by observed data",
+      "expected": "no dirty certified files"
+    },
+    {
+      "check": "correct_branch_assumption",
+      "at": 1788810993.2664459,
+      "verifier": "registry_match",
+      "detail": "expected 'aivido/v2-autonomous-qa' == observed 'aivido/v2-autonomous-qa'",
+      "expected": "aivido/v2-autonomous-qa"
+    },
+    {
+      "check": "junk_build_artifacts",
+      "at": 1788810993.3478518,
+      "verifier": "truthful_claim",
+      "detail": "claim 'no junk in tracked tree' backed by observed data",
+      "expected": "no junk in tracked tree"
+    },
+    {
+      "check": "startup_doctor_sanity",
+      "at": 1788810993.6152956,
+      "verifier": "truthful_claim",
+      "detail": "claim 'doctor reachable' backed by observed data",
+      "expected": "doctor reachable"
+    },
+    {
+      "check": "release_prerequisites",
+      "at": 1788810993.6304138,
+      "verifier": "truthful_claim",
+      "detail": "claim 'install/start scripts + README' backed by observed data",
+      "expected": "install/start scripts + README"
+    }
+  ],
+  "environment_snapshot": {
+    "backend_url": "http://127.0.0.1:8765",
+    "bridge": {
+      "host": "127.0.0.1",
+      "port": 6766
+    },
+    "captured_at": 1788810941.7213385,
+    "backend_listening": true,
+    "bridge_listening": true
+  },
+  "interrupted_note": "",
+  "summary": {
+    "BLOCKED": 0,
+    "PASS": 59,
+    "SKIPPED": 0,
+    "FAIL": 3,
+    "total": 62
+  },
+  "defects_by_severity": {
+    "CRITICAL": 0,
+    "MAJOR": 3,
+    "MINOR": 0,
+    "WARNING": 0
+  },
+  "category_status": {
+    "RUNTIME_HEALTH": "PASS",
+    "API_CONTRACT": "PASS",
+    "MISSION_BLACKBOX": "FAIL",
+    "FALSE_PASS_DEFENSE": "PASS",
+    "EVIDENCE_INTEGRITY": "PASS",
+    "UNREAL_STATE_SAFETY": "FAIL",
+    "CINEMATIC_ARTIFACT": "PASS",
+    "UI_BLACKBOX": "FAIL",
+    "RECOVERY": "PASS",
+    "RELEASE_SAFETY": "PASS"
+  }
+}

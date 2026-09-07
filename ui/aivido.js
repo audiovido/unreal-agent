@@ -106,7 +106,8 @@
     "setBase","setName","setSave","setSaved","setAutoProof","setCinematic","setIdle","setSound","setVersion","railDot","railBackendTxt",
     "holoData","pvPrev","pvNext","pvFull","pvIdx","pvBadge","pvAge","pvApprove","pvChange","liEngine","liCode","liWb","liClickup",
     "ssEngine","ssBridge","ssMap","ssProof","ssExec","dlPrompt","dlDispatch","dlPlan","dlWarn","castGrid","cuStatus","cuDetail",
-    "ssList","ssDetail","ssRegPath","ssRegBtn","ssProjSel","ssConnectBtn","ssRefresh"];
+    "ssList","ssDetail","ssRegPath","ssRegBtn","ssProjSel","ssConnectBtn","ssRefresh",
+    "qaRun","qaBanner","qaVerdict","qaRunId","qaScore","qaStatus","qaPass","qaFail","qaBlocked","qaSkip","qaDefectCount","qaDefects","qaChecks","qaEvidence"];
   REFS.forEach((r) => (el[r] = $(r)));
 
   /* ---------------- helpers ---------------- */
@@ -160,8 +161,8 @@
   }
 
   /* ---------------- router ---------------- */
-  const SCREENS = { home: "scr-home", workspaces: "scr-workspaces", sessions: "scr-sessions", mission: "scr-mission", room: "scr-room", proof: "scr-proof", quests: "scr-quests", finance: "scr-finance", profile: "scr-profile", settings: "scr-settings" };
-  const TITLES = { home: "BOOTH", workspaces: "WORKSPACES", sessions: "SESSIONS", mission: "MISSION CONTROL", room: "AGENT ROOM", proof: "PROOF VAULT", quests: "QUESTS", finance: "FINANCE", profile: "CREATOR PROFILE", settings: "SETTINGS" };
+  const SCREENS = { home: "scr-home", workspaces: "scr-workspaces", sessions: "scr-sessions", mission: "scr-mission", room: "scr-room", proof: "scr-proof", quests: "scr-quests", finance: "scr-finance", profile: "scr-profile", qa: "scr-qa", settings: "scr-settings" };
+  const TITLES = { home: "BOOTH", workspaces: "WORKSPACES", sessions: "SESSIONS", mission: "MISSION CONTROL", room: "AGENT ROOM", proof: "PROOF VAULT", quests: "QUESTS", finance: "FINANCE", profile: "CREATOR PROFILE", qa: "AUTONOMOUS QA", settings: "SETTINGS" };
 
   function route() {
     const nav = (location.hash || "#/home").replace(/^#\/?/, "").split("?")[0];
@@ -645,7 +646,7 @@
 
   /* ---------------- screen renders ---------------- */
   function render(nav) {
-    ({ home: renderHome, workspaces: renderWorkspaces, sessions: renderSessions, mission: renderMission, room: renderRoomScreen, proof: renderProofScreen, quests: renderQuests, finance: renderFinance, profile: renderProfile, settings: renderSettings }[nav] || (() => {}))();
+    ({ home: renderHome, workspaces: renderWorkspaces, sessions: renderSessions, mission: renderMission, room: renderRoomScreen, proof: renderProofScreen, quests: renderQuests, finance: renderFinance, profile: renderProfile, qa: renderQA, settings: renderSettings }[nav] || (() => {}))();
   }
 
   function renderHome() {
@@ -1438,6 +1439,82 @@
     } catch (e) { toast(action + " failed", String(e && e.message || e), "bad"); }
   }
 
+  /* ---------------- autonomous QA ---------------- */
+  let qaTimer = null;
+  async function renderQA() {
+    if (el.qaVerdict) el.qaVerdict.textContent = "—";
+    if (el.qaStatus) el.qaStatus.textContent = "—";
+    if (el.qaScore) el.qaScore.textContent = "—";
+    if (el.qaRunId) el.qaRunId.textContent = "—";
+    ["qaPass", "qaFail", "qaBlocked", "qaSkip"].forEach((id) => { const e = $(id); if (e) e.textContent = "0"; });
+    try {
+      const r = await api("/api/qa/runs");
+      const runs = (r && r.runs) || [];
+      if (!runs.length) return;
+      const latest = runs[0];
+      renderQARun(latest.id, true);
+      if (latest.running) { clearTimeout(qaTimer); qaTimer = setTimeout(() => { if (route() === "qa") renderQA(); }, 4000); }
+    } catch (_) {
+      if (el.qaStatus) el.qaStatus.textContent = "offline";
+      if (el.qaEvidence) el.qaEvidence.innerHTML = "<div class=\"muted\">Backend offline — QA panel requires the engine link.</div>";
+    }
+  }
+
+  async function renderQARun(runId, silent) {
+    let data;
+    try {
+      const r = await api("/api/qa/runs/" + encodeURIComponent(runId));
+      data = r.run;
+    } catch (_) { if (el.qaStatus) el.qaStatus.textContent = "unreachable"; return; }
+    const s = data.summary || {};
+    if (el.qaVerdict) el.qaVerdict.textContent = data.verdict || "RUNNING";
+    el.qaVerdict.className = "qa-verdict " + String(data.verdict || "running").toLowerCase();
+    if (el.qaRunId) el.qaRunId.textContent = data.id;
+    if (el.qaScore) el.qaScore.textContent = data.score;
+    if (el.qaStatus) el.qaStatus.textContent = data.status;
+    if (el.qaPass) el.qaPass.textContent = s.PASS || 0;
+    if (el.qaFail) el.qaFail.textContent = s.FAIL || 0;
+    if (el.qaBlocked) el.qaBlocked.textContent = s.BLOCKED || 0;
+    if (el.qaSkip) el.qaSkip.textContent = s.SKIPPED || 0;
+    const db = data.defects_by_severity || {};
+    if (el.qaDefectCount) el.qaDefectCount.textContent =
+      `CRIT ${db.CRITICAL || 0} · MAJ ${db.MAJOR || 0} · MIN ${db.MINOR || 0} · WARN ${db.WARNING || 0}`;
+    if (el.qaDefects) {
+      el.qaDefects.innerHTML = (data.defects || []).length
+        ? data.defects.map((d) =>
+            `<div class="qa-defect qd-${String(d.severity).toLowerCase()}"><b>${esc(d.severity)}</b> ${esc(d.title)} <span class="muted mono">${esc(d.id)}</span></div>`).join("")
+        : "<div class=\"mc-empty\">No open defects recorded.</div>";
+    }
+    if (el.qaChecks) {
+      el.qaChecks.innerHTML = data.checks.length
+        ? data.checks.map((c) =>
+            `<div class="qa-check qa-c-${String(c.status).toLowerCase()}"><span class="qa-cs">${c.status}</span><span>${esc(c.name)}</span><span class="muted">${esc(c.category)}</span></div>`).join("")
+        : "<div class=\"mc-empty\">No checks yet.</div>";
+    }
+    if (el.qaEvidence) {
+      el.qaEvidence.innerHTML = [
+        "reports/qa/AIVIDO_V2_AUTONOMOUS_QA_REPORT.md",
+        "reports/qa/AIVIDO_V2_AUTONOMOUS_QA.json",
+        "reports/qa/AIVIDO_V2_QA_DEFECTS.json",
+      ].map((p) => `<div class="qa-ev mono">${esc(p)}</div>`).join("");
+    }
+    if (!silent && data.verdict) {
+      toast("QA " + data.verdict, data.verdict_why || "Run complete.", data.verdict === "RELEASE_READY" ? "good" : "info");
+    }
+  }
+
+  async function startQaRun() {
+    if (el.qaStatus && el.qaStatus.textContent === "RUNNING") return toast("QA already running", "A QA run is in progress — wait for it to finish.", "info");
+    try {
+      const r = await api("/api/qa/run", { method: "POST", body: JSON.stringify({}) });
+      if (!r.ok) throw new Error(r.error || "QA start failed");
+      toast("QA started", "Autonomous QA run " + r.run_id + " launched. Polling the matrix…", "good");
+      clearTimeout(qaTimer);
+      qaTimer = setInterval(() => { if (route() === "qa") renderQA(); }, 5000);
+      renderQARun(r.run_id, true);
+    } catch (e) { toast("QA start failed", String(e && e.message || e), "bad"); }
+  }
+
   /* ---------------- wire up ---------------- */
   function boot() {
     el.hudWorkspace.textContent = S.workspace;
@@ -1541,6 +1618,9 @@
     });
     el.pvCapture.addEventListener("click", captureProof);
     el.pvAuto.addEventListener("change", () => { S.autoProof = el.pvAuto.checked; persist(); });
+
+    // autonomous QA
+    el.qaRun.addEventListener("click", startQaRun);
     el.setSave.addEventListener("click", () => {
       S.base = el.setBase.value.trim().replace(/\/+$/, "");
       S.name = el.setName.value.trim() || "Director";
