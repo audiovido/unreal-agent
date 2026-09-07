@@ -22,18 +22,24 @@ V1 release tree (`aivido/v1-release`). Broad repo audit intentionally not done.
 ## Live-editor probe results (2026-09-07, bridge 6766)
 
 - Identity: ASSET_Showcase2, UE 5.8.2; active level `/Game/Maps/AividoHQ.AividoHQ`, 166 actors.
-- `MovieRenderQueueSubsystem` / `MoviePipeline*` classes: **absent** → MRQ blocked at probe level.
+- MRQ: plugin **enabled** for this project and the **UE 5.8 surface verified** (`MoviePipelineQueueSubsystem` /
+  `MoviePipelineInProcessExecutor` / `MoviePipelinePIEExecutor`; the 5.4-era names `MovieRenderQueueSubsystem` /
+  `MoviePipelineEditorExecutor` no longer exist). Real submission with camera-bound cuts + a temp map copy was
+  attempted; both executors **stall at the in-editor target-map load step** (silent after “About to load target map”,
+  no frames) → MRQ engine-BLOCKED, reported truthfully, no fake render.
 - `CineCameraActor`, `LevelSequenceEditorSubsystem`, `LevelSequenceEditorBlueprintLibrary`: present.
 - Native editor-viewport capture: reliable on a fresh editor and through the wake → viewport-kick →
-  settle → capture contract; intermittent empty/failed captures after heavy session use (partial
-  renders are recorded truthfully, never padded).
+  settle → capture contract (with bounded retry + a liveness probe); intermittent empty/failed captures after heavy
+  session use (partial renders are recorded truthfully, never padded).
 - Cast census: 8 `SkeletalMeshActor` (AVIDO_Human_* pods); pixel-diff proof that the cast
-  SkeletalMeshComponents rasterize **0 pixels** in this session (mesh bounds ~1.9 m below floor for
-  Business_Male actors; Creative bounds at floor level also render 0 px) → cast not filmable without
-  content repair (out of V2 scope; reverted all probes).
+  SkeletalMeshComponents rasterize **0 pixels by default** (mesh bounds ~1.9 m below floor for Business_Male
+  actors; body materials `m00X_body` etc. rasterize as fully discarded). A bounded transient in-engine repair
+  (Z-lift to floor + WhiteH material override on 23 cast slots) made a standing human verifiably render in real
+  frames (`reports/cinematic/cast/proof/cast_post_lift.png`); all probes/lifts/materials were reverted exactly
+  afterwards. Durable body-material/pivot repair is a Blender asset-level follow-up.
 
 ## Delta implemented for V2 (additive, see AIVIDO_V2_CINEMATIC_REPORT.md)
 
-cinematic director + bounded quality loop + scene framing + MRQ driver
-(truthful BLOCKED) + real-frame renderer + live adapter + asset decision
-layer + registry wiring + 37 hermetic tests.
+cinematic director + bounded quality loop + scene framing + MRQ driver (5.8 surface, truthful
+BLOCKED at the engine map-switch) + real-frame renderer + live adapter + asset decision
+layer + registry wiring + 38 hermetic tests.

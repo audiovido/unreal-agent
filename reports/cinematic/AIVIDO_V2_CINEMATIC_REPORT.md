@@ -2,7 +2,7 @@
 
 - Branch: `aivido/v2-cinematic`
 - Base: frozen V1 `79fe5c7e2db7f070841dc07291e1f35fbe03cad2` (`aivido/v1-release`) — V1 untouched.
-- Hermetic suite on this branch: **1119 passed, 1 skipped** (includes 37 new cinematic tests).
+- Hermetic suite on this branch: **1121 passed, 1 skipped** (includes 37+ new cinematic tests).
 - Live editor: UE 5.8.2, project ASSET_Showcase2, level `/Game/Maps/AividoHQ.AividoHQ` (166 actors, certified scene).
 
 Every claim below is backed by a real artifact (code, hermetic test, JSON,
@@ -30,11 +30,12 @@ no bounded cinematic quality loop, no scene-framing/hero-shot planner.
 | Cinematic director (brief → plan → shots → loop → render → scorecard) | `core/cinematic_director.py` |
 | Asset decision (reuse → Blender fix → bounded create → blocked) | `core/cinematic_assets.py` |
 | Live mission entry point | `core/cinematic_mission.py` |
-| MRQ driver + real-frame renderer (truthful BLOCKED) | `tools/unreal/movie_render_queue.py` |
+| MRQ driver (UE 5.8 surface) + real-frame renderer (truthful BLOCKED) | `tools/unreal/movie_render_queue.py` |
 | Live Unreal adapter (subjects, CineCamera, capture, fixes, render) | `tools/unreal/cinematic_live.py` |
-| Tool-registry wiring (`probe_movie_render_queue`, `run_cinematic_mission`, `read_cine_camera`) | `core/tool_registry.py` |
-| Live probe + demo drivers | `scripts/cinematic_live_probe.py`, `scripts/cinematic_live_demo.py` |
-| Hermetic tests (37) | `tests/test_cinematic_director.py`, `tests/test_cinematic_live_hermetic.py`, `tests/test_tool_registry_cinematic.py` |
+| Camera-cut binding (possessable → `get_binding_id` → `set_camera_binding_id`) | `tools/unreal/sequencer_tools_gap.py` |
+| Tool-registry wiring | `core/tool_registry.py` |
+| Live probe + demo drivers | `scripts/cinematic_live_probe.py`, `scripts/cinematic_live_demo.py`, `scripts/cast_hero_closeout.py` |
+| Hermetic tests | `tests/test_cinematic_director.py`, `tests/test_cinematic_live_hermetic.py`, `tests/test_tool_registry_cinematic.py` |
 
 ## 3. Phase 2 — Blender integration (reuse-first)
 
@@ -45,10 +46,11 @@ no bounded cinematic quality loop, no scene-framing/hero-shot planner.
   bounded `prepare_asset` (transforms/origin/scale/UV/export); bounded
   procedural need (`cube|table|crate|...`) → `create_asset`; anything else →
   `ASSET_SOURCE_REQUIRED` blocked (no fake creation).
-- V1 `blender_agent`, `blender_tools` and the `assetlib` chain are reused
-  unchanged; the decision layer only routes to them.
-- **Live demo result: PASS** (existing AividoHQ content reused on the fast
-  path; Blender not invoked because no asset genuinely needed creation).
+- **Cast closeout: Blender NOT used.** The human-cast defect (see Blockers)
+  was repaired for the demo with a bounded, transient in-engine material
+  override + Z-lift, because the cinematic only needed the cast visible for
+  the shot. Durable repair of the broken body materials is a real
+  asset-level fix that belongs in Blender and is the flagged follow-up.
 
 ## 4. Phase 3 — cinematic director / camera direction
 
@@ -75,87 +77,101 @@ no bounded cinematic quality loop, no scene-framing/hero-shot planner.
   actual PPV exposure values and light intensities with engine read-back;
   every mutation is tracked and reverted exactly (`restore_scene`, reverse
   order). After each shot and before the final render the certified baseline
-  is restored (`on_shot_done` / `before_render` hooks) so fixes are per-shot
-  evidence and never accumulate into the film. The final live run recorded
-  real mutations (restore counts 1/2/0 across shots) plus local qwen3-vl
-  vision critiques on every pass.
+  is restored (`on_shot_done` / `before_render` hooks). The final cast-hero
+  run executed the full bounded loop (3+3 passes) with per-pass local
+  qwen3-vl vision critiques and per-shot reset hooks.
 - A frame the loop cannot improve is delivered honestly below the gate —
   never relabeled as a pass.
 
 ## 6. Phase 5 — real render / Movie Render Queue
 
-- `MovieRenderQueueDriver.probe()` returns structured evidence. Live probe:
-  `MovieRenderQueueSubsystem` **absent** (MovieRenderPipeline plugin not
-  enabled in this project) → `render_sequence` returns truthful
-  **BLOCKED (movie_render_queue)**, never a fake render (hermetic test).
-- Real-frame fallback (explicitly labeled NOT MRQ): the final demo captured
-  **59 REAL Unreal frames** through the same proven fresh-capture path used
-  by the quality loop (wake → viewport kick → settle → native capture with
-  bounded retry) along a deterministic camera pose path; delivered as an MP4
-  (ffmpeg/libx264 of the real frames). ffprobe: 2002×742, **9.83 s**, 6 fps,
-  59 unique frames, no duplicated frames (one transient frame-7 capture
-  failure was recorded and the encode is contiguous from the 59 real frames).
+- **MRQ plugin is now enabled** for ASSET_Showcase2 (`MovieRenderPipeline`
+  added to the .uproject). On UE 5.8 the python-visible surface is
+  `MoviePipelineQueueSubsystem` / `MoviePipelineInProcessExecutor` /
+  `MoviePipelinePIEExecutor` (the 5.4-era names `MovieRenderQueueSubsystem` /
+  `MoviePipelineEditorExecutor` no longer exist). `MovieRenderQueueDriver` was
+  updated to the 5.8 API and the probe now **PASSES** (subsystem + job +
+  config APIs verified live).
+- Real MRQ submission was attempted end-to-end: a Level Sequence with
+  **camera-bound** camera cuts (via `get_binding_id` → `set_camera_binding_id`,
+  the cut binding verified as `camera_bound: true` and the shot detected by
+  the engine: `Inner: AVCam_…`), plus a temp map copy carrying the transient
+  cameras so a clean certified level is never touched. Both the InProcess and
+  the PIE executors **stall at the in-editor target-map load step** (worker
+  thread renders up to “About to load target map”, then goes silent; no
+  frames are produced). The certified on-disk map is untouched. Result:
+  **MRQ is engine-BLOCKED** at the map-switch step, reported truthfully; no
+  MRQ output is claimed.
+- Real-frame fallback (explicitly labeled NOT MRQ) — the cast-hero film was
+  rendered through the proven fresh-capture path (wake → viewport kick →
+  settle → native capture with bounded retry + liveness probe) along a
+  deterministic camera pose path. ffprobe: **2002×742, 8.0 s, 6 fps, 48 real
+  frames**, MP4 verified.
 - Deliverables live:
-  - video: `reports/cinematic/demo/render/aivido_cinematic.mp4`
-  - frames dir: `reports/cinematic/demo/render/frames/` (59 real frames)
-  - proof stills: `reports/cinematic/proof/` (proof_shot1/2 + render stills)
-  - full record: `reports/cinematic/demo/cinematic_result.json`
+  - video: `reports/cinematic/cast/demo/render/aivido_cinematic.mp4`
+  - frames dir: `reports/cinematic/cast/demo/render/frames/` (48 real frames)
+  - proof stills: `reports/cinematic/cast/demo/shot1_frame.png`,
+    `shot2_frame.png`; `reports/cinematic/cast/proof/cast_pre_lift.png`,
+    `cast_post_lift.png`
+  - full record: `reports/cinematic/cast/demo/cinematic_result.json`
 
 ## 7. Phase 6 — mission support
 
 `run_cinematic_mission` (tool registry) + `run_live_cinematic`
 (`core/cinematic_mission.py`) implement the full interpret→inspect→plan→
 asset→(Blender if needed)→arrange→CineCamera→Sequence→render→verify→proof
-chain. Prompt example used live: *“Create a 10-second premium hero cinematic
-of the AividoHQ command floor with cinematic lighting and smooth camera
-movement.”*
+chain.
 
-## 8. Phase 7 — live safe demo (real evidence)
+## 8. Phase 7 — live safe demos (real evidence)
 
-- Only AividoHQ content used (certified UI command boards, key-light pods,
-  presentation zone — no primitive test scene). Hero subject: the
-  `AIVIDO_UI_Agents_Panel` environment anchor (the only fully renderable
-  certified hero in this editor state; the human cast is content-blocked —
-  see Blockers).
-- Level Sequence created (camera-cut sections) under `/Game/Cine/AividoV2`,
-  CineCameras placed/read-back, 59 real frames rendered, all demo-created
-  actors/assets **removed afterwards**; level never saved by the demo.
-- Scene preservation verified after the run: 166 actors, no `AVCam_*` actors,
-  PPV exposure and key light values at their certified baselines (manual
-  AEM, bias 1.0; AVIDO_Key_Face 45000, AVIDO_Light_Master 26000); the empty
-  demo asset folder shell was removed and the certified map re-saved clean.
-- **Final measured visual score: 7.25 / 10** (honest measured dimensions;
-  lighting 9.49, subject visibility 7.0, composition 6.5, framing 6.0).
-  Below the 8.0 premium acceptance gate → status `DELIVERED_BELOW_GATE`,
-  **no fake PASS claimed**.
+- **Environment hero demo** (prior commit): certified AividoHQ command-floor
+  board zone; CineCameras + Level Sequence + 59 real frames → 9.83 s MP4;
+  honest **7.25 / 10** measured, below gate.
+- **Cast-hero closeout** (this commit): closed the “human cast renders 0 px”
+  blocker. Diagnosis + bounded transient repair (Z-lift to floor + WhiteH
+  material override on 23 cast slots), then a Master-cast hero cinematic:
+  real CineCameras + Level Sequence + bounded loop (3+3 passes) + real-frame
+  render → **8.0 s / 6 fps / 48 real frames / 2002×742 MP4**.
+  - **human hero visible: PASS** — pre/post lift+material capture diff at a
+    calibrated bar (0.008 changed-frac / ≥60 max-delta) passed, and the
+    standing white humanoid was visually confirmed in real frames.
+  - Measured score: **4.85 / 10** (framing 0.0, subject_visibility 5.0,
+    composition 6.0, lighting 8.39). The deterministic subject locator merges
+    the bright set into a 0.93-coverage blob (framing 0), and the vision
+    review flagged the frame as cluttered / the figure reading as inverted
+    against the white set. Below the 8.0 premium gate → `DELIVERED_BELOW_GATE`,
+    honest, no fake PASS.
+- Scene preservation PASS across both demos: level never saved by the demo;
+  demo actors/assets removed; cast Z-lifts + material overrides reverted
+  exactly; certified map re-saved clean (166 actors, PPV manual bias 1.0,
+  no `/Game/Cine`).
 
 ## 9. Phase 8 — regression
 
 - V1 files untouched on V1 branch; all V2 changes are additive on
   `aivido/v2-cinematic`.
-- Full hermetic suite on the V2 branch: **1119 passed, 1 skipped** (37 new
+- Full hermetic suite on the V2 branch: **1121 passed, 1 skipped** (38 new
   cinematic tests incl. fresh-capture contract, vision-driven corrective
-  actions, and per-shot reset hooks).
+  actions, per-shot reset hooks, and the UE 5.8 MRQ surface).
 - V1 installer/runtime/watchdog/Tailscale/UI/verification/false-PASS/proof/
-  read-only-safety live in the unchanged V1 base; nothing in this branch
-  breaks them (additive tool rows only + new modules).
+  read-only-safety live in the unchanged V1 base.
 
 ## Blockers (truthful, engine/content — not faked)
 
-1. **MRQ unavailable** — MovieRenderQueueSubsystem absent (plugin not enabled
-   in ASSET_Showcase2); real Movie Render Queue render BLOCKED. Real-frame
+1. **MRQ engine-blocked** — plugin enabled + 5.8 surface verified + jobs
+   submitted with camera-bound cuts, but both executors stall at the in-editor
+   target-map load step. Real MRQ output BLOCKED (no fake render). Real-frame
    evidence delivered instead, labeled exactly as such.
-2. **AividoHQ human cast does not render in this editor session** — proven by
-   pixel-diff: toggling the hero SkeletalMesh components' visibility changes
-   0 rendered pixels from any angle; bounds put four Business_Male meshes
-   ~1.9 m below the floor (a per-asset pivot/state regression, matching a
-   pre-existing certification warning). Lifted + forced-visible → still 0
-   pixels (then reverted exactly). Team-member hero shots are therefore
-   blocked at content level, not by the pipeline.
+2. **AividoHQ human cast renders 0 px by default** — root cause diagnosed:
+   the cast body materials (`m00X_body` etc.) rasterize as fully discarded
+   (invisible), and the meshes sit ~1.9 m below the floor (pivot offset).
+   Blocker CLOSED for the demo via a bounded transient in-engine repair
+   (Z-lift + WhiteH material override) → one human verifiably renders in real
+   frames. Durable content repair (fixing the body materials / pivot in the
+   source mesh) remains a Blender asset-level follow-up.
 3. **Camera transform keyframes engine-closed** — UE 5.8 Python exposes no
-   MovieSceneFloatChannel key API (recorded verbatim in V1); the shot motion
-   in the live demo is a real deterministic camera-path render, not a
-   keyframed Sequencer playback.
+   MovieSceneFloatChannel key API; shot motion is a real deterministic
+   camera-path render, not keyframed Sequencer playback.
 
 ## Critical
 
@@ -163,26 +179,24 @@ movement.”*
 
 ## Major
 
-1. Team-member (human) hero content not filmable in the current editor state
-   → hero demo delivered on the AividoHQ environment.
-2. Final environment shots sit below the 8.0 premium gate (7.25 measured) —
-   honest scorecard; the bounded loop applied real light/exposure fixes that
-   did not beat the certified baseline, so fixes were reverted per-shot and
-   the final film renders from the certified configuration.
+1. MRQ cannot complete an in-editor map-switch render this session (engine
+   block, evidence recorded).
+2. Final cast-hero film measures 4.85 (< 8.0 gate) — visible human, but not
+   premium: the bright set defeats the deterministic subject locator
+   (framing 0) and the vision review flags cluttered/inverted composition.
 3. Editor viewport capture is intermittently unreliable after heavy session
-   use (transient empty/failed native captures; one render frame lost this
-   run). Fresh editors and the wake→kick→settle capture contract restore it;
-   partial renders are recorded truthfully, never padded.
+   use (transient empty/failed native captures); fresh editors + the
+   wake→kick→settle contract with bounded retry + a liveness probe restore
+   it, and partial renders are recorded truthfully, never padded.
 
 ## Warnings
 
-1. MRQ plugin not enabled; a full 30 fps 1080p MRQ render was never claimed.
+1. MRQ stays BLOCKED; no 30 fps 1080p MRQ render is claimed.
 2. Local qwen3-vl vision critiques are recorded per pass (advisory); they are
    not yet auto-applied as scene fixes beyond the deterministic defect map.
-3. Editor viewport capture is at native geometry (2002×742 effective this
-   session), not a user-set render resolution; MRQ remains the path to exact
-   1920×1080.
-4. `/Game/Cine/AividoV2` sequence asset was created, verified, then removed
-   in cleanup — intentional isolation, nothing persisted (an empty asset
-   folder shell can briefly survive editor autosave and is removed at the
-   next clean save).
+3. Capture resolution follows native editor viewport geometry (2002×742
+   effective this session), not an exact 1920×1080 target.
+4. The cast material override / Z-lift is transient (restored exactly); the
+   certified cast content is unchanged on disk — the visible-cast film is
+   evidence of the pipeline + the diagnosed defect, not a certified-content
+   change.

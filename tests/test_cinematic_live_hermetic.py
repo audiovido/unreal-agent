@@ -81,6 +81,55 @@ def test_mrq_engine_error_passes_through_verbatim():
     assert "allocate_new_job" in payload["error"]
 
 
+def test_mrq_probe_accepts_ue58_surface(tmp_path):
+    """UE 5.4+ surface (MoviePipelineQueueSubsystem / PIE executor) is
+    detected as supported; a real MRQ submission path then renders frames."""
+    import os
+    from PIL import Image
+    out_dir = str(tmp_path / "mrq")
+    os.makedirs(out_dir)
+    for i in range(1, 5):
+        Image.new("RGB", (1920, 1080), (20 + i, 40, 60)).save(
+            os.path.join(out_dir, f"{i:04d}.png"))
+    supported = {"ok": True, "result": {
+        "supported": True,
+        "classes_present": ["MoviePipelineQueueSubsystem",
+                             "MoviePipelinePIEExecutor",
+                             "MoviePipelineExecutorJob",
+                             "MoviePipelinePrimaryConfig",
+                             "MoviePipeline"],
+        "subsystem_ok": True}}
+    submitted = {"ok": True, "result": {"ok": True, "submitted": True,
+                                         "output_dir": out_dir}}
+    b = ScriptedBridge([supported, submitted])
+    out = MovieRenderQueueDriver(b).render_sequence(
+        "/Game/Cine/S", out_dir, width=1920, height=1080, fps=30,
+        duration_s=8.0, poll_timeout_s=5.0)
+    assert out["ok"] is True
+    assert out["renderer_is_mrq"] is True
+    assert out["frame_count"] == 4
+    assert out["resolution"] == [1920, 1080]
+    assert len(b.calls) == 2        # probe + engine submission
+
+
+def test_mrq_submitted_but_no_frames_is_not_faked(tmp_path):
+    """A submitted MRQ job that never produces output frames is reported as
+    a failed/blocked render, never as success."""
+    out_dir = str(tmp_path / "empty")
+    supported = {"ok": True, "result": {"supported": True,
+                                        "classes_present": ["MoviePipelineQueueSubsystem"],
+                                        "subsystem_ok": True}}
+    submitted = {"ok": True, "result": {"ok": True, "submitted": True,
+                                         "output_dir": out_dir}}
+    b = ScriptedBridge([supported, submitted])
+    out = MovieRenderQueueDriver(b).render_sequence(
+        "/Game/Cine/S", out_dir, fps=30, duration_s=8.0,
+        poll_timeout_s=2.0)
+    assert out["ok"] is False
+    assert out["blocked"] == "movie_render_queue"
+    assert "no output frames" in out["error"]
+
+
 def test_resolution_presets():
     driver = MovieRenderQueueDriver(ScriptedBridge())
     assert driver.resolution_for("4k") == [3840, 2160]

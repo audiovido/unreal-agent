@@ -53,45 +53,61 @@ class MovieRenderQueueDriver:
         self.bridge = bridge
 
     # ------------------------------------------------------------------ probe
+    # UE 5.4+ renamed the python-visible surface: MovieRenderQueueSubsystem /
+    # MoviePipelineEditorExecutor became MoviePipelineQueueSubsystem /
+    # MoviePipelinePIEExecutor (older names are still accepted when present).
+    _SUBSYSTEM_NAMES = ("MoviePipelineQueueSubsystem", "MovieRenderQueueSubsystem")
+    _CLASS_NAMES = ("MoviePipelineQueueSubsystem", "MovieRenderQueueSubsystem",
+                    "MoviePipelinePIEExecutor", "MoviePipelineInProcessExecutor",
+                    "MoviePipelineEditorExecutor", "MoviePipelineExecutorJob",
+                    "MoviePipelinePrimaryConfig", "MoviePipeline")
+
     def probe(self) -> Dict[str, Any]:
         """Detect MRQ subsystem exposure on the live editor (read-only)."""
-        return self.bridge.execute_python(r'''
-import unreal
-import json
-found = {}
-for name in ("MovieRenderQueueSubsystem", "MoviePipelineEditorExecutor",
-             "MoviePipelineExecutorJob", "MoviePipelinePrimaryConfig",
-             "MoviePipeline"):
-    found[name] = hasattr(unreal, name)
-classes_present = [k for k, v in found.items() if v]
-subsystem_ok = False
-subsystem_error = None
-if "MovieRenderQueueSubsystem" in classes_present:
-    try:
-        sub = unreal.get_editor_subsystem(unreal.MovieRenderQueueSubsystem)
-        subsystem_ok = sub is not None
-    except Exception as exc:
-        subsystem_error = str(exc)[:200]
-plugins = unreal.SystemLibrary  # may be absent in some builds
-__bridge_result__ = {
-    "ok": bool(classes_present and subsystem_ok),
-    "supported": bool(classes_present and subsystem_ok),
-    "classes_present": classes_present,
-    "classes_checked": sorted(found.keys()),
-    "subsystem_ok": subsystem_ok,
-    "subsystem_error": subsystem_error,
-    "note": ("MovieRenderPipeline plugin must be enabled in the active "
-             "project for the subsystem to exist"),
-}
-''')
+        class_names = json.dumps(list(self._CLASS_NAMES))
+        subsystem_names = json.dumps(list(self._SUBSYSTEM_NAMES))
+        code = (
+            "import unreal\n"
+            "import json\n"
+            "found = {}\n"
+            "for name in " + class_names + ":\n"
+            "    found[name] = hasattr(unreal, name)\n"
+            "classes_present = [k for k, v in found.items() if v]\n"
+            "subsystem_ok = False\n"
+            "subsystem_error = None\n"
+            "for name in " + subsystem_names + ":\n"
+            "    if name in classes_present:\n"
+            "        try:\n"
+            "            sub = unreal.get_editor_subsystem(getattr(unreal, name))\n"
+            "            if sub is not None:\n"
+            "                subsystem_ok = True\n"
+            "                break\n"
+            "        except Exception as exc:\n"
+            "            subsystem_error = str(exc)[:200]\n"
+            "__bridge_result__ = {\n"
+            "    \"ok\": bool(classes_present and subsystem_ok),\n"
+            "    \"supported\": bool(classes_present and subsystem_ok),\n"
+            "    \"classes_present\": classes_present,\n"
+            "    \"classes_checked\": sorted(found.keys()),\n"
+            "    \"subsystem_ok\": subsystem_ok,\n"
+            "    \"subsystem_error\": subsystem_error,\n"
+            "    \"note\": (\"MovieRenderPipeline plugin must be enabled in "
+            "the active project for the subsystem to exist\"),\n"
+            "}\n"
+        )
+        return self.bridge.execute_python(code)
 
     # ----------------------------------------------------------------- render
     def render_sequence(self, seq_path: str, out_root: str = ".", *,
                         width: int = 1920, height: int = 1080,
                         fps: int = 30, duration_s: float = 8.0,
-                        output_name: str = "cinematic") -> Dict[str, Any]:
-        """Real MRQ render of a Level Sequence. Truthfully BLOCKED when the
-        subsystem/plugin is not exposed by the live editor."""
+                        output_name: str = "cinematic",
+                        poll_timeout_s: float = 480.0) -> Dict[str, Any]:
+        """Real MRQ render of a Level Sequence through the 5.x python surface
+        (MoviePipelineQueueSubsystem / PIE executor). Truthfully BLOCKED when
+        the subsystem is not exposed. The MRQ job is submitted and completion
+        is detected by polling the real output PNG frames; every engine error
+        is returned verbatim (never faked)."""
         out_root = str(out_root).replace("\\", "/")
         probe = self.probe()
         probe_payload = _payload(probe)
@@ -107,20 +123,21 @@ __bridge_result__ = {
                 "path": None,
             }
 
-        # Subsystem present: attempt a genuine MRQ job. Every engine-side
-        # failure is captured verbatim and returned as not-ok.
+        # Subsystem present: submit a genuine MRQ job. The engine-side block
+        # allocates a fresh job on the subsystem queue (existing queue jobs
+        # are cleared first), configures a 1920x1080+ PNG image sequence
+        # output, and hands the queue to a PIE executor.
         seq_json = json.dumps(str(seq_path))
         name_json = json.dumps(str(output_name))
-        return _payload(self.bridge.execute_python(f'''
+        out_json = json.dumps(out_root)
+        engine_submit = f'''
 import unreal
 import os
 seq_path = {seq_json}
 name = {name_json}
 w = int({int(width)})
 h = int({int(height)})
-fps_v = float({float(fps)})
-dur = float({float(duration_s)})
-out_dir = {json.dumps(out_root)}
+out_dir = {out_json}
 os.makedirs(out_dir, exist_ok=True)
 seq = unreal.EditorAssetLibrary.load_asset(seq_path)
 if seq is None:
@@ -128,35 +145,126 @@ if seq is None:
                           "error": "sequence not found: " + seq_path}}
 else:
     try:
-        sub = unreal.get_editor_subsystem(unreal.MovieRenderQueueSubsystem)
-        job = sub.allocate_new_job(unreal.MoviePipelineExecutorJob)
-        job.sequence = unreal.SoftObjectPath(seq_path)
-        cfg = unreal.MoviePipelinePrimaryConfig()
-        setting = unreal.MoviePipelineOutputSetting()
-        setting.output_resolution = unreal.IntPoint(w, h)
-        setting.file_name_format = "{{frame_number}}"
-        setting.output_directory = unreal.DirectoryPath(out_dir)
-        cfg.set_setting(setting)
-        job.set_configuration(cfg)
-        executor = unreal.MoviePipelinePIEExecutor() if hasattr(unreal, "MoviePipelinePIEExecutor") else None
-        if executor is None and hasattr(unreal, "MoviePipelineEditorExecutor"):
-            executor = unreal.MoviePipelineEditorExecutor()
-        if executor is None:
+        sub = None
+        if hasattr(unreal, "MoviePipelineQueueSubsystem"):
+            sub = unreal.get_editor_subsystem(unreal.MoviePipelineQueueSubsystem)
+        if sub is None and hasattr(unreal, "MovieRenderQueueSubsystem"):
+            sub = unreal.get_editor_subsystem(unreal.MovieRenderQueueSubsystem)
+        if sub is None:
             __bridge_result__ = {{"ok": False, "blocked": "movie_render_queue",
-                                  "error": "no MRQ executor class exposed"}}
+                                  "error": "no MRQ subsystem exposed"}}
         else:
-            executor.execute([job])
-            __bridge_result__ = {{"ok": True, "renderer": "movie_render_queue",
-                                  "job": str(job), "output_dir": out_dir,
-                                  "width": w, "height": h, "fps": fps_v,
-                                  "duration_s": dur,
-                                  "note": "MRQ job submitted; completion "
-                                          "checked by the caller via output "
-                                          "files"}}            except Exception as exc:
+            q = sub.get_queue()
+            try:
+                if hasattr(q, "delete_all_jobs"):
+                    q.delete_all_jobs()
+            except Exception:
+                pass
+            job = q.allocate_new_job(unreal.MoviePipelineExecutorJob)
+            job.job_name = name
+            job.sequence = unreal.SoftObjectPath(seq_path)
+            cfg = unreal.MoviePipelinePrimaryConfig()
+            osetting = cfg.find_or_add_setting_by_class(
+                unreal.MoviePipelineOutputSetting)
+            osetting.output_resolution = unreal.IntPoint(w, h)
+            osetting.file_name_format = "{{frame_number}}"
+            osetting.zero_pad_frame_numbers = 4
+            osetting.output_directory = unreal.DirectoryPath(out_dir)
+            if hasattr(unreal, "MoviePipelineImageSequenceOutput_PNG"):
+                pout = cfg.find_or_add_setting_by_class(
+                    unreal.MoviePipelineImageSequenceOutput_PNG)
+                try:
+                    pout.format = unreal.MoviePipelineImageFormat.PNG
+                except Exception:
+                    pass
+            job.set_configuration(cfg)
+            executor = None
+            if hasattr(unreal, "MoviePipelinePIEExecutor"):
+                executor = unreal.MoviePipelinePIEExecutor()
+            if executor is None and hasattr(unreal, "MoviePipelineEditorExecutor"):
+                executor = unreal.MoviePipelineEditorExecutor()
+            if executor is None:
                 __bridge_result__ = {{"ok": False, "blocked": "movie_render_queue",
-                                      "error": str(exc)[:400],
-                                      "engine_closed": True}}
-'''))
+                                      "error": "no MRQ executor class exposed"}}
+            else:
+                sub.render_queue_with_executor_instance(executor)
+                __bridge_result__ = {{"ok": True, "submitted": True,
+                                      "renderer": "movie_render_queue",
+                                      "job": str(job), "output_dir": out_dir,
+                                      "width": w, "height": h,
+                                      "note": "MRQ job submitted; completion "
+                                              "is polled from output files"}}
+    except Exception as exc:
+        __bridge_result__ = {{"ok": False, "blocked": "movie_render_queue",
+                              "error": str(exc)[:400],
+                              "engine_closed": True}}
+'''
+        submitted = _payload(self.bridge.execute_python(engine_submit))
+        if not (isinstance(submitted, dict) and submitted.get("ok")
+                and submitted.get("submitted")):
+            return {
+                "ok": False,
+                "blocked": "movie_render_queue",
+                "error": (submitted or {}).get("error") or "MRQ submit failed",
+                "probe": probe_payload,
+                "path": None,
+            }
+
+        # Completion: poll the output directory for the real rendered frames.
+        expected = max(1, int(round(float(duration_s) * float(fps))))
+        os.makedirs(out_root, exist_ok=True)
+        seen: Dict[str, int] = {}
+        paths: List[str] = []
+        actual: Optional[List[int]] = None
+        deadline = time.time() + max(10.0, poll_timeout_s)
+        while time.time() < deadline:
+            files = sorted(f for f in os.listdir(out_root)
+                           if f.lower().endswith(".png"))
+            paths = [os.path.join(out_root, f) for f in files]
+            if paths and actual is None:
+                try:
+                    from PIL import Image as _Im
+                    actual = list(_Im.open(paths[0]).size)
+                except Exception:
+                    actual = None
+            if len(paths) >= expected:
+                break
+            # stop early when the render stalls (no new frame for 30 s)
+            key = f"{len(paths)}"
+            seen[key] = seen.get(key, 0) + 1
+            if seen[key] >= 30 and paths:
+                break
+            time.sleep(1.0)
+        if not paths:
+            return {
+                "ok": False,
+                "blocked": "movie_render_queue",
+                "error": "MRQ job produced no output frames",
+                "probe": probe_payload,
+                "submitted": submitted,
+                "path": out_root,
+            }
+        actual = actual or [int(width), int(height)]
+        complete = len(paths) >= expected
+        return {
+            "ok": True,
+            "renderer": "movie_render_queue",
+            "renderer_is_mrq": True,
+            "complete": complete,
+            "requested_frames": expected,
+            "frames": paths,
+            "frame_count": len(paths),
+            "frame_dir": out_root,
+            "resolution": actual,
+            "width": actual[0], "height": actual[1],
+            "fps": int(fps),
+            "duration_s": round(len(paths) / float(fps), 2),
+            "probe": probe_payload,
+            "note": ("Movie Render Queue (PIE executor) real render at "
+                     + str(actual[0]) + "x" + str(actual[1]) + " @ "
+                     + str(int(fps)) + " fps"
+                     + (" (complete)" if complete else " (partial)")),
+        }
 
     # ---------------------------------------------- real frames (non-MRQ) --
     def render_real_frames(self, seq_path: str, out_dir: str, *,

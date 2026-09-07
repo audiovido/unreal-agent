@@ -164,13 +164,32 @@ else:
         section = unreal.MovieSceneTrackExtensions.add_section(cut_track)
         unreal.MovieSceneSectionExtensions.set_range_seconds(section, float({json.dumps(float(start_s))}), float({json.dumps(float(end_s))}))
         cut_ok = section is not None
+        bound = False
+        if cut_ok and cam is not None:
+            try:
+                # possessable binding so Movie Render Queue sees a real camera
+                # shot (cut section -> CineCamera actor via binding id).
+                # get_binding_id() returns the MovieSceneObjectBindingID that
+                # set_camera_binding_id() accepts (the raw proxy Guid does not).
+                proxy = unreal.MovieSceneSequenceExtensions.add_possessable(seq, cam)
+                if hasattr(section, "set_camera_binding_id"):
+                    bid = unreal.MovieSceneSequenceExtensions.get_binding_id(seq, proxy)
+                    section.set_camera_binding_id(bid)
+                    bound = True
+            except Exception:
+                bound = False
     except Exception as exc:
         cut_ok = False
+    try:
+        unreal.EditorAssetLibrary.save_asset(seq.get_path_name())
+    except Exception:
+        pass
     __bridge_result__ = {{
         "ok": cut_ok,
         "camera_actor": cam.get_name() if cam is not None else None,
         "cut_track": str(cut_track.get_name()) if cut_track else None,
-        "note": "camera binding-id wiring is via guid objects and intentionally left best-effort; track+section+range are the proven surface",
+        "camera_bound": bound,
+        "note": "camera cut section bound to the CineCamera actor via possessable binding id",
     }}
 ''')
 

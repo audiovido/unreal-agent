@@ -1,0 +1,1226 @@
+{
+  "brief": {
+    "raw_prompt": "Create a 8-second cinematic hero shot of the AVIDO_Human_Master character, premium lighting and smooth camera movement",
+    "subjects": [
+      "avido_human_master character",
+      "avido_human_master character"
+    ],
+    "duration_s": 8.0,
+    "fps": 30,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "shot": "hero shot",
+    "motion": [
+      "smooth camera",
+      "camera movement"
+    ],
+    "style_tokens": [
+      "premium",
+      "cinematic",
+      "hero"
+    ],
+    "lighting_requested": true,
+    "premium": true,
+    "aspect": 1.7778
+  },
+  "out_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo",
+  "blockers": [],
+  "warnings": [
+    "final measured score 4.85 below 8.0 acceptance; render + frames still delivered as real evidence, no fake pass claimed"
+  ],
+  "steps": [
+    {
+      "step": "inspect_subjects",
+      "ok": true,
+      "subject_count": 1,
+      "note": "explicit subject override"
+    },
+    {
+      "step": "plan_shots",
+      "ok": true,
+      "plan": {
+        "subject": {
+          "label": "AVIDO_Human_Master",
+          "kind": "actor",
+          "subject_kind": "actor",
+          "location": [
+            0.0,
+            700.0,
+            192.2
+          ],
+          "member_count": 1,
+          "spread_cm": 0.0
+        },
+        "target_screen_coverage": [
+          0.2,
+          0.46
+        ],
+        "note": "camera transform keyframes are engine-closed on UE 5.8 python (MovieSceneFloatChannel); each shot is a framed camera cut rendered/verified individually."
+      }
+    },
+    {
+      "step": "asset_decision",
+      "ok": true,
+      "decision": "reuse",
+      "reason": "existing AividoHQ content reused; Blender not required on the reuse fast path",
+      "blender_used": false
+    },
+    {
+      "step": "render",
+      "ok": true,
+      "result": {
+        "ok": true,
+        "renderer": "real_frames",
+        "renderer_is_mrq": false,
+        "mrq_blocked_evidence": {
+          "ok": false,
+          "blocked": "movie_render_queue",
+          "error": "MRQ job produced no output frames",
+          "probe": {
+            "ok": true,
+            "supported": true,
+            "classes_present": [
+              "MoviePipelineQueueSubsystem",
+              "MoviePipelinePIEExecutor",
+              "MoviePipelineInProcessExecutor",
+              "MoviePipelineExecutorJob",
+              "MoviePipelinePrimaryConfig",
+              "MoviePipeline"
+            ],
+            "classes_checked": [
+              "MoviePipeline",
+              "MoviePipelineEditorExecutor",
+              "MoviePipelineExecutorJob",
+              "MoviePipelineInProcessExecutor",
+              "MoviePipelinePIEExecutor",
+              "MoviePipelinePrimaryConfig",
+              "MoviePipelineQueueSubsystem",
+              "MovieRenderQueueSubsystem"
+            ],
+            "subsystem_ok": true,
+            "subsystem_error": null,
+            "note": "MovieRenderPipeline plugin must be enabled in the active project for the subsystem to exist"
+          },
+          "submitted": {
+            "ok": true,
+            "submitted": true,
+            "renderer": "movie_render_queue",
+            "job": "<Object '/Engine/Transient.UnrealEdEngine_0:MoviePipelineQueueSubsystem_0.EditorMoviePipelineQueue.MoviePipelineExecutorJob_0' (0x0000021281FEBC00) Class 'MoviePipelineExecutorJob'>",
+            "output_dir": "C:/Users/Shadow/Desktop/Unreal-Agent/cinematic-v2/reports/cinematic/cast/demo/render/mrq",
+            "width": 1920,
+            "height": 1080,
+            "note": "MRQ job submitted; completion is polled from output files"
+          },
+          "path": "C:/Users/Shadow/Desktop/Unreal-Agent/cinematic-v2/reports/cinematic/cast/demo/render/mrq"
+        },
+        "sequence": "/Game/Cine/AividoV2/Seq_1788796772",
+        "frames": [
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0001.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0002.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0003.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0004.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0005.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0006.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0007.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0008.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0009.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0010.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0011.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0012.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0013.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0014.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0015.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0016.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0017.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0018.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0019.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0020.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0021.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0022.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0023.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0024.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0025.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0026.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0027.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0028.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0029.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0030.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0031.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0032.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0033.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0034.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0035.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0036.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0037.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0038.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0039.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0040.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0041.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0042.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0043.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0044.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0045.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0046.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0047.png",
+          "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0048.png"
+        ],
+        "frame_count": 48,
+        "frame_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames",
+        "resolution": [
+          2003,
+          743
+        ],
+        "width": 2003,
+        "height": 743,
+        "fps": 30,
+        "capture_fps": 6,
+        "duration_s": 8.0,
+        "partial": false,
+        "missing_count": 0,
+        "missing": [],
+        "video": {
+          "status": "done",
+          "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\aivido_cinematic.mp4",
+          "bytes": 936646,
+          "encoder": "ffmpeg (libx264) of real Unreal frames",
+          "normalized": true
+        },
+        "note": "MRQ unavailable on this editor; frames are REAL Unreal viewport captures (wake->kick->settle->native capture) along a deterministic camera pose path (2003x743). Not an MRQ output."
+      }
+    }
+  ],
+  "shots": [
+    {
+      "shot": {
+        "index": 1,
+        "subject": "AVIDO_Human_Master",
+        "start_s": 0.0,
+        "end_s": 4.0,
+        "duration_s": 4.0,
+        "pose": {
+          "location_x": -368.618,
+          "location_y": 958.109,
+          "location_z": 137.2,
+          "pitch": 3.259,
+          "yaw": -35.0,
+          "roll": 0.0,
+          "fov": 50.0,
+          "distance": 450.0
+        },
+        "framing": "hero shot",
+        "motion": "static"
+      },
+      "camera": {
+        "ok": true,
+        "spawned": true,
+        "camera": "AVCam_Shot01",
+        "location": [
+          -368.618,
+          958.109,
+          137.2
+        ],
+        "rotation": [
+          3.2590000629425044,
+          -35.000000000000014,
+          1.9910667228069768e-16
+        ],
+        "focal_props": {
+          "current_focal_length": true
+        },
+        "note": "location/rotation verified by read-back"
+      },
+      "aim": {
+        "ok": true
+      },
+      "ok": false,
+      "loop": {
+        "ok": false,
+        "status": "REVISE_MAXED",
+        "error": null,
+        "shot": {
+          "index": 1,
+          "subject": "AVIDO_Human_Master",
+          "start_s": 0.0,
+          "end_s": 4.0,
+          "duration_s": 4.0,
+          "pose": {
+            "location_x": -368.618,
+            "location_y": 958.109,
+            "location_z": 137.2,
+            "pitch": 3.259,
+            "yaw": -35.0,
+            "roll": 0.0,
+            "fov": 50.0,
+            "distance": 450.0
+          },
+          "framing": "hero shot",
+          "motion": "static"
+        },
+        "passes": [
+          {
+            "index": 1,
+            "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot1_frame.png",
+            "scorecard": {
+              "ok": true,
+              "overall": 5.16,
+              "overall_basis": "blended_measured_vision",
+              "dimensions": {
+                "composition": {
+                  "value": 6.0,
+                  "basis": "measured"
+                },
+                "framing": {
+                  "value": 0.0,
+                  "basis": "measured"
+                },
+                "lighting": {
+                  "value": 9.98,
+                  "basis": "measured"
+                },
+                "subject_visibility": {
+                  "value": 5.0,
+                  "basis": "measured"
+                },
+                "material_readability": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "cinematic_depth": {
+                  "value": 4.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "visual_polish": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                }
+              },
+              "vision_score": 5.0,
+              "categories": {
+                "composition": 6.0,
+                "subject_framing": 0.0,
+                "lighting": 9.98,
+                "environment": 10.0,
+                "readability": 2.0,
+                "target_match": 5.0,
+                "technical_integrity": 10.0
+              },
+              "metrics": {
+                "width": 2003,
+                "height": 743,
+                "mean_luma": 150.3,
+                "std_luma": 80.8,
+                "pct_white": 0.0504,
+                "pct_black": 0.0317,
+                "subject_coverage": 0.9308,
+                "head_clipped": true,
+                "bands": [],
+                "stale": false,
+                "entropy": 7.39
+              },
+              "issues": [
+                "Character is inverted (not standing)",
+                "Poor composition with cluttered elements",
+                "Lighting is harsh and unbalanced",
+                "No clear focal point or hero shot"
+              ],
+              "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot1_frame.png"
+            },
+            "defects": [
+              "SUBJECT_TOO_LARGE"
+            ],
+            "verdict": "REVISE",
+            "action": "camera_pull_back",
+            "change": "camera_pull_back"
+          },
+          {
+            "index": 2,
+            "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot1_frame.png",
+            "scorecard": {
+              "ok": true,
+              "overall": 5.16,
+              "overall_basis": "blended_measured_vision",
+              "dimensions": {
+                "composition": {
+                  "value": 6.0,
+                  "basis": "measured"
+                },
+                "framing": {
+                  "value": 0.0,
+                  "basis": "measured"
+                },
+                "lighting": {
+                  "value": 9.98,
+                  "basis": "measured"
+                },
+                "subject_visibility": {
+                  "value": 5.0,
+                  "basis": "measured"
+                },
+                "material_readability": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "cinematic_depth": {
+                  "value": 4.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "visual_polish": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                }
+              },
+              "vision_score": 5.0,
+              "categories": {
+                "composition": 6.0,
+                "subject_framing": 0.0,
+                "lighting": 9.98,
+                "environment": 10.0,
+                "readability": 2.0,
+                "target_match": 5.0,
+                "technical_integrity": 10.0
+              },
+              "metrics": {
+                "width": 2003,
+                "height": 743,
+                "mean_luma": 150.3,
+                "std_luma": 80.8,
+                "pct_white": 0.0504,
+                "pct_black": 0.0318,
+                "subject_coverage": 0.9308,
+                "head_clipped": true,
+                "bands": [],
+                "stale": false,
+                "entropy": 7.39
+              },
+              "issues": [
+                "Character is inverted (not standing)",
+                "Poor composition with cluttered elements",
+                "No clear focal point or hero shot",
+                "Lighting is uneven and harsh"
+              ],
+              "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot1_frame.png"
+            },
+            "defects": [
+              "SUBJECT_TOO_LARGE"
+            ],
+            "verdict": "REVISE",
+            "action": "camera_framing_recompute",
+            "change": "camera_framing_recompute"
+          },
+          {
+            "index": 3,
+            "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot1_frame.png",
+            "scorecard": {
+              "ok": true,
+              "overall": 5.16,
+              "overall_basis": "blended_measured_vision",
+              "dimensions": {
+                "composition": {
+                  "value": 6.0,
+                  "basis": "measured"
+                },
+                "framing": {
+                  "value": 0.0,
+                  "basis": "measured"
+                },
+                "lighting": {
+                  "value": 9.98,
+                  "basis": "measured"
+                },
+                "subject_visibility": {
+                  "value": 5.0,
+                  "basis": "measured"
+                },
+                "material_readability": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "cinematic_depth": {
+                  "value": 4.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "visual_polish": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                }
+              },
+              "vision_score": 5.0,
+              "categories": {
+                "composition": 6.0,
+                "subject_framing": 0.0,
+                "lighting": 9.98,
+                "environment": 10.0,
+                "readability": 2.0,
+                "target_match": 5.0,
+                "technical_integrity": 10.0
+              },
+              "metrics": {
+                "width": 2003,
+                "height": 743,
+                "mean_luma": 150.3,
+                "std_luma": 80.8,
+                "pct_white": 0.0504,
+                "pct_black": 0.0317,
+                "subject_coverage": 0.9308,
+                "head_clipped": true,
+                "bands": [],
+                "stale": false,
+                "entropy": 7.39
+              },
+              "issues": [
+                "Character is inverted",
+                "Not standing upright",
+                "Scene lacks cinematic composition"
+              ],
+              "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot1_frame.png"
+            },
+            "defects": [
+              "SUBJECT_TOO_LARGE"
+            ],
+            "verdict": "REVISE",
+            "action": null
+          }
+        ],
+        "final_scorecard": {
+          "ok": true,
+          "overall": 5.16,
+          "overall_basis": "blended_measured_vision",
+          "dimensions": {
+            "composition": {
+              "value": 6.0,
+              "basis": "measured"
+            },
+            "framing": {
+              "value": 0.0,
+              "basis": "measured"
+            },
+            "lighting": {
+              "value": 9.98,
+              "basis": "measured"
+            },
+            "subject_visibility": {
+              "value": 5.0,
+              "basis": "measured"
+            },
+            "material_readability": {
+              "value": 5.0,
+              "basis": "vision",
+              "model": "local_vision",
+              "pass": false
+            },
+            "cinematic_depth": {
+              "value": 4.0,
+              "basis": "vision",
+              "model": "local_vision",
+              "pass": false
+            },
+            "visual_polish": {
+              "value": 5.0,
+              "basis": "vision",
+              "model": "local_vision",
+              "pass": false
+            }
+          },
+          "vision_score": 5.0,
+          "categories": {
+            "composition": 6.0,
+            "subject_framing": 0.0,
+            "lighting": 9.98,
+            "environment": 10.0,
+            "readability": 2.0,
+            "target_match": 5.0,
+            "technical_integrity": 10.0
+          },
+          "metrics": {
+            "width": 2003,
+            "height": 743,
+            "mean_luma": 150.3,
+            "std_luma": 80.8,
+            "pct_white": 0.0504,
+            "pct_black": 0.0317,
+            "subject_coverage": 0.9308,
+            "head_clipped": true,
+            "bands": [],
+            "stale": false,
+            "entropy": 7.39
+          },
+          "issues": [
+            "Character is inverted",
+            "Not standing upright",
+            "Scene lacks cinematic composition"
+          ],
+          "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot1_frame.png"
+        },
+        "iterations": 3
+      },
+      "reset_after_shot": {
+        "ok": true,
+        "restored_count": 0,
+        "restored": []
+      }
+    },
+    {
+      "shot": {
+        "index": 2,
+        "subject": "AVIDO_Human_Master",
+        "start_s": 4.0,
+        "end_s": 8.0,
+        "duration_s": 4.0,
+        "pose": {
+          "location_x": -389.711,
+          "location_y": 475.0,
+          "location_z": 137.2,
+          "pitch": 3.259,
+          "yaw": 30.0,
+          "roll": 0.0,
+          "fov": 50.0,
+          "distance": 450.0
+        },
+        "framing": "hero shot",
+        "motion": "static"
+      },
+      "camera": {
+        "ok": true,
+        "spawned": true,
+        "camera": "AVCam_Shot02",
+        "location": [
+          -389.711,
+          475.0,
+          137.2
+        ],
+        "rotation": [
+          3.259000062942506,
+          30.00000000000001,
+          -9.955333614034884e-17
+        ],
+        "focal_props": {
+          "current_focal_length": true
+        },
+        "note": "location/rotation verified by read-back"
+      },
+      "aim": {
+        "ok": true
+      },
+      "ok": false,
+      "loop": {
+        "ok": false,
+        "status": "REVISE_MAXED",
+        "error": null,
+        "shot": {
+          "index": 2,
+          "subject": "AVIDO_Human_Master",
+          "start_s": 4.0,
+          "end_s": 8.0,
+          "duration_s": 4.0,
+          "pose": {
+            "location_x": -389.711,
+            "location_y": 475.0,
+            "location_z": 137.2,
+            "pitch": 3.259,
+            "yaw": 30.0,
+            "roll": 0.0,
+            "fov": 50.0,
+            "distance": 450.0
+          },
+          "framing": "hero shot",
+          "motion": "static"
+        },
+        "passes": [
+          {
+            "index": 1,
+            "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot2_frame.png",
+            "scorecard": {
+              "ok": true,
+              "overall": 4.64,
+              "overall_basis": "blended_measured_vision",
+              "dimensions": {
+                "composition": {
+                  "value": 6.0,
+                  "basis": "measured"
+                },
+                "framing": {
+                  "value": 0.0,
+                  "basis": "measured"
+                },
+                "lighting": {
+                  "value": 6.8,
+                  "basis": "measured"
+                },
+                "subject_visibility": {
+                  "value": 5.0,
+                  "basis": "measured"
+                },
+                "material_readability": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "cinematic_depth": {
+                  "value": 4.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "visual_polish": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                }
+              },
+              "vision_score": 5.0,
+              "categories": {
+                "composition": 6.0,
+                "subject_framing": 0.0,
+                "lighting": 6.8,
+                "environment": 10.0,
+                "readability": 2.0,
+                "target_match": 5.0,
+                "technical_integrity": 10.0
+              },
+              "metrics": {
+                "width": 2003,
+                "height": 743,
+                "mean_luma": 127.4,
+                "std_luma": 93.9,
+                "pct_white": 0.0719,
+                "pct_black": 0.1471,
+                "subject_coverage": 0.9308,
+                "head_clipped": true,
+                "bands": [],
+                "stale": false,
+                "entropy": 7.189
+              },
+              "issues": [
+                "Character is inverted, not standing",
+                "Poor composition with cluttered elements",
+                "Lighting is harsh and unbalanced",
+                "No clear focal point or hero shot"
+              ],
+              "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot2_frame.png"
+            },
+            "defects": [
+              "SUBJECT_TOO_LARGE"
+            ],
+            "verdict": "REVISE",
+            "action": "camera_pull_back",
+            "change": "camera_pull_back"
+          },
+          {
+            "index": 2,
+            "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot2_frame.png",
+            "scorecard": {
+              "ok": true,
+              "overall": 4.64,
+              "overall_basis": "blended_measured_vision",
+              "dimensions": {
+                "composition": {
+                  "value": 6.0,
+                  "basis": "measured"
+                },
+                "framing": {
+                  "value": 0.0,
+                  "basis": "measured"
+                },
+                "lighting": {
+                  "value": 6.8,
+                  "basis": "measured"
+                },
+                "subject_visibility": {
+                  "value": 5.0,
+                  "basis": "measured"
+                },
+                "material_readability": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "cinematic_depth": {
+                  "value": 4.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "visual_polish": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                }
+              },
+              "vision_score": 5.0,
+              "categories": {
+                "composition": 6.0,
+                "subject_framing": 0.0,
+                "lighting": 6.8,
+                "environment": 10.0,
+                "readability": 2.0,
+                "target_match": 5.0,
+                "technical_integrity": 10.0
+              },
+              "metrics": {
+                "width": 2003,
+                "height": 743,
+                "mean_luma": 127.4,
+                "std_luma": 93.9,
+                "pct_white": 0.072,
+                "pct_black": 0.1471,
+                "subject_coverage": 0.9308,
+                "head_clipped": true,
+                "bands": [],
+                "stale": false,
+                "entropy": 7.189
+              },
+              "issues": [
+                "Character is inverted (not standing)",
+                "Poor composition with cluttered elements",
+                "Lighting is harsh and unbalanced",
+                "No clear focal point or hero shot"
+              ],
+              "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot2_frame.png"
+            },
+            "defects": [
+              "SUBJECT_TOO_LARGE"
+            ],
+            "verdict": "REVISE",
+            "action": "camera_framing_recompute",
+            "change": "camera_framing_recompute"
+          },
+          {
+            "index": 3,
+            "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot2_frame.png",
+            "scorecard": {
+              "ok": true,
+              "overall": 4.64,
+              "overall_basis": "blended_measured_vision",
+              "dimensions": {
+                "composition": {
+                  "value": 6.0,
+                  "basis": "measured"
+                },
+                "framing": {
+                  "value": 0.0,
+                  "basis": "measured"
+                },
+                "lighting": {
+                  "value": 6.81,
+                  "basis": "measured"
+                },
+                "subject_visibility": {
+                  "value": 5.0,
+                  "basis": "measured"
+                },
+                "material_readability": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "cinematic_depth": {
+                  "value": 4.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                },
+                "visual_polish": {
+                  "value": 5.0,
+                  "basis": "vision",
+                  "model": "local_vision",
+                  "pass": false
+                }
+              },
+              "vision_score": 5.0,
+              "categories": {
+                "composition": 6.0,
+                "subject_framing": 0.0,
+                "lighting": 6.81,
+                "environment": 10.0,
+                "readability": 2.0,
+                "target_match": 5.0,
+                "technical_integrity": 10.0
+              },
+              "metrics": {
+                "width": 2003,
+                "height": 743,
+                "mean_luma": 127.4,
+                "std_luma": 93.9,
+                "pct_white": 0.0719,
+                "pct_black": 0.147,
+                "subject_coverage": 0.9308,
+                "head_clipped": true,
+                "bands": [],
+                "stale": false,
+                "entropy": 7.189
+              },
+              "issues": [
+                "Character is inverted, not standing",
+                "Poor composition with cluttered elements",
+                "Lighting is harsh and unbalanced",
+                "No clear focal point or hero shot"
+              ],
+              "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot2_frame.png"
+            },
+            "defects": [
+              "SUBJECT_TOO_LARGE"
+            ],
+            "verdict": "REVISE",
+            "action": null
+          }
+        ],
+        "final_scorecard": {
+          "ok": true,
+          "overall": 4.64,
+          "overall_basis": "blended_measured_vision",
+          "dimensions": {
+            "composition": {
+              "value": 6.0,
+              "basis": "measured"
+            },
+            "framing": {
+              "value": 0.0,
+              "basis": "measured"
+            },
+            "lighting": {
+              "value": 6.81,
+              "basis": "measured"
+            },
+            "subject_visibility": {
+              "value": 5.0,
+              "basis": "measured"
+            },
+            "material_readability": {
+              "value": 5.0,
+              "basis": "vision",
+              "model": "local_vision",
+              "pass": false
+            },
+            "cinematic_depth": {
+              "value": 4.0,
+              "basis": "vision",
+              "model": "local_vision",
+              "pass": false
+            },
+            "visual_polish": {
+              "value": 5.0,
+              "basis": "vision",
+              "model": "local_vision",
+              "pass": false
+            }
+          },
+          "vision_score": 5.0,
+          "categories": {
+            "composition": 6.0,
+            "subject_framing": 0.0,
+            "lighting": 6.81,
+            "environment": 10.0,
+            "readability": 2.0,
+            "target_match": 5.0,
+            "technical_integrity": 10.0
+          },
+          "metrics": {
+            "width": 2003,
+            "height": 743,
+            "mean_luma": 127.4,
+            "std_luma": 93.9,
+            "pct_white": 0.0719,
+            "pct_black": 0.147,
+            "subject_coverage": 0.9308,
+            "head_clipped": true,
+            "bands": [],
+            "stale": false,
+            "entropy": 7.189
+          },
+          "issues": [
+            "Character is inverted, not standing",
+            "Poor composition with cluttered elements",
+            "Lighting is harsh and unbalanced",
+            "No clear focal point or hero shot"
+          ],
+          "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot2_frame.png"
+        },
+        "iterations": 3
+      },
+      "reset_after_shot": {
+        "ok": true,
+        "restored_count": 0,
+        "restored": []
+      }
+    }
+  ],
+  "scorecard": {
+    "dimensions": {
+      "composition": {
+        "value": 6.0,
+        "basis": "measured"
+      },
+      "framing": {
+        "value": 0.0,
+        "basis": "measured"
+      },
+      "lighting": {
+        "value": 8.39,
+        "basis": "measured"
+      },
+      "subject_visibility": {
+        "value": 5.0,
+        "basis": "measured"
+      },
+      "material_readability": {
+        "value": null,
+        "basis": "no_measured_evidence"
+      },
+      "cinematic_depth": {
+        "value": null,
+        "basis": "no_measured_evidence"
+      },
+      "visual_polish": {
+        "value": null,
+        "basis": "no_measured_evidence"
+      }
+    },
+    "overall": 4.85,
+    "basis": "measured_dimensions",
+    "frames": [
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot1_frame.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\shot2_frame.png"
+    ]
+  },
+  "video": {
+    "ok": true,
+    "renderer": "real_frames",
+    "renderer_is_mrq": false,
+    "mrq_blocked_evidence": {
+      "ok": false,
+      "blocked": "movie_render_queue",
+      "error": "MRQ job produced no output frames",
+      "probe": {
+        "ok": true,
+        "supported": true,
+        "classes_present": [
+          "MoviePipelineQueueSubsystem",
+          "MoviePipelinePIEExecutor",
+          "MoviePipelineInProcessExecutor",
+          "MoviePipelineExecutorJob",
+          "MoviePipelinePrimaryConfig",
+          "MoviePipeline"
+        ],
+        "classes_checked": [
+          "MoviePipeline",
+          "MoviePipelineEditorExecutor",
+          "MoviePipelineExecutorJob",
+          "MoviePipelineInProcessExecutor",
+          "MoviePipelinePIEExecutor",
+          "MoviePipelinePrimaryConfig",
+          "MoviePipelineQueueSubsystem",
+          "MovieRenderQueueSubsystem"
+        ],
+        "subsystem_ok": true,
+        "subsystem_error": null,
+        "note": "MovieRenderPipeline plugin must be enabled in the active project for the subsystem to exist"
+      },
+      "submitted": {
+        "ok": true,
+        "submitted": true,
+        "renderer": "movie_render_queue",
+        "job": "<Object '/Engine/Transient.UnrealEdEngine_0:MoviePipelineQueueSubsystem_0.EditorMoviePipelineQueue.MoviePipelineExecutorJob_0' (0x0000021281FEBC00) Class 'MoviePipelineExecutorJob'>",
+        "output_dir": "C:/Users/Shadow/Desktop/Unreal-Agent/cinematic-v2/reports/cinematic/cast/demo/render/mrq",
+        "width": 1920,
+        "height": 1080,
+        "note": "MRQ job submitted; completion is polled from output files"
+      },
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/cinematic-v2/reports/cinematic/cast/demo/render/mrq"
+    },
+    "sequence": "/Game/Cine/AividoV2/Seq_1788796772",
+    "frames": [
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0001.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0002.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0003.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0004.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0005.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0006.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0007.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0008.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0009.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0010.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0011.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0012.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0013.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0014.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0015.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0016.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0017.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0018.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0019.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0020.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0021.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0022.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0023.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0024.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0025.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0026.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0027.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0028.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0029.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0030.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0031.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0032.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0033.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0034.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0035.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0036.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0037.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0038.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0039.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0040.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0041.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0042.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0043.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0044.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0045.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0046.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0047.png",
+      "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames\\frame_0048.png"
+    ],
+    "frame_count": 48,
+    "frame_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\frames",
+    "resolution": [
+      2003,
+      743
+    ],
+    "width": 2003,
+    "height": 743,
+    "fps": 30,
+    "capture_fps": 6,
+    "duration_s": 8.0,
+    "partial": false,
+    "missing_count": 0,
+    "missing": [],
+    "video": {
+      "status": "done",
+      "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\demo\\render\\aivido_cinematic.mp4",
+      "bytes": 936646,
+      "encoder": "ffmpeg (libx264) of real Unreal frames",
+      "normalized": true
+    },
+    "note": "MRQ unavailable on this editor; frames are REAL Unreal viewport captures (wake->kick->settle->native capture) along a deterministic camera pose path (2003x743). Not an MRQ output."
+  },
+  "proof_frames": [
+    "shot1_frame.png",
+    "shot2_frame.png",
+    "render\\frames\\frame_0001.png"
+  ],
+  "subject": {
+    "label": "AVIDO_Human_Master",
+    "kind": "actor",
+    "subject_kind": "actor",
+    "location": [
+      0.0,
+      700.0,
+      192.2
+    ],
+    "member_count": 1,
+    "spread_cm": 0.0
+  },
+  "asset_decision": {
+    "decision": "reuse",
+    "blender_used": false,
+    "reason": "existing AividoHQ content reused; Blender not required on the reuse fast path"
+  },
+  "gate_met": false,
+  "status": "DELIVERED_BELOW_GATE",
+  "critical": [],
+  "cinematic_v1_ready": false,
+  "hero": {
+    "label": "AVIDO_Human_Master",
+    "kind": "actor",
+    "location": [
+      -0.0,
+      700.0,
+      0.0
+    ],
+    "height_cm": 192.2,
+    "class": "SkeletalMeshActor",
+    "mesh_z_range": [
+      0.0,
+      192.2
+    ]
+  },
+  "human_visible": true,
+  "visibility_proof": {
+    "step": "human_visibility_proof",
+    "ok": true,
+    "result": {
+      "ok": true,
+      "changed_frac": 0.0392,
+      "max_delta": 243,
+      "pre": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\proof\\cast_pre_lift.png",
+      "post": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast\\proof\\cast_post_lift.png",
+      "pass": true,
+      "liveness": 100.26
+    }
+  },
+  "materials_override": {
+    "slots": 23
+  },
+  "restore": {
+    "cast_restored": {
+      "ok": true,
+      "restored": 8
+    },
+    "materials_restored": {
+      "ok": true,
+      "restored": 8
+    },
+    "scene": {
+      "ok": true,
+      "restored_count": 0,
+      "restored": []
+    },
+    "cast_z_verified": {
+      "checked": 8,
+      "still_buried": 8
+    },
+    "material_override_verified": {
+      "checked_actors": 0,
+      "still_overridden": []
+    }
+  },
+  "rendered_at": "2026-09-07T09:13:41",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "video_path": "render\\aivido_cinematic.mp4",
+  "video_verification": {
+    "video_path": "render\\aivido_cinematic.mp4",
+    "ffprobe_duration_s": 8.0,
+    "width": 2002,
+    "height": 742,
+    "fps": 6.0
+  },
+  "frame_count": 48,
+  "capture_fps": 30,
+  "duration_s": 8.0
+}

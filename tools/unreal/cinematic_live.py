@@ -369,7 +369,7 @@ except Exception as exc:
         except Exception:
             return False
 
-    def _kick_viewport_render(self, shot: Dict[str, Any]) -> bool:
+    def _kick_viewport_render(self, shot: Dict[str, Any], settle: float = 2.2) -> bool:
         """Force the level viewport to present a REAL fresh frame.
 
         An editor whose window is not foreground stops re-rendering the
@@ -424,7 +424,7 @@ if w is not None:
 __bridge_result__ = {{"ok": True}}
 '''
         self.bridge.execute_python(redraw)
-        _t.sleep(2.2)
+        _t.sleep(max(1.0, float(settle)))
         return ok
 
     def capture(self, shot: Dict[str, Any], out_path: str) -> Dict[str, Any]:
@@ -441,13 +441,17 @@ __bridge_result__ = {{"ok": True}}
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         # Fresh-render contract with bounded retry: the editor viewport needs
         # an explicit kick to present a NEW frame after a PPV/light edit, and
-        # a capture can transiently race that present. Retrying keeps the
-        # quality loop honest (never a stale frame labelled as current).
+        # a capture can transiently race that present (a heavy scene re-render
+        # after actor moves can make the native readback fail). Retrying with
+        # a fresh wake + escalating settle keeps the quality loop honest
+        # (never a stale frame labelled as current, never a silent no-op).
         last_error = ""
-        # Wake the editor once per capture: a foregrounded window is required
-        # for the viewport to actually present the fresh frame.
-        self._wake_editor()
-        self.bridge.execute_python("""
+        import time as _time
+        for _attempt in range(1, 6):
+            # Wake the editor before EVERY attempt: a foregrounded window is
+            # required for the viewport to actually present the fresh frame.
+            self._wake_editor()
+            self.bridge.execute_python("""
 import unreal
 unreal.SystemLibrary.execute_console_command(None, "r.ThrottleCPUWhenNotForeground 0")
 unreal.SystemLibrary.execute_console_command(None, "t.MaxFPS 0")
@@ -458,12 +462,12 @@ except Exception:
     pass
 __bridge_result__ = {"ok": True}
 """)
-        for _attempt in range(3):
-            self._kick_viewport_render(shot)
+            self._kick_viewport_render(shot, settle=2.0 + 1.2 * _attempt)
             res = self.bridge.capture_unreal_viewport()
             payload = _payload(res)
             if not (isinstance(payload, dict) and payload.get("ok")):
                 last_error = "native viewport capture failed"
+                _time.sleep(1.0 + _attempt)
                 continue
             src = payload.get("path")
             if not src or not os.path.isfile(src):
@@ -490,7 +494,7 @@ __bridge_result__ = {"ok": True}
                     "resolution_requested": list(self._resolution),
                     "resolution": actual,
                     "bytes": os.path.getsize(out_path),
-                    "attempts": _attempt + 1}
+                    "attempts": _attempt}
         return {"ok": False, "error": last_error or "native capture failed "
                                                 "after retries",
                 "path": out_path}
@@ -702,12 +706,32 @@ else:
         blocked_mrq = (isinstance(mrq_payload, dict)
                        and not mrq_payload.get("ok"))
         if not blocked_mrq and isinstance(mrq_payload, dict) and mrq_payload.get("ok"):
+            frame_dir = mrq_payload.get("frame_dir") or os.path.join(out_dir, "mrq")
+            frame_count = int(mrq_payload.get("frame_count") or 0)
+            # the sequence's real rate drives the film; derive it from the
+            # rendered frame count over the requested duration (never guess)
+            fps_actual = max(1, int(round(frame_count / max(duration, 0.1))))
+            encode = self._encode_video_if_possible(frame_dir, fps_actual,
+                                                    out_dir)
             return {
                 "ok": True, "renderer": "movie_render_queue",
+                "renderer_is_mrq": True,
                 "sequence": seq_path, "result": mrq_payload,
+                "frames": mrq_payload.get("frames") or [],
+                "frame_count": frame_count,
+                "frame_dir": frame_dir,
                 "path": os.path.join(out_dir, "mrq"),
-                "resolution": [width, height], "fps": fps,
-                "duration_s": duration,
+                "resolution": mrq_payload.get("resolution") or [width, height],
+                "width": (mrq_payload.get("width") or width),
+                "height": (mrq_payload.get("height") or height),
+                "fps": fps_actual,
+                "capture_fps": fps_actual,
+                "duration_s": round(frame_count / float(fps_actual), 2)
+                if fps_actual else duration,
+                "video": encode,
+                "note": "REAL Movie Render Queue render (PIE executor) at " +
+                        str(mrq_payload.get("width") or width) + "x" +
+                        str(mrq_payload.get("height") or height),
             }
         # MRQ unavailable -> real-frame evidence path (viewer dolly), using
         # the SAME fresh-capture contract as the quality loop (wake -> kick
