@@ -1,0 +1,88 @@
+{
+  "mission": "AIVIDO SHORT RE-CERTIFICATION OF POLISH-90 (independent)",
+  "date": "2026-09-06",
+  "recertifier": "independent (AIVIDO HQ)",
+  "baseline": {
+    "branch": "aivido/final-product-certification",
+    "commit": "1c082f041af2237e429b9c30f1980ac447134483",
+    "score": 80
+  },
+  "polish_source": {
+    "branch": "aivido/polish-90",
+    "claimed_commit": "3b0b4d1616da6f60158eb9669b9543ddcab82131",
+    "verified_tip": "9fb11ef",
+    "claimed_score": 90
+  },
+  "recert_branch": "aivido/polish-90-recert",
+  "independent_verified_score": 90,
+  "decision": "VERIFIED_90_PLUS",
+  "live_gates": {
+    "unreal": {
+      "map_load": "PASS (/Game/Maps/AividoHQ live)",
+      "characters": "PASS 8/8 (Master, Creative, Visual, Technical, Audio, Animation, Lighting, VFX)",
+      "map_save_reopen": "PASS (save_dirty_packages=True, load_level ok, post-reopen scan stable: 173 actors)",
+      "actor_state_stable": "PASS (0 content actors with broken root; 0 static-mesh components missing material)",
+      "broken_references": "PASS (0 critical)",
+      "lighting_rebuild_warning": "RESOLVED (41/41 lights MOVABLE, 0 STATIC, 0 STATIONARY; fresh OS window capture post-reopen shows no warning banner)",
+      "lighting_visually_usable": "PASS (room lit in fresh capture and existing evidence)",
+      "props_preserved": "PASS (23/23 W3I_*)",
+      "screens_preserved": "PASS (8/8)",
+      "ui_boards_preserved": "PASS (6/6; text world_size 32/32/30 verified live)"
+    },
+    "character_motion": {
+      "driver_start": "PASS",
+      "all_8_real_transform_motion": "PASS (independent before/during/after cycle via bridge; max displacement 2.68 cm; planar 1.06-2.08 cm, vertical 0.63-3.35 cm in live sample)",
+      "bounded_subtle": "PASS (matches documented 2-4 cm bob / 1-2 cm sway design; no exaggeration)",
+      "stop_restores_exact_base": "PASS (position AND yaw error 0.0 on all 8, independent capture comparison)",
+      "no_fake_visual_motion_claim": "PASS (report documents PIE-render limitation; motion proven by transform telemetry, not fabricated frames)"
+    },
+    "performance": {
+      "method": "slate post-tick calls delta over 10 s via bridge, r.ThrottleCPUWhenNotForeground 0, editor foreground",
+      "measured_value": "~110 ticks/s foreground (1100 calls / 10 s)",
+      "backgrounded_reference": "~6.2 ticks/s while editor unfocused",
+      "vs_old_3fps_throttled": "materially higher: PASS"
+    },
+    "web_ui": {
+      "method": "Chrome headless CDP (Emulation.setDeviceMetricsOverride + getComputedStyle + getBoundingClientRect), served from live backend /app",
+      "width_360": "PASS (flex-direction column, CTA right edge 299 < 360)",
+      "width_390": "PASS (column, right edge 329 < 390; screenshot visually confirmed stacked, no clipping)",
+      "width_430": "PASS (column, right edge 369 < 430)",
+      "cta_clipping_regression": "GONE",
+      "redesign": "none performed (as instructed)"
+    },
+    "visual": {
+      "existing_polish_proof_inspected": true,
+      "usable": true,
+      "new_cinematic_set_created": false,
+      "checked": ["final_reopen_warning_check.png (no warning, lit room)", "shot4b_room_lighting.png (dynamic lighting visible)", "shot1_hq_wide.png", "shot6_inworld_ui.png"]
+    },
+    "product_path_regression": {
+      "backend_reachable": "PASS (GET /api/status 200; unreal: ok UNREAL_BRIDGE_READY, engine 5.8.2)",
+      "bridge_reachable": "PASS (127.0.0.1:6766 used for every gate this session)",
+      "planner_evidence_step_fix_present": "PASS (app/api.py EVIDENCE phase intact: mandatory-step injection ~L918-921, apply/failure handling L1617/L1689; polish diff touches only reports + ui + driver)",
+      "critical_or_major_regression": "NONE"
+    }
+  },
+  "new_finding": {
+    "severity": "warning (documentation accuracy only)",
+    "detail": "UI board text color is actually amber RGB(255,235,6), not the documented cyan (6,235,255). Root cause: unreal.Color constructor is (b,g,r,a), so Color(6,235,255,255) stored r=255. Functional goal (high-contrast readable text, not dim red) is still met; sizes 32/32/30 correct as documented. No scene change made during recert."
+  },
+  "counts": {
+    "critical_errors": 0,
+    "major_errors": 0,
+    "warnings": 4
+  },
+  "warnings_list": [
+    "Board text color is amber (255,235,6) not documented cyan (6,235,255) - unreal.Color(b,g,r,a) constructor gotcha; contrast goal still met (new finding this recert)",
+    "Characters do not render in PIE game viewport (pre-existing engine/config behavior); motion proven via telemetry, visual character proof is editor-viewport capture (carried)",
+    "Team-group capture: characters sub-pixel at wide framing (carried)",
+    "In-world UI remains static TextRender, no interactive UMG (as certified) (carried)"
+  ],
+  "score_rationale": "All five polish items (motion, lighting-warning root cause, hub screens, 390px CTA, foreground perf) were re-verified live and independently; zero regressions to the certified 80-path; remaining warnings are documentation-level/pre-existing. Freebuff's 90 is truthful, not inflated.",
+  "evidence_refs": {
+    "polish_evidence_dir": "reports/hq/POLISH_90_EVIDENCE",
+    "polish_report": "reports/hq/POLISH_90_REPORT.md",
+    "polish_scorecard": "reports/hq/POLISH_90_SCORECARD.json",
+    "recert_captures": "fresh live gates run this session (window capture + CDP web screenshots); telemetry numbers recorded above"
+  }
+}
