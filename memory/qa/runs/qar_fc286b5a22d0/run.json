@@ -1,69 +1,9 @@
 {
-  "schema": "aivido.v2.autonomous-qa.v1",
-  "run_id": "qar_fc286b5a22d0",
+  "id": "qar_fc286b5a22d0",
   "target": "Aivido V2 canonical release certification",
   "status": "COMPLETED",
   "started_at": 1788818417.0568292,
   "finished_at": 1788818471.1623921,
-  "duration_s": 54.11,
-  "score": 100.0,
-  "verdict": "RELEASE_READY",
-  "verdict_why": "RELEASE_READY: no open CRITICAL/MAJOR defects, core mission PASS, false-pass defense PASS, Unreal preservation PASS, evidence integrity PASS, regression acceptable.",
-  "reasons": [],
-  "counts": {
-    "critical_open": 0,
-    "major_open": 0,
-    "minor_open": 0,
-    "warnings": 0
-  },
-  "summary": {
-    "PASS": 63,
-    "SKIPPED": 0,
-    "FAIL": 0,
-    "BLOCKED": 0,
-    "total": 63
-  },
-  "defects_by_severity": {
-    "CRITICAL": 0,
-    "MAJOR": 0,
-    "MINOR": 0,
-    "WARNING": 0
-  },
-  "category_status": {
-    "RUNTIME_HEALTH": "PASS",
-    "API_CONTRACT": "PASS",
-    "MISSION_BLACKBOX": "PASS",
-    "FALSE_PASS_DEFENSE": "PASS",
-    "EVIDENCE_INTEGRITY": "PASS",
-    "UNREAL_STATE_SAFETY": "PASS",
-    "CINEMATIC_ARTIFACT": "PASS",
-    "UI_BLACKBOX": "PASS",
-    "RECOVERY": "PASS",
-    "RELEASE_SAFETY": "PASS"
-  },
-  "gate_results": {
-    "core black-box mission": true,
-    "false-pass defense": true,
-    "Unreal preservation": true,
-    "evidence integrity": true
-  },
-  "gate_details": {
-    "core black-box mission": [],
-    "false-pass defense": [],
-    "Unreal preservation": [],
-    "evidence integrity": []
-  },
-  "core_mission_ok": true,
-  "environment_snapshot": {
-    "backend_url": "http://127.0.0.1:8875",
-    "bridge": {
-      "host": "127.0.0.1",
-      "port": 6766
-    },
-    "captured_at": 1788818417.0568318,
-    "backend_listening": true,
-    "bridge_listening": true
-  },
   "checks": [
     {
       "name": "backend_status",
@@ -2062,6 +2002,9 @@
     }
   ],
   "defects": [],
+  "score": 100.0,
+  "verdict": "RELEASE_READY",
+  "verdict_why": "RELEASE_READY: no open CRITICAL/MAJOR defects, core mission PASS, false-pass defense PASS, Unreal preservation PASS, evidence integrity PASS, regression acceptable.",
   "evidence": [
     {
       "check": "backend_status",
@@ -2589,5 +2532,41 @@
       "detail": "claim 'install/start scripts + README' backed by observed data",
       "expected": "install/start scripts + README"
     }
-  ]
+  ],
+  "environment_snapshot": {
+    "backend_url": "http://127.0.0.1:8875",
+    "bridge": {
+      "host": "127.0.0.1",
+      "port": 6766
+    },
+    "captured_at": 1788818417.0568318,
+    "backend_listening": true,
+    "bridge_listening": true
+  },
+  "interrupted_note": "",
+  "summary": {
+    "PASS": 63,
+    "SKIPPED": 0,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "total": 63
+  },
+  "defects_by_severity": {
+    "CRITICAL": 0,
+    "MAJOR": 0,
+    "MINOR": 0,
+    "WARNING": 0
+  },
+  "category_status": {
+    "RUNTIME_HEALTH": "PASS",
+    "API_CONTRACT": "PASS",
+    "MISSION_BLACKBOX": "PASS",
+    "FALSE_PASS_DEFENSE": "PASS",
+    "EVIDENCE_INTEGRITY": "PASS",
+    "UNREAL_STATE_SAFETY": "PASS",
+    "CINEMATIC_ARTIFACT": "PASS",
+    "UI_BLACKBOX": "PASS",
+    "RECOVERY": "PASS",
+    "RELEASE_SAFETY": "PASS"
+  }
 }

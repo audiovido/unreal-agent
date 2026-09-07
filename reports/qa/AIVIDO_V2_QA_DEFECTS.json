@@ -1,6 +1,6 @@
 {
   "schema": "aivido.v2.qa-defects.v1",
-  "generated_at": 1788812696.2997978,
+  "generated_at": 1788819092.1851087,
   "defects": [
     {
       "id": "QA-5AAE5E",
@@ -847,9 +847,27 @@
       "created_at": 1788812457.858,
       "run_id": "qar_b78648c10dab",
       "verified_in_run": "qar_0839e1c3ffe7"
+    },
+    {
+      "id": "QA-CFE62A",
+      "severity": "MINOR",
+      "category": "MISSION_BLACKBOX",
+      "title": "plain_capture_phrasing_routing: screenshot request plans 0 steps",
+      "reproduction": "POST a plain 'capture a fresh viewport screenshot' read-only mission",
+      "expected": "a capture/EVIDENCE step is planned",
+      "actual": "planned 0 steps; phases=['ANSWER']",
+      "evidence": [],
+      "suspected_component": "mission-pipeline",
+      "retryable": true,
+      "blocker": false,
+      "check_name": "plain_capture_phrasing_routing",
+      "status": "VERIFIED",
+      "created_at": 1788818160.257,
+      "run_id": "qar_14b513106465",
+      "verified_in_run": "qar_fc286b5a22d0"
     }
   ],
   "counts": {
-    "VERIFIED": 47
+    "VERIFIED": 48
   }
 }
