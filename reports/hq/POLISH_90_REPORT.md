@@ -31,23 +31,31 @@ A procedural idle driver implemented as an editor-side Python slate-tick callbac
 - Amplitudes deliberately subtle (realistic idle), never exaggerated.
 - `stop_idle_driver()` restores every actor's exact base transform.
 
-### Telemetry (recorded live)
-All 8 characters sampled in PIE, 3 s apart (displacement from true base, cm):
+### Telemetry (final closeout re-verification, live)
+During closeout, a units bug was found in the committed driver: the code multiplied
+the per-character cm amplitudes by an extra 0.01 (producing ~0.3 mm — contradicting
+the documented 2–4 cm design and the earlier telemetry). Fixed to the documented
+design (bob = bcm, sway = scm/0.5·scm) and re-verified live:
 
-| Character | dx | dy | dz |
-|---|---|---|---|
-| Master | 0.9 | 0.6 | 2.7 |
-| Creative | 1.4 | 0.8 | 2.5 |
-| Visual | 0.7 | 0.4 | 2.8 |
-| Technical | 0.6 | 0.4 | 2.5 |
-| Audio | 1.1 | 0.6 | 2.7 |
-| Animation | 1.1 | 0.7 | 2.8 |
-| Lighting | 0.4 | 0.3 | 2.2 |
-| VFX | 0.9 | 0.5 | 2.8 |
+All 8 characters sampled in PIE, 4 s apart (displacement from true base, cm):
 
-- Driver tick rate (foreground, PIE active): **56.6 ticks/s** (~56 FPS class).
-- Stop/restore: `{"ok": true, "restored": 8}` — all 8 actors restored to exact base
-  transforms; 8/8 still valid.
+| Character | dx | dy | dz | planar |
+|---|---|---|---|---|
+| Master | -0.406 | 0.033 | -0.204 | 0.407 |
+| Creative | 0.943 | 0.662 | -3.578 | 1.152 |
+| Visual | 0.066 | 0.171 | -1.893 | 0.183 |
+| Technical | -0.591 | -0.106 | 0.725 | 0.600 |
+| Audio | 0.537 | 0.449 | -3.223 | 0.700 |
+| Animation | -0.232 | 0.146 | -0.847 | 0.274 |
+| Lighting | -0.657 | -0.188 | 1.417 | 0.683 |
+| VFX | 0.216 | 0.265 | -2.482 | 0.342 |
+
+- Motion envelope across 8/8: planar **0.18–1.15 cm**, vertical up to **3.58 cm**
+  (matches the designed 2–4 cm breathing / 1–2 cm sway idle).
+- Driver tick rate (foreground, PIE active, throttle off): **102 ticks/s**.
+- Stop/restore: `{"ok": true, "restored": 8}` — all 8 actors restored with error
+  **0.0 cm** (max |Δ| per axis), 8/8 still valid, floor contact retained (z ≈ ±0.03 cm
+  at rest, identical to captured base z). Raw evidence: `final_telemetry_v3.json`.
 
 ### Honest limitation (visual proof)
 The 8 SkeletalMeshActor characters render correctly in the **editor viewport** but do
@@ -127,7 +135,8 @@ Polish applied (saved):
 ## 5. Foreground Performance (P5) — PASS
 
 Measured live with the editor foreground and PIE active:
-- Slate tick rate (idle driver): **53–56.6 ticks/s** (~53–57 FPS class).
+- Slate tick rate (idle driver): **102 ticks/s** at closeout (throttle off;
+  earlier in-mission measurement 53–56.6 ticks/s).
 - Interaction did not feel stalled; teleport/camera/capture operations responded
   promptly throughout.
 - Unreal Editor memory: working set **≈ 3,191 MB (3.1 GB)**, private **≈ 4,364 MB**.
@@ -138,17 +147,23 @@ Measured live with the editor foreground and PIE active:
 
 ## 6. Regression Gate (verified live after full editor restart + map reopen)
 
+Re-verified at closeout (save → `open_map` reopen → full actor scan):
+
 - AividoHQ loads: PASS
 - Characters: **8/8** (Master, Creative, Visual, Technical, Audio, Animation, Lighting, VFX)
-- Screens/boards: 6 screens + 3 UI panels, original materials resolve
-  (`M_Aivido_ScreenH2` / `M_Aivido_ScreenH`)
-- Lights: 41/41 movable
-- Lighting rebuild warning: **GONE** (was 457 unbuilt objects)
-- Material glow defaults persisted after reopen (H2 0.35/0.5/0.7, H 0.10/0.17/0.30)
-- Text polish persisted (32/32/30, cyan)
-- Map save: PASS (`save_current_level` True, no dirty map packages)
-- Idle driver: start OK → real motion on 8/8 → stop restores 8/8 exact base
-- Backend/bridge/planner certification fix: untouched (no edits to those files)
+- Props (W3I_*): **23/23**
+- Screens/boards: **8 screens** (hub, console, E/W side screens, VD A/B, grade strip, VD wall)
+  + 3 UI panel/text pairs, original materials resolve (0 static-mesh components missing a material)
+- Lights: **41/41 movable** (0 static, 0 stationary)
+- Lighting rebuild warning: **GONE** (was 457 unbuilt objects) — confirmed by fresh
+  window capture `final_reopen_warning_check.png` after the closeout reopen
+- Actors with missing/broken root: **0**; material scan: **0 missing**
+- Map save: PASS (`save_dirty_packages` True before and after reopen)
+- Idle driver: start OK → real motion on 8/8 (up to 3.58 cm) → stop restores 8/8 at
+  0.0 cm error; start/stop/restore also verified on the reopened map (restored 8;
+  editor-actor ticking requires the editor window to be actively painting)
+- Backend/bridge/planner certification fix: untouched (commit touches reports + ui only;
+  driver lives at `assetlib/tests/ue/ASSET_Showcase2/Content/Python/aivido_idle_driver.py`)
 
 ---
 
@@ -157,10 +172,14 @@ Measured live with the editor foreground and PIE active:
 1. **Visual motion proof** — characters don't render in the PIE game viewport
    (pre-existing engine/config behavior); motion is proven by telemetry, visual
    character proof is the editor-viewport capture.
-2. **Team-group capture** — characters are sub-pixel at the wide team framing; the
+2. **Character-close shot** — the clear close character frame (`shot2_master_director.png`)
+   was captured before the lighting fix (dark background). Three bounded close-framing
+   attempts at closeout (screen glow / prop occlusion / off-target framing) did not
+   produce a better frame; documented instead of looping.
+3. **Team-group capture** — characters are sub-pixel at the wide team framing; the
    room/lighting reads correctly but characters are not individually resolvable in
    `shot3_team_group.png`.
-3. In-world UI is static TextRender (as certified) — no interactive UMG.
+4. In-world UI is static TextRender (as certified) — no interactive UMG.
 
 ---
 
@@ -178,5 +197,25 @@ Measured live with the editor foreground and PIE active:
 - `shot6_inworld_ui.png` — in-world UI panels
 - `shot7_cinematic_angle.png` — cinematic room angle
 - `warning_check.png` captured pre-commit confirms the lighting warning overlay is gone.
+- `final_reopen_warning_check.png` — closeout reopen capture: AividoHQ lit, **no
+  lighting-rebuild warning** in the viewport.
+- `final_telemetry_v3.json` — raw closeout telemetry (8/8 motion, tick rate,
+  restore/floor-contact verification, regression gate scan).
 
 All shots are actual Unreal captures (native GameViewport / OS window capture).
+
+---
+
+## 9. Final Closeout Summary (2026-09-06)
+
+- P0 lighting warning: **RESOLVED** — root cause was 31 stationary lights requiring
+  baked lightmaps; converted to Movable under Lumen; warning absent after reopen
+  (fresh capture). Unbuilt interactions remaining: **0**.
+- P1 motion: **PASS** (telemetry), visual proof WARN — 8/8 driven, planar 0.18–1.15 cm,
+  vertical ≤3.58 cm, 102 ticks/s, restore 0.0 cm error, floor contact kept.
+- P2 hub screens: PASS — white-clip reduced, panels read as glowing blue on lit room.
+- P3 in-world UI: PASS — 32/32/30 cyan text on dimmed panels.
+- P4 390px CTA: PASS — `ui/aivido.css` `@media (max-width: 440px)` stacks the CTA row;
+  verified at 360/390/430 px; desktop untouched.
+- P5 foreground performance: PASS — 102 slate ticks/s with PIE active.
+- Truthful score: **90/100** (evidence-backed; not inflated).

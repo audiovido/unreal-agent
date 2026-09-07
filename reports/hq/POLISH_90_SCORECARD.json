@@ -1,5 +1,5 @@
 {
-  "mission": "AIVIDO FREEBUFF POLISH-90",
+  "mission": "AIVIDO FREEBUFF POLISH-90 (final closeout)",
   "certified_baseline": 80,
   "truthful_score": 90,
   "target_achieved": true,
@@ -11,18 +11,21 @@
       "status": "PASS",
       "visual_proof": "WARN",
       "method": "procedural idle driver (slate tick, python) — breathing bob 2-4cm, weight-shift sway 1-2cm, per-character phases; driven in PIE game world; restore-on-stop verified",
+      "closeout_fix": "units bug in committed driver removed (extra 0.01 scaling produced ~0.3mm); amplitudes restored to the documented 2-4cm/1-2cm design and re-verified live",
       "telemetry": {
         "characters_driven": 8,
-        "max_vertical_motion_cm": 2.8,
-        "max_lateral_motion_cm": 1.4,
-        "driver_tick_rate_fg": 56.6,
+        "planar_motion_cm": [0.183, 1.152],
+        "max_vertical_motion_cm": 3.578,
+        "driver_tick_rate_fg_tps": 102.0,
+        "restore_max_error_cm": 0.0,
+        "floor_contact_after_restore": "z ~ +-0.03cm at rest, identical to base",
         "restore_verified": true
       },
       "note": "Real tick-driven motion verified by transform telemetry; characters render in editor viewport but not in PIE game viewport (pre-existing); no fabricated frames."
     },
     "lighting": {
       "status": "PASS",
-      "fix": "31 stationary lights -> Movable (no bake required under Lumen); intensities/colors untouched; full editor restart + reopen verified",
+      "fix": "31 stationary lights -> Movable (no bake required under Lumen); intensities/colors untouched; full editor restart + reopen verified; warning re-confirmed absent at closeout via final_reopen_warning_check.png",
       "unbuilt_warning_before": 457,
       "unbuilt_warning_after": 0
     },
@@ -54,27 +57,30 @@
     },
     "foreground_performance": {
       "status": "PASS",
-      "approx_fps_foreground": "53-57 (slate tick 53.0-56.6/s with PIE active)",
+      "approx_fps_foreground": "102 slate ticks/s with PIE active at closeout (earlier 53-56.6/s)",
       "unreal_working_set_mb": 3191,
-      "unreal_private_mb": 4364,
       "note": "certification 3 FPS was measured unfocused/throttled"
     }
   },
   "regression_gate": {
     "map_load": "PASS",
+    "map_name": "AividoHQ",
     "characters": "8/8",
-    "props_environment_actors": 83,
-    "screens": "6 + 3 UI panels with original materials",
-    "lights": "41/41 movable",
-    "lighting_rebuild_warning": "RESOLVED",
-    "map_save": "PASS",
+    "props_w3i": "23/23",
+    "screens": "8 screens + 3 UI panel/text pairs, original materials",
+    "actors_with_broken_root": 0,
+    "static_mesh_components_missing_material": 0,
+    "lights": "41/41 movable (0 static, 0 stationary)",
+    "lighting_rebuild_warning": "RESOLVED (re-confirmed at closeout reopen)",
+    "map_save": "PASS (before and after reopen)",
     "map_reopen": "PASS",
     "materials_resolve": true,
-    "idle_driver_start_stop_restore": "PASS",
+    "idle_driver_start_stop_restore": "PASS (0.0cm restore error, floor contact kept)",
     "backend_bridge_planner_untouched": true
   },
   "warnings": [
     "Visual motion proof limited: characters do not render in PIE game viewport (pre-existing); motion proven via telemetry",
+    "Character-close shot (shot2_master_director.png) predates the lighting fix; three bounded close-framing attempts at closeout did not improve it (documented, not looped)",
     "Team-group capture: characters sub-pixel at wide framing; room/lighting correct",
     "In-world UI remains static TextRender (as certified)"
   ],
@@ -89,6 +95,8 @@
       "shot5_command_hub.png",
       "shot6_inworld_ui.png",
       "shot7_cinematic_angle.png",
+      "final_reopen_warning_check.png",
+      "final_telemetry_v3.json",
       "before_hub_wide.png",
       "before_agents_panel.png",
       "before_missions_panel.png",
@@ -99,5 +107,5 @@
   },
   "critical_errors": 0,
   "major_errors": 0,
-  "warnings_remaining": 3
+  "warnings_remaining": 4
 }

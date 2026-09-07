@@ -1,0 +1,249 @@
+{
+  "driver_start": {
+    "ok": true,
+    "data": {
+      "ok": true,
+      "already": false
+    }
+  },
+  "motion_telemetry": {
+    "ok": true,
+    "data": {
+      "n": 8,
+      "tick_rate_tps": 102.0,
+      "calls_s1": 426,
+      "calls_s2": 834,
+      "min_planar_cm": 0.183,
+      "max_planar_cm": 1.152,
+      "max_vert_cm": 3.578,
+      "motion": [
+        {
+          "label": "AVIDO_Human_Master",
+          "d_cm": [
+            -0.406,
+            0.033,
+            -0.204
+          ],
+          "planar_cm": 0.407,
+          "vert_cm": -0.204
+        },
+        {
+          "label": "AVIDO_Human_Creative",
+          "d_cm": [
+            0.943,
+            0.662,
+            -3.578
+          ],
+          "planar_cm": 1.152,
+          "vert_cm": -3.578
+        },
+        {
+          "label": "AVIDO_Human_Visual",
+          "d_cm": [
+            0.066,
+            0.171,
+            -1.893
+          ],
+          "planar_cm": 0.183,
+          "vert_cm": -1.893
+        },
+        {
+          "label": "AVIDO_Human_Technical",
+          "d_cm": [
+            -0.591,
+            -0.106,
+            0.725
+          ],
+          "planar_cm": 0.6,
+          "vert_cm": 0.725
+        },
+        {
+          "label": "AVIDO_Human_Audio",
+          "d_cm": [
+            0.537,
+            0.449,
+            -3.223
+          ],
+          "planar_cm": 0.7,
+          "vert_cm": -3.223
+        },
+        {
+          "label": "AVIDO_Human_Animation",
+          "d_cm": [
+            -0.232,
+            0.146,
+            -0.847
+          ],
+          "planar_cm": 0.274,
+          "vert_cm": -0.847
+        },
+        {
+          "label": "AVIDO_Human_Lighting",
+          "d_cm": [
+            -0.657,
+            -0.188,
+            1.417
+          ],
+          "planar_cm": 0.683,
+          "vert_cm": 1.417
+        },
+        {
+          "label": "AVIDO_Human_VFX",
+          "d_cm": [
+            0.216,
+            0.265,
+            -2.482
+          ],
+          "planar_cm": 0.342,
+          "vert_cm": -2.482
+        }
+      ]
+    }
+  },
+  "motion_capture": {
+    "ok": true,
+    "data": {
+      "file": "final_motion_live.png",
+      "bytes": 20131
+    }
+  },
+  "driver_stop_restore": {
+    "ok": true,
+    "data": {
+      "ok": true,
+      "calls": 1378,
+      "restored": 8
+    }
+  },
+  "restore_verify": {
+    "ok": true,
+    "data": {
+      "n": 8,
+      "rows": [
+        {
+          "label": "AVIDO_Human_Master",
+          "valid": true,
+          "restore_err_cm": 0.0,
+          "loc_z": 0.01,
+          "base_z": 0.01
+        },
+        {
+          "label": "AVIDO_Human_Creative",
+          "valid": true,
+          "restore_err_cm": 0.0,
+          "loc_z": -0.01,
+          "base_z": -0.01
+        },
+        {
+          "label": "AVIDO_Human_Visual",
+          "valid": true,
+          "restore_err_cm": 0.0,
+          "loc_z": -0.02,
+          "base_z": -0.02
+        },
+        {
+          "label": "AVIDO_Human_Technical",
+          "valid": true,
+          "restore_err_cm": 0.0,
+          "loc_z": -0.02,
+          "base_z": -0.02
+        },
+        {
+          "label": "AVIDO_Human_Audio",
+          "valid": true,
+          "restore_err_cm": 0.0,
+          "loc_z": 0.03,
+          "base_z": 0.03
+        },
+        {
+          "label": "AVIDO_Human_Animation",
+          "valid": true,
+          "restore_err_cm": 0.0,
+          "loc_z": 0.03,
+          "base_z": 0.03
+        },
+        {
+          "label": "AVIDO_Human_Lighting",
+          "valid": true,
+          "restore_err_cm": 0.0,
+          "loc_z": 0.02,
+          "base_z": 0.02
+        },
+        {
+          "label": "AVIDO_Human_VFX",
+          "valid": true,
+          "restore_err_cm": 0.0,
+          "loc_z": -0.03,
+          "base_z": -0.03
+        }
+      ]
+    }
+  },
+  "save": {
+    "ok": true,
+    "data": {
+      "saved": true
+    }
+  },
+  "regression_gate": {
+    "ok": true,
+    "data": {
+      "map": "AividoHQ",
+      "total": 173,
+      "chars_n": 8,
+      "chars": [
+        "AVIDO_Human_Animation",
+        "AVIDO_Human_Audio",
+        "AVIDO_Human_Creative",
+        "AVIDO_Human_Lighting",
+        "AVIDO_Human_Master",
+        "AVIDO_Human_Technical",
+        "AVIDO_Human_VFX",
+        "AVIDO_Human_Visual"
+      ],
+      "props_n": 23,
+      "screens_n": 8,
+      "screens": [
+        "AVIDO_Command_SideScreen_E",
+        "AVIDO_Command_SideScreen_W",
+        "AVIDO_Console_Screen",
+        "AVIDO_Hub_Screen",
+        "AVIDO_VD_GradeStrip",
+        "AVIDO_VD_Screen_A",
+        "AVIDO_VD_Screen_B",
+        "AVIDO_VD_Wall"
+      ],
+      "ui_boards": [
+        "AIVIDO_UI_Agents_Panel",
+        "AIVIDO_UI_Agents_Text",
+        "AIVIDO_UI_Missions_Panel",
+        "AIVIDO_UI_Missions_Text",
+        "AIVIDO_UI_Status_Panel",
+        "AIVIDO_UI_Status_Text"
+      ],
+      "lights": {
+        "MOVABLE": 41,
+        "STATIC": 0,
+        "STATIONARY": 0
+      },
+      "bad_root_n": 0,
+      "bad_root": [],
+      "staticmeshcomp_no_mat_n": 0,
+      "staticmeshcomp_no_mat": []
+    }
+  },
+  "driver_reopen_start_stop": {
+    "ok": false,
+    "data": {
+      "started": true,
+      "editor_chars_moving": 0,
+      "restored": 8
+    }
+  },
+  "final_save": {
+    "ok": true,
+    "data": {
+      "saved": true
+    }
+  }
+}
