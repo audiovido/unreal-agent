@@ -295,6 +295,8 @@ def build_registry(
         from tools.unreal.import_tools import ImportTools
         from tools.unreal.sequencer_tools_gap import SequencerToolsGap
         from tools.unreal.scene_verification import SceneVerification
+        from tools.unreal.movie_render_queue import MovieRenderQueueDriver
+        from tools.unreal.cinematic_live import CinematicLiveAdapter
 
         scene_verification = SceneVerification(bridge)
 
@@ -304,6 +306,23 @@ def build_registry(
         runtime_tools = RuntimeTools(bridge)
         import_tools = ImportTools(bridge)
         sequencer_tools = SequencerToolsGap(bridge)
+        mrq_driver = MovieRenderQueueDriver(bridge)
+        cinematic_live = CinematicLiveAdapter(bridge)
+
+        def _mrq_probe():
+            return mrq_driver.probe()
+
+        def _run_cinematic_mission(prompt=None, out_dir=None,
+                                   resolution="1920x1080",
+                                   max_visual_passes=3):
+            from core.cinematic_mission import run_live_cinematic
+            return run_live_cinematic(
+                str(prompt or ""), bridge=bridge, out_dir=out_dir,
+                resolution=resolution,
+                max_visual_passes=int(max_visual_passes))
+
+        def _read_cine_camera(actor_name=None):
+            return bridge.get_actor(str(actor_name or "AVCam_Shot01"))
 
 
         registry.update({
@@ -1114,6 +1133,50 @@ def build_registry(
                 "expected_map": "Optional expected map, such as /Game/Maps/AvaLive_Main",
             },
             func=runtime_tools.verify_reopen_state,
+        ),
+
+        # ------------------------------------------------ cinematic (V2)
+        "probe_movie_render_queue": ToolSpec(
+            name="probe_movie_render_queue",
+            description=(
+                "Detect whether the live editor exposes the Movie Render "
+                "Queue subsystem (MovieRenderPipeline plugin must be "
+                "enabled in the active project). Read-only; returns "
+                "structured evidence, never an assumption."
+            ),
+            args={},
+            func=_mrq_probe,
+        ),
+
+        "read_cine_camera": ToolSpec(
+            name="read_cine_camera",
+            description=(
+                "Read back transform + class of a CineCamera actor by label."
+            ),
+            args={"actor_name": "Camera actor label or internal name"},
+            func=_read_cine_camera,
+        ),
+
+        "run_cinematic_mission": ToolSpec(
+            name="run_cinematic_mission",
+            description=(
+                "Full bounded cinematic mission: parse the request, "
+                "inspect scene subjects, plan framed shots, run a bounded "
+                "(<=3) capture->score->diagnose->improve loop, create real "
+                "Level Sequence(s) + CineCamera(s), render real proof "
+                "frames, and return video path + proof + scorecard. Never "
+                "fakes completion; MRQ unavailability is reported as "
+                "BLOCKED."
+            ),
+            args={
+                "prompt": "Natural language cinematic request",
+                "out_dir": "Optional output directory",
+                "resolution": "Optional resolution: 1920x1080 or 4k",
+                "max_visual_passes": "Optional bounded visual passes "
+                                      "(default 3)",
+            },
+            func=_run_cinematic_mission,
+            destructive=True,
         ),
         })
 

@@ -1,0 +1,97 @@
+{
+  "name": "AIVIDO_V2_CINEMATIC_SCORECARD",
+  "branch": "aivido/v2-cinematic",
+  "base_sha": "79fe5c7e2db7f070841dc07291e1f35fbe03cad2",
+  "engine": "UE 5.8.2-56702186",
+  "project": "ASSET_Showcase2",
+  "level": "/Game/Maps/AividoHQ.AividoHQ",
+  "date": "2026-09-07",
+  "hermetic_suite": {
+    "passed": 1114,
+    "skipped": 1,
+    "new_cinematic_tests": 32
+  },
+  "phases": {
+    "blender_integration": {
+      "status": "PASS",
+      "detail": "reuse-first decision layer (core/cinematic_assets.py) routed through existing blender_agent/tools; ready assets stay on the fast path; bounded fix/create only when genuinely needed; hermetic tests for reuse/fix/create/blocked"
+    },
+    "asset_reuse_behavior": {
+      "status": "PASS",
+      "detail": "existing AividoHQ content reused live on the fast path; Blender never invoked because no asset needed creation"
+    },
+    "cine_camera": {
+      "status": "PASS",
+      "detail": "CineCameraActor placement at solved poses with verified transform read-back, live and hermetic"
+    },
+    "sequencer": {
+      "status": "PASS",
+      "detail": "real Level Sequence with camera-cut sections created via existing SequencerToolsGap; structure + save verified; demo asset removed in cleanup"
+    },
+    "movie_render_queue": {
+      "status": "BLOCKED",
+      "detail": "MovieRenderQueueSubsystem not exposed (MovieRenderPipeline plugin not enabled in this project); truthful BLOCKED result, no fake render"
+    },
+    "real_video": {
+      "status": "PASS",
+      "detail": "54 real Unreal frames (native viewport capture) encoded to MP4; not an MRQ output and labeled exactly as such",
+      "resolution": "1922x676",
+      "fps": 6,
+      "duration_s": 9.0,
+      "video_path": "reports/cinematic/demo/render/aivido_cinematic.mp4",
+      "frame_dir": "reports/cinematic/demo/render/frames",
+      "proof_paths": [
+        "reports/cinematic/proof/proof_shot1.png",
+        "reports/cinematic/proof/proof_shot2.png",
+        "reports/cinematic/proof/motion_frame_0001.png",
+        "reports/cinematic/proof/motion_frame_0027.png",
+        "reports/cinematic/proof/motion_frame_0054.png"
+      ]
+    },
+    "animation": {
+      "status": "PASS_WITH_LIMIT",
+      "detail": "existing animation tooling retained; live character motion not filmable because cast meshes do not render in this editor state; Sequencer transform keyframes engine-closed"
+    },
+    "lighting": {
+      "status": "PASS",
+      "detail": "cinematic lighting scored 10.0 measured on the live demo shots; exposure/lighting fix actions implemented engine-guarded (not needed live)"
+    },
+    "visual_iterations": {
+      "status": "PASS",
+      "detail": "bounded CinematicShotLoop (<=3) hermetic-tested; live used 1 measured capture per shot (no mapped deterministic defect on environment shots)"
+    },
+    "visual_score": {
+      "measured_overall": 7.38,
+      "gate": "below 8.0 premium acceptance; no fake PASS",
+      "dimensions": {
+        "composition": 6.5,
+        "framing": 6.0,
+        "lighting": 10.0,
+        "subject_visibility": 7.0,
+        "material_readability": null,
+        "cinematic_depth": null,
+        "visual_polish": null
+      },
+      "basis": "measured dimensions; vision-only dims reported only with evidence"
+    },
+    "scene_preservation": {
+      "status": "PASS",
+      "detail": "level never saved; demo actors/assets removed; active map and dirty state unchanged"
+    }
+  },
+  "issues": {
+    "critical": [],
+    "major": [
+      "AividoHQ human cast meshes do not render in the current editor session (0-pixel diff proof); team-member hero shots blocked at content level",
+      "live environment shots measured 7.38 (< 8.0 premium gate) - delivered as real evidence with honest scorecard"
+    ],
+    "warnings": [
+      "MovieRenderPipeline plugin not enabled - full 30fps/1080p MRQ render not attempted",
+      "CinematicShotLoop does not yet auto-apply vision-model critiques as scene fixes",
+      "capture resolution follows native editor viewport geometry (1922x676 effective)",
+      "keyframed camera motion is engine-closed in UE 5.8 python; motion rendered via deterministic camera path"
+    ]
+  },
+  "cinematic_v1_ready": false,
+  "summary": "Cinematic + Blender creation pipeline added to Aivido on an isolated branch from frozen V1: bounded director/quality-loop/render orchestration with hermetic tests (32 new; 1114 total green). Live demo produced a real 9s MP4 of 54 real Unreal frames of the AividoHQ command floor with real CineCameras + Level Sequence + honest 7.38 visual scorecard. MRQ and cast-member hero shots are truthfully BLOCKED by engine/content state, not faked."
+}
