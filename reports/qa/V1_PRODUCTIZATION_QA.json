@@ -1,0 +1,132 @@
+{
+  "report": "V1_PRODUCTIZATION_QA",
+  "lane": "TEST/QA only",
+  "branch": "aivido/v1-productization-qa",
+  "base_branch": "aivido/rc1.1-clean-install-fixes",
+  "base_sha": "736042ddafb45f34dfed88607e750be73e2877f2",
+  "date": "2026-09-07",
+  "environment": {
+    "os": "win32",
+    "python": "3.13.15",
+    "pytest": "9.1.1",
+    "venv": "repo .venv"
+  },
+  "safety": {
+    "unreal_touched": false,
+    "live_ports_used": [],
+    "hermetic": true,
+    "note": "launcher lifecycle smoke uses app.product_app on an ephemeral port only; never 6766/8765/8844"
+  },
+  "runs": [
+    {
+      "suite": "tests/test_v1_productization_contract.py",
+      "passed": 25,
+      "failed": 1,
+      "skipped": 1,
+      "seconds": 37.1
+    },
+    {
+      "suite": "pytest tests/ (largest safe regression suite, single run)",
+      "passed": 1076,
+      "failed": 1,
+      "skipped": 2,
+      "seconds": 158.7
+    }
+  ],
+  "contracts": [
+    {"id": "V1C-01", "name": "clean clone dependency closure", "verdict": "PASS"},
+    {"id": "V1C-02", "name": "fresh venv install from requirements.txt", "verdict": "NOT_RUN_OPT_IN", "command": "AIVIDO_QA_FRESH_VENV=1 pytest tests/test_v1_productization_contract.py::test_v1c02_fresh_venv_install"},
+    {"id": "V1C-03", "name": "all required runtime imports", "verdict": "PASS"},
+    {"id": "V1C-04", "name": "installer idempotency", "verdict": "PASS"},
+    {"id": "V1C-05", "name": "second install does not corrupt/reinstall unnecessarily", "verdict": "PASS"},
+    {"id": "V1C-06", "name": "duplicate backend start protection", "verdict": "PASS"},
+    {"id": "V1C-07", "name": "start -> health PASS", "verdict": "PASS"},
+    {"id": "V1C-08", "name": "launcher exits -> backend remains alive", "verdict": "PASS"},
+    {"id": "V1C-09", "name": "stop -> backend actually stops", "verdict": "PASS"},
+    {"id": "V1C-10", "name": "restart -> backend returns healthy", "verdict": "PASS"},
+    {"id": "V1C-11", "name": "stale PID recovery", "verdict": "PASS"},
+    {"id": "V1C-12", "name": "occupied-port truthful failure", "verdict": "PASS"},
+    {"id": "V1C-13", "name": "UI /app HTTP 200", "verdict": "PASS"},
+    {"id": "V1C-14", "name": "backend /api/status PASS", "verdict": "PASS"},
+    {"id": "V1C-15", "name": "Unreal-session API schema", "verdict": "PASS"},
+    {"id": "V1C-16", "name": "Tailscale unavailable -> local mode still PASS", "verdict": "PASS"},
+    {"id": "V1C-17", "name": "remote setup cannot expose silently/publicly", "verdict": "PASS"},
+    {"id": "V1C-18", "name": "secrets absent from package", "verdict": "PASS"},
+    {"id": "V1C-19", "name": "temp/cache/worktree junk absent from dist", "verdict": "FAIL_REAL_PRODUCT_DEFECT"},
+    {"id": "V1C-20", "name": "installer failure produces useful logs", "verdict": "PASS"},
+    {"id": "V1C-21", "name": "no fake PASS when backend/process dies", "verdict": "PASS"},
+    {"id": "V1C-22", "name": "package Quickstart contract <= 3 user actions", "verdict": "PASS"},
+    {"id": "V1C-23", "name": "RC1.1 truthfulness regressions preserved", "verdict": "PASS"},
+    {"id": "V1C-24", "name": "capture_unreal_viewport regression preserved", "verdict": "PASS"},
+    {"id": "V1C-25", "name": "REQUESTED_TOOL_MISSING preserved", "verdict": "PASS"}
+  ],
+  "defects": [
+    {
+      "id": "D1",
+      "severity": "MAJOR",
+      "release_blocker_candidate": true,
+      "classification": "REAL_PRODUCT_DEFECT",
+      "contract": "V1C-19",
+      "test": "tests/test_v1_productization_contract.py::test_v1c19_no_junk_in_dist",
+      "title": "Tracked worktree junk ships inside the product package",
+      "evidence": [
+        "ui/backup-20260820-081408/app.js",
+        "ui/backup-20260820-081408/index.html",
+        "ui/backup-20260820-081408/styles.css",
+        "ui/ui.zip",
+        "ui/index.html.broken-encoding"
+      ],
+      "root_cause": "scripts/build_product_package.py copies ui/ verbatim; ignore list only excludes *.agentboard_backup. The junk items are tracked in git on the RC1.1 base.",
+      "fix_direction": "Remove the tracked junk items and add backup-*, *.zip, *.broken-* to the packager ignore_patterns.",
+      "fixed_in_qa_lane": false
+    },
+    {
+      "id": "D2",
+      "severity": "MAJOR",
+      "release_blocker_candidate": false,
+      "classification": "REAL_PRODUCT_DEFECT",
+      "contract": "V1C-01 (feature-level gap)",
+      "title": "MCP gateway not installable from the clean dependency contract",
+      "evidence": [
+        "app/mcp_gateway.py lazily imports mcp (lines 608, 691) and starlette (lines 685, 765)",
+        "requirements.txt (self-declared single source of truth) does not list mcp or starlette",
+        "python -m app.mcp_gateway fails on a clean clone with ModuleNotFoundError: No module named 'mcp'"
+      ],
+      "fix_direction": "requirements-optional.txt / extras for the gateway, or add the SDK to the authoritative contract.",
+      "fixed_in_qa_lane": false
+    },
+    {
+      "id": "D3",
+      "severity": "MINOR",
+      "release_blocker_candidate": false,
+      "classification": "PRE_EXISTING_NON_BLOCKING",
+      "title": "OpenAPI duplicate operation IDs from unreal_coder_api and camera_api registrations",
+      "evidence": ["UserWarning: Duplicate Operation ID ... (11 unreal-coder + 3 camera operations)"],
+      "fixed_in_qa_lane": false
+    },
+    {
+      "id": "D4",
+      "severity": "INFO",
+      "release_blocker_candidate": false,
+      "classification": "PRE_EXISTING_NON_BLOCKING",
+      "title": "Observations: httpx2 in scripts/mcp_gateway_validate.py (script scope only); FastAPI on_event deprecation warnings; V1C-02 network-gated and not executed",
+      "fixed_in_qa_lane": false
+    }
+  ],
+  "harness_defects_fixed_during_run": [
+    "V1C-05 byte-hash included manifest.json (built_at timestamp)",
+    "V1C-08/09/10 launcher subprocess argv vector malformed",
+    "V1C-14 asserted legacy bridge_status key instead of canonical 'unreal' key",
+    "V1C-16 load_public_host() returns '' (falsy) when unconfigured",
+    "V1C-16 doctor vocabulary is PASS/WARNING/FAIL"
+  ],
+  "classification_of_remaining_failures": [
+    {"test": "test_v1c19_no_junk_in_dist", "classification": "REAL_PRODUCT_DEFECT"},
+    {"test": "test_v1c02_fresh_venv_install (skipped)", "classification": "PRE_EXISTING_NON_BLOCKING"},
+    {"test": "full-suite 2 skips", "classification": "PRE_EXISTING_NON_BLOCKING"}
+  ],
+  "critical_defects": [],
+  "major_defects": ["D1", "D2"],
+  "release_blockers": ["D1"],
+  "gate_recommendation": "aivido/v1-productization must fix D1 (and is strongly advised to fix D2) before release sign-off; everything else on the RC1.1 base is release-clean."
+}
