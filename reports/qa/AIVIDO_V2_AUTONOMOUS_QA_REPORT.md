@@ -1,20 +1,20 @@
 # AIVIDO V2 — AUTONOMOUS QA REPORT
 
-- **Run ID:** `qar_ae45306a9343`
+- **Run ID:** `qar_16592eb96295`
 - **Target:** hermetic fail
 - **Status:** COMPLETED
 - **Started:** 1969-12-31 16:00:01
-- **Finished:** 2026-09-07 13:24:56
-- **Duration:** 1788812695.26s
-- **Score:** 100.00/100
+- **Finished:** 2026-09-07 14:03:29
+- **Duration:** 1788815008.72s
+- **Score:** 98.41/100
 
-## VERDICT: **RELEASE_READY**
+## VERDICT: **NOT_READY**
 
-RELEASE_READY: no open CRITICAL/MAJOR defects, core mission PASS, false-pass defense PASS, Unreal preservation PASS, evidence integrity PASS, regression acceptable.
+NOT_READY: 1 MAJOR defect(s) open
 
 ### Summary
-Total checks **63**: PASS **63** | FAIL **0** | BLOCKED **0** | SKIPPED **0**
-Defects: CRITICAL **0** | MAJOR **0** | MINOR **0** | WARNING **0**
+Total checks **63**: PASS **62** | FAIL **1** | BLOCKED **0** | SKIPPED **0**
+Defects: CRITICAL **0** | MAJOR **1** | MINOR **0** | WARNING **0**
 
 ### Group Results
 
@@ -29,7 +29,7 @@ Defects: CRITICAL **0** | MAJOR **0** | MINOR **0** | WARNING **0**
 | CINEMATIC_ARTIFACT | PASS |
 | UI_BLACKBOX | PASS |
 | RECOVERY | PASS |
-| RELEASE_SAFETY | PASS |
+| RELEASE_SAFETY | FAIL |
 
 ### Release Gates
 
@@ -40,7 +40,9 @@ Defects: CRITICAL **0** | MAJOR **0** | MINOR **0** | WARNING **0**
 
 ### Open Defects (ledger)
 
-_No open defects recorded._
+| ID | Severity | Category | Title |
+|---|---|---|---|
+| QA-7A5336 | MAJOR | RELEASE_SAFETY | correct_branch_assumption: expected 'aivido/v2-autonomous-qa' != observed 'aivido/v2-release-blocker-fix' |
 
 ### Checks
 
@@ -74,24 +76,24 @@ _No open defects recorded._
   - verifier: `truthful_claim`
 - `[PASS]` **readonly_diagnostic_mission** (MISSION_BLACKBOX) — mission complete, verdict PASS, 3 steps, 1 real evidence file(s); evidence: 1 path(s)
   - verifier: `mission_verdict`
-  - evidence: C:\Users\Shadow\AppData\Local\Temp\pytest-of-Shadow\pytest-290\test_full_matrix_defense_flags0\ev\mission_fake_6.json
+  - evidence: C:\Users\Shadow\AppData\Local\Temp\pytest-of-Shadow\pytest-298\test_full_matrix_defense_flags0\ev\mission_fake_6.json
 - `[PASS]` **isolated_capture_mission** (MISSION_BLACKBOX) — mission complete, verdict PASS, 3 steps, 1 real evidence file(s); evidence: 1 path(s)
   - verifier: `mission_verdict`
-  - evidence: C:\Users\Shadow\AppData\Local\Temp\pytest-of-Shadow\pytest-290\test_full_matrix_defense_flags0\ev\mission_fake_7.json
+  - evidence: C:\Users\Shadow\AppData\Local\Temp\pytest-of-Shadow\pytest-298\test_full_matrix_defense_flags0\ev\mission_fake_7.json
 - `[PASS]` **plain_capture_phrasing_routing** (MISSION_BLACKBOX) — claim 'plans an EVIDENCE/capture step' backed by observed data
   - verifier: `truthful_claim`
 - `[PASS]` **code_task_pipeline** (MISSION_BLACKBOX) — code task PASS: commit abc123 evidence_files=1
   - verifier: `truthful_claim`
-  - evidence: C:\Users\Shadow\AppData\Local\Temp\pytest-of-Shadow\pytest-290\test_full_matrix_defense_flags0\ev\ct_evidence.json
+  - evidence: C:\Users\Shadow\AppData\Local\Temp\pytest-of-Shadow\pytest-298\test_full_matrix_defense_flags0\ev\ct_evidence.json
 - `[PASS]` **mixed_routing_mission** (MISSION_BLACKBOX) — claim 'code stage + unreal stage PASS' backed by observed data
   - verifier: `truthful_claim`
 - `[PASS]` **completed_without_evidence** (FALSE_PASS_DEFENSE) — bad case rejected (mission_verdict -> mission PASS unverified: no real evidence files (0 entries))
   - verifier: `expect_failure`
-- `[PASS]` **missing_screenshot** (FALSE_PASS_DEFENSE) — bad case rejected (screenshot_valid -> screenshot missing: C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\v2-autonomous-qa\memory\qa\no_such_screenshot.png)
+- `[PASS]` **missing_screenshot** (FALSE_PASS_DEFENSE) — bad case rejected (screenshot_valid -> screenshot missing: C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\v2-release-blocker-fix\memory\qa\no_such_screenshot.png)
   - verifier: `expect_failure`
-- `[PASS]` **invalid_screenshot** (FALSE_PASS_DEFENSE) — bad case rejected (screenshot_valid -> invalid image: UnidentifiedImageError: cannot identify image file 'C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\memory\\qa\\fake_screenshot.png')
+- `[PASS]` **invalid_screenshot** (FALSE_PASS_DEFENSE) — bad case rejected (screenshot_valid -> invalid image: UnidentifiedImageError: cannot identify image file 'C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-release-blocker-fix\\memory\\qa\\fake_screenshot.png')
   - verifier: `expect_failure`
-- `[PASS]` **stale_duplicate_evidence** (FALSE_PASS_DEFENSE) — bad case rejected (no_stale_duplicate -> stale duplicate evidence (identical sha256): C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\v2-autonomous-qa\memory\qa\dup_a.png; C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\v2-autonomous-qa\memory\qa\dup_b.png)
+- `[PASS]` **stale_duplicate_evidence** (FALSE_PASS_DEFENSE) — bad case rejected (no_stale_duplicate -> stale duplicate evidence (identical sha256): C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\v2-release-blocker-fix\memory\qa\dup_a.png; C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\v2-release-blocker-fix\memory\qa\dup_b.png)
   - verifier: `expect_failure`
 - `[PASS]` **wrong_task_id_rejected** (FALSE_PASS_DEFENSE) — claim '404' backed by observed data
   - verifier: `truthful_claim`
@@ -165,7 +167,7 @@ _No open defects recorded._
   - verifier: `no_absolute_local_path`
 - `[PASS]` **certified_files_clean** (RELEASE_SAFETY) — claim 'no dirty certified files' backed by observed data
   - verifier: `truthful_claim`
-- `[PASS]` **correct_branch_assumption** (RELEASE_SAFETY) — expected 'aivido/v2-autonomous-qa' == observed 'aivido/v2-autonomous-qa'
+- `[FAIL]` **correct_branch_assumption** (RELEASE_SAFETY) — expected 'aivido/v2-autonomous-qa' != observed 'aivido/v2-release-blocker-fix'
   - verifier: `registry_match`
 - `[PASS]` **junk_build_artifacts** (RELEASE_SAFETY) — claim 'no junk in tracked tree' backed by observed data
   - verifier: `truthful_claim`
@@ -175,4 +177,4 @@ _No open defects recorded._
   - verifier: `truthful_claim`
 
 ---
-_Generated by the Aivido autonomous QA bot (run `qar_ae45306a9343`) at 2026-09-07 13:24:56._
+_Generated by the Aivido autonomous QA bot (run `qar_16592eb96295`) at 2026-09-07 14:03:29._
