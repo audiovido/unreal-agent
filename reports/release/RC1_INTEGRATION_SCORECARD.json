@@ -1,0 +1,66 @@
+{
+  "mission": "AIVIDO RC1 FINAL INTEGRATION (release-95 + qa-defect-fixes)",
+  "branch": "aivido/rc1-integration",
+  "date_utc": "2026-09-07",
+  "sources": {
+    "release_95": {
+      "branch": "aivido/overnight-release-95",
+      "commit": "77ede15155316723b0af9a77dbd4a178166d6c6c"
+    },
+    "qa_lane": {
+      "branch": "aivido/qa-defect-fixes",
+      "tip": "f95e17962a36840f3c3f6bd563dca368f3373118",
+      "test_commit": "9d52422b46afee1cfefce2eb8e4e94a87b4283a8",
+      "integration": "cherry-picked 9d52422 then f95e179, zero conflicts (3c169bf, b16e843)"
+    }
+  },
+  "preserved": {
+    "overnight": ["session 404 fail-closed", "SessionStore._ensure_loaded", "REQUESTED_TOOL_MISSING gate", "app.served startup", "runtime hardening reports/tests"],
+    "qa": ["WORKER2 manifest valid JSON", "guarded localStorage", "correct manifest hashes/cache-bust", "duplicate REFS removal", "hermetic QA suite (90 tests collected across the 4 QA files)"]
+  },
+  "static_checks": {
+    "git_diff_check": "clean",
+    "json_parse": "48 report/config JSON files parse, 0 bad",
+    "node_check_ui_js": "PASS",
+    "build_manifest_hashes": "15/15 files match sha256",
+    "merge_markers": "0 (single decorative banner line only)",
+    "secrets_scan": "no credentials (only env-based key loading + client-side optional token field)",
+    "temp_files_committed": "none"
+  },
+  "combined_tests": {
+    "full_pytest": {"passed": 1031, "skipped": 1, "failed": 0, "duration_s": 122.5},
+    "qa_hermetic": {"files": ["test_idle_driver_hermetic.py", "test_planner_evidence_hermetic.py", "test_release_integrity_hermetic.py", "test_ui_hermetic_contract.py"], "collected": 90, "passed": 90},
+    "session_hardening_regressions": {"file": "tests/test_session_hardening.py", "passed": 6},
+    "integration_fix": "tests/test_api_action_vehicle_integration.py::test_vehicle_profile_keeps_bounded_strategy_and_corrected_locator depended on a git-ignored machine-local capture (assetlib/proof/vehicle_showcase_controlled_20260905/final_fresh_vehicle.png) and failed on every clean checkout (pre-existing on both base branches, not integration-induced). Root-caused to test environment dependence; test made hermetic with its own baseline file. Production code untouched. 3/3 pass after fix."
+  },
+  "live_smoke": {
+    "backend": {"status": 200, "app_served": true, "base": "http://127.0.0.1:8765 (running from this RC1 worktree)"},
+    "bridge": {"reachable": true, "engine": "5.8.2-56702186+++UE5+Release-5.8", "map": "/Game/Maps/AividoHQ.AividoHQ"},
+    "unreal": {"characters": "8/8", "props": "23/23", "screens": 8, "ui_boards": 6, "bad_roots": 0, "missing_materials": 0, "lights": "41/41 movable"},
+    "lighting_rebuild_warning": 0,
+    "save_reopen": "PASS (saved=true, reopened=true, post-reopen scan stable: 173 actors, 8/8, 23/23, 41/41)",
+    "e2e_missions": {
+      "A_inspect_report": {"status": "done", "verdict": "PASS", "dur_s": 3.0},
+      "B_viewport_proof": {"status": "done", "verdict": "PASS", "dur_s": 3.1, "proof_entries": 2, "note": "first wording ('record it as evidence') made the planner include spawn_actor, which the read-only policy correctly rejected (BLOCKED) — truthful policy behavior, retried with capture-only wording"},
+      "C_impossible_tool": {"status": "failed", "verdict": "FAILED", "dur_s": 3.1, "why": "Requested tool(s) not available in the tool registry: definitely_not_a_real_tool_xyz; refusing to report success for impossible work."}
+    }
+  },
+  "ui_smoke": {
+    "widths": [360, 390, 430, 1440],
+    "boot": "PASS all widths",
+    "js_console_syntax_errors": 0,
+    "hero_cta": "column + no overflow at 360/390/430; row at 1440 (desktop unchanged)",
+    "homeEnterRoom_wiring": "exactly 1 element, no duplicates at any width",
+    "storage_fallback": "localStorage OK (guarded path intact)",
+    "backend_badges": "engine linked / bridge ready / map AividoHQ / proof — live and truthful"
+  },
+  "counts": {"critical": 0, "major": 0, "warnings": 3},
+  "warnings_list": [
+    "GET /favicon.ico 404 (cosmetic; no JS/CSS asset failures)",
+    "1 pre-existing skipped test (not introduced by integration)",
+    "project registry (config/project_registry.json) is machine-local runtime config and stays untracked, consistent with prior lanes"
+  ],
+  "score": 95,
+  "score_note": "truthful 95 baseline preserved from release-95; integration added no regressions and no new score-changing evidence",
+  "decision": "RC1_READY_WITH_WARNINGS"
+}

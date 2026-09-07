@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from app import api
@@ -121,6 +123,14 @@ def test_vehicle_profile_keeps_bounded_strategy_and_corrected_locator(monkeypatc
     monkeypatch.setattr(visual_loop, "AutonomousVisualLoop", FakeLoop)
     monkeypatch.setattr(api, "BRIDGE", object())
 
+    # Hermetic initial proof: the fresh-hash contract only needs a real,
+    # readable baseline file whose bytes differ from the final capture
+    # (b"final-proof"). The historical path pointed at a git-ignored
+    # machine-local capture, which broke clean checkouts.
+    import tempfile
+    tmp_initial = Path(tempfile.mkdtemp(prefix="rc1_initial_proof_")) / "initial.png"
+    tmp_initial.write_bytes(b"initial-proof-baseline")
+
     state = {
         "id": "task_vehicle_integration",
         "visual_profile": "vehicle_showcase",
@@ -128,7 +138,7 @@ def test_vehicle_profile_keeps_bounded_strategy_and_corrected_locator(monkeypatc
     }
     result = api._run_production_visual_director(
         state,
-        "assetlib/proof/vehicle_showcase_controlled_20260905/final_fresh_vehicle.png",
+        str(tmp_initial),
     )
 
     assert result["status"] == "COMPLETE", result
