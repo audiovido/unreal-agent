@@ -1,0 +1,75 @@
+{
+  "mission": "AIVIDO parallel safe QA automation lane (offline/hermetic)",
+  "branch": "aivido/parallel-qa-automation",
+  "source_branch": "aivido/polish-90",
+  "source_commit": "9fb11ef416a308e267d76ba671cd676692573c7d",
+  "date": "2026-09-06",
+  "mode": "hermetic",
+  "live_unreal_access": false,
+  "live_backend_access": false,
+  "ports_used": [],
+  "tests_added": 86,
+  "test_files_added": [
+    "tests/test_idle_driver_hermetic.py",
+    "tests/test_ui_hermetic_contract.py",
+    "tests/test_planner_evidence_hermetic.py",
+    "tests/test_release_integrity_hermetic.py"
+  ],
+  "targeted_suite": {
+    "added_tests_passed": 82,
+    "added_tests_failed": 4
+  },
+  "largest_safe_suite": {
+    "scope": "tests/ (full hermetic collection)",
+    "collected": 1022,
+    "passed": 1016,
+    "failed": 5,
+    "skipped": 1,
+    "duration_seconds": 121.46
+  },
+  "defects_discovered": [
+    {
+      "id": "QA-1",
+      "severity": "MAJOR",
+      "area": "release-report-integrity",
+      "file": "reports/hq/WORKER2_CHARACTERS_MANIFEST.json",
+      "detail": "Invalid JSON: line 164 \"master_materials\": quarter2 (bare identifier, unquoted string); file does not parse as JSON",
+      "found_by": "test_report_json_parses[WORKER2_CHARACTERS_MANIFEST.json]"
+    },
+    {
+      "id": "QA-2",
+      "severity": "MINOR",
+      "area": "ui-robustness",
+      "file": "ui/aivido.js",
+      "detail": "4 unguarded localStorage accesses (top-level state read, persist(), questTick setItem, ledgerAdd setItem) would throw in storage-blocked contexts and break boot",
+      "found_by": "test_all_localstorage_access_is_guarded"
+    },
+    {
+      "id": "QA-3",
+      "severity": "MINOR",
+      "area": "release-manifest",
+      "file": "ui/build-manifest.json",
+      "detail": "Stale sha256 for aivido.html: manifest ce771b9e... vs committed file c1f4d5a7... (LF-normalized); cache-bust pins remain consistent, metadata drift only",
+      "found_by": "test_manifest_hashes_match_files"
+    },
+    {
+      "id": "QA-4",
+      "severity": "INFO",
+      "area": "ui-cleanliness",
+      "file": "ui/aivido.js",
+      "detail": "homeEnterRoom appears twice in REFS array; idempotent assignment, single listener, no double wiring",
+      "found_by": "test_no_duplicate_refs_entries"
+    }
+  ],
+  "pre_existing_failures": [
+    {
+      "id": "PRE-1",
+      "severity": "UNKNOWN (pre-existing)",
+      "test": "tests/test_api_action_vehicle_integration.py::test_vehicle_profile_keeps_bounded_strategy_and_corrected_locator",
+      "detail": "Expects generated proof artifact assetlib/proof/vehicle_showcase_controlled_20260905/final_fresh_vehicle.png which is not committed; run stalls to BLOCKED. Test file byte-identical to source commit; not caused by this lane."
+    }
+  ],
+  "production_files_modified": [],
+  "production_logic_changed": false,
+  "notes": "Planner evidence contract verified: actor-less prompts containing capture/screenshot/screen shot/proof/visual evidence always emit an EVIDENCE step using capture_unreal_viewport. No live Unreal/backend calls made; conftest bridge+model blockers active throughout."
+}
