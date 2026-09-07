@@ -20,6 +20,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
+from core.mission_policy import has_strong_read_only_marker
+
 # --------------------------------------------------------------------------
 # Domain vocabulary: internal specialist routing
 # --------------------------------------------------------------------------
@@ -160,6 +162,30 @@ CAPTURE_PROOF_MARKERS = (
     "return visual proof", "return viewport evidence",
 )
 
+# Explicit scene-VERIFICATION requests ("run the exact strict read-only
+# AividoHQ verification: map X, bridge healthy, exactly N ..., missing ...,
+# fresh proof") are NOT chat and NOT generic execute: each explicit item is
+# planned as its own REAL read-only verification step, and PASS is impossible
+# until every item is planned, executed and evidenced (defect closure).
+VERIFICATION_MARKERS = (
+    "verification", "verify that", "verify the scene", "verify scene",
+    "verify the level", "verify the map", "verify the current state",
+    "verify the state of the scene", "strict verification",
+    "read-only verification", "read only verification",
+    "exact verification", "scene verification", "run a verification",
+    "run verification", "verification:",
+)
+
+# Explicit-check vocabulary that makes a "verification" prompt concrete.
+# A verification marker alone never forces execute mode; it must name real
+# facts to verify (counts, missing references, bridge/map/proof) or carry a
+# strong read-only marker.
+EXPLICIT_CHECK_MARKERS = (
+    "exactly ", "missing skeletal", "missing prop", "missing mesh",
+    "missing material", "missing reference", "bridge healthy",
+    "bridge ready", "bridge status", "movable light",
+)
+
 # Negation markers: when a domain trigger word appears only after one of
 # these, the user EXCLUDED that scope ("don't touch gameplay").
 NEGATION_MARKERS = (
@@ -226,6 +252,12 @@ class UniversalIntent:
     capture_only: bool = False            # explicit viewport capture/proof:
                                           # run ONE read-only evidence step
                                           # (capture_unreal_viewport)
+    verification: bool = False            # explicit scene verification: one
+                                          # REAL read-only verification step
+                                          # per explicit requirement; PASS is
+                                          # impossible until every item is
+                                          # planned, executed and evidenced
+    explicit_checks: List[Dict[str, Any]] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -251,6 +283,8 @@ class UniversalIntent:
             "mixed": self.mixed,
             "diagnostic": self.diagnostic,
             "capture_only": self.capture_only,
+            "verification": self.verification,
+            "explicit_checks": [dict(c) for c in self.explicit_checks],
             "warnings": list(self.warnings),
         }
 
@@ -359,6 +393,104 @@ def _domain_negated(lowered: str, domain: str, triggers) -> bool:
     return False
 
 
+def parse_explicit_checks(prompt: str) -> List[Dict[str, Any]]:
+    """Deterministically extract explicit verification items from a prompt.
+
+    Supports the verified defect-closure vocabulary:
+      - "map <name>"                       -> active map identity
+      - "bridge healthy|ready|..."         -> bridge health
+      - "exactly N human agents / W3I props / movable lights"
+      - "missing skeletal meshes"          -> 0 missing skeletal meshes
+      - "missing prop mesh/material references" -> 0 null prop refs
+      - proof/capture/screenshot           -> fresh real viewport proof
+
+    Any explicit "exactly N <unknown>" count that cannot be mapped to a
+    deterministic target stays a truthful `generic` check: it will be
+    reported UNVERIFIED, never silently skipped or false-PASSed.
+    """
+    text = str(prompt or "")
+    lowered = text.lower()
+    checks: List[Dict[str, Any]] = []
+    seen = set()
+
+    def add(check: Dict[str, Any]) -> None:
+        cid = check.get("id")
+        if cid and cid not in seen:
+            seen.add(cid)
+            checks.append(check)
+
+    # 1. bridge health
+    if re.search(r"bridge\s+(healthy|ready|alive|connected|up|ok|status)",
+                 lowered):
+        add({"id": "bridge_ready", "kind": "bridge",
+             "desc": "Unreal bridge is healthy/ready"})
+
+    # 2. active map identity (original casing preserved for the expected
+    # value so the evidence reads "map AividoHQ", not "map aividohq").
+    m = re.search(r"\bmap\s+([A-Za-z0-9_/.]+)", text, re.IGNORECASE)
+    if m:
+        expected = m.group(1)
+        add({"id": "active_map", "kind": "map",
+             "desc": f"active map is {expected}", "expected": expected})
+
+    # 3. exactly N <phrase>
+    for m in re.finditer(
+            r"exactly\s+(\d+)\s+([a-z0-9 _\-]+?)(?=,|\.|;|$|\n| and |\))",
+            lowered):
+        count = int(m.group(1))
+        phrase = m.group(2).strip().rstrip("s")
+        if not phrase:
+            continue
+        if any(w in phrase for w in ("human", "agent", "character")):
+            add({"id": "human_count", "kind": "count",
+                 "desc": f"exactly {count} human agents",
+                 "expected": count, "target": "AVIDO_Human",
+                 "label": phrase})
+        elif any(w in phrase for w in ("w3i", "prop")):
+            add({"id": "prop_count", "kind": "count",
+                 "desc": f"exactly {count} props",
+                 "expected": count, "target": "W3I_", "label": phrase})
+        elif "light" in phrase:
+            add({"id": "movable_lights", "kind": "movable_lights",
+                 "desc": f"exactly {count} movable lights",
+                 "expected": count})
+        else:
+            # Explicit count with no deterministic target: report as
+            # UNVERIFIED unless a caller-supplied mapping exists.
+            add({"id": f"count_{len(checks) + 1}", "kind": "count",
+                 "desc": f"exactly {count} {phrase}", "expected": count,
+                 "target": None, "label": phrase})
+
+    # 4. missing references (prop/material/skeletal)
+    for m in re.finditer(
+            r"missing\s+([a-z0-9 _\-/]+?)(?=,|\.|;|$|\n| and |\))",
+            lowered):
+        phrase = m.group(1).strip()
+        if not phrase:
+            continue
+        if any(w in phrase for w in ("prop", "material", "reference")):
+            add({"id": "missing_prop_references",
+                 "kind": "missing_prop_references",
+                 "desc": "no missing prop mesh/material references",
+                 "expected": 0, "target": "W3I_"})
+        elif any(w in phrase for w in ("skeletal", "mesh")):
+            add({"id": "missing_skeletal_meshes",
+                 "kind": "missing_skeletal_meshes",
+                 "desc": "no missing skeletal meshes",
+                 "expected": 0, "target": "AVIDO_Human"})
+        else:
+            add({"id": "missing_generic", "kind": "generic",
+                 "desc": f"no missing {phrase}", "expected": 0})
+
+    # 5. fresh real viewport proof
+    if re.search(r"\b(proof|capture|screenshot)\b", lowered) and any(
+            w in lowered for w in ("fresh", "real", "current", "proof")):
+        add({"id": "viewport_proof", "kind": "proof",
+             "desc": "fresh real viewport proof capture"})
+
+    return checks
+
+
 def interpret_intent(prompt: str) -> UniversalIntent:
     """Layer 1: classify one prompt into a structured UniversalIntent."""
     text = str(prompt or "").strip()
@@ -366,7 +498,32 @@ def interpret_intent(prompt: str) -> UniversalIntent:
     intent = UniversalIntent(prompt=text)
 
     # ---- mode -----------------------------------------------------------
-    if _has(lowered, *DIAGNOSTIC_MARKERS):
+    # Explicit scene verification wins over the generic diagnostic/capture
+    # vocabulary: a prompt like "... verification: map X, bridge healthy,
+    # exactly 8 human agents ..." contains the substring "bridge health"
+    # (a diagnostic marker) and "viewport proof" (a capture marker), but the
+    # user asked for ONE strict verification mission with per-item checks.
+    verification_trigger = (
+        _has(lowered, *VERIFICATION_MARKERS)
+        and (has_strong_read_only_marker(prompt)
+             or _has(lowered, *EXPLICIT_CHECK_MARKERS))
+    )
+    if verification_trigger:
+        # Explicit scene verification: one REAL read-only verification step
+        # per explicit requirement, and PASS is impossible until every item
+        # is planned, executed and evidenced. Each check is parsed
+        # deterministically; unparseable items fail truthfully as
+        # UNVERIFIED_REQUIREMENTS, never a false PASS.
+        intent.mode = "execute"
+        intent.read_only = True
+        intent.verification = True
+        intent.explicit_checks = parse_explicit_checks(text)
+        intent.warnings.append(
+            "Explicit verification request: one real read-only verification "
+            "step per stated requirement; PASS requires every item planned, "
+            "executed and evidenced (UNVERIFIED_REQUIREMENTS otherwise)."
+        )
+    elif _has(lowered, *DIAGNOSTIC_MARKERS):
         # Status/health diagnostics are READ-ONLY but must EXECUTE real
         # probes: planning/answering chat style previously produced
         # "complete/PASS with 0 executed steps and no evidence".
@@ -442,6 +599,11 @@ def interpret_intent(prompt: str) -> UniversalIntent:
         or intent.quality in {"high", "production", "cinematic", "photoreal"}
         or _has(lowered, *VAGUE_VISUAL_MARKERS)
     )
+    if intent.verification:
+        # Verification missions prove facts with real read-only probes + the
+        # explicit proof capture; the generative visual-acceptance loop is
+        # out of scope (it scores scene composition, not requirement truth).
+        intent.needs_visual_validation = False
     intent.needs_blender = _has(
         lowered, "blender", "clean up mesh", "mesh cleanup", "retopolog",
         "uv unwrap", "fix this asset", "asset looks bad", "decimate",
@@ -476,9 +638,10 @@ def interpret_intent(prompt: str) -> UniversalIntent:
             "explicit backup/checkpoint steps before any deletion."
         )
     if intent.mode == "execute" and intent.read_only\
-            and not (intent.diagnostic or intent.capture_only):
-        # Diagnostics and capture/proof missions intentionally stay
-        # read_only while executing their real probe/evidence steps.
+            and not (intent.diagnostic or intent.capture_only
+                     or intent.verification):
+        # Diagnostics, capture/proof and verification missions intentionally
+        # stay read_only while executing their real probe/evidence steps.
         intent.read_only = False
     return intent
 
@@ -703,6 +866,39 @@ def expand_requirements(intent: UniversalIntent) -> RequirementSpec:
         spec.defaults_applied.append(
             "Capture/proof request expanded to a single read-only "
             "capture_unreal_viewport evidence step (no scene mutation)."
+        )
+        return spec
+
+    if intent.verification:
+        # Explicit scene verification: ONE requirement entry per explicit
+        # check. Every entry is marked explicit=True so the mission verdict
+        # gate can refuse PASS until each one is planned, executed AND
+        # evidenced. An unparseable check is kept as a truthful generic
+        # requirement -> reported UNVERIFIED, never silently skipped.
+        checks = intent.explicit_checks or []
+        if not checks:
+            spec.requirements.append({
+                "id": "verification_unparsed", "kind": "verification",
+                "desc": ("explicit verification items could not be "
+                          "deterministically parsed"),
+                "ops": [], "explicit": True,
+                "check": {
+                    "id": "verification_unparsed", "kind": "generic",
+                    "desc": ("explicit verification items could not be "
+                              "deterministically parsed"),
+                },
+            })
+        for index, check in enumerate(checks):
+            spec.requirements.append({
+                "id": f"verify_{index}", "kind": "verification",
+                "desc": check.get("desc") or f"verify {check.get('id')}",
+                "ops": ["verify"], "explicit": True,
+                "check": dict(check),
+            })
+        spec.defaults_applied.append(
+            "Verification request expanded to one real read-only "
+            "verification step per explicit requirement; PASS requires "
+            "every item planned, executed and evidenced."
         )
         return spec
 

@@ -7,10 +7,11 @@ Executes ONE real, bounded Unreal mission against the live editor bridge:
   3. snapshot the actor list (cleanup baseline)
   4. spawn a visible StaticMeshActor named AIVIDO_V1_INSTALL_SMOKE
   5. verify the actor exists (class + mesh)
-  6. frame the viewport on it and capture REAL viewport evidence
-  7. delete ONLY that disposable actor
-  8. verify the actor is gone and the actor list matches the baseline
-  9. never save the level -> certified scene content untouched on disk
+  6. MODIFY the disposable actor (move + scale) and read the transform back
+  7. frame the viewport on it and capture REAL viewport evidence
+  8. delete ONLY that disposable actor
+  9. verify the actor is gone and the actor list matches the baseline
+  10. never save the level -> certified scene content untouched on disk
 
 Evidence: reports/release/AIVIDO_V1_SMOKE_EVIDENCE/ (proof PNG + mission.json).
 
@@ -165,6 +166,44 @@ else:
         self.step("actor_exists", exists_ok,
                   f"class={ (got_info or {}).get('class') } "
                   f"loc={ (got_info or {}).get('location') }", got_info)
+
+        # 6. MODIFY the disposable actor only: move + scale, then read the
+        # transform back through an independent get_actor so the modify is
+        # verified, never assumed.
+        mod_target = [spawn_loc[0] + 300.0, spawn_loc[1] + 200.0,
+                      max(spawn_loc[2], 200.0)]
+        moved = self.bridge.move_actor(ACTOR_NAME, mod_target)
+        moved_info = moved.get("result") if isinstance(moved, dict) else None
+        moved_ok = bool(isinstance(moved_info, dict) and moved_info.get("ok")
+                        and moved_info.get("label") == ACTOR_NAME)
+        self.step("actor_moved", moved_ok,
+                  f"target={mod_target} "
+                  f"readback={ (moved_info or {}).get('location') }",
+                  moved_info)
+
+        mod_scale = [3.0, 3.0, 3.0]
+        scaled = self.bridge.scale_actor(ACTOR_NAME, mod_scale)
+        scaled_info = scaled.get("result") if isinstance(scaled, dict) else None
+        scaled_ok = bool(isinstance(scaled_info, dict) and scaled_info.get("ok")
+                         and scaled_info.get("label") == ACTOR_NAME)
+        self.step("actor_scaled", scaled_ok,
+                  f"scale={ (scaled_info or {}).get('scale') }", scaled_info)
+
+        back = self.bridge.get_actor(ACTOR_NAME)
+        back_info = back.get("result") if isinstance(back, dict) else None
+        readback_ok = False
+        if isinstance(back_info, dict) and back_info.get("ok"):
+            bl = back_info.get("location") or []
+            bs = back_info.get("scale") or []
+            readback_ok = (
+                len(bl) == 3 and abs(bl[0] - mod_target[0]) < 1.0
+                and abs(bl[1] - mod_target[1]) < 1.0
+                and len(bs) == 3
+                and all(abs(float(x) - 3.0) < 0.1 for x in bs)
+            )
+        self.step("modify_readback", readback_ok,
+                  f"loc={back_info and back_info.get('location')} "
+                  f"scale={back_info and back_info.get('scale')}", back_info)
 
         aimed = self.bridge.execute_python(f"""
 import unreal

@@ -90,6 +90,7 @@ class PlanStep:
     estimated_cost: int = 1         # 1 cheap .. 5 expensive
     stop_condition: str = ""        # natural failure semantics
     status: str = "pending"
+    covers: str = ""                # explicit requirement check id (verification)
 
     def to_normalized(self) -> Dict[str, Any]:
         """Executor-compatible normalized step (app/api.py format)."""
@@ -114,6 +115,7 @@ class PlanStep:
             "risky": self.risky,
             "estimated_cost": self.estimated_cost,
             "stop_condition": self.stop_condition,
+            "covers": self.covers,
         }
 
     def to_dict(self) -> Dict[str, Any]:
@@ -335,6 +337,27 @@ class UniversalPlanner:
                 work_steps.append(ev_step)
                 prev_id = ev_step.step_id
                 continue
+            if kind == "verification":
+                # One real read-only verification step per EXPLICIT user
+                # requirement (defect closure): the mission can only PASS
+                # when every check is planned, executed and evidenced.
+                check = req.get("check") or {}
+                verify_steps = self._verification_steps(
+                    check, skipped, prev_id,
+                    base=len(plan.steps) + len(work_steps))
+                if not verify_steps:
+                    plan.warnings.append(
+                        f"explicit verification requirement cannot be planned "
+                        f"deterministically: {check.get('desc') or check.get('id')}; "
+                        "it will be reported UNVERIFIED, never PASS.")
+                work_steps.extend(verify_steps)
+                if verify_steps:
+                    prev_id = verify_steps[-1].step_id
+                for _vstep in verify_steps:
+                    if (_vstep.capability
+                            and _vstep.capability not in plan.selected_capabilities):
+                        plan.selected_capabilities.append(_vstep.capability)
+                continue
             cap_names = KIND_TO_CAPABILITY.get(kind, [])
             for cap_name in cap_names:
                 if cap_name in plan.selected_capabilities:
@@ -414,6 +437,71 @@ class UniversalPlanner:
         return plan
 
     # ------------------------------------------------------------------
+    def _verification_steps(
+        self, check: Dict[str, Any], skipped: Dict[str, str],
+        prev_id: Optional[str], base: int,
+    ) -> List[PlanStep]:
+        """One real READ-ONLY verification step per explicit check.
+
+        Supported kinds: map / bridge / count / movable_lights /
+        missing_skeletal_meshes / missing_prop_references (all through the
+        registered verify_scene tool) and proof (a real capture step). An
+        unsupported or under-specified check yields NO step: the verdict
+        gate then reports it UNVERIFIED — a false PASS is impossible.
+        """
+        ckind = str(check.get("kind") or "")
+        cid = str(check.get("id") or f"check_{base}")
+        desc = str(check.get("desc") or cid)
+        step_id = f"verify_{cid}_{base}"
+
+        if ckind == "proof":
+            if "capture_unreal_viewport" not in self.capabilities._tool_registry:
+                skipped["visual_quality_gate"] = (
+                    "capture_unreal_viewport tool unavailable")
+                return []
+            return [PlanStep(
+                step_id=step_id, phase="EVIDENCE",
+                intent=f"verify_{cid}",
+                preferred_tool="capture_unreal_viewport",
+                covers=cid,
+                expected_result={"requirement": desc},
+                depends_on=[prev_id] if prev_id else [],
+                stop_condition=f"{desc} — real viewport proof captured",
+            )]
+
+        if ckind in {"map", "bridge", "count", "movable_lights",
+                     "missing_skeletal_meshes", "missing_prop_references"}:
+            if ckind == "count" and not check.get("target"):
+                # Explicit count with no deterministic actor target cannot
+                # be verified honestly; leave it unplanned (UNVERIFIED).
+                return []
+            chosen = self._select("scene_verification", skipped)
+            if not chosen:
+                return []
+            tool = self._tool_for(chosen, "verify_scene")
+            if not tool:
+                skipped[chosen] = "verify_scene tool unavailable"
+                return []
+            params: Dict[str, Any] = {
+                "check": ckind,
+                "expected": check.get("expected"),
+                "target": check.get("target"),
+            }
+            return [PlanStep(
+                step_id=step_id,
+                phase="INSPECT" if ckind in {"map", "bridge"} else "VALIDATE",
+                intent=f"verify_{cid}", preferred_tool=tool,
+                parameters=params, covers=cid,
+                capability=chosen,
+                expected_result={"requirement": desc},
+                depends_on=[prev_id] if prev_id else [],
+                stop_condition=f"{desc} verified with a real editor probe",
+            )]
+
+        # generic / unparseable -> deliberately NOT planned (truthful
+        # UNVERIFIED_REQUIREMENTS at the verdict gate).
+        return []
+
     def _primary_tool(self, capability_name: str) -> Optional[str]:
         cap = self._cap(capability_name)
         return cap.spec.tools[0] if cap and cap.spec.tools else None

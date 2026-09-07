@@ -1,0 +1,73 @@
+{
+  "release": "AIVIDO_V1_DEFECT_CLOSURE",
+  "branch": "aivido/v1-final-defect-closure",
+  "base_sha": "9811a533580c10956748772cb0b828e1698b0714",
+  "date": "2026-09-07",
+  "defects": {
+    "D1_explicit_verification_requirements": {
+      "severity": "MAJOR",
+      "status": "FIXED",
+      "evidence": "8 explicit checks parsed from the strict verification prompt; 1 real read-only step per check in the plan (verify_scene probes + capture_unreal_viewport); verify_scene registered READ_ONLY (plan_violations(READ_ONLY, steps) == [])"
+    },
+    "D2_false_pass_gate": {
+      "severity": "MAJOR",
+      "status": "FIXED",
+      "evidence": "Live first attempt: FAIL 'UNVERIFIED_REQUIREMENTS: exactly 8 human agents (NOT_EXECUTED); exactly 23 props (NOT_EXECUTED)' — PASS impossible with unexecuted checks; after fix: PASS only with 10/10 executed+evidenced; tool-missing path -> BLOCKED 'REQUESTED_TOOL_MISSING: verify_scene'"
+    },
+    "D3_evidence_object_object": {
+      "severity": "MINOR",
+      "status": "FIXED",
+      "evidence": "ui/aivido.js fmtEvidence() renders structured entries ('verification · check: human_count · step: ... · measured=8 expected=8 · ok · detail'); shipped function + real 8-entry payload verified in node: 0 '[object Object]'; live UI session: 0 console errors, all network 200"
+    }
+  },
+  "live_verification": {
+    "prompt": "Run the exact strict read-only AividoHQ verification: map AividoHQ, bridge healthy, exactly 8 human agents, exactly 23 W3I props, exactly 41 movable lights, missing skeletal meshes, missing prop mesh/material references, fresh real viewport proof",
+    "mode": "READ_ONLY (policy verdict OK, zero blocked tools)",
+    "verdict": "PASS",
+    "steps": "10/10 completed",
+    "counts": {
+      "human_agents": {"measured": 8, "expected": 8, "target": "AVIDO_Human"},
+      "w3i_props": {"measured": 23, "expected": 23, "target": "W3I_"},
+      "movable_lights": {"measured": 41, "expected": 41, "static": 0, "stationary": 0},
+      "missing_skeletal_meshes": {"measured": 0, "expected": 0, "checked": 8},
+      "missing_prop_references": {"measured": 0, "expected": 0, "checked": 23}
+    },
+    "map": "/Game/Maps/AividoHQ.AividoHQ",
+    "bridge": "UNREAL_BRIDGE_READY",
+    "proof": "fresh viewport PNG captured as evidence (viewport_capture entry)",
+    "false_pass_gate_live_proof": "pre-fix run truthfully FAILED with UNVERIFIED_REQUIREMENTS (NOT_EXECUTED) instead of PASS"
+  },
+  "e2e_mission": {
+    "actor": "AIVIDO_V1_INSTALL_SMOKE",
+    "lifecycle": "Create -> Modify (move + scale + readback) -> Verify -> Capture -> Cleanup",
+    "result": "PASS 17/17 steps",
+    "proof": "reports/release/AIVIDO_V1_SMOKE_EVIDENCE/AIVIDO_V1_INSTALL_SMOKE_proof.png",
+    "cleanup": "actor absent after delete; level restored to 166 actors == baseline; no save performed (certified content untouched)"
+  },
+  "tests": {
+    "total": "1082 passed / 1 skipped / 0 failed",
+    "new": "20 hermetic tests in tests/test_verification_mission.py (intent parsing, per-check planning, read-only policy, false-PASS gate incl. NOT_PLANNED/NOT_EXECUTED/NOT_EVIDENCED/REQUESTED_TOOL_MISSING, verify_scene measured results, evidence payload shape)",
+    "baseline_preserved": true
+  },
+  "regression": {
+    "installer_runtime_watchdog_tailscale": "UNTOUCHED by defect fixes",
+    "capture_only_prompts": "preserved",
+    "REQUESTED_TOOL_MISSING": "preserved",
+    "read_only_zero_mutation": "verified — actor scan identical before/after E2E (166 actors); verification mission used only READ_ONLY tools"
+  },
+  "environment": {
+    "backend": "app.served:app on 127.0.0.1:8765 (fresh code)",
+    "bridge": "127.0.0.1:6766 (UE 5.8.2, ASSET_Showcase2, AividoHQ)",
+    "tailscale_remote": "http://100.84.156.24:8765/app -> 200 while local http://127.0.0.1:8765/app -> 200",
+    "gateway": "8844 untouched"
+  },
+  "critical": 0,
+  "major": 0,
+  "minor": 1,
+  "warnings": [
+    "sandbox reaps in-session spawned backends after tool boundaries (environment artifact; V1 persistent runtime survival certified previously via scheduled-task spawn)",
+    "UI preview attach limited for scheduled-task-spawned processes; D3 verified via shipped function + real payloads + live UI session with 0 console errors",
+    "smoke dirty_flag is transient in-editor state; level deliberately not saved"
+  ],
+  "FINAL_V1_READY": "YES"
+}

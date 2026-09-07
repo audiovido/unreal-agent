@@ -848,6 +848,30 @@
     tick();
   }
 
+  /* Human-readable rendering for structured evidence entries (dicts).
+     Prevents the "[object Object]" defect: kind/check/measured/expected/
+     detail/path are rendered as readable text, never String(obj). */
+  function fmtEvidence(f) {
+    if (f !== null && typeof f === "object") {
+      const parts = [];
+      if (f.kind) parts.push(String(f.kind));
+      if (f.check) parts.push("check: " + String(f.check));
+      if (f.step_id) parts.push("step: " + String(f.step_id));
+      const meas = f.measured !== undefined && f.measured !== null;
+      const exp = f.expected !== undefined && f.expected !== null;
+      if (meas || exp) {
+        parts.push((meas ? "measured=" + JSON.stringify(f.measured) : "") +
+                   (meas && exp ? " " : "") +
+                   (exp ? "expected=" + JSON.stringify(f.expected) : ""));
+      }
+      if (f.ok !== undefined) parts.push(f.ok ? "ok" : "FAIL");
+      if (f.path) parts.push(String(f.path));
+      if (f.detail) parts.push(String(f.detail));
+      return parts.join(" · ") || JSON.stringify(f);
+    }
+    return String(f);
+  }
+
   async function renderLiveDetailMission(r) {
     el.mcDetail.innerHTML = "";
     const h = document.createElement("div");
@@ -913,7 +937,7 @@
     if (ev.length) {
       const l = document.createElement("div");
       l.className = "mc-evidence";
-      l.innerHTML = "<b>Evidence</b><ul class=\"mc-evlist\">" + ev.map((f) => `<li>${esc(String(f))}</li>`).join("") + "</ul>";
+      l.innerHTML = "<b>Evidence</b><ul class=\"mc-evlist\">" + ev.map((f) => `<li>${esc(fmtEvidence(f))}</li>`).join("") + "</ul>";
       el.mcDetail.appendChild(l);
     }
     if ((r.warnings || []).length) {
@@ -1134,7 +1158,7 @@
     if (m.evidence.length) {
       const ev = document.createElement("div");
       ev.className = "mc-evidence";
-      ev.innerHTML = "evidence: " + m.evidence.map(esc).join(", ");
+      ev.innerHTML = "evidence: " + m.evidence.map((f) => esc(fmtEvidence(f))).join(", ");
       el.mcDetail.appendChild(ev);
     }
     if (m.status !== "COMPLETE") {

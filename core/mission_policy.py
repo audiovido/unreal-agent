@@ -83,6 +83,7 @@ _READ_ONLY_TOOLS = {
     "verify_reopen_state",
     "verify_ui_state",
     "verify_widget_visible",
+    "verify_scene",
     "visual_review_unreal",
 }
 
@@ -204,6 +205,7 @@ def resolve_mission_mode(
     intent_read_only: bool = False,
     intent_mode: Optional[str] = None,
     diagnostic: bool = False,
+    verification: bool = False,
 ) -> str:
     """Resolve the canonical mission mode.
 
@@ -211,15 +213,16 @@ def resolve_mission_mode(
       1. explicit request flag (request.read_only) — authoritative
       2. request mode chat/plan — never mutates
       3. diagnostic intent — planned as read-only health probes
-      4. strong read-only prompt markers — provable user intent
-      5. intent-derived read_only for non-execute classifications
-      6. default MUTATING (a plain prompt may plan real work)
+      4. verification intent — planned as read-only fact verification
+      5. strong read-only prompt markers — provable user intent
+      6. intent-derived read_only for non-execute classifications
+      7. default MUTATING (a plain prompt may plan real work)
     """
     if explicit_read_only is not None:
         return MODE_READ_ONLY if explicit_read_only else MODE_MUTATING
     if request_mode in ("chat", "plan"):
         return MODE_READ_ONLY
-    if diagnostic:
+    if diagnostic or verification:
         return MODE_READ_ONLY
     if has_strong_read_only_marker(prompt):
         return MODE_READ_ONLY

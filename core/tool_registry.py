@@ -294,6 +294,9 @@ def build_registry(
         from tools.unreal.runtime_tools import RuntimeTools
         from tools.unreal.import_tools import ImportTools
         from tools.unreal.sequencer_tools_gap import SequencerToolsGap
+        from tools.unreal.scene_verification import SceneVerification
+
+        scene_verification = SceneVerification(bridge)
 
         blueprints = BlueprintTools(bridge)
         avatar_tools = AvatarTools(bridge)
@@ -316,6 +319,28 @@ def build_registry(
                 description="Return actors currently present in the open Unreal level.",
                 args={},
                 func=bridge.list_level_actors,
+            ),
+
+            "verify_scene": ToolSpec(
+                name="verify_scene",
+                description=(
+                    "Read-only verification of ONE explicit scene requirement "
+                    "against the live editor: map (active level), bridge "
+                    "(health), count_prefix (exact actor count by label/name "
+                    "prefix), movable_lights (exact movable light count), "
+                    "missing_skeletal_meshes, missing_prop_references. "
+                    "Returns measured vs expected; never mutates the scene."
+                ),
+                args={
+                    "check": "One of: map, bridge, count_prefix, "
+                              "movable_lights, missing_skeletal_meshes, "
+                              "missing_prop_references",
+                    "expected": "Expected value (map name/path, or integer "
+                                 "count)",
+                    "target": "Actor label/name prefix for count and "
+                               "missing-reference checks",
+                },
+                func=scene_verification.verify,
             ),
 
             "get_selected_actors": ToolSpec(

@@ -8,7 +8,7 @@
       "step": "session_identity",
       "ok": true,
       "detail": "project=ASSET_Showcase2 engine=5.8.2-56702186+++UE5+Release-5.8",
-      "at": 1788773569.8110828,
+      "at": 1788780119.4111526,
       "data": {
         "ok": true,
         "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
@@ -20,7 +20,7 @@
       "step": "active_map",
       "ok": true,
       "detail": "world_path=/Game/Maps/AividoHQ.AividoHQ (expected /Game/Maps/AividoHQ)",
-      "at": 1788773569.8111055,
+      "at": 1788780119.4111738,
       "data": {
         "ok": true,
         "world_name": "AividoHQ",
@@ -31,30 +31,30 @@
       "step": "actor_absent_before",
       "ok": true,
       "detail": "get_actor before spawn -> Actor not found: AIVIDO_V1_INSTALL_SMOKE",
-      "at": 1788773569.8438907
+      "at": 1788780119.7359824
     },
     {
       "step": "baseline_captured",
       "ok": true,
       "detail": "166 actors in level",
-      "at": 1788773569.8745918
+      "at": 1788780120.0799584
     },
     {
       "step": "spawn_point_in_view",
       "ok": true,
-      "detail": "cube target [2.395770656664637e-14, 391.2590402935223, 403.16467632710373] (400 units in front of camera)",
-      "at": 1788773569.9085624,
+      "detail": "cube target [-300.58422645513343, 190.86955599009994, 578.5054750925982] (400 units in front of camera)",
+      "at": 1788780120.4017463,
       "data": {
         "ok": true,
         "cam_loc": [
-          0.0,
-          782.5180805870446,
-          486.32935265420747
+          -600.0,
+          -8.740959706477724,
+          753.1646763271037
         ],
         "fwd": [
-          5.989426641661592e-17,
-          -0.9781476007338057,
-          -0.20791169081775934
+          0.7485394338621664,
+          0.49902628924144415,
+          -0.4366480030862638
         ]
       }
     },
@@ -62,10 +62,10 @@
       "step": "spawn_cube",
       "ok": true,
       "detail": "label=AIVIDO_V1_INSTALL_SMOKE class=StaticMeshActor mesh_loaded=True",
-      "at": 1788773569.9551291,
+      "at": 1788780120.7404835,
       "data": {
         "ok": true,
-        "name": "StaticMeshActor_89",
+        "name": "StaticMeshActor_90",
         "label": "AIVIDO_V1_INSTALL_SMOKE",
         "class": "StaticMeshActor",
         "mesh_loaded": true,
@@ -75,17 +75,17 @@
     {
       "step": "actor_exists",
       "ok": true,
-      "detail": "class=StaticMeshActor loc=[2.395770656664637e-14, 391.2590402935223, 403.16467632710373]",
-      "at": 1788773569.9817896,
+      "detail": "class=StaticMeshActor loc=[-300.58422645513343, 190.86955599009994, 578.5054750925982]",
+      "at": 1788780121.0716374,
       "data": {
         "ok": true,
-        "name": "StaticMeshActor_89",
+        "name": "StaticMeshActor_90",
         "label": "AIVIDO_V1_INSTALL_SMOKE",
         "class": "StaticMeshActor",
         "location": [
-          2.395770656664637e-14,
-          391.2590402935223,
-          403.16467632710373
+          -300.58422645513343,
+          190.86955599009994,
+          578.5054750925982
         ],
         "rotation": [
           0.0,
@@ -100,21 +100,80 @@
       }
     },
     {
+      "step": "actor_moved",
+      "ok": true,
+      "detail": "target=[-0.5842264551334324, 390.8695559900999, 578.5054750925982] readback=[-0.5842264551334324, 390.8695559900999, 578.5054750925982]",
+      "at": 1788780121.4029422,
+      "data": {
+        "ok": true,
+        "name": "StaticMeshActor_90",
+        "label": "AIVIDO_V1_INSTALL_SMOKE",
+        "location": [
+          -0.5842264551334324,
+          390.8695559900999,
+          578.5054750925982
+        ]
+      }
+    },
+    {
+      "step": "actor_scaled",
+      "ok": true,
+      "detail": "scale=[3.0, 3.0, 3.0]",
+      "at": 1788780121.7857249,
+      "data": {
+        "ok": true,
+        "name": "StaticMeshActor_90",
+        "label": "AIVIDO_V1_INSTALL_SMOKE",
+        "scale": [
+          3.0,
+          3.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "step": "modify_readback",
+      "ok": true,
+      "detail": "loc=[-0.5842264551334324, 390.8695559900999, 578.5054750925982] scale=[3.0, 3.0, 3.0]",
+      "at": 1788780122.1121907,
+      "data": {
+        "ok": true,
+        "name": "StaticMeshActor_90",
+        "label": "AIVIDO_V1_INSTALL_SMOKE",
+        "class": "StaticMeshActor",
+        "location": [
+          -0.5842264551334324,
+          390.8695559900999,
+          578.5054750925982
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          3.0,
+          3.0,
+          3.0
+        ]
+      }
+    },
+    {
       "step": "viewport_aimed",
       "ok": true,
-      "detail": "camera set to look at the cube: {'ok': True, 'camera_location': [-600.0, -8.740959706477724, 753.1646763271037], 'cube_location': [2.395770656664637e-14, 391.2590402935223, 403.16467632710373]}",
-      "at": 1788773570.0050554
+      "detail": "camera set to look at the cube: {'ok': True, 'camera_location': [-600.5842264551334, -9.130444009900089, 928.5054750925982], 'cube_location': [-0.5842264551334324, 390.8695559900999, 578.5054750925982]}",
+      "at": 1788780122.4134886
     },
     {
       "step": "viewport_capture",
       "ok": true,
-      "detail": "path=C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png size=1226745 source=NativeEditorViewport",
-      "at": 1788773570.2649248,
+      "detail": "path=C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png size=1212963 source=NativeEditorViewport",
+      "at": 1788780122.9110487,
       "data": {
         "ok": true,
         "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png",
-        "size": 1226745,
-        "diagnostic": "OK|source=LevelViewport[1]|perspective=1|visible=1|width=1922|height=677|bytes=1226745|path=C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent\\viewport_latest.png",
+        "size": 1212963,
+        "diagnostic": "OK|source=LevelViewport[1]|perspective=1|visible=1|width=1922|height=677|bytes=1212963|path=C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent\\viewport_latest.png",
         "capture_source": "NativeEditorViewport",
         "capture_requested": false
       }
@@ -123,22 +182,22 @@
       "step": "proof_saved",
       "ok": true,
       "detail": "C:\\Users\\Shadow\\Desktop\\Aivido-RC11-Live-736042d\\reports\\release\\AIVIDO_V1_SMOKE_EVIDENCE\\AIVIDO_V1_INSTALL_SMOKE_proof.png",
-      "at": 1788773570.2683215
+      "at": 1788780122.91435
     },
     {
       "step": "only_smoke_actor_added",
       "ok": true,
       "detail": "added=['AIVIDO_V1_INSTALL_SMOKE']",
-      "at": 1788773570.2858322
+      "at": 1788780123.070155
     },
     {
       "step": "actor_deleted",
       "ok": true,
       "detail": "deleted=None label=AIVIDO_V1_INSTALL_SMOKE",
-      "at": 1788773570.312299,
+      "at": 1788780123.4063365,
       "data": {
         "ok": true,
-        "name": "StaticMeshActor_89",
+        "name": "StaticMeshActor_90",
         "label": "AIVIDO_V1_INSTALL_SMOKE"
       }
     },
@@ -146,19 +205,19 @@
       "step": "actor_absent_after",
       "ok": true,
       "detail": "get_actor after delete -> Actor not found: AIVIDO_V1_INSTALL_SMOKE",
-      "at": 1788773570.3767478
+      "at": 1788780124.070198
     },
     {
       "step": "level_restored",
       "ok": true,
       "detail": "166 actors == baseline 166",
-      "at": 1788773570.3767636
+      "at": 1788780124.0702147
     },
     {
       "step": "no_save_performed",
       "ok": true,
       "detail": "level save intentionally NOT performed; dirty_flag=True (transient editor state, not persisted)",
-      "at": 1788773570.3992414,
+      "at": 1788780124.4114742,
       "data": {
         "ok": true,
         "world_name": "AividoHQ",
@@ -168,5 +227,5 @@
     }
   ],
   "evidence_dir": "C:\\Users\\Shadow\\Desktop\\Aivido-RC11-Live-736042d\\reports\\release\\AIVIDO_V1_SMOKE_EVIDENCE",
-  "completed_at": 1788773570.399652
+  "completed_at": 1788780124.4115007
 }

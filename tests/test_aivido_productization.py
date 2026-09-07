@@ -223,6 +223,16 @@ def test_smoke_mission_report_shape(tmp_path):
             return {"ok": True, "result": {"ok": True, "path": "",
                                            "size": 0}}
 
+        def move_actor(self, name, location):
+            return {"ok": True, "result": {"ok": True,
+                                           "label": smoke.ACTOR_NAME,
+                                           "location": location}}
+
+        def scale_actor(self, name, scale):
+            return {"ok": True, "result": {"ok": True,
+                                           "label": smoke.ACTOR_NAME,
+                                           "scale": scale}}
+
         def delete_actor(self, name):
             return {"ok": True, "result": {"ok": True, "deleted": True,
                                            "label": smoke.ACTOR_NAME}}

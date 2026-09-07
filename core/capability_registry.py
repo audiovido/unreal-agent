@@ -112,6 +112,15 @@ CAPABILITY_CATALOG: List[CapabilitySpec] = [
         tools=["list_level_actors"], optional_tools=["get_current_level"],
         mutates_project=False, recovery=RECOVERY_BRIDGE,
     ),
+    CapabilitySpec(
+        name="scene_verification", domain="general_unreal",
+        description="Verify ONE explicit scene requirement read-only against "
+                    "the live editor (map identity, bridge health, exact actor "
+                    "counts, movable lights, missing skeletal meshes, missing "
+                    "prop mesh/material references) with real measured results.",
+        tools=["verify_scene"], mutates_project=False, requires_editor=True,
+        recovery=RECOVERY_NONE,
+    ),
     # ---- level / environment ------------------------------------------------
     CapabilitySpec(
         name="level_creation", domain="level_design",

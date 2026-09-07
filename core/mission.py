@@ -454,11 +454,59 @@ class MissionEngine:
             # Capture/proof missions only PASS with the real capture file
             # recorded as evidence; get_evidence must never be empty.
             self._emit_capture_evidence(state)
+        verification = bool((state.intent or {}).get("verification"))
+        if verification:
+            # Verification missions: every explicit user requirement must be
+            # planned, executed AND evidenced. Evidence entries are emitted
+            # from the real step results (measured vs expected) so a PASS
+            # always has per-requirement evidence behind it.
+            self._emit_verification_evidence(state)
 
         if state.blockers:
             state.status = "blocked"
             state.verdict = "BLOCKED"
             state.why = "; ".join(state.blockers)
+        elif verification:
+            # False-PASS gate: PASS is IMPOSSIBLE while any explicit
+            # requirement is unplanned / unexecuted / un-evidenced. Verdicts
+            # are truthful: BLOCKED + REQUESTED_TOOL_MISSING when the
+            # verification tool is unavailable, FAIL + UNVERIFIED_REQUIREMENTS
+            # otherwise.
+            unverified = self._unverified_explicit_requirements(state)
+            if unverified:
+                if "verify_scene" not in self.tool_registry:
+                    state.status = "blocked"
+                    state.verdict = "BLOCKED"
+                    state.why = (
+                        "REQUESTED_TOOL_MISSING: verify_scene tool is not "
+                        "available; explicit requirements cannot be verified: "
+                        + "; ".join(unverified))
+                else:
+                    state.status = "failed"
+                    state.verdict = "FAIL"
+                    state.why = (
+                        "UNVERIFIED_REQUIREMENTS: "
+                        + "; ".join(unverified))
+                state.finished_at = time.time()
+                state.save()
+                return state
+            if not technical_ok:
+                state.status = "failed"
+                state.verdict = "FAIL"
+                state.why = (
+                    "Technical validation failed; see remaining_issues.")
+                state.finished_at = time.time()
+                state.save()
+                return state
+            state.status = "complete"
+            state.verdict = "PASS"
+            state.why = (
+                f"All {len(state.completed_step_ids)} steps verified; every "
+                "explicit verification requirement was planned, executed and "
+                "evidenced.")
+            state.finished_at = time.time()
+            state.save()
+            return state
         elif diagnostic:
             diagnosis = self._diagnostic_verdict(state, technical_ok)
             state.status = diagnosis["status"]
@@ -545,6 +593,106 @@ class MissionEngine:
             if path:
                 entry["path"] = str(path)
             state.evidence.append(entry)
+
+    def _emit_verification_evidence(self, state: MissionState) -> None:
+        """Append one real evidence entry per completed verification step.
+
+        Every explicit check that executed contributes its real measured vs
+        expected result (from the verify_scene payload) plus the viewport
+        capture entry for the proof step, so a verification PASS always
+        carries per-requirement evidence — never an empty evidence list.
+        """
+        steps = state.plan.get("steps") or []
+        completed = set(state.completed_step_ids)
+        existing = {ev.get("step_id") for ev in state.evidence}
+        for step in steps:
+            sid = step.get("step_id")
+            if sid in existing or sid not in completed:
+                continue
+            covers = step.get("covers")
+            if not covers:
+                continue
+            result = state.step_results.get(sid) or {}
+            if str(step.get("preferred_tool", "")) == "capture_unreal_viewport":
+                # Proof step: mirror the capture evidence shape so the same
+                # entry serves the explicit proof requirement.
+                node = (result.get("result")
+                        if isinstance(result.get("result"), dict) else {})
+                for _ in range(3):
+                    if node.get("path"):
+                        break
+                    nxt = node.get("result")
+                    if not isinstance(nxt, dict):
+                        break
+                    node = nxt
+                entry = {
+                    "kind": "viewport_capture",
+                    "step_id": sid,
+                    "check": covers,
+                    "tool": step.get("preferred_tool"),
+                    "ok": bool(result.get("ok") or node.get("ok")),
+                    "path": str(node.get("path") or ""),
+                }
+                size = node.get("size")
+                if isinstance(size, int):
+                    entry["bytes"] = size
+                state.evidence.append(entry)
+                continue
+            raw = (result.get("result")
+                   if isinstance(result.get("result"), dict) else {})
+            node = raw
+            for _ in range(3):
+                nxt = node.get("result")
+                if not isinstance(nxt, dict):
+                    break
+                node = nxt
+            entry = {
+                "kind": "verification",
+                "step_id": sid,
+                "check": covers,
+                "ok": bool(result.get("ok") or node.get("ok")),
+                "detail": str(
+                    node.get("detail") or result.get("error") or "")[:400],
+            }
+            for key in ("measured", "expected", "target", "path"):
+                if node.get(key) is not None:
+                    entry[key] = node[key]
+            if node.get("missing") is not None:
+                entry["missing"] = node["missing"]
+            state.evidence.append(entry)
+
+    def _unverified_explicit_requirements(
+        self, state: MissionState,
+    ) -> List[str]:
+        """Every explicit verification requirement that was NOT planned, NOT
+        executed or NOT evidenced. Empty list => every requirement is
+        covered, so PASS is truthful."""
+        reqs = (state.requirements or {}).get("requirements") or []
+        explicit = [
+            r for r in reqs
+            if r.get("explicit") and r.get("kind") == "verification"
+        ]
+        if not explicit:
+            return []
+        steps = (state.plan or {}).get("steps") or []
+        completed = set(state.completed_step_ids)
+        evidenced = {ev.get("step_id") for ev in state.evidence}
+        problems: List[str] = []
+        for req in explicit:
+            desc = str(req.get("desc") or req.get("id") or "requirement")
+            check = req.get("check") or {}
+            cid = str(check.get("id") or "")
+            covering = [s for s in steps if s.get("covers") == cid]
+            if not covering:
+                problems.append(f"{desc} (NOT_PLANNED)")
+                continue
+            sid = covering[-1].get("step_id")
+            if sid not in completed:
+                problems.append(f"{desc} (NOT_EXECUTED)")
+                continue
+            if sid not in evidenced:
+                problems.append(f"{desc} (NOT_EVIDENCED)")
+        return problems
 
     def _emit_capture_evidence(self, state: MissionState) -> None:
         """Append one real evidence entry per completed viewport capture.

@@ -88,6 +88,7 @@ def _apply_mission_mode(state: MissionState, request: "UnrealCoderRequest") -> N
         intent_read_only=bool(intent.get("read_only")),
         intent_mode=intent.get("mode"),
         diagnostic=bool(intent.get("diagnostic")),
+        verification=bool(intent.get("verification")),
     ) == MODE_READ_ONLY
 
 
