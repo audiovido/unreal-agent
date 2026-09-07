@@ -162,7 +162,19 @@ class MissionState:
                        default=str),
             encoding="utf-8",
         )
-        tmp.replace(path)
+        # The checkpoint is read by concurrent API polls; on Windows a
+        # simultaneous reader can transiently block the atomic replace with
+        # a sharing violation. Retry briefly so a poll overlap can never
+        # crash a mission worker mid-step (release blocker:
+        # isolated_capture_mission). Persistent failures still raise.
+        for attempt in range(6):
+            try:
+                tmp.replace(path)
+                return
+            except PermissionError:
+                if attempt == 5:
+                    raise
+                time.sleep(0.05 * (attempt + 1))
 
     @classmethod
     def load(cls, mission_id: str) -> Optional["MissionState"]:

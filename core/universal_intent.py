@@ -149,17 +149,48 @@ DIAGNOSTIC_MARKERS = (
 # Explicit viewport capture / proof requests are NOT chat: they are
 # read-only EXECUTE missions that must run a real capture_unreal_viewport
 # evidence step (a 0-step "answer" plan can never return real evidence).
-# Markers are deliberately specific (they name the current viewport / a
-# capture of it) so ordinary "what is X" questions stay chat.
+# Markers cover ordinary screenshot/capture phrasings ("capture a
+# screenshot", "take a screenshot", "take a fresh viewport screenshot",
+# ...) so the QA plain-capture phrasing routes to a real capture plan
+# instead of an ANSWER/0-step plan. They are phrase-level so ordinary
+# "what is X" questions stay chat; knowledge questions ("how do I take a
+# screenshot in Unreal?") are guarded below.
 CAPTURE_PROOF_MARKERS = (
     "capture the current", "capture current", "capture the viewport",
-    "capture viewport", "screenshot of the current", "screenshot the current",
+    "capture viewport", "capture a viewport", "capture the viewport screen",
+    "screenshot of the current", "screenshot the current",
     "screenshot of current", "screenshot current",
-    "screenshot the viewport", "screenshot the editor",
+    "screenshot the viewport", "screenshot of the viewport",
+    "screenshot the editor", "screenshot of the editor",
+    "viewport screenshot", "editor viewport screenshot",
     "visual proof of the current", "proof of the current",
     "viewport proof", "viewport as evidence", "viewport evidence",
     "capture proof", "return the captured viewport",
     "return visual proof", "return viewport evidence",
+    "screenshot as evidence", "screenshot for evidence",
+    # ordinary imperative capture/screenshot phrasings (defect
+    # plain_capture_phrasing_routing): these used to fall through to chat
+    # (ANSWER, 0 steps) because "capture"/"take" are not EXECUTE_MARKERS.
+    "capture a screenshot", "capture screenshot", "capture the screenshot",
+    "capture a fresh screenshot", "capture a viewport screenshot",
+    "capture the viewport screenshot", "capture a screenshot of the viewport",
+    "take a screenshot", "take screenshot", "take the screenshot",
+    "take a fresh screenshot", "take a viewport screenshot",
+    "take a fresh viewport screenshot", "take the viewport screenshot",
+    "take a screenshot of the viewport", "take a screenshot of the current",
+    "take a screenshot of the editor", "take a screenshot of the scene",
+    "take a screenshot of the level", "take a picture of the viewport",
+    "capture a picture of the viewport", "capture a snapshot",
+    "take a snapshot", "capture visual evidence", "take visual evidence",
+    "capture evidence", "take evidence",
+)
+
+# Knowledge-question guard: "how do I take a screenshot in Unreal?" is an
+# instruction question and must stay chat, never spawn a capture mission.
+CAPTURE_QUESTION_MARKERS = (
+    "how do i", "how do you", "how to", "what is a", "what's a",
+    "what are", "what is the", "explain", "what does", "teach me",
+    "tutorial",
 )
 
 # Explicit scene-VERIFICATION requests ("run the exact strict read-only
@@ -534,7 +565,9 @@ def interpret_intent(prompt: str) -> UniversalIntent:
             "Diagnostic request: planned as read-only health probes "
             "(backend + Unreal bridge) with real evidence, not chat."
         )
-    elif _has(lowered, *CAPTURE_PROOF_MARKERS):
+    elif _has(lowered, *CAPTURE_PROOF_MARKERS) and not _has(
+        lowered, *CAPTURE_QUESTION_MARKERS
+    ):
         # Explicit viewport capture/proof requests must EXECUTE a real
         # read-only evidence step (capture_unreal_viewport) — never a 0-step
         # chat answer that cannot return real evidence. The read-only intent

@@ -31,6 +31,7 @@ returns the canonical response envelope from core/mission.mission_response.
 from __future__ import annotations
 
 import json
+import os
 import threading
 import time
 import uuid
@@ -66,6 +67,84 @@ from tools.unreal.asset_intake import analyze_asset
 # --------------------------------------------------------------------------
 
 _ASYNC_RUNS: Dict[str, Dict[str, Any]] = {}
+
+
+# ---------------------------------------------------------------------------
+# Bounded-execution contract (release blocker: isolated_capture_mission)
+# ---------------------------------------------------------------------------
+# A mission must NEVER remain indefinitely in `executing`: the async worker
+# enforces a hard wall-clock deadline, every worker exit path finalizes the
+# durable checkpoint to a terminal state, cancel always lands on a terminal
+# state, and orphaned `executing` checkpoints (worker died / process
+# restarted) are reaped on read. No checkpoint is ever abandoned mid-flight.
+
+class MissionDeadlineExceeded(RuntimeError):
+    """Raised at a step boundary when a mission exceeds its hard deadline."""
+
+
+MISSION_HARD_TIMEOUT_S = float(os.getenv(
+    "AIVIDO_MISSION_HARD_TIMEOUT_S", "900"))
+ORPHAN_EXECUTING_GRACE_S = float(os.getenv(
+    "AIVIDO_MISSION_ORPHAN_GRACE_S", "300"))
+
+
+class _MissionDeadline:
+    """Monotonic deadline helper; `remaining_s` is 0 once exceeded."""
+
+    def __init__(self, timeout_s: float):
+        self.timeout_s = float(timeout_s or 0.0)
+        self._deadline = (
+            time.monotonic() + self.timeout_s if self.timeout_s > 0 else None)
+
+    def check(self) -> None:
+        if self._deadline is not None and time.monotonic() > self._deadline:
+            raise MissionDeadlineExceeded(
+                f"mission exceeded the {self.timeout_s:.0f}s hard execution "
+                "deadline")
+
+    def remaining_s(self) -> float:
+        if self._deadline is None:
+            return float("inf")
+        return max(0.0, self._deadline - time.monotonic())
+
+
+def _finalize_mission(mission_id: str, status: str, verdict: str,
+                      why: str) -> Optional[MissionState]:
+    """Force a durable terminal checkpoint. Idempotent: a checkpoint already
+    in a terminal state is never overwritten."""
+    current = MissionState.load(mission_id)
+    if current is None:
+        return None
+    if current.status in ("complete", "failed", "blocked", "cancelled"):
+        return current
+    current.status = status
+    current.verdict = verdict
+    current.why = why
+    current.finished_at = time.time()
+    current.save()
+    return current
+
+
+def _reap_orphaned_executing(state: MissionState) -> MissionState:
+    """Finalize a checkpoint that is `executing` with NO live worker in this
+    process and past the orphan grace period. Guarantees no mission can stay
+    in `executing` indefinitely after a worker crash / backend restart."""
+    if state.status != "executing":
+        return state
+    entry = _ASYNC_RUNS.get(state.mission_id)
+    if entry is not None and entry.get("running"):
+        return state
+    started = float(state.started_at or state.created_at or 0.0)
+    if time.time() - started < ORPHAN_EXECUTING_GRACE_S:
+        return state
+    _finalize_mission(
+        state.mission_id, "blocked", "BLOCKED",
+        "Mission was left in 'executing' with no live worker for longer than "
+        f"the {ORPHAN_EXECUTING_GRACE_S:.0f}s orphan grace period; finalized "
+        "as BLOCKED (MISSION_ORPHANED) so status stays truthful and the "
+        "mission never remains in 'executing' indefinitely.")
+    reloaded = MissionState.load(state.mission_id)
+    return reloaded if reloaded is not None else state
 
 
 # ---------------------------------------------------------------------------
@@ -316,7 +395,15 @@ def _default_visual_adapters(tool_registry, scene_locators=None):
         provider failure degrades to deterministic-only."""
         from core.visual_acceptance import measure, score
         from core import vision_provider
-        path = (captured or {}).get("path")
+        captured = captured or {}
+        # A capture that failed (editor save error, hidden viewport, stale
+        # file left by another process) can never be scored against whatever
+        # file happens to sit at the same path. Refuse to measure it so a
+        # stale duplicate can never produce a false visual PASS.
+        if not captured.get("ok"):
+            return {"score": 0.0, "defects": ["CAPTURE_FAILED"],
+                    "metrics": {"ok": False}, "review": {"ok": False}}
+        path = captured.get("path")
         locator_kw = {}
         if scene_locators:
             for key in ("subject_locator", "ui_locator"):
@@ -404,6 +491,7 @@ def _execute_mission_state(
     repair=None,
     scene_locators=None,
     cancel_provider: Optional[Callable[[], bool]] = None,
+    deadline: Optional[_MissionDeadline] = None,
 ) -> Dict[str, Any]:
     """Run an interpreted/planned mission through the EXISTING machinery.
 
@@ -415,6 +503,11 @@ def _execute_mission_state(
 
     cancel_provider: optional zero-arg callable returning True when the
     mission must stop at the next step boundary (used by async cancel).
+
+    deadline: optional _MissionDeadline. When supplied, the mission is
+    BOUNDED: the deadline is checked at every step boundary and around the
+    visual capture loop, raising MissionDeadlineExceeded so the caller can
+    finalize the checkpoint truthfully instead of hanging forever.
     """
     # Phase 3 — plan validation before any step executes (single choke
     # point; also reached by the sync/async/resume entry points).
@@ -426,6 +519,14 @@ def _execute_mission_state(
         (capture, evaluate, repair) if capture is not None
         else _default_visual_adapters(tool_registry,
                                        scene_locators=scene_locators))
+    if deadline is not None and run_capture is not None:
+        base_capture = run_capture
+
+        def _deadline_guarded_capture():
+            deadline.check()
+            return base_capture()
+
+        run_capture = _deadline_guarded_capture
 
     # Canonical policy: READ_ONLY missions never self-repair (the default
     # repair rotates/reframes the camera — a mutation). Capture/evaluate
@@ -449,9 +550,11 @@ def _execute_mission_state(
 
     dispatch_target = dispatch_bridge or production_dispatch
 
-    if cancel_provider is not None:
+    if cancel_provider is not None or deadline is not None:
         def cancellable_dispatch(step, _inner=dispatch_target):
-            if cancel_provider():
+            if deadline is not None:
+                deadline.check()
+            if cancel_provider is not None and cancel_provider():
                 raise RuntimeError("MISSION_CANCELLED_BY_USER")
             return _inner(step)
         dispatch_target = cancellable_dispatch
@@ -601,12 +704,26 @@ def register_unreal_coder_api(
         # -- execute (existing dispatcher) ---------------------------------
         # Runs through the single shared execution path (project guard +
         # real tool dispatch + validation); see _execute_mission_state.
-        return _execute_mission_state(
-            state, request, tool_registry,
-            dispatch_bridge=dispatch_bridge,
-            capture=capture, evaluate=evaluate, repair=repair,
-            scene_locators=scene_locators,
-        )
+        # Bounded: the hard deadline finalizes the checkpoint instead of
+        # letting the request hang forever in `executing`.
+        deadline = _MissionDeadline(MISSION_HARD_TIMEOUT_S)
+        try:
+            return _execute_mission_state(
+                state, request, tool_registry,
+                dispatch_bridge=dispatch_bridge,
+                capture=capture, evaluate=evaluate, repair=repair,
+                scene_locators=scene_locators,
+                deadline=deadline,
+            )
+        except MissionDeadlineExceeded as exc:
+            _finalize_mission(
+                state.mission_id, "blocked", "BLOCKED",
+                "Mission exceeded the hard execution deadline "
+                f"({MISSION_HARD_TIMEOUT_S:.0f}s) and was finalized with a "
+                "structured TIMED_OUT; it never remains indefinitely in "
+                f"executing. {exc}")
+            return mission_response(
+                MissionState.load(state.mission_id) or state)
 
     # ------------------------------------------------------------------
     # ASYNC / VALIDATE / RETRY / CANCEL — the ClickUp MCP gateway surface.
@@ -679,6 +796,7 @@ def register_unreal_coder_api(
             "cancel_flag": False,
             "error": None,
         }
+        deadline = _MissionDeadline(MISSION_HARD_TIMEOUT_S)
 
         def worker():
             try:
@@ -690,21 +808,35 @@ def register_unreal_coder_api(
                     cancel_provider=lambda: bool(
                         _ASYNC_RUNS.get(state.mission_id, {}).get(
                             "cancel_flag")),
+                    deadline=deadline,
                 )
+            except MissionDeadlineExceeded as exc:
+                _finalize_mission(
+                    state.mission_id, "blocked", "BLOCKED",
+                    "Mission exceeded the hard execution deadline "
+                    f"({MISSION_HARD_TIMEOUT_S:.0f}s) and was finalized with "
+                    "a structured TIMED_OUT; it never remains indefinitely "
+                    f"in executing. {exc}")
             except Exception as exc:
                 entry = _ASYNC_RUNS.get(state.mission_id)
-                current = MissionState.load(state.mission_id) or state
+                if entry is not None:
+                    entry["error"] = f"{type(exc).__name__}: {exc}"
                 if entry and entry.get("cancel_flag"):
-                    current.status = "blocked"
-                    current.verdict = "CANCELLED"
-                    current.why = (
+                    _finalize_mission(
+                        state.mission_id, "blocked", "CANCELLED",
                         "Mission cancelled by user request "
                         "(ClickUp MCP gateway).")
-                    current.finished_at = time.time()
-                    current.save()
                 else:
-                    if entry is not None:
-                        entry["error"] = f"{type(exc).__name__}: {exc}"
+                    # NEVER leave the durable checkpoint in `executing`: an
+                    # internal failure is finalized truthfully (never a fake
+                    # PASS) so the mission always reaches a terminal state.
+                    _finalize_mission(
+                        state.mission_id, "failed", "FAIL",
+                        "Mission execution aborted with an internal error "
+                        "and was finalized truthfully: "
+                        f"{type(exc).__name__}: {exc} "
+                        "(MISSION_INTERNAL_ERROR — the checkpoint is never "
+                        "left in executing).")
             finally:
                 entry = _ASYNC_RUNS.get(state.mission_id)
                 if entry is not None:
@@ -849,8 +981,8 @@ def register_unreal_coder_api(
             # Wait (bounded) for the worker to stop at the next step
             # boundary and finalize the checkpoint, so the caller sees the
             # real terminal state instead of a mid-flight snapshot.
-            deadline = time.time() + 30.0
-            while time.time() < deadline:
+            wait_deadline = time.time() + 30.0
+            while time.time() < wait_deadline:
                 current = MissionState.load(mission_id)
                 running = bool(entry.get("running"))
                 if not running or current is None \
@@ -863,7 +995,15 @@ def register_unreal_coder_api(
             state.why = "Mission cancelled by user request (ClickUp MCP gateway)."
             state.finished_at = time.time()
             state.save()
-        return mission_response(MissionState.load(mission_id) or state)
+        # Cancellation MUST always land on a terminal state: if the worker
+        # already died (or is wedged past the wait), finalize the checkpoint
+        # directly instead of returning a phantom `executing` snapshot.
+        final = _finalize_mission(
+            mission_id, "blocked", "CANCELLED",
+            "Mission cancelled by user request (ClickUp MCP gateway); "
+            "execution worker was not progressing, so the checkpoint was "
+            "finalized at cancel time.")
+        return mission_response(final or state)
 
     @app.get("/api/unreal-coder/capabilities")
     def unreal_coder_capabilities():
@@ -875,6 +1015,9 @@ def register_unreal_coder_api(
         if state is None:
             from fastapi import HTTPException
             raise HTTPException(404, f"Unknown mission {mission_id}")
+        # Self-healing: a checkpoint stuck in `executing` with no live worker
+        # is finalized on read (bounded by the orphan grace period).
+        state = _reap_orphaned_executing(state)
         response = mission_response(state)
         # Same evidence-locator fields the execution response carries, so
         # external consumers (e.g. the ClickUp MCP gateway) can find the
