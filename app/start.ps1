@@ -29,6 +29,6 @@ if (-not $NoBrowser) {
     } | Out-Null
 }
 
-& $Python -m uvicorn app.api:app `
+& $Python -m uvicorn app.served:app `
     --host 127.0.0.1 `
     --port 8765

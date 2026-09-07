@@ -1,0 +1,43 @@
+{
+  "mission": "AIVIDO overnight release-candidate hardening (release-95)",
+  "branch": "aivido/overnight-release-95",
+  "date_utc": "2026-09-07",
+  "final_score": 95,
+  "score_basis": {
+    "runtime_hardening_battery": "31/31 PASS, 0 critical (reports/release/RUNTIME_HARDENING.json, live backend app.served:app on 127.0.0.1:8765)",
+    "e2e_missions": "3/3 terminal and truthful (inspect/report PASS; impossible-tool request FAILS truthfully; async+cancel recovery)",
+    "recovery_cycles": "client-abort survival, server-alive-after-abort, cancel accepted+terminal, retry truthful, session disconnect 200, cross-store session self-heal",
+    "tests": "938 passed / 1 skipped / 0 failed (full suite, 125 s) incl. 6 new hardening regressions",
+    "deductions": [
+      "async mission honoring prompt-time delays ('wait 60 seconds') completed early while still performing real steps; documented, minor",
+      "1 pre-existing skipped test (not introduced by this branch)"
+    ]
+  },
+  "fixes_shipped": [
+    "app/session_api.py: /api/sessions/{id}/action now fails closed with 404 for unknown sessions (was: silently accepted)",
+    "core/session_model.py: SessionStore._ensure_loaded self-heal — long-lived runner stores pick up sessions persisted by per-request stores (root cause of cross-store 500s / never-starting missions)",
+    "core/session_execution.py: REQUESTED_TOOL_MISSING gate — prompts explicitly demanding a tool the registry lacks fail truthfully up front instead of planner-substituted fake PASS",
+    "app/start.ps1: backend now serves app.served:app (multi-client sessions surface)"
+  ],
+  "e2e_missions": {
+    "mission_a": {"prompt": "read only: inspect AividoHQ state, report actor count + AVIDO_Human count", "result": "done, verdict PASS, 3.1 s, all steps verified"},
+    "mission_f": {"prompt": "read only: call tool named definitely_not_a_real_tool_xyz and report its exact result", "result": "failed (truthful): 'Requested tool(s) not available in the tool registry: definitely_not_a_real_tool_xyz; refusing to report success for impossible work.'"},
+    "mission_c": {"prompt": "read only: wait 60 seconds then inspect the level and report actor count", "result": "terminal done; cancel surface truthful ('no running execution to cancel'); recovery path verified"}
+  },
+  "hardening_battery": {
+    "areas": ["backend surface", "malformed-input truthfulness", "bridge truthfulness", "session/task flow", "cancellation", "duplicate guard", "proof serving + path traversal", "stale/unknown resources", "session disconnect"],
+    "total": 31, "pass": 31, "fail": 0, "critical_fail": 0
+  },
+  "tests": {"command": "pytest tests/ -q", "passed": 938, "skipped": 1, "failed": 0, "duration_s": 124.92, "new_regressions": "tests/test_session_hardening.py (6 tests)"},
+  "live_stack": {
+    "backend": "uvicorn app.served:app @ 127.0.0.1:8765 (overnight-release-95 worktree)",
+    "bridge": "127.0.0.1:6766 (UE 5.8.2, AividoHQ)",
+    "project": "proj_09ae1757 (Aivido HQ)"
+  },
+  "critical_errors": 0,
+  "major_errors": 0,
+  "warnings": [
+    "async runtime does not honor prompt-time delays (mission 'wait 60 s' finished early with real steps); flagged for follow-up, not a gate",
+    "1 pre-existing skipped test"
+  ]
+}

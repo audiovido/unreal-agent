@@ -1,0 +1,308 @@
+{
+  "generated_utc": "2026-09-07T05:22:19Z",
+  "base": "http://127.0.0.1:8765",
+  "results": [
+    {
+      "area": "backend",
+      "name": "status_endpoint",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 200,
+        "unreal_ok": true
+      }
+    },
+    {
+      "area": "backend",
+      "name": "booth_ui_served",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 200,
+        "bytes": 21711
+      }
+    },
+    {
+      "area": "backend",
+      "name": "resource_supervisor",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "unreal_pids": [
+          2220
+        ],
+        "ram_used_pct": 31.6
+      }
+    },
+    {
+      "area": "malformed",
+      "name": "action_missing_action_400",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 400,
+        "body": "{\"detail\":\"action is required.\"}"
+      }
+    },
+    {
+      "area": "malformed",
+      "name": "action_bad_payload_400",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 400
+      }
+    },
+    {
+      "area": "malformed",
+      "name": "invalid_json_rejected",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 422
+      }
+    },
+    {
+      "area": "malformed",
+      "name": "unknown_action_truthful",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 400,
+        "body": "{\"detail\":\"Unknown action: definitely_not_wired_xyz\"}"
+      }
+    },
+    {
+      "area": "malformed",
+      "name": "unknown_project_404",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 404
+      }
+    },
+    {
+      "area": "malformed",
+      "name": "unknown_session_404",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 404
+      }
+    },
+    {
+      "area": "malformed",
+      "name": "stale_task_404",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 404,
+        "body": "{\"detail\":\"Execution detail not found.\"}"
+      }
+    },
+    {
+      "area": "malformed",
+      "name": "stale_session_execution_404",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 404
+      }
+    },
+    {
+      "area": "backend",
+      "name": "root_served",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 200
+      }
+    },
+    {
+      "area": "bridge",
+      "name": "ping",
+      "ok": true,
+      "severity": "major",
+      "detail": null
+    },
+    {
+      "area": "bridge",
+      "name": "identity",
+      "ok": true,
+      "severity": "major",
+      "detail": null
+    },
+    {
+      "area": "bridge",
+      "name": "unknown_type_truthful",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "error": "Unknown request type: bogus_message_type_xyz"
+      }
+    },
+    {
+      "area": "bridge",
+      "name": "invalid_python_truthful",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": "PYTHON_EXECUTION_FAILED",
+        "msg": "division by zero"
+      }
+    },
+    {
+      "area": "bridge",
+      "name": "harmless_operation",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "map": "/Game/Maps/AividoHQ.AividoHQ"
+      }
+    },
+    {
+      "area": "session",
+      "name": "create_session",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "session_id": "sess_ba58040b36"
+      }
+    },
+    {
+      "area": "session",
+      "name": "start_session_bridge_bind",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 200,
+        "body": "{\"ok\": true, \"session_id\": \"sess_ba58040b36\", \"project_id\": \"proj_09ae1757\", \"bridge\": \"127.0.0.1:6766\", \"unreal_pid\": 2220, \"active_map\": \"/Game/Maps/AividoHQ.AividoHQ\", \"engine_version\": \"5.8.2-56702186+++UE5+Release-5"
+      }
+    },
+    {
+      "area": "session",
+      "name": "client_abort_survival",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "aborted_client_after_s": 1.03
+      }
+    },
+    {
+      "area": "backend",
+      "name": "server_alive_after_abort",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 200
+      }
+    },
+    {
+      "area": "session",
+      "name": "mission_a_terminal",
+      "ok": true,
+      "severity": "critical",
+      "detail": {
+        "state": "done",
+        "duration_s": 3.1,
+        "poll_attempts": 2,
+        "verdict": "PASS",
+        "why": "All 2 steps verified."
+      }
+    },
+    {
+      "area": "session",
+      "name": "no_duplicate_task_ids",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "task_ids": [
+          "exec_mission_a"
+        ]
+      }
+    },
+    {
+      "area": "session",
+      "name": "mission_f_fail_truthful",
+      "ok": true,
+      "severity": "critical",
+      "detail": {
+        "state": "failed",
+        "duration_s": 3.1,
+        "why": "Requested tool(s) not available in the tool registry: definitely_not_a_real_tool_xyz; refusing to report success for impossible work."
+      }
+    },
+    {
+      "area": "session",
+      "name": "cancel_accepted",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "body": "{\"ok\":true,\"note\":\"no running execution to cancel\"}"
+      }
+    },
+    {
+      "area": "session",
+      "name": "cancel_terminal",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "state": "done",
+        "duration_s": 0.0,
+        "poll_attempts": 1
+      }
+    },
+    {
+      "area": "proof",
+      "name": "proof_listing",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "entries": 2
+      }
+    },
+    {
+      "area": "proof",
+      "name": "no_demo_promoted_live",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "demo_entries": 0
+      }
+    },
+    {
+      "area": "proof",
+      "name": "path_traversal_blocked",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 404
+      }
+    },
+    {
+      "area": "session",
+      "name": "retry_no_active_truthful",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 400,
+        "body": "{\"detail\":\"No previous execution is available to retry.\"}"
+      }
+    },
+    {
+      "area": "backend",
+      "name": "session_disconnect",
+      "ok": true,
+      "severity": "major",
+      "detail": {
+        "code": 200
+      }
+    }
+  ],
+  "counts": {
+    "total": 31,
+    "pass": 31,
+    "fail": 0,
+    "critical_fail": 0
+  }
+}

@@ -221,6 +221,30 @@ class SessionStore:
         )
         return self.dir / f"{safe}.json"
 
+    def _ensure_loaded(self, session_id: str) -> None:
+        """Self-heal: pick up sessions persisted by other store instances.
+
+        Long-lived singletons (the session runner) construct one SessionStore
+        at startup; sessions created afterwards through per-request store
+        instances only exist on disk. Without this reload the runner would
+        fail-closed every post-startup session as "unknown".
+        """
+        if not session_id or session_id in self._mem:
+            return
+        p = self._path(session_id)
+        if not p.exists():
+            return
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return
+        try:
+            session = self._from_dict(data)
+        except Exception:
+            return
+        if str(session.session_id) == str(session_id):
+            self._mem[session_id] = session
+
     def _save(self, session: ProjectSession) -> None:
         p = self._path(session.session_id)
         tmp = p.with_suffix(".json.tmp")
@@ -299,6 +323,7 @@ class SessionStore:
 
     def get(self, session_id: str) -> Optional[ProjectSession]:
         with self._lock:
+            self._ensure_loaded(session_id)
             return self._mem.get(session_id)
 
     def require(self, session_id: str) -> ProjectSession:
@@ -325,6 +350,7 @@ class SessionStore:
     ) -> Optional[ProjectSession]:
         """Apply fn(session, *args, **kwargs) and persist. Returns session."""
         with self._lock:
+            self._ensure_loaded(session_id)
             session = self._mem.get(session_id)
             if session is None:
                 return None

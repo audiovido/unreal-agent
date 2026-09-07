@@ -114,6 +114,9 @@ def start_session(session_id: str,
 
 @router.post("/api/sessions/{session_id}/action")
 def session_action(session_id: str, body: ActionBody) -> Dict[str, Any]:
+    store = SessionStore()
+    if store.get(session_id) is None:
+        raise HTTPException(404, f"unknown session {session_id}")
     runner = get_default_runner()
     return runner.run_prompt(
         session_id, body.prompt,

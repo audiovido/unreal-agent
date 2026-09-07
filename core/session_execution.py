@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import threading
 import time
@@ -751,6 +752,30 @@ class SessionRunner:
         state.intent = intent.to_dict()
         state.requirements = requirements.to_dict()
         state.read_only = read_only
+
+        # -- hardening gate: explicit tool requests must be satisfiable ------
+        # A prompt that demands a tool the registry does not have can never
+        # be completed truthfully; fail it up front instead of letting the
+        # planner substitute unrelated steps and report a fake PASS.
+        missing_tools = sorted(
+            t for t in _extract_requested_tools(prompt) if t not in registry)
+        if missing_tools:
+            state.status = "failed"
+            state.verdict = "FAIL"
+            state.why = (
+                "Requested tool(s) not available in the tool registry: "
+                + ", ".join(missing_tools)
+                + "; refusing to report success for impossible work.")
+            state.finished_at = time.time()
+            state.save()
+            store.finish_execution(
+                session.session_id, execution_id, "FAILED",
+                why=state.why, status=READY)
+            response = mission_response(state)
+            response["execution_id"] = execution_id
+            return {"ok": False, "code": "REQUESTED_TOOL_MISSING",
+                    "execution_id": execution_id,
+                    "response": response, "status": "FAILED"}
         # Explicit request mode wins (contract: force chat|plan|execute).
         if mode in ("chat", "plan", "execute"):
             intent.mode = mode
@@ -986,6 +1011,30 @@ class SessionRunner:
 # ---------------------------------------------------------------------------
 # Per-session registry + production dispatch
 # ---------------------------------------------------------------------------
+
+# Explicit tool requests in a prompt ("tool named X", "tool called X",
+# tool "X") that the registry cannot satisfy must fail the mission
+# truthfully BEFORE planning — the planner silently substituting valid
+# steps for an impossible request would otherwise end as a fake PASS.
+_TOOL_REQUEST_RE = re.compile(
+    r"\btool\s+(?:named|called)?\s*[\"'`]?([A-Za-z0-9_\-]{3,})")
+_TOOL_REQUEST_STOPWORDS = frozenset({
+    "for", "to", "the", "that", "this", "is", "and", "in", "on", "with",
+    "named", "called", "which", "will", "can", "should", "from", "then",
+    "your", "its", "not", "use", "using",
+})
+
+
+def _extract_requested_tools(prompt: str) -> set:
+    """Tool tokens a prompt explicitly demands by name (never generic
+    mentions of 'tools' without a concrete identifier)."""
+    tools = set()
+    for m in _TOOL_REQUEST_RE.finditer(str(prompt or "")):
+        token = m.group(1).strip("\"'`").lower()
+        if token and token not in _TOOL_REQUEST_STOPWORDS:
+            tools.add(token)
+    return tools
+
 
 def _build_session_registry(bridge: Any) -> Dict[str, Any]:
     """Clone the canonical tool registry with the bridge bound to ONE session.
