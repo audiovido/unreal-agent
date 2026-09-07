@@ -9,7 +9,40 @@
   "hermetic_suite": {
     "passed": 1121,
     "skipped": 1,
-    "new_cinematic_tests": 38
+    "failed": 0,
+    "cinematic_tests": 39,
+    "cinematic_passed": 39,
+    "run_time_s": 233.19,
+    "result": "clean full-suite rerun PASS (exit 0); earlier 2 order/environment flakes passed in isolation"
+  },
+  "cast_repair": {
+    "status": "PASS",
+    "durable": true,
+    "characters": "8/8 standing upright on the floor with production materials",
+    "feet_on_floor": "8/8 zmin == 0",
+    "materials": "Aivido_Body / Aivido_Head opaque production MICs on every slot (slot1=head, rest=body)",
+    "white_overrides": "none (component overrides cleared; no WhiteH anywhere)",
+    "avcam_cine_residue": "none (no AVCam_*, no /Game/Cine shell, no temp actors)",
+    "actor_count": "166 before and after (no actors added/removed)",
+    "map_resaved": true,
+    "mechanism": "durable asset-level repair in Unreal: SkeletalMesh materials rebuilt and saved per character (wholesale fresh SkeletalMaterial list, verified by re-read), component override_materials cleared, persisted 180 deg orientation + floor-level Z per component, certified map intentionally re-saved after live verification. Full before-state recorded in cast_durable_result.json for exact recovery.",
+    "blender_used": "YES - headless source diagnosis only (vendored Blender 4.2.0, diag_fbx.py proved the source FBX geometry correct: feet at 0, upright). No Blender surgery was needed; all three defects are Unreal-side import/ref-pose bakes.",
+    "vision_gate": {
+      "score": 8,
+      "pass": true,
+      "model": "qwen3-vl:8b-instruct",
+      "human_visible": true,
+      "readable_as_human": true,
+      "upright": true,
+      "summary": "A standing human character is clearly visible, upright, and readable as a human in a futuristic setting."
+    },
+    "proof": [
+      "reports/cinematic/cast_durable/cast_durable_result.json",
+      "reports/cinematic/cast_durable/proof/hero_final_upright.png",
+      "reports/cinematic/cast_durable/proof/evidence_inverted_before_orient.png",
+      "reports/cinematic/cast_durable/proof/evidence_upright_after_orient.png",
+      "reports/cinematic/cast_durable/sweep/hero_best.png"
+    ]
   },
   "phases": {
     "blender_integration": {
@@ -18,11 +51,11 @@
     },
     "asset_reuse_behavior": {
       "status": "PASS",
-      "detail": "existing AividoHQ content reused live on the fast path; Blender never invoked because no asset genuinely needed creation for the demo (see blender_used below)"
+      "detail": "existing AividoHQ content reused live on the fast path; Blender never invoked to create anything for the demo"
     },
     "blender_used": {
-      "status": "NO",
-      "reason": "the human-cast defect was repaired for the demo with a bounded transient in-engine Z-lift + WhiteH material override; durable repair of the broken body materials / pivot is a real asset-level fix flagged for Blender"
+      "status": "HEADLESS_DIAGNOSIS_ONLY",
+      "detail": "vendored Blender 4.2.0 ran diag_fbx.py headless and proved the source FBX geometry is correct (mesh feet at z=0, upright) for the cast. All three real defects (floor burial, inversion, masked-material invisibility) are Unreal-side import/ref-pose bakes, so no Blender surgery was performed; they were repaired durably in Unreal (sanctioned least-destructive option C for a healthy source)."
     },
     "cine_camera": {
       "status": "PASS",
@@ -34,7 +67,7 @@
     },
     "movie_render_queue": {
       "status": "BLOCKED_ENGINE",
-      "detail": "plugin enabled (MovieRenderPipeline added to the .uproject) and the UE 5.8 surface verified (MoviePipelineQueueSubsystem / MoviePipelineInProcessExecutor / MoviePipelinePIEExecutor; the 5.4-era names no longer exist). Jobs submitted with camera-bound cuts and a temp map copy; both executors stall at the in-editor target-map load step (silent after 'About to load target map', no frames). Real MRQ output BLOCKED truthfully; no fake render."
+      "detail": "plugin enabled (MovieRenderPipeline added to the .uproject) and the UE 5.8 surface verified (MoviePipelineQueueSubsystem / MoviePipelineInProcessExecutor / MoviePipelinePIEExecutor). Jobs submitted with camera-bound cuts and a temp map copy; both executors stall at the in-editor target-map load step (silent after 'About to load target map', no frames). Real MRQ output BLOCKED truthfully; no fake render. Not reopened this task."
     },
     "real_video": {
       "status": "PASS",
@@ -47,66 +80,71 @@
       "frame_count": 48,
       "proof_paths": [
         "reports/cinematic/cast/demo/shot1_frame.png",
-        "reports/cinematic/cast/demo/shot2_frame.png",
-        "reports/cinematic/cast/proof/cast_pre_lift.png",
-        "reports/cinematic/cast/proof/cast_post_lift.png"
+        "reports/cinematic/cast/demo/shot2_frame.png"
       ]
     },
     "human_hero_visible": {
       "status": "PASS",
-      "detail": "pre/post lift+material capture diff at a calibrated bar (changed-frac >= 0.008 and max-delta >= 60) passed; the standing white humanoid was visually confirmed in real frames. At least one Aivido human verifiably renders in a real cinematic frame.",
-      "proof": "reports/cinematic/cast/proof/cast_pre_lift.png vs cast_post_lift.png",
-      "mechanism": "transient in-engine Z-lift (feet to floor) + WhiteH material override on 23 cast slots; restored exactly after (cast buried, original body materials, verified)"
+      "detail": "DURABLE cast repair verified 8/8: every Aivido human stands upright on the floor with opaque production materials (Aivido_Body / Aivido_Head), no WhiteH overrides, no AVCam/Cine residue, 166 actors preserved. Hero vision verdict on the final upright Master (qwen3-vl:8b-instruct): score 8/10 PASS - human_visible true, readable_as_human true, upright true.",
+      "proof": [
+        "reports/cinematic/cast_durable/proof/hero_final_upright.png",
+        "reports/cinematic/cast_durable/proof/gate_hero.png",
+        "reports/cinematic/cast_durable/sweep/hero_best.png"
+      ],
+      "mechanism": "durable asset-level reslot to production MICs + cleared component overrides + persisted 180 deg orientation + floor-level Z; certified map re-saved (the only intentional persisted change)"
     },
     "animation": {
       "status": "PASS_WITH_LIMIT",
-      "detail": "existing animation tooling retained; live character motion limited because cast meshes do not render by default (see human_hero_visible) and Sequencer transform keyframes are engine-closed"
+      "detail": "existing animation tooling retained; skeleton assets untouched by the durable repair (no re-import, no retargeting, same GUIDs, Master AnimBlueprint untouched); live character motion limited because Sequencer transform keyframes are engine-closed"
     },
     "lighting": {
       "status": "PASS",
-      "detail": "exposure/light fix actions mutate REAL PPV exposure and light intensities with engine read-back and exact restore; per-shot reset hooks (on_shot_done/before_render) keep fixes from accumulating; measured lighting 8.39 on the cast-hero shots"
+      "detail": "certified lighting/PPV untouched by the durable cast repair (manual exposure bias 1.0, key light 5.4 values unchanged from certification)"
     },
     "visual_iterations": {
       "status": "PASS",
-      "detail": "bounded CinematicShotLoop (<=3) hermetic-tested; the cast-hero run executed the full bounded loop (3+3 passes) with real corrective actions + local vision critiques per pass and per-shot reset hooks"
+      "detail": "bounded CinematicShotLoop (<=3) hermetic-tested; bounded hero pose sweep (6 poses) with deterministic scoring to pick the best framing; local qwen3-vl vision critiques recorded per pass"
     },
     "visual_score": {
-      "best_real_deliverable": 7.25,
-      "measured_overall": 4.85,
-      "basis": "cast-hero film measured dimensions; env hero demo measured 7.25",
-      "gate": "below 8.0 premium acceptance; no fake PASS",
-      "status": "DELIVERED_BELOW_GATE",
+      "hero_vision": 8.0,
+      "hero_vision_pass": true,
+      "measured_overall": 4.45,
+      "basis": "deterministic measured dimensions on the final upright hero; hero vision dimension 8/10 PASS",
+      "blended": 5.7,
+      "gate": "deterministic 8.0 gate stays open ONLY because the luma-based subject locator merges the bright certified set into one 0.93-coverage blob (framing pinned at 0.0 at every camera angle tested) - a precisely characterized scorer limitation, not a real framing failure",
+      "status": "DELIVERED_CAST_REPAIRED_VISION_PASS",
       "dimensions": {
         "composition": 6.0,
         "framing": 0.0,
-        "lighting": 8.39,
+        "lighting": 6.81,
         "subject_visibility": 5.0,
         "material_readability": null,
         "cinematic_depth": null,
         "visual_polish": null
       },
-      "framing_zero_note": "deterministic subject locator merges the bright set into a 0.93-coverage blob; vision review flagged cluttered/inverted composition against the white set"
+      "framing_zero_note": "deterministic subject locator merges the bright set into a 0.93-coverage blob (subject_coverage pinned at 0.93 for a dark-clad hero on the bright set at every camera angle tested); framing 0 is a scorer artifact"
     },
     "scene_preservation": {
       "status": "PASS",
-      "detail": "level never saved by the demo; demo actors/assets removed; cast Z-lifts + material overrides reverted exactly (verified cast buried + original body materials); /Game/Cine removed; certified map re-saved clean (166 actors, PPV manual bias 1.0)"
+      "detail": "certified AividoHQ: 166 actors before and after; no AVCam_* / no /Game/Cine shell / no temp actors / no /Game/Cine/DurableRepair residue; certified lighting/PPV untouched. The only intentional persisted change is the durable cast repair itself (standing, upright, production materials); the map was re-saved only after live verification. Full before-state recorded in cast_durable_result.json."
     }
   },
   "issues": {
     "critical": [],
     "major": [
-      "MRQ engine-blocked: plugin enabled + 5.8 surface verified + camera-bound jobs submitted, but both InProcess/PIE executors stall at the in-editor target-map load step (no frames, no fake render)",
-      "final cast-hero film measures 4.85 (< 8.0 gate): human visible but not premium - bright set defeats the deterministic subject locator (framing 0) and vision flags cluttered/inverted composition",
+      "MRQ engine-blocked: plugin enabled + 5.8 surface verified + camera-bound jobs submitted, but both InProcess/PIE executors stall at the in-editor target-map load step (no frames, no fake render); not reopened this task",
+      "deterministic cinematic scoring of dark heroes: the luma locator merges the bright certified set (coverage 0.93 at every angle) so subject framing cannot pass the 8.0 gate deterministically until the scorer or the on-set contrast changes (vision dimension passes at 8/10)",
       "editor viewport capture intermittently unreliable after heavy session use (transient empty/failed native captures); fresh editors + wake->kick->settle with bounded retry + liveness probe restore it; partial renders recorded truthfully, never padded"
     ],
     "warnings": [
       "MRQ stays BLOCKED; no 30fps/1080p MRQ render is claimed",
       "CinematicShotLoop does not yet auto-apply vision-model critiques as scene fixes (recorded per pass, advisory)",
       "capture resolution follows native editor viewport geometry (2002x742 effective this session)",
-      "the cast material override / Z-lift is transient (restored exactly); certified cast content unchanged on disk - durable body-material/pivot repair is a Blender follow-up",
+      "raw frame dirs (reports/cinematic/*/render/frames*) stay untracked per repo convention; committed evidence is the verified MP4s + proof stills + JSON records",
       "keyframed camera motion is engine-closed in UE 5.8 python; motion rendered via deterministic camera path"
     ]
   },
   "cinematic_v1_ready": false,
-  "summary": "Cinematic + Blender pipeline on an isolated branch from frozen V1. This closeout: (1) enabled + verified the UE 5.8 MRQ surface but the engine cannot complete an in-editor map-switch render - MRQ truthfully BLOCKED; (2) diagnosed the human-cast 0-px defect (fully-discarded body materials + sub-floor pivot) and closed the human-hero-visible blocker with a bounded transient in-engine repair, verifying a standing white humanoid in real frames; (3) rendered a real cast-hero film (8s/6fps/48 real frames/2002x742 MP4) that measured 4.85 (< 8.0 gate, honest DELIVERED_BELOW_GATE); (4) preserved the certified scene exactly (restored lifts/materials, 166 actors, PPV bias 1.0). Blender not used for the demo (durable material repair flagged as the Blender follow-up). Hermetic suite 1121 passed / 1 skipped. CINEMATIC_V1_READY: NO."
+  "cast_durable_ready": true,
+  "summary": "Cinematic + Blender pipeline on an isolated branch from frozen V1. This closeout: (1) completed the durable cast repair - all 8 Aivido humans stand upright on the floor with opaque production materials (Aivido_Body/Aivido_Head), no WhiteH overrides, no AVCam/Cine residue, 166 actors preserved, certified map re-saved (headless Blender 4.2.0 diagnosis proved the source FBX geometry correct; all three defects were Unreal-side import/ref-pose bakes fixed durably in Unreal); (2) hero vision verdict on the final upright hero: 8/10 PASS (human_visible, readable_as_human, upright); (3) MRQ remains truthfully engine-BLOCKED (not reopened); (4) clean full-suite hermetic rerun PASS - 1121 passed / 1 skipped / 0 failed in 233s, cinematic tests 39/39 PASS. CAST_DURABLE_READY: YES; CINEMATIC_V1_READY: NO (MRQ + deterministic scorer gate)."
 }

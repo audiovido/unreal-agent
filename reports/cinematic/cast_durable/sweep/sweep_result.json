@@ -1,0 +1,71 @@
+{
+  "hero": "AVIDO_Human_Master",
+  "results": [
+    {
+      "distance": 220,
+      "yaw": 0.0,
+      "capture": true,
+      "path": "reports/cinematic/cast_durable/sweep\\hero_d220_y0.png",
+      "overall": 4.74,
+      "basis": "measured_dimensions",
+      "coverage": 0.9306,
+      "copied_as": "hero_best.png"
+    },
+    {
+      "distance": 260,
+      "yaw": 0.0,
+      "capture": true,
+      "path": "reports/cinematic/cast_durable/sweep\\hero_d260_y0.png",
+      "overall": 4.61,
+      "basis": "measured_dimensions",
+      "coverage": 0.9306
+    },
+    {
+      "distance": 260,
+      "yaw": 90.0,
+      "capture": true,
+      "path": "reports/cinematic/cast_durable/sweep\\hero_d260_y90.png",
+      "overall": 4.66,
+      "basis": "measured_dimensions",
+      "coverage": 0.9306
+    },
+    {
+      "distance": 260,
+      "yaw": 180.0,
+      "capture": true,
+      "path": "reports/cinematic/cast_durable/sweep\\hero_d260_y180.png",
+      "overall": 4.44,
+      "basis": "measured_dimensions",
+      "coverage": 0.9306
+    },
+    {
+      "distance": 330,
+      "yaw": 0.0,
+      "capture": true,
+      "path": "reports/cinematic/cast_durable/sweep\\hero_d330_y0.png",
+      "overall": 4.62,
+      "basis": "measured_dimensions",
+      "coverage": 0.9306
+    },
+    {
+      "distance": 330,
+      "yaw": 180.0,
+      "capture": true,
+      "path": "reports/cinematic/cast_durable/sweep\\hero_d330_y180.png",
+      "overall": 4.28,
+      "basis": "measured_dimensions",
+      "coverage": 0.9306
+    }
+  ],
+  "best": {
+    "distance": 220,
+    "yaw": 0.0,
+    "capture": true,
+    "path": "reports/cinematic/cast_durable/sweep\\hero_d220_y0.png",
+    "overall": 4.74,
+    "basis": "measured_dimensions",
+    "coverage": 0.9306,
+    "copied_as": "hero_best.png"
+  },
+  "finished_at": "2026-09-07T10:17:32"
+}

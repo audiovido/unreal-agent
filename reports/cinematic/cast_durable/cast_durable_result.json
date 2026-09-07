@@ -1,0 +1,920 @@
+{
+  "out_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast_durable",
+  "steps": [
+    {
+      "step": "gate_mesh_reslot",
+      "char": "Master",
+      "ok": true,
+      "slots_before": 3,
+      "slots_now": [
+        "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body",
+        "/Game/AividoHQ/Characters/Master/Aivido_Head.Aivido_Head",
+        "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body"
+      ],
+      "slot_names": [
+        "m005_body",
+        "m005_head",
+        "m005_opacity"
+      ]
+    },
+    {
+      "step": "gate_clear_overrides",
+      "cleared": [
+        "AVIDO_Human_Master"
+      ]
+    },
+    {
+      "step": "gate_orient",
+      "records": [
+        {
+          "label": "AVIDO_Human_Master",
+          "rot_before": [
+            180.0,
+            180.0,
+            -180.0
+          ],
+          "rot_after": [
+            180.0,
+            180.0,
+            -180.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": "gate_lift",
+      "records": [
+        {
+          "label": "AVIDO_Human_Master",
+          "comp_z_before": 2.85,
+          "comp_z_after": 2.85,
+          "lift_cm": -0.0,
+          "zmin_before": 0.0,
+          "zmin_after": 0.0,
+          "zmax_after": 187.68
+        }
+      ]
+    },
+    {
+      "step": "gate_capture",
+      "capture": {
+        "ok": true,
+        "plan": {
+          "ok": true,
+          "subject": {
+            "label": "AVIDO_Human_Master",
+            "kind": "actor",
+            "subject_kind": "actor",
+            "location": [
+              0.0,
+              700.0,
+              187.68
+            ],
+            "member_count": 1,
+            "spread_cm": 0.0
+          },
+          "subject_kind": "actor",
+          "member_count": 1,
+          "target_screen_coverage": [
+            0.2,
+            0.46
+          ],
+          "shots": [
+            {
+              "index": 1,
+              "subject": "AVIDO_Human_Master",
+              "start_s": 0.0,
+              "end_s": 8.0,
+              "duration_s": 8.0,
+              "pose": {
+                "location_x": -300.0,
+                "location_y": 700.0,
+                "location_z": 132.68,
+                "pitch": 6.733,
+                "yaw": 0.0,
+                "roll": 0.0,
+                "fov": 50.0,
+                "distance": 300.0
+              },
+              "framing": "hero shot",
+              "motion": "static"
+            }
+          ],
+          "fps": 30,
+          "duration_s": 8.0,
+          "note": "camera transform keyframes are engine-closed on UE 5.8 python (MovieSceneFloatChannel); each shot is a framed camera cut rendered/verified individually."
+        },
+        "capture": {
+          "ok": true,
+          "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast_durable\\gate_hero.png",
+          "resolution_requested": [
+            1920,
+            1080
+          ],
+          "resolution": [
+            2530,
+            915
+          ],
+          "bytes": 2438292,
+          "attempts": 1
+        },
+        "best": {
+          "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast_durable\\gate_hero.png",
+          "coverage": 0.9306,
+          "score": 4.62
+        }
+      },
+      "vision": {
+        "score": 7,
+        "pass": true,
+        "human_visible": true,
+        "summary": "A standing humanoid figure is clearly visible in a futuristic setting with strong lighting and geometric elements.",
+        "issues": [
+          "Lighting is harsh and creates overexposed areas, reducing detail.",
+          "The environment has a sterile, artificial feel lacking cinematic depth.",
+          "The human figure is partially backlit, reducing facial detail."
+        ]
+      },
+      "liveness": 97.42
+    },
+    {
+      "step": "reslot_all",
+      "results": {
+        "Master": {
+          "ok": true,
+          "slots_before": 3,
+          "slots_now": [
+            "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body",
+            "/Game/AividoHQ/Characters/Master/Aivido_Head.Aivido_Head",
+            "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body"
+          ],
+          "slot_names": [
+            "m005_body",
+            "m005_head",
+            "m005_opacity"
+          ]
+        },
+        "Creative": {
+          "ok": true,
+          "slots_before": 2,
+          "slots_now": [
+            "/Game/AividoHQ/Characters/Creative/Aivido_Body.Aivido_Body",
+            "/Game/AividoHQ/Characters/Creative/Aivido_Head.Aivido_Head"
+          ],
+          "slot_names": [
+            "m001_body",
+            "m001_head"
+          ]
+        },
+        "Visual": {
+          "ok": true,
+          "slots_before": 4,
+          "slots_now": [
+            "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body",
+            "/Game/AividoHQ/Characters/Visual/Aivido_Head.Aivido_Head",
+            "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body",
+            "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body"
+          ],
+          "slot_names": [
+            "f015_body",
+            "f015_head",
+            "f015_glasses",
+            "f015_opacity"
+          ]
+        },
+        "Technical": {
+          "ok": true,
+          "slots_before": 3,
+          "slots_now": [
+            "/Game/AividoHQ/Characters/Technical/Aivido_Body.Aivido_Body",
+            "/Game/AividoHQ/Characters/Technical/Aivido_Head.Aivido_Head",
+            "/Game/AividoHQ/Characters/Technical/Aivido_Body.Aivido_Body"
+          ],
+          "slot_names": [
+            "m004_body",
+            "m004_head",
+            "m004_opacity"
+          ]
+        },
+        "Audio": {
+          "ok": true,
+          "slots_before": 3,
+          "slots_now": [
+            "/Game/AividoHQ/Characters/Audio/Aivido_Body.Aivido_Body",
+            "/Game/AividoHQ/Characters/Audio/Aivido_Head.Aivido_Head",
+            "/Game/AividoHQ/Characters/Audio/Aivido_Body.Aivido_Body"
+          ],
+          "slot_names": [
+            "f005_body",
+            "f005_head",
+            "f005_opacity"
+          ]
+        },
+        "Animation": {
+          "ok": true,
+          "slots_before": 2,
+          "slots_now": [
+            "/Game/AividoHQ/Characters/Animation/Aivido_Body.Aivido_Body",
+            "/Game/AividoHQ/Characters/Animation/Aivido_Head.Aivido_Head"
+          ],
+          "slot_names": [
+            "m007_body",
+            "m007_head"
+          ]
+        },
+        "Lighting": {
+          "ok": true,
+          "slots_before": 3,
+          "slots_now": [
+            "/Game/AividoHQ/Characters/Lighting/Aivido_Body.Aivido_Body",
+            "/Game/AividoHQ/Characters/Lighting/Aivido_Head.Aivido_Head",
+            "/Game/AividoHQ/Characters/Lighting/Aivido_Body.Aivido_Body"
+          ],
+          "slot_names": [
+            "f001_body",
+            "f001_head",
+            "f001_opacity"
+          ]
+        },
+        "VFX": {
+          "ok": true,
+          "slots_before": 3,
+          "slots_now": [
+            "/Game/AividoHQ/Characters/VFX/Aivido_Body.Aivido_Body",
+            "/Game/AividoHQ/Characters/VFX/Aivido_Head.Aivido_Head",
+            "/Game/AividoHQ/Characters/VFX/Aivido_Body.Aivido_Body"
+          ],
+          "slot_names": [
+            "f008_body",
+            "f008_head",
+            "f008_opacity"
+          ]
+        }
+      }
+    },
+    {
+      "step": "clear_overrides_all",
+      "cleared": [
+        "AVIDO_Human_Master",
+        "AVIDO_Human_Creative",
+        "AVIDO_Human_Visual",
+        "AVIDO_Human_Technical",
+        "AVIDO_Human_Audio",
+        "AVIDO_Human_Animation",
+        "AVIDO_Human_Lighting",
+        "AVIDO_Human_VFX"
+      ]
+    },
+    {
+      "step": "orient_all",
+      "records": [
+        {
+          "label": "AVIDO_Human_Master",
+          "rot_before": [
+            180.0,
+            180.0,
+            -180.0
+          ],
+          "rot_after": [
+            180.0,
+            180.0,
+            -180.0
+          ]
+        },
+        {
+          "label": "AVIDO_Human_Creative",
+          "rot_before": [
+            180.0,
+            180.0,
+            -180.0
+          ],
+          "rot_after": [
+            180.0,
+            180.0,
+            -180.0
+          ]
+        },
+        {
+          "label": "AVIDO_Human_Visual",
+          "rot_before": [
+            180.0,
+            180.0,
+            -180.0
+          ],
+          "rot_after": [
+            180.0,
+            180.0,
+            -180.0
+          ]
+        },
+        {
+          "label": "AVIDO_Human_Technical",
+          "rot_before": [
+            180.0,
+            180.0,
+            -180.0
+          ],
+          "rot_after": [
+            180.0,
+            180.0,
+            -180.0
+          ]
+        },
+        {
+          "label": "AVIDO_Human_Audio",
+          "rot_before": [
+            180.0,
+            180.0,
+            -180.0
+          ],
+          "rot_after": [
+            180.0,
+            180.0,
+            -180.0
+          ]
+        },
+        {
+          "label": "AVIDO_Human_Animation",
+          "rot_before": [
+            180.0,
+            180.0,
+            -180.0
+          ],
+          "rot_after": [
+            180.0,
+            180.0,
+            -180.0
+          ]
+        },
+        {
+          "label": "AVIDO_Human_Lighting",
+          "rot_before": [
+            180.0,
+            180.0,
+            -180.0
+          ],
+          "rot_after": [
+            180.0,
+            180.0,
+            -180.0
+          ]
+        },
+        {
+          "label": "AVIDO_Human_VFX",
+          "rot_before": [
+            180.0,
+            180.0,
+            -180.0
+          ],
+          "rot_after": [
+            180.0,
+            180.0,
+            -180.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": "lift_all",
+      "records": [
+        {
+          "label": "AVIDO_Human_Master",
+          "comp_z_before": 2.85,
+          "comp_z_after": 2.85,
+          "lift_cm": -0.0,
+          "zmin_before": 0.0,
+          "zmin_after": 0.0,
+          "zmax_after": 187.68
+        },
+        {
+          "label": "AVIDO_Human_Creative",
+          "comp_z_before": 2.01,
+          "comp_z_after": -68.0,
+          "lift_cm": -70.01,
+          "zmin_before": 70.01,
+          "zmin_after": -0.0,
+          "zmax_after": 185.04
+        },
+        {
+          "label": "AVIDO_Human_Visual",
+          "comp_z_before": 0.47,
+          "comp_z_after": -69.47,
+          "lift_cm": -69.94,
+          "zmin_before": 69.94,
+          "zmin_after": -0.0,
+          "zmax_after": 176.73
+        },
+        {
+          "label": "AVIDO_Human_Technical",
+          "comp_z_before": 1.22,
+          "comp_z_after": -184.6,
+          "lift_cm": -185.82,
+          "zmin_before": 185.82,
+          "zmin_after": 0.0,
+          "zmax_after": 186.31
+        },
+        {
+          "label": "AVIDO_Human_Audio",
+          "comp_z_before": 1.83,
+          "comp_z_after": -176.6,
+          "lift_cm": -178.43,
+          "zmin_before": 178.43,
+          "zmin_after": 0.0,
+          "zmax_after": 179.98
+        },
+        {
+          "label": "AVIDO_Human_Animation",
+          "comp_z_before": 4.31,
+          "comp_z_after": -175.61,
+          "lift_cm": -179.92,
+          "zmin_before": 179.92,
+          "zmin_after": 0.0,
+          "zmax_after": 187.0
+        },
+        {
+          "label": "AVIDO_Human_Lighting",
+          "comp_z_before": -0.42,
+          "comp_z_after": -176.83,
+          "lift_cm": -176.41,
+          "zmin_before": 176.41,
+          "zmin_after": -0.0,
+          "zmax_after": 174.34
+        },
+        {
+          "label": "AVIDO_Human_VFX",
+          "comp_z_before": 0.58,
+          "comp_z_after": -175.96,
+          "lift_cm": -176.55,
+          "zmin_before": 176.55,
+          "zmin_after": -0.0,
+          "zmax_after": 175.83
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "critical": [],
+  "actor_count_before": 166,
+  "before": [
+    {
+      "label": "AVIDO_Human_Master",
+      "actor_loc": [
+        -0.0,
+        700.0,
+        2.9
+      ],
+      "comp_rel": [
+        -0.0,
+        700.0,
+        2.9
+      ],
+      "mesh": "/Game/AividoHQ/Characters/Master/Business_Male_01.Business_Male_01",
+      "zmin": 0.0,
+      "zmax": 187.68,
+      "slot_materials": [
+        {
+          "i": 0,
+          "mat": "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body"
+        },
+        {
+          "i": 1,
+          "mat": "/Game/AividoHQ/Characters/Master/Aivido_Head.Aivido_Head"
+        },
+        {
+          "i": 2,
+          "mat": "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body"
+        }
+      ],
+      "component_overrides": [],
+      "actor_count": 0
+    },
+    {
+      "label": "AVIDO_Human_Creative",
+      "actor_loc": [
+        3800.0,
+        900.0,
+        72.0
+      ],
+      "comp_rel": [
+        3800.0,
+        900.0,
+        72.0
+      ],
+      "mesh": "/Game/AividoHQ/Characters/Creative/Male_Adult_11.Male_Adult_11",
+      "zmin": 0.0,
+      "zmax": 143.01,
+      "slot_materials": [
+        {
+          "i": 0,
+          "mat": "/Game/AividoHQ/Characters/Creative/Aivido_Body.Aivido_Body"
+        },
+        {
+          "i": 1,
+          "mat": "/Game/AividoHQ/Characters/Creative/Aivido_Head.Aivido_Head"
+        }
+      ],
+      "component_overrides": [],
+      "actor_count": 0
+    },
+    {
+      "label": "AVIDO_Human_Visual",
+      "actor_loc": [
+        -3800.0,
+        900.0,
+        70.4
+      ],
+      "comp_rel": [
+        -3800.0,
+        900.0,
+        70.4
+      ],
+      "mesh": "/Game/AividoHQ/Characters/Visual/Business_Female_02.Business_Female_02",
+      "zmin": 0.0,
+      "zmax": 135.39,
+      "slot_materials": [
+        {
+          "i": 0,
+          "mat": "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body"
+        },
+        {
+          "i": 1,
+          "mat": "/Game/AividoHQ/Characters/Visual/Aivido_Head.Aivido_Head"
+        },
+        {
+          "i": 2,
+          "mat": "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body"
+        },
+        {
+          "i": 3,
+          "mat": "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body"
+        }
+      ],
+      "component_overrides": [],
+      "actor_count": 0
+    },
+    {
+      "label": "AVIDO_Human_Technical",
+      "actor_loc": [
+        1900.0,
+        300.0,
+        187.0
+      ],
+      "comp_rel": [
+        1900.0,
+        300.0,
+        187.0
+      ],
+      "mesh": "/Game/AividoHQ/Characters/Technical/Male_Adult_03.Male_Adult_03",
+      "zmin": 0.0,
+      "zmax": 190.29,
+      "slot_materials": [
+        {
+          "i": 0,
+          "mat": "/Game/AividoHQ/Characters/Technical/Aivido_Body.Aivido_Body"
+        },
+        {
+          "i": 1,
+          "mat": "/Game/AividoHQ/Characters/Technical/Aivido_Head.Aivido_Head"
+        },
+        {
+          "i": 2,
+          "mat": "/Game/AividoHQ/Characters/Technical/Aivido_Body.Aivido_Body"
+        }
+      ],
+      "component_overrides": [],
+      "actor_count": 0
+    },
+    {
+      "label": "AVIDO_Human_Audio",
+      "actor_loc": [
+        -1900.0,
+        300.0,
+        180.3
+      ],
+      "comp_rel": [
+        -1900.0,
+        300.0,
+        180.3
+      ],
+      "mesh": "/Game/AividoHQ/Characters/Audio/Female_Adult_05.Female_Adult_05",
+      "zmin": -0.0,
+      "zmax": 184.3,
+      "slot_materials": [
+        {
+          "i": 0,
+          "mat": "/Game/AividoHQ/Characters/Audio/Aivido_Body.Aivido_Body"
+        },
+        {
+          "i": 1,
+          "mat": "/Game/AividoHQ/Characters/Audio/Aivido_Head.Aivido_Head"
+        },
+        {
+          "i": 2,
+          "mat": "/Game/AividoHQ/Characters/Audio/Aivido_Body.Aivido_Body"
+        }
+      ],
+      "component_overrides": [],
+      "actor_count": 0
+    },
+    {
+      "label": "AVIDO_Human_Animation",
+      "actor_loc": [
+        950.0,
+        1700.0,
+        184.2
+      ],
+      "comp_rel": [
+        950.0,
+        1700.0,
+        184.2
+      ],
+      "mesh": "/Game/AividoHQ/Characters/Animation/Male_Adult_12.Male_Adult_12",
+      "zmin": 0.0,
+      "zmax": 190.14,
+      "slot_materials": [
+        {
+          "i": 0,
+          "mat": "/Game/AividoHQ/Characters/Animation/Aivido_Body.Aivido_Body"
+        },
+        {
+          "i": 1,
+          "mat": "/Game/AividoHQ/Characters/Animation/Aivido_Head.Aivido_Head"
+        }
+      ],
+      "component_overrides": [],
+      "actor_count": 0
+    },
+    {
+      "label": "AVIDO_Human_Lighting",
+      "actor_loc": [
+        -950.0,
+        1700.0,
+        176.0
+      ],
+      "comp_rel": [
+        -950.0,
+        1700.0,
+        176.0
+      ],
+      "mesh": "/Game/AividoHQ/Characters/Lighting/Female_Adult_01.Female_Adult_01",
+      "zmin": 0.0,
+      "zmax": 176.85,
+      "slot_materials": [
+        {
+          "i": 0,
+          "mat": "/Game/AividoHQ/Characters/Lighting/Aivido_Body.Aivido_Body"
+        },
+        {
+          "i": 1,
+          "mat": "/Game/AividoHQ/Characters/Lighting/Aivido_Head.Aivido_Head"
+        },
+        {
+          "i": 2,
+          "mat": "/Game/AividoHQ/Characters/Lighting/Aivido_Body.Aivido_Body"
+        }
+      ],
+      "component_overrides": [],
+      "actor_count": 0
+    },
+    {
+      "label": "AVIDO_Human_VFX",
+      "actor_loc": [
+        0.0,
+        2000.0,
+        177.1
+      ],
+      "comp_rel": [
+        0.0,
+        2000.0,
+        177.1
+      ],
+      "mesh": "/Game/AividoHQ/Characters/VFX/Female_Adult_08.Female_Adult_08",
+      "zmin": 0.0,
+      "zmax": 179.68,
+      "slot_materials": [
+        {
+          "i": 0,
+          "mat": "/Game/AividoHQ/Characters/VFX/Aivido_Body.Aivido_Body"
+        },
+        {
+          "i": 1,
+          "mat": "/Game/AividoHQ/Characters/VFX/Aivido_Head.Aivido_Head"
+        },
+        {
+          "i": 2,
+          "mat": "/Game/AividoHQ/Characters/VFX/Aivido_Body.Aivido_Body"
+        }
+      ],
+      "component_overrides": [],
+      "actor_count": 0
+    }
+  ],
+  "gate_human_visible": true,
+  "gate_vision": {
+    "score": 7,
+    "pass": true,
+    "human_visible": true,
+    "summary": "A standing humanoid figure is clearly visible in a futuristic setting with strong lighting and geometric elements.",
+    "issues": [
+      "Lighting is harsh and creates overexposed areas, reducing detail.",
+      "The environment has a sterile, artificial feel lacking cinematic depth.",
+      "The human figure is partially backlit, reducing facial detail."
+    ]
+  },
+  "gate_score": 4.62,
+  "gate_coverage": 0.9306,
+  "verify_all": {
+    "cast": [
+      {
+        "label": "AVIDO_Human_Master",
+        "zmin": 0.0,
+        "zmax": 187.68,
+        "height_cm": 187.68,
+        "slot_materials": [
+          "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body",
+          "/Game/AividoHQ/Characters/Master/Aivido_Head.Aivido_Head",
+          "/Game/AividoHQ/Characters/Master/Aivido_Body.Aivido_Body"
+        ],
+        "component_overrides": []
+      },
+      {
+        "label": "AVIDO_Human_Creative",
+        "zmin": -0.0,
+        "zmax": 185.04,
+        "height_cm": 185.04,
+        "slot_materials": [
+          "/Game/AividoHQ/Characters/Creative/Aivido_Body.Aivido_Body",
+          "/Game/AividoHQ/Characters/Creative/Aivido_Head.Aivido_Head"
+        ],
+        "component_overrides": []
+      },
+      {
+        "label": "AVIDO_Human_Visual",
+        "zmin": -0.0,
+        "zmax": 176.73,
+        "height_cm": 176.73,
+        "slot_materials": [
+          "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body",
+          "/Game/AividoHQ/Characters/Visual/Aivido_Head.Aivido_Head",
+          "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body",
+          "/Game/AividoHQ/Characters/Visual/Aivido_Body.Aivido_Body"
+        ],
+        "component_overrides": []
+      },
+      {
+        "label": "AVIDO_Human_Technical",
+        "zmin": 0.0,
+        "zmax": 186.31,
+        "height_cm": 186.31,
+        "slot_materials": [
+          "/Game/AividoHQ/Characters/Technical/Aivido_Body.Aivido_Body",
+          "/Game/AividoHQ/Characters/Technical/Aivido_Head.Aivido_Head",
+          "/Game/AividoHQ/Characters/Technical/Aivido_Body.Aivido_Body"
+        ],
+        "component_overrides": []
+      },
+      {
+        "label": "AVIDO_Human_Audio",
+        "zmin": 0.0,
+        "zmax": 179.98,
+        "height_cm": 179.98,
+        "slot_materials": [
+          "/Game/AividoHQ/Characters/Audio/Aivido_Body.Aivido_Body",
+          "/Game/AividoHQ/Characters/Audio/Aivido_Head.Aivido_Head",
+          "/Game/AividoHQ/Characters/Audio/Aivido_Body.Aivido_Body"
+        ],
+        "component_overrides": []
+      },
+      {
+        "label": "AVIDO_Human_Animation",
+        "zmin": 0.0,
+        "zmax": 187.0,
+        "height_cm": 187.0,
+        "slot_materials": [
+          "/Game/AividoHQ/Characters/Animation/Aivido_Body.Aivido_Body",
+          "/Game/AividoHQ/Characters/Animation/Aivido_Head.Aivido_Head"
+        ],
+        "component_overrides": []
+      },
+      {
+        "label": "AVIDO_Human_Lighting",
+        "zmin": -0.0,
+        "zmax": 174.34,
+        "height_cm": 174.34,
+        "slot_materials": [
+          "/Game/AividoHQ/Characters/Lighting/Aivido_Body.Aivido_Body",
+          "/Game/AividoHQ/Characters/Lighting/Aivido_Head.Aivido_Head",
+          "/Game/AividoHQ/Characters/Lighting/Aivido_Body.Aivido_Body"
+        ],
+        "component_overrides": []
+      },
+      {
+        "label": "AVIDO_Human_VFX",
+        "zmin": -0.0,
+        "zmax": 175.83,
+        "height_cm": 175.83,
+        "slot_materials": [
+          "/Game/AividoHQ/Characters/VFX/Aivido_Body.Aivido_Body",
+          "/Game/AividoHQ/Characters/VFX/Aivido_Head.Aivido_Head",
+          "/Game/AividoHQ/Characters/VFX/Aivido_Body.Aivido_Body"
+        ],
+        "component_overrides": []
+      }
+    ],
+    "actor_count": 166
+  },
+  "all_standing": {
+    "count": 8,
+    "of": 8
+  },
+  "no_white_residue": true,
+  "actor_count_after": 166,
+  "hero_proof": {
+    "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast_durable\\hero_proof.png",
+    "capture": {
+      "ok": true,
+      "plan": {
+        "ok": true,
+        "subject": {
+          "label": "AVIDO_Human_Master",
+          "kind": "actor",
+          "subject_kind": "actor",
+          "location": [
+            0.0,
+            700.0,
+            187.68
+          ],
+          "member_count": 1,
+          "spread_cm": 0.0
+        },
+        "subject_kind": "actor",
+        "member_count": 1,
+        "target_screen_coverage": [
+          0.2,
+          0.46
+        ],
+        "shots": [
+          {
+            "index": 1,
+            "subject": "AVIDO_Human_Master",
+            "start_s": 0.0,
+            "end_s": 8.0,
+            "duration_s": 8.0,
+            "pose": {
+              "location_x": -400.0,
+              "location_y": 700.0,
+              "location_z": 132.68,
+              "pitch": 4.131,
+              "yaw": 0.0,
+              "roll": 0.0,
+              "fov": 50.0,
+              "distance": 400.0
+            },
+            "framing": "hero shot",
+            "motion": "static"
+          }
+        ],
+        "fps": 30,
+        "duration_s": 8.0,
+        "note": "camera transform keyframes are engine-closed on UE 5.8 python (MovieSceneFloatChannel); each shot is a framed camera cut rendered/verified individually."
+      },
+      "capture": {
+        "ok": true,
+        "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast_durable\\hero_proof.png",
+        "resolution_requested": [
+          1920,
+          1080
+        ],
+        "resolution": [
+          2530,
+          915
+        ],
+        "bytes": 2391523,
+        "attempts": 1
+      },
+      "best": {
+        "path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\cinematic-v2\\reports\\cinematic\\cast_durable\\hero_proof.png",
+        "coverage": 0.9306,
+        "score": 4.52
+      }
+    },
+    "vision": {
+      "score": 7,
+      "pass": true,
+      "human_visible": true,
+      "summary": "A standing human character is clearly visible in a futuristic setting with strong lighting and minimalistic design.",
+      "issues": [
+        "Lighting is harsh and creates a high-contrast look that may not be cinematic.",
+        "The environment is sparse and lacks detailed textures or props for immersion.",
+        "The character's pose is static and lacks dynamic action or emotion."
+      ]
+    },
+    "score": 4.52,
+    "coverage": 0.9306
+  },
+  "save": {
+    "map_saved": true
+  },
+  "ok": true,
+  "finished_at": "2026-09-07T10:35:30"
+}
