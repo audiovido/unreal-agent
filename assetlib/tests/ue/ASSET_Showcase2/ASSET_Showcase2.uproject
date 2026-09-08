@@ -1,9 +1,15 @@
-﻿{
+{
   "FileVersion": 3,
   "EngineAssociation": "5.8",
-  "Category": "AssetLibraryTests",
-  "Description": "Disposable FREEBUFF ASSET test project (isolated, no bridge).",
-  "Modules": [],
+  "Category": "Games",
+  "Description": "Aivido V2 — playable HQ experience (production).",
+  "Modules": [
+    {
+      "Name": "AividoV2",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
   "Plugins": [
     {
       "Name": "PythonScriptPlugin",

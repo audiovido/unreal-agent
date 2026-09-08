@@ -1,5 +1,5 @@
 {
-  "build_id": "20260905-232841",
+  "build_id": "20260906-polish90",
   "aivido_version": "0.1.1",
   "ui_version": "1.0.0",
   "product": "Aivido",
@@ -13,7 +13,7 @@
     "dev": "index.html"
   },
   "files": {
-    "aivido.css": "2d8f7cc830a6ce69581f2d4beeb5f7c184de000128bf9f03bddae0c859d475cb",
+    "aivido.css": "cb503c40dcb22f08f42ccc5692bdbb685b8c813fef3014ce1be226dda7a22fa1",
     "aivido.html": "ce771b9ee7a90b0f26011e9efb64e52ff84211d0bc9148b1da3dcce0eba1b13d",
     "aivido.js": "dab4e2b572cebd204c28b4131e8107f8a14b566955916930adb303d79ad66e77",
     "app.js": "aaa827f23942da4bce3284c02989bafd4bbfa270812fc59beffd2edf9d266e87",

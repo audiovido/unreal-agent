@@ -89,3 +89,7 @@ memory/sessions/
 config/runtime/
 config/project_registry.json
 assetlib/proof/product/
+
+# Local scratch/evidence dirs (not project code)
+.tmp_polish/
+.worktrees/

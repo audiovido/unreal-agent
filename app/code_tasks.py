@@ -44,12 +44,14 @@ from typing import Any, Dict, List, Optional
 
 try:  # FastAPI present in the backend venv
     from fastapi import APIRouter, HTTPException
+    from fastapi.responses import HTMLResponse, FileResponse
     from pydantic import BaseModel, Field
 except Exception:  # pragma: no cover - non-API import (tests import module directly)
     APIRouter = None
     BaseModel = object
     Field = None
     HTTPException = Exception
+    HTMLResponse = FileResponse = object
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -65,6 +67,10 @@ VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
 
 MAX_ATTEMPTS = 3
 WATCHDOG_INTERVAL_S = 4.0
+AIVIDO_UI_DESIGN = "AIVIDO_UI_DESIGN"
+AIVIDO_PRODUCT_ID = "aivido_product"
+AIVIDO_PRODUCT_TYPE = "AIVIDO_PRODUCT"
+AIVIDO_UI_FILES = ("ui/aivido.html", "ui/aivido.css", "ui/aivido.js")
 STATE_LOCK = threading.RLock()
 _RUNNER_THREAD: Optional[threading.Thread] = None
 _RUNNING_LOOP = False
@@ -190,6 +196,11 @@ class CodeTaskSpec:
 
 def enqueue_task(*, title: str, prompt: str, routing: str = "auto",
                  priority: int = 50, depends_on: Optional[List[str]] = None,
+                 project_id: Optional[str] = None, session_id: Optional[str] = None,
+                 execution_id: Optional[str] = None,
+                 project_type: Optional[str] = None, mode: Optional[str] = None,
+                 target_repo: Optional[str] = None,
+                 allowed_files: Optional[List[str]] = None,
                  steps: Optional[List[Dict[str, Any]]] = None,
                  tests: Optional[List[str]] = None,
                  acceptance: Optional[List[str]] = None,
@@ -198,6 +209,15 @@ def enqueue_task(*, title: str, prompt: str, routing: str = "auto",
     """Add a task to the durable queue; returns the stored task dict."""
     _ensure_dirs()
     resolved_routing = classify_routing(prompt, routing if routing != "auto" else None)
+    if mode == AIVIDO_UI_DESIGN:
+        if project_id != AIVIDO_PRODUCT_ID or project_type != AIVIDO_PRODUCT_TYPE:
+            raise HTTPException(status_code=422, detail="AIVIDO_UI_DESIGN requires project_id=aivido_product and project_type=AIVIDO_PRODUCT")
+        if target_repo and Path(target_repo).resolve() != ROOT.resolve():
+            raise HTTPException(status_code=422, detail="AIVIDO_UI_DESIGN target_repo must be the Aivido repository")
+        requested = {str(p).replace("\\", "/") for p in (allowed_files or AIVIDO_UI_FILES)}
+        if not requested or not requested.issubset(set(AIVIDO_UI_FILES)):
+            raise HTTPException(status_code=422, detail="AIVIDO_UI_DESIGN allowed_files must be limited to ui/aivido.html, ui/aivido.css, ui/aivido.js")
+        resolved_routing = "code"
     if resolved_routing == "unreal":
         raise HTTPException(
             status_code=409,
@@ -228,6 +248,13 @@ def enqueue_task(*, title: str, prompt: str, routing: str = "auto",
         "title": title or prompt[:80],
         "prompt": prompt,
         "routing": resolved_routing,
+        "mode": mode or "CODE",
+        "project_id": project_id or "legacy_code",
+        "session_id": session_id,
+        "execution_id": execution_id or "",
+        "project_type": project_type or "CODE_REPOSITORY",
+        "target_repo": target_repo or str(ROOT).replace("\\", "/"),
+        "allowed_files": list(allowed_files or (AIVIDO_UI_FILES if mode == AIVIDO_UI_DESIGN else scope)),
         "priority": int(priority or 50),
         "depends_on": list(depends_on or []),
         "steps": steps,
@@ -252,6 +279,8 @@ def enqueue_task(*, title: str, prompt: str, routing: str = "auto",
 
     def _add(data):
         task["id"] = _new_task_id(data)
+        if not task.get("execution_id"):
+            task["execution_id"] = task["id"]
         data["tasks"].append(task)
         return task
 
@@ -415,6 +444,116 @@ def _finish(task_id: str, status: str, verdict: str, *, result=None,
     )
 
 
+# --- Aivido self-design lane -------------------------------------------------
+
+def _ui_repo_root(task: Dict[str, Any]) -> Path:
+    requested = Path(str(task.get("target_repo") or ROOT)).resolve()
+    if requested != ROOT.resolve():
+        raise RuntimeError("AIVIDO_UI_DESIGN target repository is not the Aivido repository")
+    return requested
+
+
+def _ui_path(task: Dict[str, Any], rel: str) -> Path:
+    normalized = str(rel).replace("\\", "/")
+    allowed = set(task.get("allowed_files") or AIVIDO_UI_FILES)
+    if normalized not in allowed or normalized not in AIVIDO_UI_FILES:
+        raise RuntimeError(f"UI path outside explicit allowlist: {normalized}")
+    path = (_ui_repo_root(task) / normalized).resolve()
+    if _ui_repo_root(task) not in path.parents:
+        raise RuntimeError("UI path escaped target repository")
+    return path
+
+
+def _ui_validate(repo: Path, changed: List[str]) -> Dict[str, Any]:
+    checks: List[Dict[str, Any]] = []
+    js = repo / "ui" / "aivido.js"
+    node = shutil.which("node")
+    if node:
+        out = subprocess.run([node, "--check", str(js)], cwd=str(repo), capture_output=True, text=True, timeout=60)
+        checks.append({"command": "node --check ui/aivido.js", "ok": out.returncode == 0, "exit": out.returncode, "log": (out.stdout + out.stderr)[-4000:]})
+    else:
+        checks.append({"command": "node --check ui/aivido.js", "ok": False, "exit": 127, "log": "node executable not found"})
+    html = (repo / "ui" / "aivido.html").read_text(encoding="utf-8")
+    refs = re.findall(r'(?:src|href)=["\']([^"\']+)["\']', html)
+    missing = []
+    for ref in refs:
+        if ref.startswith(("http://", "https://", "data:", "#", "/api/")):
+            continue
+        candidate = (repo / "ui" / ref.removeprefix("/static/")).resolve()
+        if not candidate.is_file():
+            missing.append(ref)
+    checks.append({"command": "HTML references", "ok": not missing, "missing": missing})
+    return {"ok": all(c.get("ok") for c in checks), "checks": checks, "changed_files": changed}
+
+
+def execute_aivido_ui_stage(task: Dict[str, Any]) -> Dict[str, Any]:
+    """Apply only explicit edits to the real Aivido UI files and validate them.
+
+    This intentionally does not create wrapper modules or a worktree: the
+    product lane must edit the real UI source, save a before snapshot, and
+    leave the result available for preview/revert/commit.
+    """
+    if task.get("project_id") != AIVIDO_PRODUCT_ID or task.get("project_type") != AIVIDO_PRODUCT_TYPE:
+        return {"ok": False, "verdict": "BLOCKED", "error": "AIVIDO_UI_DESIGN requires the Aivido product identity"}
+    try:
+        repo = _ui_repo_root(task)
+        steps = task.get("steps") or []
+        if not steps:
+            return {"ok": False, "verdict": "BLOCKED", "error": "AIVIDO_UI_DESIGN requires explicit file edits"}
+        changed: List[str] = []
+        original_before: Dict[str, str] = {}
+        working: Dict[str, str] = {}
+        for step in steps:
+            rel = str(step.get("path") or "").replace("\\\\", "/")
+            path = _ui_path(task, rel)
+            if not path.is_file():
+                return {"ok": False, "verdict": "BLOCKED", "error": f"intended UI source file does not exist: {rel}"}
+            if rel not in original_before:
+                original_before[rel] = path.read_text(encoding="utf-8")
+                working[rel] = original_before[rel]
+            op = step.get("op") or "replace_text"
+            content = working[rel]
+            if op in ("replace_text", "replace"):
+                old = str(step.get("old") or step.get("find") or "")
+                if not old or old not in content:
+                    return {"ok": False, "verdict": "BLOCKED", "error": f"requested text was not found in {rel}"}
+                content = content.replace(old, str(step.get("new") or step.get("replace") or ""), 1)
+            elif op in ("write_file", "write"):
+                content = str(step.get("content") or "")
+            elif op == "append":
+                content = content + str(step.get("content") or "")
+            else:
+                return {"ok": False, "verdict": "BLOCKED", "error": f"unsupported Aivido UI edit op: {op}"}
+            path.write_text(content, encoding="utf-8")
+            working[rel] = content
+            if content != original_before[rel] and rel not in changed:
+                changed.append(rel)
+        if not changed:
+            return {"ok": False, "verdict": "BLOCKED", "error": "no intended UI source file changed"}
+        # Snapshot the exact pre-edit source for reliable before/after preview
+        # and revert, including multi-step edits to the same file.
+        backup_dir = EVIDENCE_DIR / task["id"] / "before"
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        for rel in changed:
+            (backup_dir / Path(rel).name).write_text(
+                original_before[rel], encoding="utf-8")
+        validation = _ui_validate(repo, changed)
+        if not validation["ok"]:
+            for rel in changed:
+                (repo / rel).write_text(original_before[rel], encoding="utf-8")
+            return {"ok": False, "verdict": "FAIL", "error": "Aivido UI validation failed", "evidence": validation}
+        diff = _run_git(["diff", "--", *changed], repo, timeout=60)
+        return {"ok": True, "verdict": "PASS", "error": None, "evidence": {
+            "task_id": task["id"], "project_id": task["project_id"], "project_type": task["project_type"],
+            "mode": AIVIDO_UI_DESIGN, "target_repo": str(repo).replace("\\", "/"),
+            "changed_files": changed, "before_snapshot": str(backup_dir).replace("\\", "/"),
+            "diff_summary": diff.stdout[:12000], "checks": validation["checks"],
+            "preview_url": "/aivido-preview?task_id=" + task["id"],
+        }}
+    except Exception as exc:
+        return {"ok": False, "verdict": "BLOCKED", "error": f"AIVIDO_UI_DESIGN blocked: {exc}"}
+
+
 # --- isolated worktree lifecycle --------------------------------------------
 
 def _create_worktree(task_id: str) -> tuple[Path, str]:
@@ -500,6 +639,10 @@ def _write_evidence(task_id: str, payload: Dict[str, Any]) -> str:
 # --- code stage executor ----------------------------------------------------
 
 def execute_code_stage(task: Dict[str, Any]) -> Dict[str, Any]:
+    """Run a structured code task, or the explicit live Aivido UI lane."""
+    if task.get("mode") == AIVIDO_UI_DESIGN:
+        return execute_aivido_ui_stage(task)
+
     """Run the machine-readable steps in an isolated worktree.
 
     Deterministic contract:
@@ -630,7 +773,13 @@ def _run_in_worktree(wt_dir: Path, spec: str) -> subprocess.CompletedProcess:
     """Allow-listed commands run with the venv python inside the worktree."""
     parts = spec.split()
     cmd = parts[0] if parts else ""
-    if cmd in ("pytest", "py_compile", "python", "-m"):
+    if cmd in ("pytest", "py_compile", "python", "-m", "node_check"):
+        if cmd == "node_check":
+            node = shutil.which("node")
+            if not node:
+                return subprocess.CompletedProcess(["node"], 127, "", "node executable not found")
+            target = parts[1] if len(parts) > 1 else "ui/aivido.js"
+            return subprocess.run([node, "--check", target], cwd=str(wt_dir), capture_output=True, text=True, timeout=60, encoding="utf-8", errors="replace")
         argv = [_venv_python()]
         if cmd == "pytest":
             argv += ["-m", "pytest", "-p", "no:cacheprovider", "-q"]
@@ -786,6 +935,11 @@ def _run_task(task_id: str) -> None:
         patch_file = ev.get("patch_file")
         ev_path = _write_evidence(task_id, {
             "task_id": task_id, "title": task.get("title"),
+            "project_id": task.get("project_id"),
+            "project_type": task.get("project_type"),
+            "session_id": task.get("session_id"),
+            "execution_id": task.get("execution_id") or task_id,
+            "mode": task.get("mode"),
             "prompt": task.get("prompt"),
             "verdict": outcome.get("verdict"),
             "commit": ev.get("commit"),
@@ -806,6 +960,14 @@ def _run_task(task_id: str) -> None:
             "commit": ev.get("commit"),
             "evidence_files": evidence,
         }
+        if task.get("mode") == AIVIDO_UI_DESIGN:
+            result.update({
+                "changed_files": ev.get("changed_files") or [],
+                "before_snapshot": ev.get("before_snapshot"),
+                "diff_summary": ev.get("diff_summary") or "",
+                "checks": ev.get("checks") or [],
+                "preview_url": ev.get("preview_url"),
+            })
         # Stage 2 (mixed only): run the Unreal mission AFTER the code stage
         # passed, in dependency order, through the existing mission pipeline.
         if routing == "mixed":
@@ -931,12 +1093,60 @@ def start_code_supervisor() -> None:
 # Evidence retrieval
 # ---------------------------------------------------------------------------
 
+def revert_aivido_ui_task(task_id: str) -> Dict[str, Any]:
+    task = get_task(task_id)
+    if not task or task.get("mode") != AIVIDO_UI_DESIGN:
+        raise HTTPException(404, "Aivido UI task not found")
+    evidence = get_evidence(task_id)
+    snapshot = Path(str((evidence.get("result") or {}).get("before_snapshot") or ""))
+    changed = list((evidence.get("result") or {}).get("changed_files") or [])
+    if not snapshot.is_dir() or not changed:
+        raise HTTPException(409, "no reversible Aivido UI snapshot is available")
+    for rel in changed:
+        source = snapshot / Path(rel).name
+        if source.is_file():
+            _ui_path(task, rel).write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    return {"ok": True, "task_id": task_id, "reverted_files": changed}
+
+
+def commit_aivido_ui_task(task_id: str, message: Optional[str] = None) -> Dict[str, Any]:
+    task = get_task(task_id)
+    if not task or task.get("mode") != AIVIDO_UI_DESIGN:
+        raise HTTPException(404, "Aivido UI task not found")
+    changed = list((task.get("result") or {}).get("changed_files") or [])
+    if not changed:
+        raise HTTPException(409, "no changed UI files to commit")
+    staged = _run_git(["diff", "--cached", "--name-only"], ROOT)
+    staged_files = [line.strip().replace("\\", "/") for line in staged.stdout.splitlines() if line.strip()]
+    if staged_files and any(path not in changed for path in staged_files):
+        raise HTTPException(409, "unrelated files are already staged; refusing to commit outside the Aivido UI task")
+    result = _run_git(["add", "--", *changed], ROOT)
+    if result.returncode != 0:
+        raise HTTPException(500, result.stderr or "git add failed")
+    result = _run_git(["diff", "--cached", "--name-only"], ROOT)
+    staged_files = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+    if set(staged_files) != set(changed):
+        raise HTTPException(409, "staged UI files do not match the verified task scope")
+    result = _run_git(["-c", "user.name=Aivido UI", "-c", "user.email=aivido-ui@aivido.local", "commit", "-m", message or f"Design Aivido: {task.get('title', task_id)}"], ROOT)
+    if result.returncode != 0:
+        raise HTTPException(409, result.stderr or result.stdout or "git commit failed")
+    rev = _run_git(["rev-parse", "HEAD"], ROOT)
+    commit = rev.stdout.strip() if rev.returncode == 0 else ""
+    _mark(task_id, result={**(task.get("result") or {}), "commit": commit})
+    return {"ok": True, "task_id": task_id, "commit": commit, "changed_files": changed}
+
+
 def get_evidence(task_id: str) -> Dict[str, Any]:
     task = get_task(task_id)
     if task is None:
         raise HTTPException(404, f"task {task_id} not found")
     bundle = {
         "task_id": task_id,
+        "project_id": task.get("project_id"),
+        "project_type": task.get("project_type"),
+        "session_id": task.get("session_id"),
+        "execution_id": task.get("execution_id") or task_id,
+        "mode": task.get("mode"),
         "title": task.get("title"),
         "status": task.get("status"),
         "verdict": task.get("verdict"),
@@ -964,6 +1174,13 @@ class EnqueueRequest(BaseModel):
     title: str = ""
     prompt: str
     routing: str = "auto"
+    project_id: Optional[str] = None
+    session_id: Optional[str] = None
+    execution_id: Optional[str] = None
+    project_type: Optional[str] = None
+    mode: Optional[str] = None
+    target_repo: Optional[str] = None
+    allowed_files: Optional[List[str]] = None
     priority: int = 50
     depends_on: Optional[List[str]] = None
     steps: Optional[List[Dict[str, Any]]] = None
@@ -977,6 +1194,14 @@ class ClassifyRequest(BaseModel):
     prompt: str
 
 
+class AividoUIDesignRequest(BaseModel):
+    prompt: str
+    steps: List[Dict[str, Any]]
+    allowed_files: Optional[List[str]] = None
+    target_repo: Optional[str] = None
+    session_id: Optional[str] = None
+
+
 if APIRouter is not None:
     router = APIRouter(prefix="/api/code")
 
@@ -985,14 +1210,21 @@ if APIRouter is not None:
         task = enqueue_task(
             title=req.title, prompt=req.prompt, routing=req.routing,
             priority=req.priority, depends_on=req.depends_on,
+            project_id=req.project_id, session_id=req.session_id,
+            execution_id=req.execution_id, project_type=req.project_type,
+            mode=req.mode, target_repo=req.target_repo,
+            allowed_files=req.allowed_files,
             steps=req.steps, tests=req.tests, acceptance=req.acceptance,
             scope=req.scope, unreal_prompt=req.unreal_prompt)
         start_code_supervisor()
         return {"ok": True, "task": task}
 
     @router.get("/tasks")
-    def api_list():
-        return {"ok": True, "tasks": list_tasks(),
+    def api_list(project_id: Optional[str] = None):
+        tasks = list_tasks()
+        if project_id:
+            tasks = [t for t in tasks if t.get("project_id") == project_id]
+        return {"ok": True, "tasks": tasks,
                 "snapshot": get_status_snapshot()}
 
     @router.get("/tasks/{task_id}")
@@ -1015,6 +1247,74 @@ if APIRouter is not None:
     @router.get("/tasks/{task_id}/evidence")
     def api_evidence(task_id: str):
         return {"ok": True, "evidence": get_evidence(task_id)}
+
+    @router.post("/tasks/{task_id}/revert")
+    def api_revert(task_id: str):
+        return revert_aivido_ui_task(task_id)
+
+    @router.post("/tasks/{task_id}/commit")
+    def api_commit(task_id: str, body: Optional[Dict[str, Any]] = None):
+        return commit_aivido_ui_task(task_id, (body or {}).get("message"))
+
+    @router.get("/tasks/{task_id}/preview", response_class=HTMLResponse)
+    def api_preview(task_id: str, version: str = "after"):
+        task = get_task(task_id)
+        if not task or task.get("mode") != AIVIDO_UI_DESIGN:
+            raise HTTPException(404, "Aivido UI task not found")
+        if version not in ("before", "after"):
+            raise HTTPException(400, "version must be before or after")
+        repo = _ui_repo_root(task)
+        html_path = repo / "ui" / "aivido.html"
+        if version == "before":
+            snapshot = Path(str((task.get("result") or {}).get("before_snapshot") or ""))
+            html_path = snapshot / "aivido.html"
+            if not html_path.is_file():
+                html_path = repo / "ui" / "aivido.html"
+        if not html_path.is_file():
+            raise HTTPException(404, "preview HTML not found")
+        html = html_path.read_text(encoding="utf-8")
+        base = f"/api/code/tasks/{task_id}/preview-file/{version}/"
+        for name in ("aivido.css", "aivido.js"):
+            html = html.replace(f"/static/{name}", base + name)
+        html = html.replace("<title>Aivido — Director's Booth</title>", f"<title>Aivido preview · {version}</title>")
+        return HTMLResponse(html)
+
+    @router.get("/tasks/{task_id}/preview-file/{version}/{name}")
+    def api_preview_file(task_id: str, version: str, name: str):
+        task = get_task(task_id)
+        if not task or task.get("mode") != AIVIDO_UI_DESIGN:
+            raise HTTPException(404, "Aivido UI task not found")
+        if name not in ("aivido.css", "aivido.js", "aivido.html") or version not in ("before", "after"):
+            raise HTTPException(404, "preview file not found")
+        if version == "before":
+            snapshot = Path(str((task.get("result") or {}).get("before_snapshot") or ""))
+            path = snapshot / name
+        else:
+            path = _ui_repo_root(task) / "ui" / name
+        if not path.is_file():
+            raise HTTPException(404, "preview file not found")
+        media = "text/css" if name.endswith(".css") else "application/javascript" if name.endswith(".js") else "text/html"
+        return FileResponse(str(path), media_type=media, headers={"Cache-Control": "no-store"})
+
+    @router.post("/ui-design")
+    def api_ui_design(req: AividoUIDesignRequest):
+        task = enqueue_task(
+            title="Design Aivido: " + req.prompt[:70],
+            prompt=req.prompt,
+            routing="code",
+            project_id=AIVIDO_PRODUCT_ID,
+            session_id=req.session_id,
+            project_type=AIVIDO_PRODUCT_TYPE,
+            mode=AIVIDO_UI_DESIGN,
+            target_repo=req.target_repo or str(ROOT),
+            allowed_files=req.allowed_files or list(AIVIDO_UI_FILES),
+            steps=req.steps,
+            tests=["node_check ui/aivido.js"],
+            acceptance=["exists ui/aivido.html", "exists ui/aivido.css", "exists ui/aivido.js"],
+            scope=req.allowed_files or list(AIVIDO_UI_FILES),
+        )
+        start_code_supervisor()
+        return {"ok": True, "task": task}
 
     @router.post("/classify")
     def api_classify(req: ClassifyRequest):

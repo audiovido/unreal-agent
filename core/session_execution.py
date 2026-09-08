@@ -635,7 +635,8 @@ class SessionRunner:
         decision = self.supervisor.gate(resource_kind)
         if decision != RUNNING:
             task = SessionTask(
-                execution_id=execution_id, prompt=prompt,
+                execution_id=execution_id, project_id=session.project_id,
+                project_type=session.project_type, prompt=prompt,
                 mode=mode or "execute", read_only=read_only_flag,
                 status="queued_resource", resource_decision=decision)
             store.update(session_id, lambda s: (
@@ -664,7 +665,8 @@ class SessionRunner:
         if not lease.get("ok"):
             conflict = lease.get("conflict") or {}
             task = SessionTask(
-                execution_id=execution_id, prompt=prompt,
+                execution_id=execution_id, project_id=session.project_id,
+                project_type=session.project_type, prompt=prompt,
                 mode=mode or "execute", read_only=read_only_flag,
                 status="queued", resource_decision="RUNNING")
             store.update(session_id, lambda s: s.enqueue(task))
@@ -701,7 +703,8 @@ class SessionRunner:
     ) -> Dict[str, Any]:
         store = self.store
         task = SessionTask(
-            execution_id=execution_id, prompt=prompt, mode=mode,
+            execution_id=execution_id, project_id=session.project_id,
+            project_type=session.project_type, prompt=prompt, mode=mode,
             read_only=read_only, status="running",
             resource_decision=decision)
         store.update(session.session_id, lambda s: (

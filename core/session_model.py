@@ -56,6 +56,8 @@ class SessionTask:
 
     execution_id: str
     prompt: str
+    project_id: str = ""
+    project_type: str = "UNREAL_PROJECT"
     mode: str = "execute"            # execute | chat | plan
     read_only: bool = False
     status: str = "queued"           # queued | running | validating | done | failed | blocked | queued_resource
@@ -70,6 +72,8 @@ class SessionTask:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "execution_id": self.execution_id,
+            "project_id": self.project_id,
+            "project_type": self.project_type,
             "prompt": self.prompt,
             "mode": self.mode,
             "read_only": bool(self.read_only),
@@ -87,6 +91,8 @@ class SessionTask:
     def from_dict(cls, data: Dict[str, Any]) -> "SessionTask":
         return cls(
             execution_id=str(data.get("execution_id") or ""),
+            project_id=str(data.get("project_id") or ""),
+            project_type=str(data.get("project_type") or "UNREAL_PROJECT"),
             prompt=str(data.get("prompt") or ""),
             mode=str(data.get("mode") or "execute"),
             read_only=bool(data.get("read_only")),
@@ -109,6 +115,7 @@ class ProjectSession:
     session_id: str
     client_id: str = "browser"
     project_id: str = ""
+    project_type: str = "UNREAL_PROJECT"
     project_path: str = ""           # canonical .uproject path
     project_name: str = ""
     unreal_pid: Optional[int] = None
@@ -137,6 +144,7 @@ class ProjectSession:
             "session_id": self.session_id,
             "client_id": self.client_id,
             "project_id": self.project_id,
+            "project_type": self.project_type,
             "project_path": self.project_path,
             "project_name": self.project_name,
             "unreal_pid": self.unreal_pid,
@@ -164,6 +172,7 @@ class ProjectSession:
             "session_id": self.session_id,
             "client_id": self.client_id,
             "project_id": self.project_id,
+            "project_type": self.project_type,
             "project_name": self.project_name,
             "project_path": self.project_path,
             "status": self.status,
@@ -253,6 +262,7 @@ class SessionStore:
             session_id=str(data.get("session_id") or ""),
             client_id=str(data.get("client_id") or "browser"),
             project_id=str(data.get("project_id") or ""),
+            project_type=str(data.get("project_type") or "UNREAL_PROJECT"),
             project_path=str(data.get("project_path") or ""),
             project_name=str(data.get("project_name") or ""),
             unreal_pid=data.get("unreal_pid"),
@@ -289,6 +299,7 @@ class SessionStore:
                 session_id=session_id,
                 client_id=client_id,
                 project_id=project_id,
+                project_type="UNREAL_PROJECT",
                 project_path=str(project_path),
                 project_name=project_name or Path(str(project_path)).stem,
                 status=STARTING,

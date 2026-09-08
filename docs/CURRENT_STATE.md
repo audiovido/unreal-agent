@@ -46,7 +46,7 @@ each gate below names what was re-verified for this entry.
 | UNREAL TOOL COVERAGE | 85 | 100 tools + 67 live primitives in 8 batches; engine-closed gaps recorded |
 | VISUAL DIRECTOR | 82 | release path 8.66, 0 defects, live loop; human-eye acceptance still pending on showcase |
 | CREATIVE DIRECTOR | 68 | implemented + hermetic tests + live preflight proof + mission-plan contract + replan drift guard wired |
-| ASSET INTELLIGENCE | 66 | implemented + hermetic tests + live ranking/dup proof + mission-plan reuse candidates via engine catalog |
+| ASSET INTELLIGENCE | 74 | ranking/dup/LOD + planner reuse chain (import->spawn->verify->readback) wired into engine + API plan sites; live plan proven for BlackSUV |
 | AUTONOMOUS LOOP | 75 | mission engine, loop protection, self-repair live; bounded autonomy in place |
 | PERFORMANCE | 62 | parallel discovery + pipeline caching; vision-review frame cache (20s -> 0s live); step7 bench 32.6s remains as honest ambiguous-frame cost |
 | UI/UX | 70 | Director's Booth Phase 1-2 + live wiring + Release 1.0.0; Phase H "no wall of buttons" not complete |
@@ -54,7 +54,7 @@ each gate below names what was re-verified for this entry.
 | QA | 82 | 926 green + classification doc + packaging closure; live-UE suite is probe-based |
 | PRODUCTIZATION | 75 | packaging smoke 8/8, doctor, first-run, release checklist |
 | AAA SHOWCASE | 65 | ASSET_Showcase2 + ShowcaseMap + real assets + VD IT-12 (8.05 proposed, human-eye pending) |
-| **OVERALL** | **~73** | weighted; no inflated numbers — every % traces to a verified artifact |
+| **OVERALL** | **~76** | weighted; no inflated numbers — every % traces to a verified artifact |
 
 ## 4. THIS BATCH (2026-09-05) — what changed and proof
 

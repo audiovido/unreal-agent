@@ -1257,3 +1257,19 @@ input { font: inherit; }
 .ss-proofs img { height: 72px; border-radius: 6px; border: 1px solid rgba(120,150,190,.3); object-fit: cover; }
 .ss-res { margin-top: 14px; border-top: 1px dashed rgba(120,150,190,.2); padding-top: 10px; font-size: 11px; color: var(--muted); font-family: var(--font-mono); display: flex; gap: 12px; flex-wrap: wrap; }
 @media (max-width: 1000px) { .ss-layout { grid-template-columns: 1fr; } }
+
+/* ---- mobile: hero CTA row must not clip at 390px (certified defect fix) ---- */
+@media (max-width: 440px) {
+  .hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 14px 20px;
+  }
+  .btn-hero {
+    white-space: nowrap;
+    text-align: center;
+    padding: 13px 14px;
+    font-size: 14px;
+  }
+}

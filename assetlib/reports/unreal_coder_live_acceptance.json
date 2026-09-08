@@ -1,9 +1,9 @@
 {
   "runner": "unreal_coder_live_acceptance",
-  "started_at": 1788397998.0314481,
+  "started_at": 1788399967.5368516,
   "engine_version": "5.8.2-56702186+++UE5+Release-5.8",
   "project": "ASSET_Showcase2",
-  "mission_id": "mission_live_c590ce1c",
+  "mission_id": "mission_live_752a2948",
   "request": "Add a warm accent light and a small marker prop to the current scene, then capture proof of the result.",
   "plan_summary": {
     "selected_capabilities": [
@@ -88,11 +88,11 @@
       "world": "/Game/ShowcaseMap.ShowcaseMap"
     },
     {
-      "check": "actor_exists:UA_UC_Live_d70448",
+      "check": "actor_exists:UA_UC_Live_50e098",
       "ok": true
     },
     {
-      "check": "actor_exists:UA_UC_Prop_1db97f",
+      "check": "actor_exists:UA_UC_Prop_0abd5e",
       "ok": true
     },
     {
@@ -111,7 +111,7 @@
     }
   ],
   "verdict": "PASS",
-  "why": "mission=PASS (All 6 steps verified; visual score 7.60 >= floor 6.00.); live read-back {'UA_UC_Live_d70448': True, 'UA_UC_Prop_1db97f': True}; capture_ok=True",
-  "finished_at": 1788398001.5717201,
-  "duration_s": 3.5
+  "why": "mission=PASS (All 6 steps verified; visual score 7.60 >= floor 6.00.); live read-back {'UA_UC_Live_50e098': True, 'UA_UC_Prop_0abd5e': True}; capture_ok=True",
+  "finished_at": 1788399970.9407701,
+  "duration_s": 3.4
 }
