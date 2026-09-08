@@ -134,21 +134,33 @@ void AAividoCharacter::Tick(float DeltaSeconds)
 			FRotator(0.f, -90.f, 0.f),
 			false, nullptr, ETeleportType::TeleportPhysics);
 		UE_LOG(LogTemp, Log, TEXT("AIVIDO_SPAWN: %s rest_z=%.1f"), *GetName(), RestZ);
-		if (UCharacterMovementComponent* CMC = GetCharacterMovement())
+
+		// Standalone validation: -AividoAutoProof schedules the proof sequence
+		// shortly after spawn (boot ExecCmds run before the pawn exists).
+		if (FParse::Param(FCommandLine::Get(), TEXT("AividoAutoProof")))
 		{
-			CMC->Velocity = FVector::ZeroVector;
-			// Deterministic spawn: no falling phase at all. This level's legacy
-			// colliders interplay badly with the fall/floor pipeline (phantom
-			// floors, upward rides). Flying + zero gravity + the movement
-			// anchor below gives a fully deterministic pawn: idle stays put,
-			// WASD walks at normal speed with the real walk animation.
-			CMC->GravityScale = 0.f;
-			CMC->BrakingDecelerationFlying = 1400.f;
-			// Walk-speed feel: same top speed as walking, so the velocity-driven
-			// walk animation looks correct.
-			CMC->MaxFlySpeed = 260.f;
-			CMC->SetMovementMode(MOVE_Flying);
+			if (UWorld* W2 = GetWorld())
+			{
+				FTimerHandle AutoProofHandle;
+				W2->GetTimerManager().SetTimer(AutoProofHandle, FTimerDelegate::CreateWeakLambda(this, [this]() { AividoProof(); }), 3.f, false);
+			}
 		}
+	}
+
+	// Deterministic spawn: no falling phase at all. This level's legacy
+	// colliders interplay badly with the fall/floor pipeline (phantom
+	// floors, upward rides). Flying + zero gravity + the movement
+	// anchor below gives a fully deterministic pawn: idle stays put,
+	// WASD walks at normal speed with the real walk animation.
+	if (UCharacterMovementComponent* CMC = GetCharacterMovement())
+	{
+		CMC->Velocity = FVector::ZeroVector;
+		CMC->GravityScale = 0.f;
+		CMC->BrakingDecelerationFlying = 1400.f;
+		// Walk-speed feel: same top speed as walking, so the velocity-driven
+		// walk animation looks correct.
+		CMC->MaxFlySpeed = 260.f;
+		CMC->SetMovementMode(MOVE_Flying);
 	}
 
 	// Unstick guard: when the capsule is fully supported (zero velocity) but
@@ -211,17 +223,17 @@ void AAividoCharacter::Tick(float DeltaSeconds)
 	}
 	bInputThisFrame = false;
 
-		if (UCharacterMovementComponent* CMC3 = GetCharacterMovement())
+	// Sticky deterministic mode; the level's colliders keep flipping the
+	// pawn into Falling.
+	if (UCharacterMovementComponent* CMC3 = GetCharacterMovement())
+	{
+		if (CMC3->MovementMode != MOVE_Flying)
 		{
-			if (CMC3->MovementMode != MOVE_Flying)
-			{
-				// Keep the deterministic gravity-free mode sticky; the level's
-				// colliders keep flipping the pawn into Falling.
-				CMC3->SetMovementMode(MOVE_Flying);
-			}
+			CMC3->SetMovementMode(MOVE_Flying);
 		}
+	}
 
-		UpdateInteractTarget();
+	UpdateInteractTarget();
 }
 
 void AAividoCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue,
