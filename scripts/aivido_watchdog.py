@@ -177,17 +177,32 @@ def main(argv=None) -> int:
 def _listener_pids(host: str, port: int) -> List[int]:
     import subprocess
     pids: List[int] = []
+    if sys.platform == "win32":
+        try:
+            out = subprocess.run(["netstat", "-ano"], capture_output=True,
+                                 text=True, timeout=15).stdout or ""
+            needle = f"{host}:{port}"
+            for line in out.splitlines():
+                if "LISTENING" not in line:
+                    continue
+                parts = line.split()
+                if len(parts) >= 5 and needle in parts[1]:
+                    try:
+                        pids.append(int(parts[-1]))
+                    except ValueError:
+                        pass
+        except Exception:
+            pass
+        return sorted(set(pids))
     try:
-        out = subprocess.run(["netstat", "-ano"], capture_output=True,
-                             text=True, timeout=15).stdout or ""
-        needle = f"{host}:{port}"
-        for line in out.splitlines():
-            if "LISTENING" not in line:
-                continue
+        out = subprocess.run(
+            ["lsof", "-nP", "-iTCP:%d" % port, "-sTCP:LISTEN"],
+            capture_output=True, text=True, timeout=15).stdout or ""
+        for line in out.splitlines()[1:]:
             parts = line.split()
-            if len(parts) >= 5 and needle in parts[1]:
+            if len(parts) >= 2:
                 try:
-                    pids.append(int(parts[-1]))
+                    pids.append(int(parts[1]))
                 except ValueError:
                     pass
     except Exception:

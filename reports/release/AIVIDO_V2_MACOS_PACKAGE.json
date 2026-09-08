@@ -1,0 +1,60 @@
+{
+  "product": "Aivido",
+  "version": "2.0.0",
+  "source_sha": "3ce4a86d41756c670255f9e6cd1d21d914e339f8",
+  "source_branch": "aivido/v2-transfer-package",
+  "source_tag": "v2.0.0",
+  "package_branch": "aivido/v2-macos-package",
+  "zip_path": "reports/release/Aivido-V2.0.0-macOS.zip",
+  "sha256_path": "reports/release/Aivido-V2.0.0-macOS.sha256.txt",
+  "zip_size_bytes": 727725,
+  "zip_sha256": "d9073cae0b07deab47bacb602d19cf0c430a663b6a5c986ed85670b4ccb4ee12",
+  "packaged_file_count": 143,
+  "installer_result": "PASS",
+  "runtime_result": "PASS",
+  "acceptance_runner_result": "PASS",
+  "portability_result": "PASS",
+  "acceptance_runner_selftest": {
+    "result": "PASS",
+    "scenarios_passed": 17,
+    "scenarios_failed": 0,
+    "live_unreal_mutated": false
+  },
+  "hermetic_testing": {
+    "zip_integrity": "PASS",
+    "extraction": "PASS",
+    "python_syntax": "PASS",
+    "package_imports": "PASS",
+    "app_served_import": "PASS",
+    "backend_boot": "PASS",
+    "ui_http_200": "PASS",
+    "installer": "PASS",
+    "start_status_restart_stop": "PASS",
+    "source_checkout_dependency": "PASS: package imports ran from fresh extraction",
+    "developer_venv_dependency": "PASS: package-local environment used",
+    "live_unreal_mutated": false
+  },
+  "unreal_detection": {
+    "macos_locations": [
+      "/Users/Shared/Epic Games/",
+      "/Applications/"
+    ],
+    "override_environment": "UNREAL_AGENT_ENGINE_DIR",
+    "override_cli": "--unreal-exe",
+    "ue_major_gate": ">=5"
+  },
+  "hygiene": {
+    "secrets": "PASS: no credentials; only policy/documentation markers",
+    "junk": "PASS: no junk entries in ZIP",
+    "windows_artifacts": "PASS: no .ps1/.cmd/.bat entries",
+    "dev_path_names": "PASS: no Shadow/Codex/Unreal-Agent names in ZIP",
+    "hardcoded_shadow_paths": "PASS",
+    "powershell_requirement": "PASS: not required",
+    "windows_registry_requirement": "PASS: not required on macOS"
+  },
+  "speech": {
+    "optional": true,
+    "unavailable_behavior": "truthful unavailable/skip; never fake success or crash startup"
+  },
+  "blockers": []
+}

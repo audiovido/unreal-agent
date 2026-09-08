@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import sys
 from dataclasses import dataclass, field
@@ -184,35 +185,94 @@ def set_pref(key: str, value: Any,
 # Unreal installation discovery (read-only registry scan; never launches)
 # ---------------------------------------------------------------------------
 
+def _editor_binaries(engine_root: Path) -> List[Path]:
+    """Candidate editor executables under an engine install root (win+mac)."""
+    root = Path(engine_root)
+    return [
+        root / "Engine" / "Binaries" / "Mac" / "UnrealEditor",
+        root / "Engine" / "Binaries" / "Mac" / "UnrealEditor.app" /
+        "Contents" / "MacOS" / "UnrealEditor",
+        root / "Engine" / "Binaries" / "Win64" / "UnrealEditor.exe",
+    ]
+
+
+def _version_from_label(label: str) -> Optional[str]:
+    """Extract a numeric version from a folder/label ("UE_5.8" -> "5.8")."""
+    digits = re.findall(r"(\d+(?:\.\d+)*)", label)
+    return digits[0] if digits else None
+
+
+def _build_from_root(root: Path, label: str) -> Optional[Dict[str, Any]]:
+    """A build record when an editor binary exists under the engine root."""
+    root = Path(root)
+    exe = next((str(p) for p in _editor_binaries(root) if p.is_file()), None)
+    if not exe:
+        return None
+    version = _version_from_label(label)
+    return {"label": version or label, "path": str(root),
+           "editor_exe": exe, "version": version}
+
+
 def detect_unreal_builds() -> List[Dict[str, Any]]:
     """Discover installed Unreal Editor builds without starting anything.
 
-    Windows: reads the Epic Games launcher registry key
-    ``HKLM:\\SOFTWARE\\EpicGames\\Unreal Engine\\Builds``.  Everywhere else
-    (or when the key is absent) returns [] and the doctor reports it as a
-    WARNING rather than a hard FAIL.
+    Detection order:
+      1. ``UNREAL_AGENT_ENGINE_DIR`` env override (explicit, testable)
+      2. Windows: Epic Games launcher registry key
+         HKLM:/SOFTWARE/EpicGames/Unreal Engine/Builds
+      3. macOS (default scan): ``/Users/Shared/Epic Games``,
+         ``/Applications/Epic Games``, ``/Applications`` — any ``UE_*``
+         folder that contains a Mac editor binary.
+
+    ``AIVIDO_UNREAL_SCAN_DIRS`` (os.pathsep-separated) overrides the scan
+    list on every platform so detection can be validated hermetically.
+    No fixed engine version is assumed: every UE_* folder is a candidate.
     """
     builds: List[Dict[str, Any]] = []
-    if sys.platform != "win32":
+    override = os.environ.get("UNREAL_AGENT_ENGINE_DIR", "").strip()
+    if override:
+        rec = _build_from_root(Path(override).expanduser().resolve(),
+                               "override")
+        if rec:
+            builds.append(rec)
         return builds
-    try:
-        import winreg
-        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                             r"SOFTWARE\EpicGames\Unreal Engine\Builds")
-        i = 0
-        while True:
-            try:
-                name, value, _ = winreg.EnumValue(key, i)
-            except OSError:
-                break
-            i += 1
-            exe = Path(str(value)) / "Engine" / "Binaries" / "Win64" / \
-                "UnrealEditor.exe"
-            builds.append({"label": name, "path": str(value),
-                           "editor_exe": str(exe) if exe.exists() else None})
-        winreg.CloseKey(key)
-    except OSError:
-        return []
+    if sys.platform == "win32":
+        try:
+            import winreg
+            key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                                 r"SOFTWARE\EpicGames\Unreal Engine\Builds")
+            i = 0
+            while True:
+                try:
+                    name, value, _ = winreg.EnumValue(key, i)
+                except OSError:
+                    break
+                i += 1
+                rec = _build_from_root(Path(str(value)), name)
+                if rec:
+                    builds.append(rec)
+            winreg.CloseKey(key)
+        except OSError:
+            pass
+    scan_dirs = os.environ.get("AIVIDO_UNREAL_SCAN_DIRS", "").strip()
+    bases: List[Path] = []
+    if scan_dirs:
+        bases = [Path(p).expanduser().resolve()
+                 for p in scan_dirs.split(os.pathsep) if p.strip()]
+    elif sys.platform != "win32":
+        bases = [Path("/Users/Shared/Epic Games"),
+                 Path("/Applications/Epic Games"),
+                 Path("/Applications")]
+    for base in bases:
+        if not base.is_dir():
+            continue
+        for child in sorted(base.iterdir()):
+            if not child.is_dir() or \
+                    not child.name.upper().startswith("UE_"):
+                continue
+            rec = _build_from_root(child, child.name[3:])
+            if rec:
+                builds.append(rec)
     return builds
 
 

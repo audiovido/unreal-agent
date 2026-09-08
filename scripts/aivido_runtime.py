@@ -50,8 +50,8 @@ from core import service_lifecycle as sl  # noqa: E402
 # ---------------------------------------------------------------------------
 
 SERVICE_NAME = "aivido_v1"
-BACKEND_HOST = "127.0.0.1"
-BACKEND_PORT = 8765
+BACKEND_HOST = os.environ.get("AIVIDO_BACKEND_HOST", "127.0.0.1")
+BACKEND_PORT = int(os.environ.get("AIVIDO_BACKEND_PORT", "8765"))
 APP_TARGET = "app.served:app"
 HEALTH_PATH = "/api/status"
 UI_PATH = "/app"
@@ -137,24 +137,42 @@ def _record_event(state: Dict[str, Any], kind: str, detail: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Listener / ownership detection (netstat-based, Windows)
+# Listener / ownership detection (platform-aware)
 # ---------------------------------------------------------------------------
 
 def _listener_pids(host: str, port: int) -> List[int]:
-    """PIDs currently LISTENING on host:port (127.0.0.1-scoped)."""
+    """PIDs currently LISTENING on host:port (loopback-scoped)."""
     pids: List[int] = []
+    if sys.platform == "win32":
+        try:
+            out = subprocess.run(
+                ["netstat", "-ano"], capture_output=True, text=True,
+                timeout=15
+            ).stdout or ""
+            needle = f"{host}:{port}"
+            for line in out.splitlines():
+                if "LISTENING" not in line:
+                    continue
+                parts = line.split()
+                if len(parts) >= 5 and needle in parts[1]:
+                    try:
+                        pids.append(int(parts[-1]))
+                    except ValueError:
+                        pass
+        except Exception:
+            pass
+        return sorted(set(pids))
+    # POSIX: lsof reports the pid listening on a TCP port.
     try:
         out = subprocess.run(
-            ["netstat", "-ano"], capture_output=True, text=True, timeout=15
+            ["lsof", "-nP", "-iTCP:%d" % port, "-sTCP:LISTEN"],
+            capture_output=True, text=True, timeout=15
         ).stdout or ""
-        needle = f"{host}:{port}"
-        for line in out.splitlines():
-            if "LISTENING" not in line:
-                continue
+        for line in out.splitlines()[1:]:
             parts = line.split()
-            if len(parts) >= 5 and needle in parts[1]:
+            if len(parts) >= 2:
                 try:
-                    pids.append(int(parts[-1]))
+                    pids.append(int(parts[1]))
                 except ValueError:
                     pass
     except Exception:
@@ -195,12 +213,18 @@ def _looks_like_ours(pid: int) -> bool:
     """True when pid runs OUR backend command from THIS checkout. Adoption
     must never claim a backend another Aivido clone/agent started."""
     try:
-        out = subprocess.run(
-            ["powershell", "-NoProfile", "-Command",
-             f"(Get-CimInstance Win32_Process -Filter "
-             f"'ProcessId={pid}').CommandLine"],
-            capture_output=True, text=True, timeout=20)
-        cmdline = (out.stdout or "").strip().lower()
+        if sys.platform == "win32":
+            out = subprocess.run(
+                ["powershell", "-NoProfile", "-Command",
+                 f"(Get-CimInstance Win32_Process -Filter "
+                 f"'ProcessId={pid}').CommandLine"],
+                capture_output=True, text=True, timeout=20)
+            cmdline = (out.stdout or "").strip().lower()
+        else:
+            out = subprocess.run(
+                ["ps", "-p", str(pid), "-o", "command="],
+                capture_output=True, text=True, timeout=20)
+            cmdline = (out.stdout or "").strip().lower()
     except Exception:
         return False
     root_venv = str(ROOT / ".venv").lower()
@@ -209,7 +233,8 @@ def _looks_like_ours(pid: int) -> bool:
     return (
         "-m uvicorn" in cmdline
         and "app.served:app" in cmdline
-        and "--port" in cmdline and "8765" in cmdline
+        and "--port" in cmdline
+        and str(BACKEND_PORT) in cmdline
     )
 
 
@@ -228,16 +253,26 @@ def _detached_popen(cmd: List[str], out_log: Path, err_log: Path):
         )
     out_log.parent.mkdir(parents=True, exist_ok=True)
     with open(out_log, "ab") as fo, open(err_log, "ab") as fe:
+        if sys.platform == "win32":
+            return subprocess.Popen(
+                cmd, cwd=str(ROOT), stdout=fo, stderr=fe,
+                creationflags=creation, close_fds=True,
+            )
         return subprocess.Popen(
-            cmd, cwd=str(ROOT), stdout=fo, stderr=fe, creationflags=creation,
-            close_fds=True,
+            cmd, cwd=str(ROOT), stdout=fo, stderr=fe, close_fds=True,
+            start_new_session=True,
         )
 
 
 def _venv_python() -> str:
-    cand = ROOT / ".venv" / "Scripts" / "python.exe"
-    if cand.exists():
-        return str(cand)
+    cands = [
+        ROOT / ".venv" / "Scripts" / "python.exe",
+        ROOT / ".venv" / "bin" / "python",
+        ROOT / ".venv" / "bin" / "python3",
+    ]
+    for cand in cands:
+        if cand.exists():
+            return str(cand)
     return sys.executable
 
 

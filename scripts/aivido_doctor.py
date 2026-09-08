@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -42,10 +43,11 @@ from core import app_config  # noqa: E402
 
 RELEASE_BASE_SHA = "736042ddafb45f34dfed88607e750be73e2877f2"
 SERVICE = "aivido_v1"
-HOST, PORT = "127.0.0.1", 8765
+HOST = os.environ.get("AIVIDO_BACKEND_HOST", "127.0.0.1")
+PORT = int(os.environ.get("AIVIDO_BACKEND_PORT", "8765"))
 LOCAL = f"http://{HOST}:{PORT}"
 UI_URL = f"{LOCAL}/app"
-BRIDGE_PORT = 6766
+BRIDGE_PORT = int(os.environ.get("AIVIDO_BRIDGE_PORT", "6766"))
 GATEWAY_PORT = 8844
 IMPORT_CONTRACT = ("fastapi", "uvicorn", "PIL", "numpy", "pydantic",
                    "requests", "rich")
@@ -179,7 +181,9 @@ class Doctor:
     def check_python(self) -> Check:
         c = Check("python_runtime")
         ver = platform.python_version()
-        venv_py = ROOT / ".venv" / "Scripts" / "python.exe"
+        venv_py = (ROOT / ".venv" / "Scripts" / "python.exe"
+                   if sys.platform == "win32"
+                   else ROOT / ".venv" / "bin" / "python")
         if not venv_py.exists():
             return c.fail(f"venv missing: {venv_py}")
         major, minor = (int(x) for x in ver.split(".")[:2])
@@ -200,7 +204,8 @@ class Doctor:
                 missing.append(mod)
         if missing:
             return c.fail(f"import contract missing: {missing} "
-                          f"(reinstall with install-aivido.ps1)")
+                          f"(reinstall with the platform installer: "
+                          "install-aivido.ps1 / install-aivido.sh)")
         return c.ok("requirements.txt present; all imports resolve")
 
     def check_backend_health(self) -> Check:
