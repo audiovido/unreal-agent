@@ -1,0 +1,36 @@
+{
+  "report": "AIVIDO_V2_PACKAGE",
+  "schema": "aivido.v2.package.v1",
+  "generated_at": "2026-09-07T23:50:00Z",
+  "branch": "aivido/v2-autonomous-qa",
+  "source_sha": "f66c286e9e4f79277555813c1bf8d760edfa30c2",
+  "builder": "scripts/build_v1_package.py",
+  "output_dir": "dist/Aivido-V1",
+  "tracked_in_git": false,
+  "tracked_note": "dist/ is gitignored by design (.gitignore: 'Native packaging outputs (generated - never committed)'). The package is a generated release artifact; identity and hygiene evidence are recorded here and the builder is deterministic from the release tree.",
+  "version_json": {
+    "product": "Aivido V1",
+    "branch": "aivido/v2-autonomous-qa",
+    "sha": "f66c286e9e4f79277555813c1bf8d760edfa30c2",
+    "sha_short": "f66c286",
+    "built_at": "2026-09-07T23:48:48+00:00",
+    "python": "3.13.15",
+    "entrypoint": "install-aivido.ps1"
+  },
+  "files_count": 155,
+  "build_report_ok": true,
+  "hygiene": {
+    "junk_scan": "PASS: no __pycache__/.pyc/.zip/.log/broken-encoding/.bak/.backup artifacts",
+    "secrets_scan": "PASS: no private-key blocks, no AWS key ids, no hardcoded API keys",
+    "top_level": ["install-aivido.ps1/.cmd", "start-aivido.ps1/.cmd", "stop-aivido.cmd", "README-QUICKSTART.md", "requirements.txt", "app/", "core/", "tools/", "blender_agent/", "ui/", "memory/", "config/settings.json", "scripts/ (runtime/watchdog/doctor/smoke/install-check)", "version.json"]
+  },
+  "ui_build": {
+    "build_id": "20260907-v2release",
+    "ui_version": "1.0.0",
+    "content_hash": "ca8c0e55e673c48321450deee8ab4941f33abe718a0e0fcd1aa7f7eb14e14dcf",
+    "git_sha": "f66c286e9e4f79277555813c1bf8d760edfa30c2",
+    "git_dirty": false,
+    "offline_verify": "PASS (ui_release.py verify --build: 6/6 checks, 17-file hash parity)",
+    "canonical_manifest": "ui/build-manifest.json regenerated at this SHA (was stale: 33ab5beca44e, git_dirty true)"
+  }
+}

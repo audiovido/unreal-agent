@@ -84,3 +84,8 @@ memory/sessions/
 config/runtime/
 config/project_registry.json
 assetlib/proof/product/
+
+# MRQ raw frame renders are generated engine output (~491 MB): the committed
+# evidence is frame_manifest.json (per-frame sha256 + MP4 parity), produced by
+# scripts/mrq_frame_manifest.py. Keep the frames on disk, not in git.
+reports/cinematic/headless_mrq/frames/

@@ -1,0 +1,131 @@
+{
+  "started_utc": "2026-09-07T23:40:22Z",
+  "read_only": true,
+  "identity": {
+    "ok": true,
+    "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+    "project_name": "ASSET_Showcase2",
+    "engine": "5.8.2-56702186+++UE5+Release-5.8"
+  },
+  "census_initial": {
+    "world": "/Game/Maps/AividoHQ.AividoHQ",
+    "total_actors": 166,
+    "characters": [
+      {
+        "label": "AVIDO_Human_Master",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "z": 2.85
+      },
+      {
+        "label": "AVIDO_Human_Creative",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "z": 2.01
+      },
+      {
+        "label": "AVIDO_Human_Visual",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "z": 0.47
+      },
+      {
+        "label": "AVIDO_Human_Technical",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "z": 1.22
+      },
+      {
+        "label": "AVIDO_Human_Audio",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "z": 1.83
+      },
+      {
+        "label": "AVIDO_Human_Animation",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "z": 4.31
+      },
+      {
+        "label": "AVIDO_Human_Lighting",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "z": -0.42
+      },
+      {
+        "label": "AVIDO_Human_VFX",
+        "class": "SkeletalMeshActor",
+        "valid_root": true,
+        "z": 0.58
+      }
+    ],
+    "prop_count": 23,
+    "screens": [
+      "AVIDO_Hub_Screen",
+      "AVIDO_VD_Screen_A",
+      "AVIDO_VD_Screen_B",
+      "AVIDO_Console_Screen",
+      "AVIDO_Command_SideScreen_E",
+      "AVIDO_Command_SideScreen_W"
+    ],
+    "certified_screens_present": [
+      "AVIDO_Command_SideScreen_E",
+      "AVIDO_Command_SideScreen_W",
+      "AVIDO_Console_Screen",
+      "AVIDO_Hub_Screen",
+      "AVIDO_VD_GradeStrip",
+      "AVIDO_VD_Screen_A",
+      "AVIDO_VD_Screen_B",
+      "AVIDO_VD_Wall"
+    ],
+    "certified_screens_missing": [],
+    "text_renders": [
+      "AVIDO_Sign_Entry",
+      "AVIDO_Sign_Central",
+      "AVIDO_Sign_Master",
+      "AVIDO_Sign_Creative",
+      "AVIDO_Sign_Visual",
+      "AIVIDO_UI_Agents_Text",
+      "AIVIDO_UI_Missions_Text",
+      "AIVIDO_UI_Status_Text"
+    ],
+    "light_total": 41,
+    "light_static": 0,
+    "light_stationary": 0,
+    "bad_mesh_actors": [],
+    "broken_root_actors": [],
+    "ok": true
+  },
+  "cinemrq_isolation": {
+    "ok": true,
+    "cinemrq_assets": [
+      "/Game/CineMRQ/MRQ_CastHero",
+      "/Game/CineMRQ/MRQ_Config",
+      "/Game/CineMRQ/RenderMap"
+    ],
+    "sequence_actors_in_aividohq": []
+  },
+  "dirty_state": {
+    "dirty": null,
+    "count": null,
+    "note": "api unavailable: type object 'EditorLoadingAndSavingUtils' has no attribute 'get_dirty_package_names'",
+    "ok": true
+  },
+  "gates": {
+    "bridge_reachable": true,
+    "project_identity": true,
+    "map_loaded": true,
+    "characters_8of8": true,
+    "actor_count_166": true,
+    "props_present": true,
+    "screens_present": true,
+    "ui_text_present": true,
+    "lights_all_movable": true,
+    "no_broken_roots": true,
+    "no_missing_materials": true,
+    "cinemrq_isolated": true
+  },
+  "all_pass": true,
+  "finished_utc": "2026-09-07T23:40:23Z"
+}

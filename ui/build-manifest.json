@@ -1,11 +1,11 @@
 {
-  "build_id": "20260906-polish90",
+  "build_id": "20260907-v2release",
   "aivido_version": "0.1.1",
   "ui_version": "1.0.0",
   "product": "Aivido",
-  "git_sha": "33ab5beca44e",
-  "git_dirty": true,
-  "timestamp": "2026-09-05T23:28:41Z",
+  "git_sha": "f66c286e9e4f79277555813c1bf8d760edfa30c2",
+  "git_dirty": false,
+  "timestamp": "2026-09-07T23:59:59Z",
   "content_hash": "ca8c0e55e673c48321450deee8ab4941f33abe718a0e0fcd1aa7f7eb14e14dcf",
   "routes": {
     "": "ava.html",
@@ -14,7 +14,7 @@
   },
   "files": {
     "aivido.css": "eb40c9d4a83896f86af82a882a88a07e784f5b9649a4e7bc215de44428379bd9",
-    "aivido.html": "e615337f2af2d662ac884fa6ef1c7225c4739b6d3832ee6d998040e3c7ec71fc",
+    "aivido.html": "b6ab5cb81184700edae0c9e2a85dde529f82256af0491a09c9d36bd74682ec3c",
     "aivido.js": "07909c3dd7b28d3138495b6605af4e655cc18aecbf9e247a27e1723ea28f0de9",
     "app.js": "aaa827f23942da4bce3284c02989bafd4bbfa270812fc59beffd2edf9d266e87",
     "ava.css": "a325495502cb5410845ebe7b4f9c0f91dcd68c68bc921112e9bae86a3977d848",

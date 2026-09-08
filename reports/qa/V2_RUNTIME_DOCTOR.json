@@ -1,0 +1,63 @@
+{
+  "product": "Aivido V1",
+  "mode": "quick",
+  "overall": "WARN",
+  "checks": [
+    {
+      "name": "release_sha",
+      "status": "WARN",
+      "detail": "HEAD=f66c286e9e4f base=736042ddafb4 ancestor=736042ddafb45f34dfed88607e750be73e2877f2 dirty runtime files: M ui/aivido.html\n M ui/build-manifest.json\n M ui/ui-version.json\n?? scripts/mrq_frame_manifest.py\n?? scripts/recert/v2_release_preservation_probe.py"
+    },
+    {
+      "name": "python_runtime",
+      "status": "PASS",
+      "detail": "Python 3.13.15 at C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\.worktrees\\v2-autonomous-qa\\.venv\\Scripts\\python.exe"
+    },
+    {
+      "name": "requirements",
+      "status": "PASS",
+      "detail": "requirements.txt present; all imports resolve"
+    },
+    {
+      "name": "backend_health",
+      "status": "PASS",
+      "detail": "HTTP 200 ok=true unreal=ok"
+    },
+    {
+      "name": "ui_http",
+      "status": "PASS",
+      "detail": "http://127.0.0.1:8765/app -> HTTP 200 (aivido UI marker present)"
+    },
+    {
+      "name": "bridge_health",
+      "status": "PASS",
+      "detail": "6766 ping ok engine=5.8.2-56702186+++UE5+Release-5.8"
+    },
+    {
+      "name": "unreal_identity",
+      "status": "PASS",
+      "detail": "ASSET_Showcase2 engine=5.8.2-56702186+++UE5+Release-5.8"
+    },
+    {
+      "name": "active_map",
+      "status": "PASS",
+      "detail": "AividoHQ loaded (/Game/Maps/AividoHQ.AividoHQ)"
+    },
+    {
+      "name": "proof_endpoint",
+      "status": "PASS",
+      "detail": "proof present: C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Saved/UnrealAgent/viewport_latest.png (2410613 bytes)"
+    },
+    {
+      "name": "foreign_protection",
+      "status": "PASS",
+      "detail": "bridge 6766 and gateway 8844 untouched and alive"
+    }
+  ],
+  "summary": {
+    "pass": 9,
+    "warn": 1,
+    "fail": 0
+  },
+  "ran_at": 1788825081.3283496
+}
