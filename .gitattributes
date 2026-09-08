@@ -5,3 +5,6 @@ ui/** text eol=lf
 scripts/*.py text eol=lf
 config/*.json text eol=lf
 tests/*.py text eol=lf
+assetlib/tests/ue/ASSET_Showcase2/Plugins/**/Binaries/**/*.dll filter=lfs diff=lfs merge=lfs -text
+assetlib/tests/ue/ASSET_Showcase2/Content/**/*.uasset filter=lfs diff=lfs merge=lfs -text
+assetlib/tests/ue/ASSET_Showcase2/Content/**/*.umap filter=lfs diff=lfs merge=lfs -text

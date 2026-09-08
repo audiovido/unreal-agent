@@ -57,6 +57,11 @@ assetlib/projects/
 assetlib/tests/ue/*/Intermediate/
 assetlib/tests/ue/*/Saved/
 assetlib/tests/ue/*/DerivedDataCache/
+assetlib/tests/ue/*/Binaries/
+assetlib/tests/ue/*/Build/
+assetlib/tests/ue/*/Config/*.before-*
+assetlib/tests/ue/*/Plugins/*/Binaries/
+assetlib/tests/ue/**/*.pdb
 assetlib/proof/*.png
 vendor/
 
