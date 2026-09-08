@@ -1,0 +1,179 @@
+{
+  "source_release_sha": "eb466133f91d553c325d97b99ab93627dfd4aade",
+  "source_tag": "v2.0.0",
+  "second_system_tooling_sha": "9eaccee8656973e905deeb589fb65f619facae9b",
+  "branch": "aivido/v2-transfer-package",
+  "zip_path": "C:\\Users\\Shadow\\Documents\\Codex\\2026-09-07\\aivido-v2-0-0-build-final\\outputs\\Aivido-V2.0.0-Windows.zip",
+  "zip_sha256": "31a4e54707cffc9b93563122d9d7b1c81843526e36562f12ccfa5648e891dd8c",
+  "zip_size_bytes": 725378,
+  "packaged_file_count": 143,
+  "extraction_verification": {
+    "status": "PASS",
+    "fresh_directory": "C:\\Users\\Shadow\\Documents\\Codex\\2026-09-07\\aivido-v2-0-0-build-final\\work\\fresh-extraction-byk54k1j",
+    "zip_crc": "PASS",
+    "all_packaged_bytes_match": "PASS",
+    "unsafe_members": false
+  },
+  "integrity_results": {
+    "status": "FAIL",
+    "source_bytes_verified": 140,
+    "manifest": "PASS",
+    "version": "2.0.0",
+    "qa_included": true,
+    "installer_bootstrap_included": true,
+    "requirements_included": true,
+    "ui_included": true,
+    "second_system_runner_included": true,
+    "source_repo_dependency": "FAIL: app/speak.py:22-26 references source checkout scripts/avalive_gate.py, scripts/avalive_gate.json and log path",
+    "dev_venv_dependency": "FAIL: app/speak.py:25 hardcodes source checkout .venv/Scripts/python.exe; imports pass but speech execution remains nonportable",
+    "syntax_errors": []
+  },
+  "package_only_smoke": {
+    "checks": [
+      {
+        "module": "fastapi",
+        "status": "PASS"
+      },
+      {
+        "module": "uvicorn",
+        "status": "PASS"
+      },
+      {
+        "module": "PIL",
+        "status": "PASS"
+      },
+      {
+        "module": "numpy",
+        "status": "PASS"
+      },
+      {
+        "module": "pydantic",
+        "status": "PASS"
+      },
+      {
+        "module": "requests",
+        "status": "PASS"
+      },
+      {
+        "module": "rich",
+        "status": "PASS"
+      },
+      {
+        "module": "qa.checks",
+        "status": "PASS"
+      },
+      {
+        "module": "core.mission",
+        "status": "PASS"
+      },
+      {
+        "module": "core.orchestrator",
+        "status": "PASS"
+      },
+      {
+        "module": "app.served",
+        "status": "PASS"
+      },
+      {
+        "module": "scripts.aivido_runtime",
+        "status": "PASS"
+      },
+      {
+        "module": "scripts.acceptance.second_system_checks",
+        "status": "PASS"
+      }
+    ],
+    "status": "PASS"
+  },
+  "runner_mock": "PASS (hermetic simulation only; not second-machine/live Unreal acceptance)",
+  "hygiene_results": {
+    "secrets": "PASS",
+    "secret_findings": [],
+    "secret_scan_scope": "All ZIP text; private keys, GitHub/OpenAI/AWS token formats and long literal credential assignments. Pattern scan is not an absolute guarantee.",
+    "junk": "PASS",
+    "junk_findings": [],
+    "hardcoded_dev_paths": "FAIL",
+    "hardcoded_dev_path_findings": [
+      {
+        "file": "app/api.py",
+        "line": 680
+      },
+      {
+        "file": "app/api.py",
+        "line": 4499
+      },
+      {
+        "file": "app/proof.py",
+        "line": 14
+      },
+      {
+        "file": "app/speak.py",
+        "line": 22
+      },
+      {
+        "file": "app/speak.py",
+        "line": 23
+      },
+      {
+        "file": "app/speak.py",
+        "line": 24
+      },
+      {
+        "file": "app/speak.py",
+        "line": 25
+      },
+      {
+        "file": "app/speak.py",
+        "line": 26
+      },
+      {
+        "file": "core/orchestrator.py",
+        "line": 2240
+      },
+      {
+        "file": "qa/verifier.py",
+        "line": 428
+      },
+      {
+        "file": "tools/unreal/project_context.py",
+        "line": 36
+      },
+      {
+        "file": "tools/unreal/project_context.py",
+        "line": 37
+      },
+      {
+        "file": "tools/unreal/project_context.py",
+        "line": 38
+      },
+      {
+        "file": "ui/aivido.js",
+        "line": 671
+      },
+      {
+        "file": "ui/ava.js",
+        "line": 97
+      },
+      {
+        "file": "ui/ava.js",
+        "line": 98
+      },
+      {
+        "file": "ui/devboard.html",
+        "line": 379
+      },
+      {
+        "file": "ui/devboard.html",
+        "line": 640
+      }
+    ],
+    "excluded_state": "All tracked memory, backups, caches, dev environments and generated build reports excluded"
+  },
+  "runtime_modified": false,
+  "live_unreal_mutated": false,
+  "transfer_package_ready": false,
+  "blockers": [
+    "app/speak.py:22-26 depends on the original Shadow source checkout, external avalive_gate.py/avalive_gate.json, and its development .venv/Scripts/python.exe.",
+    "Hardcoded Shadow paths remain at app/api.py:680, app/api.py:4499, app/proof.py:14, core/orchestrator.py:2240, qa/verifier.py:428, tools/unreal/project_context.py:36, tools/unreal/project_context.py:37, tools/unreal/project_context.py:38, ui/aivido.js:671, ui/ava.js:97, ui/ava.js:98, ui/devboard.html:379, ui/devboard.html:640. Exact certified runtime/UI bytes cannot be rewritten under the release-preservation constraint."
+  ]
+}

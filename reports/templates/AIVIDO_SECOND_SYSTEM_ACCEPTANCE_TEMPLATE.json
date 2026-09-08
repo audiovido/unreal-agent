@@ -1,0 +1,95 @@
+{
+  "_comment": "AIVIDO V2 second-system acceptance output contract. Every field below is emitted by scripts/acceptance/run_second_system_acceptance.ps1 with real values (placeholders shown here).",
+  "runner": "run_second_system_acceptance.ps1",
+  "runner_version": "<runner checkout SHA or 'unknown'>",
+  "run_id": "run_YYYYMMDD-HHMMSS_<hex6>",
+  "timestamp": "2026-09-07T00:00:00Z",
+  "machine": "<COMPUTERNAME>",
+  "os": "<Windows caption, e.g. 'Microsoft Windows 11 Pro'>",
+  "package_path": "C:\\path\\to\\extracted\\Aivido-V2",
+  "package_version": "<version.json version/sha/branch or 'unknown'>",
+  "package_sha": "<sha256 content checksum of the extracted package>",
+  "backend": {
+    "port": 8765,
+    "healthy": true,
+    "pid": 12345,
+    "log_out": "<isolated env backend stdout log>",
+    "log_err": "<isolated env backend stderr log>"
+  },
+  "bridge": {
+    "host": "127.0.0.1",
+    "port": 6766,
+    "reachable": true,
+    "ping_ok": true,
+    "engine": "5.8.4"
+  },
+  "unreal": {
+    "installed_builds": [
+      { "label": "5.8", "exe": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor.exe" }
+    ],
+    "detected_version": "5.8",
+    "supported": true,
+    "project": "AividoHQ",
+    "map": "/Game/Maps/AividoHQ"
+  },
+  "ui": {
+    "url": "http://127.0.0.1:8765/app",
+    "http_status": 200,
+    "ok": true
+  },
+  "doctor": {
+    "overall": "PASS",
+    "summary": { "pass": 13, "warn": 0, "fail": 0 },
+    "json_path": "<reports/second_system/<run_id>/doctor.json>"
+  },
+  "mission": {
+    "id": "second_system_20260907T000000",
+    "result": "PASS",
+    "diag": null,
+    "steps": [
+      { "name": "bridge_tcp", "status": "PASS", "detail": "127.0.0.1:6766 reachable" },
+      { "name": "bridge_ping", "status": "PASS", "detail": "bridge answered ping engine=5.8.4" },
+      { "name": "unreal_identity", "status": "PASS", "detail": "project=AividoHQ engine=5.8.4" },
+      { "name": "active_map", "status": "PASS", "detail": "world_path=/Game/Maps/AividoHQ (expected /Game/Maps/AividoHQ)" },
+      { "name": "ue_version", "status": "PASS", "detail": "UE 5 supported" },
+      { "name": "viewport_capture", "status": "PASS", "detail": "capture ok path=.../Saved/UnrealAgent/viewport_latest.png size=123456" }
+    ],
+    "evidence": {
+      "path": "C:\\Users\\<user>\\<project>\\Saved\\UnrealAgent\\viewport_latest.png",
+      "mtime": 1786123456.789,
+      "size": 123456,
+      "ok": true
+    }
+  },
+  "evidence": {
+    "path": "C:\\Users\\<user>\\<project>\\Saved\\UnrealAgent\\viewport_latest.png",
+    "bytes": 123456,
+    "sha256": "<sha256 of served proof PNG>",
+    "validated": true,
+    "age_minutes": 0.4
+  },
+  "restart": {
+    "ok": true,
+    "detail": "clean stop/start cycle healthy"
+  },
+  "duration_s": 84.2,
+  "warnings": [],
+  "failures": [
+    {
+      "stage": "<phase name, e.g. 'detect_unreal'>",
+      "code": "<failure code, e.g. 'UNREAL_NOT_INSTALLED'>",
+      "reason": "<human-readable reason>",
+      "remediation": "<human-readable suggested remediation>"
+    }
+  ],
+  "steps": [
+    { "number": 1, "name": "validate_package", "status": "PASS", "detail": "files OK; version=...; checksum=...", "duration_s": 0.2 }
+  ],
+  "final_verdict": "PASS",
+  "mock": false,
+  "cleanup": {
+    "stopped": [],
+    "refused": [],
+    "temp_dirs_removed": []
+  }
+}
