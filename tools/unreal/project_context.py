@@ -25,6 +25,7 @@ import json
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from core.portable_paths import BRIDGE_PORT, PROJECT_ROOT
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -33,9 +34,9 @@ ACTIVE_CONTEXT_FILE = ROOT / "memory" / "active_project_context.json"
 # Fixed high-probability projects we know about. Tried before any open-ended
 # disk scan so resolution stays fast and deterministic in the common case.
 KNOWN_PROJECT_PATHS = [
-    Path(r"C:\Users\Shadow\Desktop\AvaLive\AvaLive\AvaLive.uproject"),
-    Path(r"C:\Users\Shadow\Desktop\AvaLive\AvaLive.uproject"),
-    Path(r"C:\Users\Shadow\Desktop\app\AudioVidoLivingCity\AudioVidoLivingCity.uproject"),
+    PROJECT_ROOT / "AvaLive.uproject",
+    PROJECT_ROOT / "AvaLive" / "AvaLive.uproject",
+    PROJECT_ROOT / "AudioVidoLivingCity" / "AudioVidoLivingCity.uproject",
 ]
 
 # Allowed roots for the bounded last-resort search. Real-time OS shells and
@@ -355,7 +356,7 @@ def _live_bridge_context(bridge):
     if bridge is None:
         try:
             from tools.unreal.unreal_bridge import UnrealBridge
-            bridge = UnrealBridge(host="127.0.0.1", port=6766, timeout=8)
+            bridge = UnrealBridge(host="127.0.0.1", port=BRIDGE_PORT, timeout=8)
         except Exception:
             bridge = None
     if bridge is not None:

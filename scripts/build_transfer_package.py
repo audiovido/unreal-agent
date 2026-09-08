@@ -1,6 +1,6 @@
-"""Assemble exact V2 release files plus the four certified acceptance files.
+"""Assemble V2 release files, certified tooling, and portability fixes.
 
-No runtime rewriting. Run with --out pointing to an empty output directory.
+Run with --out pointing to an empty output directory.
 """
 from pathlib import Path
 import argparse
@@ -16,6 +16,13 @@ EXTRA = ['scripts/acceptance/run_second_system_acceptance.ps1',
          'scripts/acceptance/second_system_checks.py',
          'docs/SECOND_SYSTEM_INSTALL.md',
          'reports/templates/AIVIDO_SECOND_SYSTEM_ACCEPTANCE_TEMPLATE.json']
+PORTABILITY_FILES = [
+    'core/portable_paths.py', 'app/speak.py', 'app/proof.py', 'app/api.py',
+    'core/orchestrator.py', 'tools/unreal/project_context.py',
+    'tools/unreal/project_manager.py', 'tools/system/tool_runner.py',
+    'scripts/aivido_install_check.py', 'ui/aivido.js', 'ui/devboard.html',
+    'ui/product.html', 'config/settings.json',
+]
 ENTRY = ['requirements.txt', 'install-aivido.ps1', 'install-aivido.cmd',
          'start-aivido.ps1', 'start-aivido.cmd', 'stop-aivido.cmd',
          'config/settings.json']
@@ -41,10 +48,13 @@ def build(out):
             selected.add(name)
     files = {n: git('show', RELEASE + ':' + n) for n in sorted(selected)}
     files.update({n: git('show', TOOLING + ':' + n) for n in EXTRA})
+    files.update({n: (ROOT / n).read_bytes() for n in PORTABILITY_FILES})
+    files['scripts/acceptance/transfer_package_smoke.py'] = (
+        ROOT / 'scripts/acceptance/transfer_package_smoke.py').read_bytes()
     files['version.json'] = json.dumps({'product': 'Aivido', 'version': '2.0.0', 'sha': RELEASE, 'source_tag': 'v2.0.0', 'second_system_tooling_sha': TOOLING, 'entrypoint': 'install-aivido.ps1'}, indent=2).encode()
     files['README-QUICKSTART.md'] = b'# Aivido V2.0.0 Windows\n\nInstall Python 3.9+ and run install-aivido.cmd. The installer creates a new local .venv and installs requirements.txt from PyPI. See docs/SECOND_SYSTEM_INSTALL.md for prerequisites and acceptance instructions.\n'
     manifest = {n: hashlib.sha256(b).hexdigest() for n, b in sorted(files.items())}
-    files['manifest.json'] = json.dumps({'version': '2.0.0', 'source_release_sha': RELEASE, 'source_tag': 'v2.0.0', 'second_system_tooling_sha': TOOLING, 'files_sha256': manifest}, indent=2).encode()
+    files['manifest.json'] = json.dumps({'version': '2.0.0', 'source_release_sha': RELEASE, 'source_tag': 'v2.0.0', 'second_system_tooling_sha': TOOLING, 'portability_files': PORTABILITY_FILES, 'files_sha256': manifest}, indent=2).encode()
     with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for name, data in sorted(files.items()):
             info = zipfile.ZipInfo('Aivido-V2.0.0-Windows/' + name, (2026, 9, 7, 0, 0, 0))

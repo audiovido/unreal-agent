@@ -9,9 +9,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from fastapi.responses import FileResponse
+from core.portable_paths import PROJECT_ROOT
 
 _PROJECT_FILE = None
-_AVALIVE_PROOF_DIR = Path(r"C:/Users/Shadow/Desktop/AvaLive/AvaLive/Saved/UnrealAgent")
+_AVALIVE_PROOF_DIR = PROJECT_ROOT / "Saved" / "UnrealAgent"
 
 
 def setup(project_file):

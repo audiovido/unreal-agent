@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
 
 # Import MemorySystem
 from core.memory_system import MemorySystem
+from core.portable_paths import BRIDGE_PORT, vision_review_script
 
 from tools.unreal.project_manager import (
     discover_projects,
@@ -52,7 +53,7 @@ STATE_FILE = ROOT / "memory" / "agent_state.json"
 # Create MemorySystem instance
 MEMORY = MemorySystem()
 
-BRIDGE = UnrealBridge()
+BRIDGE = UnrealBridge(port=BRIDGE_PORT)
 
 REGISTRY = build_registry(
     discover_projects,
@@ -2224,6 +2225,7 @@ def build_executor_system(plan):
     if not routing.get("vision_required"):
         return base
 
+    concrete_review = str(vision_review_script())
     visual_rules = r"""
 
 VISUAL QA LOOP IS REQUIRED FOR THIS TASK.
@@ -2237,7 +2239,7 @@ equivalent command strings and do not add any other PowerShell:
 
 or, if environment variables are not expanded by the tool:
 
-& "C:\Users\Shadow\AppData\Local\UnrealAgent\vision_review.ps1"
+& "__AIVIDO_VISION_REVIEW__"
 
 The command captures the Unreal Editor window and returns JSON
 from the local vision model.
@@ -2255,7 +2257,8 @@ Rules:
 8. Never modify the visual_review.ps1 file.
 """
 
-    return str(base) + visual_rules
+    return str(base) + visual_rules.replace(
+        "__AIVIDO_VISION_REVIEW__", concrete_review)
 
 
 def runtime_info():

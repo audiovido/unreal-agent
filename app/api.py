@@ -31,6 +31,7 @@ if str(ROOT) not in sys.path:
 
 # Import MemorySystem for API integration
 from core.memory_system import MemorySystem
+from core.portable_paths import PROJECT_ROOT, vision_review_commands
 from core.production_pipeline import production_preflight, visual_scorecard
 from core.visual_director import is_vehicle_showcase_prompt, parse_intent
 from core.task_goal import (
@@ -677,7 +678,7 @@ def normalize_execution_plan(task, plan):
     def add(step_id, phase, intent, tool, parameters=None, expected=None):
         steps.append({"step_id": step_id, "phase": phase, "intent": intent, "action_category": intent, "preferred_tool": tool, "allowed_tools": [tool], "target_type": "blueprint" if p["asset_path"] else "project", "target_resource": p["asset_path"], "parameters": parameters or {}, "expected_result": expected or {}, "validation_tool": None, "validation_parameters": {}, "depends_on": [steps[-1]["step_id"]] if steps else [], "disposable": p["disposable"], "status": "pending"})
     if p["project_name"] and not p["asset_path"] and p["actor_name"]:
-        destination = r"C:\Users\Shadow\Desktop\UnrealAgentGraduation"
+        destination = str(PROJECT_ROOT)
         uproject_path = f"{destination}\\{p['project_name']}\\{p['project_name']}.uproject"
         add("create_project", "EDIT", "create_project", "create_project", {"project_name": p["project_name"], "destination": destination, "template": "Blank"})
         add("inspect_new_project", "INSPECT", "inspect_project", "inspect_project", {"uproject_path": uproject_path})
@@ -4496,7 +4497,7 @@ def _vision_collect_strings(value):
 
 def requires_approval(action, args):
     if action == "run_powershell":
-        allowed = ('& "$env:LOCALAPPDATA\\\\UnrealAgent\\\\vision_review.ps1"', '& "C:\\\\Users\\\\Shadow\\\\AppData\\\\Local\\\\UnrealAgent\\\\vision_review.ps1"', 'C:\\\\Users\\\\Shadow\\\\AppData\\\\Local\\\\UnrealAgent\\\\vision_review.ps1')
+        allowed = vision_review_commands()
 
         values = {
             s.strip()

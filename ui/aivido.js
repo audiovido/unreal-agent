@@ -668,7 +668,7 @@
 
   function renderWorkspaces() {
     const WS = [
-      { name: "AvaLive Living City", art: "linear-gradient(135deg,#3a2412,#140e08)", meta: "UE 5.8 · last open 12m ago · DEMO", status: "ACTIVE", up: "C:/Users/Shadow/Desktop/AvaLive/AvaLive.uproject" },
+      { name: "AvaLive Living City", art: "linear-gradient(135deg,#3a2412,#140e08)", meta: "UE 5.8 · last open 12m ago · DEMO", status: "ACTIVE", up: "C:/Projects/AvaLive/AvaLive.uproject" },
       { name: "ASSET_Showcase2", art: "linear-gradient(135deg,#241c10,#0e0a06)", meta: "UE 5.8 · last open 2h ago · DEMO", status: "READY", up: "ASSET_Showcase2" },
       { name: "UA_GradAudit", art: "linear-gradient(135deg,#331f10,#120c06)", meta: "UE 5.8 · graduation rig · DEMO", status: "READY", up: "UA_GradAudit" },
       { name: "Desert Studio (scratch)", art: "linear-gradient(135deg,#4a2e18,#1a1008)", meta: "Blank · not opened yet · DEMO", status: "NEW", up: "" },

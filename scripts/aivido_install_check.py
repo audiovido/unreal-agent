@@ -19,6 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from core.portable_paths import PROJECT_ROOT  # noqa: E402
+
 try:
     from core import app_config  # noqa: E402
 except Exception:
@@ -88,9 +90,8 @@ def _candidates(pinned: str):
         v = settings.get(key) or settings.get("unreal", {}).get(key)
         if v and Path(str(v)).is_file():
             out.append(str(v))
-    scan = [Path(ROOT) / "assetlib" / "tests" / "ue",
-            Path.home() / "Desktop" / "Unreal-Agent" / "assetlib" / "tests" /
-            "ue",
+    scan = [PROJECT_ROOT,
+            Path(ROOT) / "assetlib" / "tests" / "ue",
             Path.home() / "Desktop"]
     for base in scan:
         if base and base.is_dir():

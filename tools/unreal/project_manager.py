@@ -7,6 +7,7 @@ import socket
 import time
 from pathlib import Path
 
+from core.portable_paths import PACKAGE_ROOT, unreal_editor_executable
 from tools.unreal import project_context
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -15,8 +16,10 @@ SETTINGS_PATH = ROOT / "config" / "settings.json"
 with open(SETTINGS_PATH, "r", encoding="utf-8-sig") as f:
     SETTINGS = json.load(f)
 
-UNREAL_ENGINE = Path(SETTINGS["unreal_engine"])
-UNREAL_EDITOR = UNREAL_ENGINE / "Engine" / "Binaries" / "Win64" / "UnrealEditor.exe"
+_RESOLVED_EDITOR = unreal_editor_executable()
+UNREAL_ENGINE = (_RESOLVED_EDITOR.parents[3] if _RESOLVED_EDITOR else
+                 PACKAGE_ROOT / ".unavailable")
+UNREAL_EDITOR = _RESOLVED_EDITOR or UNREAL_ENGINE / "UnrealEditor.exe"
 
 
 def discover_projects(search_roots=None):

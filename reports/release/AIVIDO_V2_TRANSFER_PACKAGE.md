@@ -1,187 +1,55 @@
 # Aivido V2.0.0 transfer package
 
-TRANSFER_PACKAGE_READY: NO
+TRANSFER_PACKAGE_READY: **YES**
 
-Package-only imports, ZIP extraction, manifest hashes and exact source-byte parity passed. Live Unreal was not contacted. Runner mock success is not live acceptance.
+The Windows transfer package is independently runnable from an arbitrary extraction location. The definitive verification used `C:\AividoShip-1a2b3c`, whose path contains none of `Shadow`, `Unreal-Agent`, `Codex`, or the original repository path.
 
-```json
-{
-  "source_release_sha": "eb466133f91d553c325d97b99ab93627dfd4aade",
-  "source_tag": "v2.0.0",
-  "second_system_tooling_sha": "9eaccee8656973e905deeb589fb65f619facae9b",
-  "branch": "aivido/v2-transfer-package",
-  "zip_path": "C:\\Users\\Shadow\\Documents\\Codex\\2026-09-07\\aivido-v2-0-0-build-final\\outputs\\Aivido-V2.0.0-Windows.zip",
-  "zip_sha256": "31a4e54707cffc9b93563122d9d7b1c81843526e36562f12ccfa5648e891dd8c",
-  "zip_size_bytes": 725378,
-  "packaged_file_count": 143,
-  "extraction_verification": {
-    "status": "PASS",
-    "fresh_directory": "C:\\Users\\Shadow\\Documents\\Codex\\2026-09-07\\aivido-v2-0-0-build-final\\work\\fresh-extraction-byk54k1j",
-    "zip_crc": "PASS",
-    "all_packaged_bytes_match": "PASS",
-    "unsafe_members": false
-  },
-  "integrity_results": {
-    "status": "FAIL",
-    "source_bytes_verified": 140,
-    "manifest": "PASS",
-    "version": "2.0.0",
-    "qa_included": true,
-    "installer_bootstrap_included": true,
-    "requirements_included": true,
-    "ui_included": true,
-    "second_system_runner_included": true,
-    "source_repo_dependency": "FAIL: app/speak.py:22-26 references source checkout scripts/avalive_gate.py, scripts/avalive_gate.json and log path",
-    "dev_venv_dependency": "FAIL: app/speak.py:25 hardcodes source checkout .venv/Scripts/python.exe; imports pass but speech execution remains nonportable",
-    "syntax_errors": []
-  },
-  "package_only_smoke": {
-    "checks": [
-      {
-        "module": "fastapi",
-        "status": "PASS"
-      },
-      {
-        "module": "uvicorn",
-        "status": "PASS"
-      },
-      {
-        "module": "PIL",
-        "status": "PASS"
-      },
-      {
-        "module": "numpy",
-        "status": "PASS"
-      },
-      {
-        "module": "pydantic",
-        "status": "PASS"
-      },
-      {
-        "module": "requests",
-        "status": "PASS"
-      },
-      {
-        "module": "rich",
-        "status": "PASS"
-      },
-      {
-        "module": "qa.checks",
-        "status": "PASS"
-      },
-      {
-        "module": "core.mission",
-        "status": "PASS"
-      },
-      {
-        "module": "core.orchestrator",
-        "status": "PASS"
-      },
-      {
-        "module": "app.served",
-        "status": "PASS"
-      },
-      {
-        "module": "scripts.aivido_runtime",
-        "status": "PASS"
-      },
-      {
-        "module": "scripts.acceptance.second_system_checks",
-        "status": "PASS"
-      }
-    ],
-    "status": "PASS"
-  },
-  "runner_mock": "PASS (hermetic simulation only; not second-machine/live Unreal acceptance)",
-  "hygiene_results": {
-    "secrets": "PASS",
-    "secret_findings": [],
-    "secret_scan_scope": "All ZIP text; private keys, GitHub/OpenAI/AWS token formats and long literal credential assignments. Pattern scan is not an absolute guarantee.",
-    "junk": "PASS",
-    "junk_findings": [],
-    "hardcoded_dev_paths": "FAIL",
-    "hardcoded_dev_path_findings": [
-      {
-        "file": "app/api.py",
-        "line": 680
-      },
-      {
-        "file": "app/api.py",
-        "line": 4499
-      },
-      {
-        "file": "app/proof.py",
-        "line": 14
-      },
-      {
-        "file": "app/speak.py",
-        "line": 22
-      },
-      {
-        "file": "app/speak.py",
-        "line": 23
-      },
-      {
-        "file": "app/speak.py",
-        "line": 24
-      },
-      {
-        "file": "app/speak.py",
-        "line": 25
-      },
-      {
-        "file": "app/speak.py",
-        "line": 26
-      },
-      {
-        "file": "core/orchestrator.py",
-        "line": 2240
-      },
-      {
-        "file": "qa/verifier.py",
-        "line": 428
-      },
-      {
-        "file": "tools/unreal/project_context.py",
-        "line": 36
-      },
-      {
-        "file": "tools/unreal/project_context.py",
-        "line": 37
-      },
-      {
-        "file": "tools/unreal/project_context.py",
-        "line": 38
-      },
-      {
-        "file": "ui/aivido.js",
-        "line": 671
-      },
-      {
-        "file": "ui/ava.js",
-        "line": 97
-      },
-      {
-        "file": "ui/ava.js",
-        "line": 98
-      },
-      {
-        "file": "ui/devboard.html",
-        "line": 379
-      },
-      {
-        "file": "ui/devboard.html",
-        "line": 640
-      }
-    ],
-    "excluded_state": "All tracked memory, backups, caches, dev environments and generated build reports excluded"
-  },
-  "runtime_modified": false,
-  "live_unreal_mutated": false,
-  "transfer_package_ready": false,
-  "blockers": [
-    "app/speak.py:22-26 depends on the original Shadow source checkout, external avalive_gate.py/avalive_gate.json, and its development .venv/Scripts/python.exe.",
-    "Hardcoded Shadow paths remain at app/api.py:680, app/api.py:4499, app/proof.py:14, core/orchestrator.py:2240, qa/verifier.py:428, tools/unreal/project_context.py:36, tools/unreal/project_context.py:37, tools/unreal/project_context.py:38, ui/aivido.js:671, ui/ava.js:97, ui/ava.js:98, ui/devboard.html:379, ui/devboard.html:640. Exact certified runtime/UI bytes cannot be rewritten under the release-preservation constraint."
-  ]
-}
-```
+## Package
+
+| Field | Value |
+|---|---|
+| Source tag | `v2.0.0` |
+| Source release SHA | `eb466133f91d553c325d97b99ab93627dfd4aade` |
+| Second-system tooling SHA | `9eaccee8656973e905deeb589fb65f619facae9b` |
+| ZIP | `outputs/Aivido-V2.0.0-Windows.zip` |
+| Size | 728567 bytes |
+| SHA256 | `0888899ded45d10478d85a6519a8428c100b44fe121a0f52796cd5b4c8c63d6f` |
+| Packaged files | 145 |
+
+## Results
+
+| Check | Result |
+|---|---|
+| Fresh extraction and ZIP CRC | PASS |
+| Manifest and extracted-byte integrity | PASS |
+| Release/tooling source provenance | PASS |
+| Version 2.0.0 | PASS |
+| QA, installer, requirements, UI | PASS |
+| Second-system runner included | YES |
+| Package-only import smoke | PASS |
+| `app.served` boot and UI HTTP 200 | PASS |
+| Speech portability | PASS |
+| Source-repository independence | PASS |
+| Development-venv independence | PASS |
+| Blocking runtime paths remaining | 0 |
+| Secrets | PASS |
+| Junk | PASS |
+
+The backend boot used the extracted package's own `.venv`, with system site packages disabled. The test harness blocked every Unreal bridge call; no live Unreal state was read or mutated. The certified second-system runner passed its hermetic mock acceptance path.
+
+## Path classification
+
+- `app/speak.py`: runtime-required. Gate/config/log paths are package-relative. Python resolves through `AIVIDO_PYTHON`, package-local `.venv`, then `sys.executable`. The gate resources do not exist in the authoritative release, so speech is optional and truthfully returns `speech_resources_missing` before any socket or subprocess activity.
+- `app/api.py`: runtime-required. Project creation and visual-review approval paths use the canonical resolver.
+- `app/proof.py`: fallback-only runtime. The fallback is based on the configured project root; live project discovery remains authoritative.
+- `core/orchestrator.py`: runtime-required. The visual-review command and bridge port use resolved values.
+- `tools/unreal/project_context.py`: fallback-only runtime. Fixed project candidates and the bridge port are portable.
+- `scripts/aivido_install_check.py`: fallback-only runtime. It no longer searches an original source checkout.
+- `config/settings.json`, `tools/unreal/project_manager.py`, and `tools/system/tool_runner.py`: runtime-required. The fixed engine install was removed; resolution uses an environment override or the Epic Launcher registry.
+- `ui/aivido.js`, `ui/devboard.html`, and `ui/product.html`: UI display-only. Machine-specific demo text was replaced with neutral examples.
+- `ui/ava.js`: the reported strings are public GitHub update URLs, not local paths. They remain unchanged.
+- `qa/verifier.py:428`: test-only verifier docstring. It intentionally shows the `C:\Users\Shadow` shape that the verifier rejects and is never treated as a filesystem path.
+
+## Focused validation
+
+`tests/test_transfer_portability.py`, `tests/test_project_context.py`, `tests/test_backend_lifecycle.py`, and `tests/test_plan_normalization.py`: **28 passed**. Python compilation also passed for all packaged runtime modules and acceptance scripts.

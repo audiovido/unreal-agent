@@ -3,177 +3,158 @@
   "source_tag": "v2.0.0",
   "second_system_tooling_sha": "9eaccee8656973e905deeb589fb65f619facae9b",
   "branch": "aivido/v2-transfer-package",
-  "zip_path": "C:\\Users\\Shadow\\Documents\\Codex\\2026-09-07\\aivido-v2-0-0-build-final\\outputs\\Aivido-V2.0.0-Windows.zip",
-  "zip_sha256": "31a4e54707cffc9b93563122d9d7b1c81843526e36562f12ccfa5648e891dd8c",
-  "zip_size_bytes": 725378,
-  "packaged_file_count": 143,
+  "zip_path": "outputs/Aivido-V2.0.0-Windows.zip",
+  "zip_sha256": "0888899ded45d10478d85a6519a8428c100b44fe121a0f52796cd5b4c8c63d6f",
+  "zip_size_bytes": 728567,
+  "packaged_file_count": 145,
+  "portable_path_contract": {
+    "module": "core/portable_paths.py",
+    "package_root_default": "derived from the installed core/portable_paths.py location",
+    "environment_overrides": [
+      "AIVIDO_HOME",
+      "AIVIDO_PYTHON",
+      "AIVIDO_PROJECT_ROOT",
+      "AIVIDO_BRIDGE_PORT",
+      "UNREAL_AGENT_ENGINE_DIR"
+    ],
+    "environment_required": false,
+    "unreal_default": "Epic Launcher registry discovery"
+  },
+  "path_classification": [
+    {
+      "file": "app/speak.py",
+      "classification": "runtime-required",
+      "resolution": "package-relative gate/config/log paths and portable Python selection; absent optional resources return speech_resources_missing"
+    },
+    {
+      "file": "app/api.py",
+      "classification": "runtime-required",
+      "resolution": "project creation uses configured portable project root; visual-review allowlist uses resolved local-app-data path"
+    },
+    {
+      "file": "app/proof.py",
+      "classification": "fallback-only runtime",
+      "resolution": "AvaLive proof fallback uses configured project root; live project discovery remains authoritative"
+    },
+    {
+      "file": "core/orchestrator.py",
+      "classification": "runtime-required",
+      "resolution": "visual-review prompt and bridge client use canonical resolved values"
+    },
+    {
+      "file": "qa/verifier.py:428",
+      "classification": "test-only verifier docstring",
+      "resolution": "left intact because it documents the forbidden path shape and is never resolved or executed as a path"
+    },
+    {
+      "file": "tools/unreal/project_context.py",
+      "classification": "fallback-only runtime",
+      "resolution": "known candidates and bridge port use canonical portable values"
+    },
+    {
+      "file": "ui/aivido.js",
+      "classification": "UI display-only",
+      "resolution": "demo path changed to C:/Projects/AvaLive/AvaLive.uproject"
+    },
+    {
+      "file": "ui/ava.js",
+      "classification": "public update URLs",
+      "resolution": "unchanged; URLs point to the public repository and release page and are not local filesystem paths"
+    },
+    {
+      "file": "ui/devboard.html",
+      "classification": "UI display-only",
+      "resolution": "mock paths changed to neutral C:/Projects examples"
+    },
+    {
+      "file": "scripts/aivido_install_check.py",
+      "classification": "fallback-only runtime",
+      "resolution": "removed original-checkout discovery and uses configured project root plus normal user folders"
+    },
+    {
+      "file": "config/settings.json and Unreal tool modules",
+      "classification": "runtime-required",
+      "resolution": "removed fixed D: engine path; uses environment override or Epic registry discovery"
+    },
+    {
+      "file": "ui/product.html",
+      "classification": "UI display-only",
+      "resolution": "machine-specific Tailscale placeholder replaced with a neutral example"
+    }
+  ],
   "extraction_verification": {
     "status": "PASS",
-    "fresh_directory": "C:\\Users\\Shadow\\Documents\\Codex\\2026-09-07\\aivido-v2-0-0-build-final\\work\\fresh-extraction-byk54k1j",
+    "fresh_directory": "C:/AividoShip-1a2b3c",
+    "path_excludes": [
+      "Shadow",
+      "Unreal-Agent",
+      "Codex",
+      "original repository path"
+    ],
     "zip_crc": "PASS",
+    "unsafe_archive_members": [],
     "all_packaged_bytes_match": "PASS",
-    "unsafe_members": false
+    "version": "2.0.0"
   },
   "integrity_results": {
-    "status": "FAIL",
-    "source_bytes_verified": 140,
+    "status": "PASS",
     "manifest": "PASS",
-    "version": "2.0.0",
+    "source_and_tooling_provenance": "PASS",
+    "python_syntax": "PASS",
     "qa_included": true,
     "installer_bootstrap_included": true,
     "requirements_included": true,
     "ui_included": true,
     "second_system_runner_included": true,
-    "source_repo_dependency": "FAIL: app/speak.py:22-26 references source checkout scripts/avalive_gate.py, scripts/avalive_gate.json and log path",
-    "dev_venv_dependency": "FAIL: app/speak.py:25 hardcodes source checkout .venv/Scripts/python.exe; imports pass but speech execution remains nonportable",
-    "syntax_errors": []
+    "runtime_path_blockers_remaining": 0,
+    "speech_portability": "PASS",
+    "source_repo_independence": "PASS",
+    "dev_venv_independence": "PASS"
   },
-  "package_only_smoke": {
-    "checks": [
-      {
-        "module": "fastapi",
-        "status": "PASS"
-      },
-      {
-        "module": "uvicorn",
-        "status": "PASS"
-      },
-      {
-        "module": "PIL",
-        "status": "PASS"
-      },
-      {
-        "module": "numpy",
-        "status": "PASS"
-      },
-      {
-        "module": "pydantic",
-        "status": "PASS"
-      },
-      {
-        "module": "requests",
-        "status": "PASS"
-      },
-      {
-        "module": "rich",
-        "status": "PASS"
-      },
-      {
-        "module": "qa.checks",
-        "status": "PASS"
-      },
-      {
-        "module": "core.mission",
-        "status": "PASS"
-      },
-      {
-        "module": "core.orchestrator",
-        "status": "PASS"
-      },
-      {
-        "module": "app.served",
-        "status": "PASS"
-      },
-      {
-        "module": "scripts.aivido_runtime",
-        "status": "PASS"
-      },
-      {
-        "module": "scripts.acceptance.second_system_checks",
-        "status": "PASS"
-      }
-    ],
-    "status": "PASS"
+  "runtime_verification": {
+    "package_local_venv": "C:/AividoShip-1a2b3c/Aivido-V2.0.0-Windows/.venv",
+    "dependency_install": "PASS from requirements.txt with system-site-packages disabled",
+    "package_only_import_smoke": "PASS",
+    "app_served_import": "PASS",
+    "backend_boot": "PASS",
+    "ui_http_status": 200,
+    "live_unreal_bridge_calls": "blocked by test harness",
+    "live_unreal_mutated": false,
+    "second_system_runner_mock": "PASS",
+    "targeted_tests": "28 passed",
+    "targeted_test_files": [
+      "tests/test_transfer_portability.py",
+      "tests/test_project_context.py",
+      "tests/test_backend_lifecycle.py",
+      "tests/test_plan_normalization.py"
+    ]
   },
-  "runner_mock": "PASS (hermetic simulation only; not second-machine/live Unreal acceptance)",
+  "speech": {
+    "gate_script_in_authoritative_release": false,
+    "gate_config_in_authoritative_release": false,
+    "optional": true,
+    "missing_resource_behavior": "PASS: skipped_unavailable with reason speech_resources_missing; no socket probe, subprocess, or startup failure",
+    "python_selection_order": [
+      "AIVIDO_PYTHON",
+      "package-local .venv/Scripts/python.exe",
+      "sys.executable"
+    ]
+  },
   "hygiene_results": {
     "secrets": "PASS",
     "secret_findings": [],
-    "secret_scan_scope": "All ZIP text; private keys, GitHub/OpenAI/AWS token formats and long literal credential assignments. Pattern scan is not an absolute guarantee.",
     "junk": "PASS",
     "junk_findings": [],
-    "hardcoded_dev_paths": "FAIL",
-    "hardcoded_dev_path_findings": [
-      {
-        "file": "app/api.py",
-        "line": 680
-      },
-      {
-        "file": "app/api.py",
-        "line": 4499
-      },
-      {
-        "file": "app/proof.py",
-        "line": 14
-      },
-      {
-        "file": "app/speak.py",
-        "line": 22
-      },
-      {
-        "file": "app/speak.py",
-        "line": 23
-      },
-      {
-        "file": "app/speak.py",
-        "line": 24
-      },
-      {
-        "file": "app/speak.py",
-        "line": 25
-      },
-      {
-        "file": "app/speak.py",
-        "line": 26
-      },
-      {
-        "file": "core/orchestrator.py",
-        "line": 2240
-      },
+    "blocking_hardcoded_paths": [],
+    "harmless_text_findings": [
       {
         "file": "qa/verifier.py",
-        "line": 428
-      },
-      {
-        "file": "tools/unreal/project_context.py",
-        "line": 36
-      },
-      {
-        "file": "tools/unreal/project_context.py",
-        "line": 37
-      },
-      {
-        "file": "tools/unreal/project_context.py",
-        "line": 38
-      },
-      {
-        "file": "ui/aivido.js",
-        "line": 671
-      },
-      {
-        "file": "ui/ava.js",
-        "line": 97
-      },
-      {
-        "file": "ui/ava.js",
-        "line": 98
-      },
-      {
-        "file": "ui/devboard.html",
-        "line": 379
-      },
-      {
-        "file": "ui/devboard.html",
-        "line": 640
+        "line": 428,
+        "classification": "test-only verifier docstring"
       }
-    ],
-    "excluded_state": "All tracked memory, backups, caches, dev environments and generated build reports excluded"
+    ]
   },
-  "runtime_modified": false,
-  "live_unreal_mutated": false,
-  "transfer_package_ready": false,
-  "blockers": [
-    "app/speak.py:22-26 depends on the original Shadow source checkout, external avalive_gate.py/avalive_gate.json, and its development .venv/Scripts/python.exe.",
-    "Hardcoded Shadow paths remain at app/api.py:680, app/api.py:4499, app/proof.py:14, core/orchestrator.py:2240, qa/verifier.py:428, tools/unreal/project_context.py:36, tools/unreal/project_context.py:37, tools/unreal/project_context.py:38, ui/aivido.js:671, ui/ava.js:97, ui/ava.js:98, ui/devboard.html:379, ui/devboard.html:640. Exact certified runtime/UI bytes cannot be rewritten under the release-preservation constraint."
-  ]
+  "certified_product_behavior": "unchanged except portable resource/path resolution and truthful optional-speech unavailability",
+  "transfer_package_ready": true,
+  "blockers": []
 }

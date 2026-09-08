@@ -17,14 +17,16 @@ from __future__ import annotations
 import socket
 import subprocess
 import threading
-from pathlib import Path
 
-_SPEAK_LOG = Path(r"C:/Users/Shadow/Desktop/Unreal-Agent/scripts/chat_speak_last.log")
-_SPEAK_GATE = Path(r"C:/Users/Shadow/Desktop/Unreal-Agent/scripts/avalive_gate.py")
-_SPEAK_CONFIG = Path(r"C:/Users/Shadow/Desktop/Unreal-Agent/scripts/avalive_gate.json")
-_PYTHON = Path(r"C:/Users/Shadow/Desktop/Unreal-Agent/.venv/Scripts/python.exe")
-_ROOT = r"C:/Users/Shadow/Desktop/Unreal-Agent"
-_AVALIVE_PORT = 6766
+from core.portable_paths import (BRIDGE_PORT, PACKAGE_ROOT, RUNTIME_DIR,
+                                 python_executable)
+
+_SPEAK_LOG = RUNTIME_DIR / "chat_speak_last.log"
+_SPEAK_GATE = PACKAGE_ROOT / "scripts" / "avalive_gate.py"
+_SPEAK_CONFIG = PACKAGE_ROOT / "scripts" / "avalive_gate.json"
+_PYTHON = python_executable()
+_ROOT = PACKAGE_ROOT
+_AVALIVE_PORT = BRIDGE_PORT
 
 _speak_lock = threading.Lock()
 _speak_state = {"active": False, "pid": None}
@@ -72,11 +74,13 @@ def _speak_last_result():
 
 def _speak_worker():
     try:
+        _SPEAK_LOG.parent.mkdir(parents=True, exist_ok=True)
         logf = open(str(_SPEAK_LOG), "w")
         try:
             proc = subprocess.Popen(
-                [str(_PYTHON), "scripts/avalive_gate.py", "speak", "--config", "scripts/avalive_gate.json"],
-                cwd=_ROOT,
+                [str(_PYTHON), str(_SPEAK_GATE), "speak", "--config",
+                 str(_SPEAK_CONFIG)],
+                cwd=str(_ROOT),
                 stdout=logf, stderr=subprocess.STDOUT,
                 creationflags=0x08000000,  # CREATE_NO_WINDOW
             )
@@ -106,6 +110,14 @@ def chat_speak():
     """Fire a speak run only if none is active and AvaLive is reachable."""
     if _speak_state["active"]:
         return {"ok": True, "speak": "skipped_active", "active": True}
+    missing = [path.relative_to(PACKAGE_ROOT).as_posix()
+               for path in (_SPEAK_GATE, _SPEAK_CONFIG)
+               if not path.is_file()]
+    if not _PYTHON.is_file():
+        missing.append("python executable")
+    if missing:
+        return {"ok": True, "speak": "skipped_unavailable", "active": False,
+                "reason": "speech_resources_missing", "missing": missing}
     if not _speak_avalive_online():
         return {"ok": True, "speak": "skipped_unavailable", "active": False,
                 "reason": "avalive_offline"}
