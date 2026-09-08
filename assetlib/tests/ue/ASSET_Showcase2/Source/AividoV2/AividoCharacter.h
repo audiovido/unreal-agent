@@ -73,6 +73,19 @@ protected:
 	void Interact();
 	void ToggleMenu();
 
+	// Debug exec: programmatic WASD drive for standalone validation
+	// (exercises the same AddMovementInput path as keyboard input).
+	UFUNCTION(Exec)
+	void AividoDrive(float DirX, float DirY, int32 Frames = 30);
+
+	// Debug exec: full standalone validation sequence (screenshots, walk
+	// displacement log, menu open/close via the real handler).
+	UFUNCTION(Exec)
+	void AividoProof();
+
+private:
+	void ProofStep(int32 Step);
+
 private:
 	void UpdateInteractTarget();
 
@@ -82,8 +95,23 @@ private:
 	/** True after the first-tick spawn reposition ran. */
 	bool bSpawnRepositioned = false;
 
+	/** Anti-drift anchor: last player-commanded position; uncommanded pushes are undone. */
+	FVector MovementAnchor = FVector::ZeroVector;
+	FVector ProofWalkStart = FVector::ZeroVector;
+	bool bAnchorInit = false;
+	bool bInputThisFrame = false;
+	float NoInputTime = 0.f;
+
+	// Any movement input (keyboard OR programmatic) refreshes the anchor.
+	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.f,
+		bool bForceNormalAccel = false) override;
+
 	/** Z of the walkable support surface placed under the spawn point. */
-	float FloorTopZ = 0.f;;
+	float FloorTopZ = 0.f;
+
+	/** Deterministic rest height (capsule center) enforced when idle. */
+	float RestZ = 0.f;
+	bool bRestZInit = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Aivido|Input")
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;

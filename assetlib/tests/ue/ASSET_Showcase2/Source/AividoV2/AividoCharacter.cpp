@@ -19,6 +19,7 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AividoGameMode.h"
 
 AAividoCharacter::AAividoCharacter()
 {
@@ -95,13 +96,20 @@ void AAividoCharacter::BeginPlay()
 				{
 					if (UStaticMeshComponent* SMC = Floor->GetStaticMeshComponent())
 					{
+						// Must be Movable BEFORE scale/location transforms, otherwise
+						// SetActorScale3D/SetActorLocation silently no-op on a Static
+						// component and the un-scaled 100cm cube intersects the capsule,
+						// causing endless depenetration drift after spawn.
+						SMC->SetMobility(EComponentMobility::Movable);
 						SMC->SetStaticMesh(Cube);
 						SMC->SetCollisionProfileName(TEXT("BlockAll"));
 						SMC->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 					}
 					Floor->SetActorScale3D(FVector(80.f, 80.f, 0.8f));
 					Floor->SetActorLocation(FVector(0.f, 3200.f, 160.f));
+#if WITH_EDITOR
 					Floor->SetActorLabel(TEXT("Aivido_RuntimeFloor"));
+#endif
 				}
 			}
 		}
@@ -119,14 +127,27 @@ void AAividoCharacter::Tick(float DeltaSeconds)
 	if (!bSpawnRepositioned)
 	{
 		bSpawnRepositioned = true;
+		RestZ = FloorTopZ + GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() + 1.f;
+		bRestZInit = true;
 		SetActorLocationAndRotation(
-			FVector(0.f, 3200.f, FloorTopZ + GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() + 3.f),
+			FVector(0.f, 3200.f, RestZ),
 			FRotator(0.f, -90.f, 0.f),
 			false, nullptr, ETeleportType::TeleportPhysics);
+		UE_LOG(LogTemp, Log, TEXT("AIVIDO_SPAWN: %s rest_z=%.1f"), *GetName(), RestZ);
 		if (UCharacterMovementComponent* CMC = GetCharacterMovement())
 		{
 			CMC->Velocity = FVector::ZeroVector;
-			CMC->SetMovementMode(MOVE_Walking);
+			// Deterministic spawn: no falling phase at all. This level's legacy
+			// colliders interplay badly with the fall/floor pipeline (phantom
+			// floors, upward rides). Flying + zero gravity + the movement
+			// anchor below gives a fully deterministic pawn: idle stays put,
+			// WASD walks at normal speed with the real walk animation.
+			CMC->GravityScale = 0.f;
+			CMC->BrakingDecelerationFlying = 1400.f;
+			// Walk-speed feel: same top speed as walking, so the velocity-driven
+			// walk animation looks correct.
+			CMC->MaxFlySpeed = 260.f;
+			CMC->SetMovementMode(MOVE_Flying);
 		}
 	}
 
@@ -155,7 +176,170 @@ void AAividoCharacter::Tick(float DeltaSeconds)
 		FallingStuckTime = 0.f;
 	}
 
-	UpdateInteractTarget();
+	// Anti-drift anchor: this level pushes the fresh pawn every frame with
+	// ZERO reported velocity (kinematic mesh-body depenetration). The
+	// zero-velocity signature separates the pusher from legitimate motion
+	// (falls/jumps always have real velocity), so: no input + no velocity +
+	// displacement => snap back to the anchor, all three axes.
+	const FVector NowLoc = GetActorLocation();
+	if (!bAnchorInit)
+	{
+		MovementAnchor = NowLoc;
+		bAnchorInit = true;
+	}
+	else if (bInputThisFrame)
+	{
+		MovementAnchor = NowLoc;
+		NoInputTime = 0.f;
+	}
+	else
+	{
+		NoInputTime += DeltaSeconds;
+		const bool bZeroVel = GetVelocity().IsNearlyZero(1.f);
+		// Full-XYZ enforcement: with zero gravity there is no settling phase,
+		// so any uncommanded displacement (the level's zero-velocity pusher)
+		// is undone on all axes while idle.
+		if (NoInputTime > 0.2f && bZeroVel &&
+			(FVector::Dist2D(NowLoc, MovementAnchor) > 2.f || FMath::Abs(NowLoc.Z - MovementAnchor.Z) > 2.f))
+		{
+			TeleportTo(MovementAnchor, GetActorRotation(), false, true);
+			if (UCharacterMovementComponent* CMC2 = GetCharacterMovement())
+			{
+				CMC2->Velocity = FVector::ZeroVector;
+			}
+		}
+	}
+	bInputThisFrame = false;
+
+		if (UCharacterMovementComponent* CMC3 = GetCharacterMovement())
+		{
+			if (CMC3->MovementMode != MOVE_Flying)
+			{
+				// Keep the deterministic gravity-free mode sticky; the level's
+				// colliders keep flipping the pawn into Falling.
+				CMC3->SetMovementMode(MOVE_Flying);
+			}
+		}
+
+		UpdateInteractTarget();
+}
+
+void AAividoCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue,
+	bool bForceNormalAccel)
+{
+	Super::AddMovementInput(WorldDirection, ScaleValue, bForceNormalAccel);
+	if (ScaleValue != 0.f)
+	{
+		bInputThisFrame = true;
+	}
+}
+
+void AAividoCharacter::AividoDrive(float DirX, float DirY, int32 Frames)
+{
+	// Standalone validation drive: repeat AddMovementInput for N frames by
+	// scheduling a lightweight timer; identical code path to WASD input.
+	if (Frames <= 0)
+	{
+		return;
+	}
+	const FVector Dir = FVector(DirX, DirY, 0.f).GetSafeNormal();
+	AddMovementInput(Dir, 1.f, false);
+	if (UWorld* W = GetWorld())
+	{
+		FTimerHandle DriveHandle;
+		FTimerDelegate DriveDel;
+		TWeakObjectPtr<AAividoCharacter> WeakThis(this);
+		DriveDel.BindWeakLambda(this, [WeakThis, Dir, Frames]()
+		{
+			if (WeakThis.IsValid())
+			{
+				WeakThis->AividoDrive(Dir.X, Dir.Y, Frames - 1);
+			}
+		});
+		W->GetTimerManager().SetTimer(DriveHandle, DriveDel, 0.016f, false);
+	}
+}
+
+void AAividoCharacter::AividoProof()
+{
+	// Standalone validation sequence, spaced with timers so frames render
+	// between steps. Everything is logged under AIVIDO_PROOF.
+	UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: begin"));
+	ProofStep(0);
+}
+
+void AAividoCharacter::ProofStep(int32 Step)
+{
+	UWorld* W = GetWorld();
+	if (!W)
+	{
+		return;
+	}
+	auto Next = [this, Step, W]()
+	{
+		W->GetTimerManager().SetTimerForNextTick([this, Step]() { ProofStep(Step + 1); });
+	};
+
+	switch (Step)
+	{
+	case 0: // start of walk phase
+		ProofWalkStart = GetActorLocation();
+		UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: walk_start %s"), *ProofWalkStart.ToString());
+		for (int32 i = 0; i < 30; ++i)
+		{
+			AddMovementInput(FVector(0.f, -1.f, 0.f), 1.f, false);
+		}
+		W->GetTimerManager().SetTimerForNextTick([this, Step]() { ProofStep(Step + 1); });
+		break;
+	case 1:
+	case 2:
+	case 3:
+		for (int32 i = 0; i < 30; ++i)
+		{
+			AddMovementInput(FVector(0.f, -1.f, 0.f), 1.f, false);
+		}
+		Next();
+		break;
+	case 4: // walk done: log displacement
+	{
+		const FVector End = GetActorLocation();
+		UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: walk_end %s disp=%.1f"), *End.ToString(),
+			FVector::Dist2D(End, ProofWalkStart));
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->ConsoleCommand(TEXT("HighResShot 2"), true);
+		}
+		Next();
+		break;
+	}
+	case 5: // menu open via the real ESC handler path
+		if (AAividoGameMode* GM = GetWorld()->GetAuthGameMode<AAividoGameMode>())
+		{
+			GM->ToggleMenu();
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: menu_open=%s"),
+				GM->IsMenuOpen() ? TEXT("true") : TEXT("false"));
+		}
+		Next();
+		break;
+	case 6:
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->ConsoleCommand(TEXT("HighResShot 2"), true);
+		}
+		Next();
+		break;
+	case 7: // menu close via the real handler path
+		if (AAividoGameMode* GM = GetWorld()->GetAuthGameMode<AAividoGameMode>())
+		{
+			GM->ToggleMenu();
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: menu_closed=%s"),
+				!GM->IsMenuOpen() ? TEXT("true") : TEXT("false"));
+		}
+		UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: done"));
+		break;
+	default:
+		break;
+	}
 }
 
 void AAividoCharacter::NotifyControllerChanged()
@@ -167,7 +351,10 @@ void AAividoCharacter::NotifyControllerChanged()
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
 			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			if (DefaultMappingContext)
+			{
+				Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			}
 		}
 	}
 }
@@ -214,6 +401,7 @@ void AAividoCharacter::Move(const FInputActionValue& Value)
 		const FVector Right = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Forward, Axis.Y);
 		AddMovementInput(Right, Axis.X);
+		bInputThisFrame = true;
 	}
 }
 
@@ -240,6 +428,7 @@ void AAividoCharacter::MoveForward(float V)
 	{
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 		AddMovementInput(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X), V);
+		bInputThisFrame = true;
 	}
 }
 
@@ -249,6 +438,7 @@ void AAividoCharacter::MoveRight(float V)
 	{
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 		AddMovementInput(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y), V);
+		bInputThisFrame = true;
 	}
 }
 
@@ -298,12 +488,18 @@ void AAividoCharacter::UpdateInteractTarget()
 
 	AActor* Best = nullptr;
 	float BestDist = TNumericLimits<float>::Max();
+	// Labels are editor-only; the packaged game falls back to actor names.
+#if WITH_EDITOR
+	auto LabelOf = [](const AActor* A) { return A ? A->GetActorLabel() : FString(); };
+#else
+	auto LabelOf = [](const AActor* A) { return A ? A->GetName() : FString(); };
+#endif
 	for (const FOverlapResult& Overlap : Overlaps)
 	{
 		AActor* HitActor = Overlap.GetActor();
 		if (!HitActor || HitActor == this) continue;
 		const FString Name = HitActor->GetName();
-		const FString Label = HitActor->GetActorLabel();
+		const FString Label = LabelOf(HitActor);
 		if (!(Name.StartsWith(TEXT("AVIDO_Human")) || Name.StartsWith(TEXT("AVIDO_Agent")) ||
 			Label.StartsWith(TEXT("AVIDO_Human")) || Label.StartsWith(TEXT("AVIDO_Agent")) ||
 			Name.StartsWith(TEXT("Aivido_Interactable")) || Label.StartsWith(TEXT("Aivido_Interactable"))))
@@ -321,7 +517,7 @@ void AAividoCharacter::UpdateInteractTarget()
 	if (Best != CurrentInteractTarget.Get())
 	{
 		CurrentInteractTarget = Best;
-		const FString NewName = Best ? Best->GetActorLabel() : FString(TEXT(""));
+		const FString NewName = Best ? LabelOf(Best) : FString(TEXT(""));
 		if (CurrentTargetName != NewName)
 		{
 			CurrentTargetName = NewName;

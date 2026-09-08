@@ -124,4 +124,8 @@ private:
 	bool bMenuOpen = false;
 	bool bWaitingReply = false;
 	FString LastReply;
+
+	/** Chat endpoint of the Aivido backend (overridable per-project in DefaultGame.ini). */
+	UPROPERTY(Config, EditDefaultsOnly, Category = "Aivido|Backend")
+	FString ChatUrl = TEXT("http://127.0.0.1:8765/api/chat");
 };

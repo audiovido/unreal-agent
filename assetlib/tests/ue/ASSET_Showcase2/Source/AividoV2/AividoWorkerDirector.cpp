@@ -44,9 +44,15 @@ void AAividoWorkerDirector::CollectWorkers()
 	TArray<AActor*> All;
 	UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), All);
 
+	// Labels are editor-only; the packaged game matches on actor names.
+#if WITH_EDITOR
+	auto LabelOf = [](const AActor* A) { return A ? A->GetActorLabel() : FString(); };
+#else
+	auto LabelOf = [](const AActor* A) { return A ? A->GetName() : FString(); };
+#endif
 	for (AActor* A : All)
 	{
-		const FString Label = NormalizeLabel(A->GetActorLabel());
+		const FString Label = NormalizeLabel(LabelOf(A));
 		if (Label.StartsWith(TEXT("AVIDO_Human_")) || Label.StartsWith(TEXT("AVIDO_Agent_")))
 		{
 			FWorker W;

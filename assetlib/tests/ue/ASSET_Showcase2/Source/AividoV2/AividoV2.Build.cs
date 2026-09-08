@@ -19,8 +19,7 @@ public class AividoV2 : ModuleRules
 			"EnhancedInput",
 			"UMG",
 			"HTTP",
-			"Json",
-			"Kismet"
+			"Json"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

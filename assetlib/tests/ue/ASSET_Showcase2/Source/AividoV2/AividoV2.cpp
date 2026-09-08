@@ -14,4 +14,6 @@ void FAividoV2Module::ShutdownModule()
 	UE_LOG(LogAividoV2, Log, TEXT("AividoV2 module stopped."));
 }
 
-IMPLEMENT_MODULE(FAividoV2Module, AividoV2)
+// Primary game module: required for standalone game targets (defines the
+// project globals the Launch module links against).
+IMPLEMENT_PRIMARY_GAME_MODULE(FAividoV2Module, AividoV2, "AividoV2");

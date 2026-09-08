@@ -55,7 +55,9 @@ void AAividoGameMode::BeginPlay()
 			DirectorClass, FVector(0.f, 700.f, 96.f), FRotator(0.f, 0.f, 0.f), Params);
 		if (Director)
 		{
+#if WITH_EDITOR
 			Director->SetActorLabel(TEXT("AVIDO_Master_Director"));
+#endif
 		}
 	}
 
@@ -70,7 +72,9 @@ void AAividoGameMode::BeginPlay()
 			WorkerDirectorClass, FVector::ZeroVector, FRotator::ZeroRotator, Params);
 		if (WorkerDirector)
 		{
+#if WITH_EDITOR
 			WorkerDirector->SetActorLabel(TEXT("Aivido_WorkerDirector"));
+#endif
 		}
 	}
 
@@ -198,7 +202,7 @@ void AAividoGameMode::SubmitChatLine(const FString& Message)
 	FHttpModule* Http = &FHttpModule::Get();
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Req = Http->CreateRequest();
 	Req->SetVerb(TEXT("POST"));
-	Req->SetURL(TEXT("http://127.0.0.1:8765/api/aivido/director-chat"));
+	Req->SetURL(ChatUrl);
 	Req->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
 	const FString Payload =
 		FString::Printf(TEXT("{\"message\":\"%s\"}"), *Trimmed.ReplaceCharWithEscapedChar());
@@ -218,7 +222,13 @@ void AAividoGameMode::SubmitChatLine(const FString& Message)
 				const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Body);
 				if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 				{
-					Reply = JsonObject->GetStringField(TEXT("reply"));
+					// Backend replies use "message" (state/mode/message envelope);
+					// accept "reply" too for older gateways.
+					Reply = JsonObject->GetStringField(TEXT("message"));
+					if (Reply.IsEmpty())
+					{
+						Reply = JsonObject->GetStringField(TEXT("reply"));
+					}
 				}
 			}
 			if (Reply.IsEmpty())
