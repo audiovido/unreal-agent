@@ -37,7 +37,7 @@ from typing import Dict, List
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-TOP_LEVEL_PY_DIRS = ["app", "core", "tools", "blender_agent"]
+TOP_LEVEL_PY_DIRS = ["app", "core", "tools", "blender_agent", "qa"]
 # app/mcp_gateway.py is a standalone MCP server requiring the external `mcp`
 # SDK (not part of the requirements.txt runtime contract). The V1 product
 # runtime (app.served) never imports it, so it is excluded to keep the

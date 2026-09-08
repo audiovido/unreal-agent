@@ -1,0 +1,60 @@
+{
+  "report": "AIVIDO_V2_ACCEPTANCE",
+  "schema": "aivido.v2.acceptance.v1",
+  "generated_utc": "2026-09-08T05:45:00Z",
+  "branch": "aivido/v2-release",
+  "source_sha": "6772f353f99625e9d257c626995ba772861f600d",
+  "overall": "ACCEPTED",
+  "blocking_gates": {
+    "clean_install": {
+      "status": "PASS",
+      "package": "dist/Aivido-V2 (163 files, includes qa/ runtime module fix)",
+      "evidence": "fresh venv installed solely from requirements.txt (fastapi/uvicorn/pillow/numpy/pydantic/requests/rich): IMPORT_CONTRACT_OK; backend boots on 127.0.0.1:8790; GET /api/status HTTP 200 ok=true unreal=ok (UNREAL_BRIDGE_READY, engine 5.8.2); UI / HTTP 200 (ava.html 13083B)."
+    },
+    "runtime": {
+      "status": "PASS",
+      "evidence": "canonical backend 127.0.0.1:8765 HTTP 200 ok=true unreal_ok=true engine=5.8.2; quick doctor (venv interpreter): 9 PASS / 1 WARN (release_sha WARN only: intentional pre-commit UI manifest + builder changes) / 0 FAIL — backend_health, ui_http, bridge_health, unreal_identity, active_map, proof_endpoint, foreign_protection, python_runtime, requirements all PASS; bridge 6766 live (ASSET_Showcase2, UE 5.8.2, AividoHQ); malformed-input truthfulness: unknown session 404, unknown project 404, unknown action /api/action 400 'Unknown action', invalid JSON 422, path traversal 404."
+    },
+    "ui": {
+      "status": "PASS",
+      "evidence": "release identity served by the release package: aivido_version/ui_version 2.0.0, build_id 20260907-v2release, git_sha 6772f353f99625e9d257c626995ba772861f600d, content_hash ca8c0e55e673…; routes / /app /dev /static/* all HTTP 200; byte-for-byte SHA-256 parity 8/8 canonical files (ui-version.json, aivido.css, aivido.js, ava.html, aivido.html, index.html, release-manifest.json, build-manifest.json) between committed worktree ui/ and served package UI; build-manifest per-file hash parity PASS."
+    },
+    "missions": {
+      "status": "PASS",
+      "evidence": "real E2E read-only capture mission mission_f775435673e5 (clean package backend): status complete, verdict PASS, completed_work 3/3 (resolve_project inspect_project, bridge_health unreal_ping, viewport_evidence capture_unreal_viewport), 1 real viewport_capture evidence (viewport_latest.png, 1,292,352 bytes). Session-flow mission exec_4d37b24a65 PASS 3/3. Truthful-fail path: exec_00693e537d → code REQUESTED_TOOL_MISSING, mission failed, verdict FAIL, why 'Requested tool(s) not available in the tool registry: …; refusing to report success for impossible work.' Zero-step empty-plan missions also fail truthfully (mission_b894ffa5c44f FAIL, '0-step empty-plan PASS blocked')."
+    },
+    "restart": {
+      "status": "PASS",
+      "evidence": "clean backend killed and restarted on 127.0.0.1:8790: /api/status HTTP 200 after restart; persisted session sess_bccaf59e09 (project proj_57956d17, bridge 127.0.0.1:6766, unreal_pid 7052, active_map /Game/Maps/AividoHQ.AividoHQ, engine 5.8.2) visible after restart; session bridge start → READY with reuse of live bridge."
+    },
+    "preservation": {
+      "status": "PASS",
+      "evidence": "scripts/recert/v2_release_preservation_probe.py (read-only, no mutation): all_pass true, 12/12 gates — bridge_reachable, project_identity, map_loaded, characters_8of8, actor_count_166, props_present, screens_present, ui_text_present, lights_all_movable, no_broken_roots, no_missing_materials, cinemrq_isolated."
+    },
+    "package": {
+      "status": "PASS",
+      "evidence": "dist/Aivido-V2 rebuilt deterministically from this SHA by scripts/build_v1_package.py (TOP_LEVEL_PY_DIRS now includes qa/ because app.served imports qa.api at startup — previously the package boot failed with ModuleNotFoundError: No module named 'qa'); 163 files; version.json pins aivido/v2-release@6772f353f9962…; hygiene: no __pycache__/.pyc, no private-key blocks, no hardcoded secrets."
+    }
+  },
+  "canonical_reference": {
+    "final_gate": "reports/release/AIVIDO_V2_FINAL_RELEASE_GATE.md — FINAL_RELEASE_READY: YES (f66c286-era cert)",
+    "canonical_qa": "qar_fc286b5a22d0 63/63 PASS, 0 open defects",
+    "full_regression": "1204 passed / 1 skipped / 0 failed (stored)"
+  },
+  "missions": {
+    "this_run_pass": ["mission_f775435673e5", "exec_4d37b24a65"],
+    "this_run_truthful_fail": ["exec_00693e537d"],
+    "project": "proj_57956d17 (ASSET_Showcase2, registered on clean backend for session gate)",
+    "session": "sess_bccaf59e09"
+  },
+  "counts": {
+    "critical": 0,
+    "major": 0,
+    "minor": 0,
+    "warnings": 0
+  },
+  "warnings_notes": [
+    "release_sha WARN observed pre-commit (intentional UI manifest + build_v1_package.py changes); post-commit quick doctor at b6ea277: 10/10 PASS, 0 WARN, 0 FAIL."
+  ],
+  "decision": "ALL BLOCKING GATES PASS — tag v2.0.0 eligible"
+}
