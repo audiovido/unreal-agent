@@ -1,12 +1,12 @@
 {
   "product": "Aivido V1",
   "mode": "quick",
-  "overall": "WARN",
+  "overall": "PASS",
   "checks": [
     {
       "name": "release_sha",
-      "status": "WARN",
-      "detail": "HEAD=f66c286e9e4f base=736042ddafb4 ancestor=736042ddafb45f34dfed88607e750be73e2877f2 dirty runtime files: M ui/aivido.html\n M ui/build-manifest.json\n M ui/ui-version.json\n?? scripts/mrq_frame_manifest.py\n?? scripts/recert/v2_release_preservation_probe.py"
+      "status": "PASS",
+      "detail": "HEAD=e9225c626c2d base=736042ddafb4 ancestor=736042ddafb45f34dfed88607e750be73e2877f2"
     },
     {
       "name": "python_runtime",
@@ -55,9 +55,9 @@
     }
   ],
   "summary": {
-    "pass": 9,
-    "warn": 1,
+    "pass": 10,
+    "warn": 0,
     "fail": 0
   },
-  "ran_at": 1788825081.3283496
+  "ran_at": 1788828610.9978006
 }
