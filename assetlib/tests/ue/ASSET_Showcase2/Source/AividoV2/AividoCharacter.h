@@ -1,0 +1,108 @@
+// Aivido V2 — player character with real locomotion + interaction traces.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Character.h"
+#include "AividoCharacter.generated.h"
+
+class UInputMappingContext;
+class UInputAction;
+struct FInputActionValue;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractTargetChanged, const FString&, TargetName);
+
+/**
+ * Playable player character for Aivido HQ.
+ *
+ * - Enhanced Input driven movement (WASD + mouse look, Shift run, Space jump)
+ * - Interaction trace every frame; nearest Aivido interactable becomes the
+ *   current interaction target (used for the HUD prompt + [E] interaction).
+ * - Locomotion comes from the project's ThirdPerson AnimBP via the
+ *   default anim instance class set by the GameMode, so walk/run transitions
+ *   are driven by real character velocity.
+ */
+UCLASS()
+class AIVIDOV2_API AAividoCharacter : public ACharacter
+{
+	GENERATED_BODY()
+
+public:
+	AAividoCharacter();
+
+	/** Camera boom (third-person follow). */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Aivido|Camera")
+	class USpringArmComponent* CameraBoom;
+
+	/** Follow camera. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Aivido|Camera")
+	class UCameraComponent* FollowCamera;
+
+	/** Interaction range in cm. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Aivido|Interaction")
+	float InteractRange = 420.f;
+
+	/** Current interactable focus (director or prop), updated per tick. */
+	UPROPERTY(BlueprintReadOnly, Category = "Aivido|Interaction")
+	FString CurrentTargetName;
+
+	/** Fired whenever the interaction focus changes. */
+	UPROPERTY(BlueprintAssignable, Category = "Aivido|Interaction")
+	FOnInteractTargetChanged OnInteractTargetChanged;
+
+	/** Actor the player should interact with via E (director support lives in GameMode/HUD). */
+	UPROPERTY(BlueprintReadOnly, Category = "Aivido|Interaction")
+	TWeakObjectPtr<AActor> CurrentInteractTarget;
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void NotifyControllerChanged() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+
+	// Legacy input fallback handlers (non-Enhanced path).
+	void MoveForward(float V);
+	void MoveRight(float V);
+	void LookYaw(float V);
+	void LookPitch(float V);
+	void StartRun();
+	void StopRun();
+	void Interact();
+	void ToggleMenu();
+
+private:
+	void UpdateInteractTarget();
+
+	/** Seconds spent in Falling with zero velocity (unstick guard). */
+	float FallingStuckTime = 0.f;
+
+	/** True after the first-tick spawn reposition ran. */
+	bool bSpawnRepositioned = false;
+
+	/** Z of the walkable support surface placed under the spawn point. */
+	float FloorTopZ = 0.f;;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Aivido|Input")
+	TObjectPtr<UInputMappingContext> DefaultMappingContext;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Aivido|Input")
+	TObjectPtr<UInputAction> JumpAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Aivido|Input")
+	TObjectPtr<UInputAction> MoveAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Aivido|Input")
+	TObjectPtr<UInputAction> LookAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Aivido|Input")
+	TObjectPtr<UInputAction> RunAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Aivido|Input")
+	TObjectPtr<UInputAction> InteractAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Aivido|Input")
+	TObjectPtr<UInputAction> MenuAction;
+};
