@@ -1,0 +1,617 @@
+Running AutomationTool...
+Using bundled DotNet SDK version: 10.0 win-x64
+Starting AutomationTool...
+Parsing command line: BuildCookRun -project=C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\ASSET_Showcase2.uproject -noP4 -platform=Win64 -clientconfig=Development -serverconfig=Development -cook -stage -package -archive -archivedirectory=C:\Users\Shadow\AppData\Local\Temp\aivido-worker2-package -build -AdditionalCookerOptions=-DisablePlugins=MovieRenderPipeline
+Initializing script modules...
+Total script module initialization time: 0.52 s.
+Using C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe
+Executing commands...
+Setting up ProjectParams for C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\ASSET_Showcase2.uproject
+********** BUILD COMMAND STARTED **********
+Running: D:\Program Files\Epic Games\UE_5.8\Engine\Binaries\ThirdParty\DotNet\10.0\win-x64\dotnet.exe "D:\Program Files\Epic Games\UE_5.8\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Target="AividoV2Editor Win64 Development -Project=C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\ASSET_Showcase2.uproject" -Target="AividoV2Game Win64 Development -Project=C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\ASSET_Showcase2.uproject  -remoteini=\"C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\"  -skipdeploy " -log="C:\Users\Shadow\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+Program+Files+Epic+Games+UE_5.8\UBA-AividoV2Editor-Win64-Development.txt"
+Log file: C:\Users\Shadow\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+Program+Files+Epic+Games+UE_5.8\UBA-AividoV2Editor-Win64-Development.txt
+Determining max actions to execute in parallel (4 physical cores, 8 logical cores)
+  Executing up to 4 processes, one per physical core
+UbaServer - Listening on 0.0.0.0:1345
+Invalidating makefile for AividoV2Editor (DefaultGame.ini modified)
+Invalidating makefile for AividoV2Game (DefaultGame.ini modified)
+Available x64 toolchains (1):
+ * C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231
+    (Family=14.51.36231, FamilyRank=2, Version=14.51.36256, HostArchitecture=x64, ReleaseChannel=Latest, Architecture=x64)
+Visual Studio compiler version 14.51.36256 is newer than latest preferred version 14.50.35717. Please use caution as this compiler has not been heavily tested
+Target is up to date
+Using Unreal Build Accelerator local executor to run 0 action(s)
+Total time in Unreal Build Accelerator local executor: 0.18 seconds
+Output binary: C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Binaries\Win64\AividoV2Game.exe
+Output binary: D:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 3.38 seconds
+Trace written to file C:\Users\Shadow\AppData\Local\UnrealBuildTool\Trace.uba with size 3.5kb
+Took 3.66s to run dotnet.exe, ExitCode=0
+No build products were made
+Build command time: 3.67 s
+********** BUILD COMMAND COMPLETED **********
+********** COOK COMMAND STARTED **********
+Running UnrealEditor Cook for project C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\ASSET_Showcase2.uproject
+Commandlet log file is D:\Program Files\Epic Games\UE_5.8\Engine\Programs\AutomationTool\Saved\Cook-2026.09.09-12.13.29.txt
+Running: D:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe "C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\ASSET_Showcase2.uproject" -run=Cook  -TargetPlatform=Windows  -unversioned -DisablePlugins=MovieRenderPipeline -fileopenlog -abslog="D:\Program Files\Epic Games\UE_5.8\Engine\Programs\AutomationTool\Saved\Cook-2026.09.09-12.13.29.txt" -stdout -CrashForUAT -unattended -NoLogTimes
+LogInit: Display: Running engine for game: ASSET_Showcase2
+LogCore: Display: Requested channels: 'cpu,gpu,frame,log,bookmark,screenshot,region'
+LogTrace: Display: Control listening on port 1985
+LogCsvProfiler: Display: Metadata set : platform="Windows"
+LogCsvProfiler: Display: Metadata set : config="Development"
+LogCsvProfiler: Display: Metadata set : buildversion="++UE5+Release-5.8-CL-56702186"
+LogCsvProfiler: Display: Metadata set : engineversion="5.8.2-56702186+++UE5+Release-5.8"
+LogCsvProfiler: Display: Metadata set : enginereleaseversion="5.8.2"
+LogCsvProfiler: Display: Metadata set : os="Windows 11 (25H2) [10.0.26200.9445] "
+LogCsvProfiler: Display: Metadata set : cpu="AuthenticAMD|AMD EPYC 7543P 32-Core Processor"
+LogCsvProfiler: Display: Metadata set : pgoenabled="0"
+LogCsvProfiler: Display: Metadata set : pgoprofilingenabled="0"
+LogCsvProfiler: Display: Metadata set : ltoenabled="0"
+LogCsvProfiler: Display: Metadata set : asan="0"
+LogCsvProfiler: Display: Metadata set : mergedmodules="0"
+LogCsvProfiler: Display: Metadata set : compacttset="0"
+LogCsvProfiler: Display: Metadata set : commandline="" C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\ASSET_Showcase2.uproject -run=Cook -TargetPlatform=Windows -unversioned -DisablePlugins=MovieRenderPipeline -fileopenlog -abslog="D:\Program Files\Epic Games\UE_5.8\Engine\Programs\AutomationTool\Saved\Cook-2026.09.09-12.13.29.txt" -stdout -CrashForUAT -unattended -NoLogTimes""
+LogCsvProfiler: Display: Metadata set : loginid="952f28d442e60c1292fc9db775a91b19"
+LogCsvProfiler: Display: Metadata set : llm="0"
+LogCsvProfiler: Display: Metadata set : zenstreaming="0"
+LogCsvProfiler: Display: Metadata set : systemresolution.resx="1280"
+LogCsvProfiler: Display: Metadata set : systemresolution.resy="720"
+LogAudio: Display: Audio Device Manager not initializing due to all audio being disabled. If this is not intentional, please check command line arguments for "-nosound".
+LogAssetRegistry: Display: FindShardedCacheFiles: 1 via .ref, 0 via migration fallback, 1 total
+LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PreLoad): 1 .ref files found, 1 referenced binaries
+LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+LogAssetRegistry: Display: LoadCacheFiles: loading 1 cache files, memory-mapping=enabled
+LogAssetRegistry: Warning: PlatformFileJournal is not available on volume 'D:'. AssetRegistry discovery of files on this volume will be uncached. Unavailability reason:
+	NTFS Journal is not active for volume 'D:'. Launch cmd.exe as admin and run command `fsutil usn createJournal D: m=<SizeInBytes>`. Recommended <SizeInBytes> is 0x40000000 (1GB).
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Mode=ValidatePlatforms -OutputSDKs  -AllPlatforms  -project="C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject" -log="C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Saved/Logs/AutoSDKInfo.txt" -verbose -timestamps
+LogConfig: Display: Loading Mac ini files took 0.10 seconds
+LogConfig: Display: Loading Android ini files took 0.10 seconds
+LogConfig: Display: Loading IOS ini files took 0.11 seconds
+LogConfig: Display: Loading Linux ini files took 0.16 seconds
+LogAssetRegistry: Display: Asset registry cache read as 120.8 MiB from C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Intermediate/CachedAssetRegistry/CachedAssetRegistry_0_7CEAC3354650D9865C9213A71767FE9C.bin (memory-mapped=yes)
+LogConfig: Display: Loading VulkanPC ini files took 0.11 seconds
+LogConfig: Display: Loading Unix ini files took 0.16 seconds
+LogConfig: Display: Loading TVOS ini files took 0.16 seconds
+LogConfig: Display: Loading Windows ini files took 0.12 seconds
+LogConfig: Display: Loading VisionOS ini files took 0.09 seconds
+Log file: C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Saved\Logs\AutoSDKInfo.txt
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+RenderDocPlugin: Display: RenderDoc plugin will not be loaded. Use '-AttachRenderDoc' on the cmd line or enable 'renderdoc.AutoAttach' in the plugin settings.
+LogAsyncCompilation: Display: MemorySharingInfo: UsedMemory=300MiB, MaxMemoryAvailable=44012MiB
+##PlatformValidate: Win64 VALID 10.0.22621.0
+##PlatformValidate: Mac INVALID 26.1.1
+##PlatformValidate: IOS INVALID 26.1.1
+##PlatformValidate: Android INVALID r27c
+##PlatformValidate: Linux INVALID v26_clang-20.1.8-rockylinux8
+##PlatformValidate: LinuxArm64 INVALID <UNKNOWN>
+##PlatformValidate: TVOS INVALID 26.1.1
+##PlatformValidate: VisionOS INVALID <UNKNOWN>
+Unable to find required SDK version 'MainVersion' for platform LinuxArm64. Check your SDK.json files
+Unable to find required SDK version 'MainVersion' for platform VisionOS. Check your SDK.json files
+Trace written to file C:\Users\Shadow\AppData\Local\UnrealBuildTool\Trace.uba with size 323b
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+LogHAL: Display: Platform has ~ 28 GB [30044250112 / 34359738368 / 28], which maps to Larger [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+LogObj: Display: Attempting to load config data for Default__DownlinkBandwidthManagerConfig before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+LogTextureFormatASTC: Display: ASTCEnc version 5.0.1 library loaded
+LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatASTC
+LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatDXT
+LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatETC2
+LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatIntelISPCTexComp
+LogTextureFormatOodle: Display: Oodle Texture TFO init; latest sdk version = 2.9.16
+LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.16.dll
+LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatOodle
+LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatUncompressed
+LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Android'
+LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'IOS'
+LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Linux'
+LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Mac'
+LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'TVOS'
+LogTargetPlatformManager: Display: Loaded TargetPlatform 'Windows'
+LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsEditor'
+LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsServer'
+LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsClient'
+LogTargetPlatformManager: Display: Building Assets For Windows
+LogAudioDebug: Display: Lib vorbis DLL was dynamically loaded.
+LogObj: Display: Attempting to load config data for Default__SlateThemeManager before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+LogCsvProfiler: Display: Metadata set : verbatimrhiname="Null"
+LogCsvProfiler: Display: Metadata set : rhiname="Null"
+LogCsvProfiler: Display: Metadata set : rhifeaturelevel="SM6"
+LogCsvProfiler: Display: Metadata set : shaderplatform="PCD3D_SM6"
+LogCsvProfiler: Display: Metadata set : gpu=""
+LogCsvProfiler: Display: Metadata set : gpudriver=""
+LogDerivedDataCache: Display: ../../../Engine/DerivedDataCache/Compressed.ddp: Opened pak cache for reading. (1679 MiB)
+LogZenServiceInstance: Display: Launching zen utility 'D:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/zen.exe service status'.
+LogZenServiceInstance: Display: Writing plugin version info to 'C:/Users/Shadow/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugin_versions.json'
+LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/Shadow/AppData/Local/UnrealEngine/5.8/Saved/Zen/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/Shadow/AppData/Local/UnrealEngine/Common/Zen/Install/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+LogZenServiceInstance: Display: Installed service at 'C:/Users/Shadow/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe' is up to date
+LogZenServiceInstance: Display: Launching executable 'C:/Users/Shadow/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe', working dir 'C:/Users/Shadow/AppData/Local/UnrealEngine/Common/Zen/Install', data dir 'C:/Users/Shadow/AppData/Local/UnrealEngine/Common/Zen/Data', args '--port 8558 --data-dir C:\Users\Shadow\AppData\Local\UnrealEngine\Common\Zen\Data --http asio --gc-cache-duration-seconds 1209600 --gc-interval-seconds 21600 --gc-low-diskspace-threshold 2147483648 --cache-bucket-limit-overwrites --quiet --restrict-content-types --allow-external-oidctoken-exe=false --plugins-config "C:/Users/Shadow/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugins_v1.json" --security-config-path "C:/Users/Shadow/AppData/Local/UnrealEngine/Common/Zen/Install/security-config.json" --owner-pid 2748  --child-id Zen_2748_Startup'
+LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+LogDerivedDataCache: Display: ZenLocal: Using ZenServer HTTP service at [::1] with namespace ue.ddc. Status: OK!.
+LogDerivedDataCache: Display: C:/Users/Shadow/AppData/Local/UnrealEngine/Common/DerivedDataCache: Performance: Latency=0.10ms. RandomReadSpeed=482.90MBs, RandomWriteSpeed=104.95MBs. Assigned SpeedClass 'Local'
+LogUbaHorde: Display: UBA/Horde Configuration [Uba.Provider.Horde]: Not Enabled
+LogShaderCompilers: Display: No distributed shader compiler controller found
+LogShaderCompilers: Display: Using 5 local workers for shader compilation
+LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Intermediate/ShaderAutogen/PCD3D_SM6/AutogenShaderHeaders.ush
+LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+LogEditorDomain: Display: EditorDomain is Disabled
+LogAssetRegistry: Display: AssetDataGatherer spent 0.000s loading caches from C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Intermediate/CachedAssetRegistry.
+LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+LogCsvProfiler: Display: Metadata set : deviceprofile="WindowsEditor"
+LogStreaming: Display: FlushAsyncLoading(1): 1 QueuedPackages, 0 AsyncPackages
+LogTextureEncodingSettings: Display: Texture Encode Speed: Final (cook).
+LogTextureEncodingSettings: Display: Oodle Texture Encode Speed settings: Fast: RDO Off Lambda=0, Effort=Normal Final: RDO Off Lambda=0, Effort=Normal
+LogTextureEncodingSettings: Display: Shared linear texture encoding: Disabled
+LogMeshReduction: Display: Using QuadricMeshReduction for automatic static mesh reduction
+LogMeshReduction: Display: Using SkeletalMeshReduction for automatic skeletal mesh reduction
+LogMeshReduction: Display: Using ProxyLODMeshReduction for automatic mesh merging
+LogMeshReduction: Display: No distributed automatic mesh merging module available
+LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Intermediate/ShaderAutogen/PCD3D_SM5/AutogenShaderHeaders.ush
+LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+LogVirtualization: Display: VirtualizationSystem name found in ini file: None
+LogVirtualization: Display: FNullVirtualizationSystem mounted, virtualization will be disabled
+LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize started...
+LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize took 3.135 ms
+LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+LogAudio: Display: Registering Engine Module Parameter Interfaces...
+LogSkinnedAsset: Display: Waiting for skinned assets to be ready 0/1 (SK_Mannequin) ...
+LogLinker: Warning: [AssetLog] C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Content\Mannequin\Animations\ThirdPerson_WalkRun_1D.uasset: VerifyImport: Failed to find script package for import object 'Package /Script/BlendSpaceMotionAnalysis'
+LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+LogCsvProfiler: Display: Metadata set : raytracing="0"
+LogCook: Display: CookProcessCount=1. CookMultiprocess is disabled and the cooker is running as a single process.
+LogCook: Display: CookSettings for Memory:
+	MemoryMaxUsedVirtual 0MiB
+	MemoryMaxUsedPhysical 0MiB
+	MemoryMinFreeVirtual 2048MiB
+	MemoryMinFreePhysical 2048MiB
+	MemoryTriggerGCAtPressureLevel None
+	SoftGCMemoryUseTrigger disabled
+	SoftGCTimeBudgetTrigger enabled (0.05 budget, 30s min period)
+LogCook: Display: SkipOnlyEditorOnly is enabled, unsolicited packages will not be cooked unless they are referenced from the cooked version of the instigator package.
+LogCook: Display: ---- Pre Content Initialisation: End ----
+LogCook: Display: ---- Post Content Initialisation: Start ----
+LogEditorDomain: Display: Cycle detected in parents of class /Script/RigVMDeveloper.RigVMUnitNode. Allow flags for editordomain and incremental cooking will be invalid.
+LogZenStore: Display: Establishing oplog 'ASSET_Showcase2.8432495a/EditorDomain'
+LogZenStore: Display: Zen project 'ASSET_Showcase2.8432495a' already exists
+LogZenStore: Display: Zen oplog 'ASSET_Showcase2.8432495a/EditorDomain' already exists
+LogCook: Display: Waiting for Asset Registry
+LogAssetRegistry: Display: Starting OnFilesLoaded.Broadcast
+LogAssetRegistry: Display: Completed OnFilesLoaded.Broadcast: 0.019s
+LogAssetRegistry: Display: Asset registry cache written as 120.8 MiB to C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Intermediate/CachedAssetRegistry/CachedAssetRegistry_*.ref
+LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 1 .ref files found, 1 referenced binaries
+LogAssetRegistry: Display:   CachedAssetRegistry_0_7CEAC3354650D9865C9213A71767FE9C.bin: deleted (orphaned, unreferenced by any .ref)
+LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 2 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 1 orphans deleted, 0 orphans locked (kept)
+LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 1 .ref files found, 1 referenced binaries
+LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+LogCook: Display: INCREMENTAL COOK DEPENDENCIES: Enabled. Incremental Cook Dependencies are enabled in Editor.ini:[CookSettings]:LegacyIterative=false.
+LogZenStore: Display: Establishing oplog 'ASSET_Showcase2.8432495a/Windows'
+LogZenStore: Display: Zen project 'ASSET_Showcase2.8432495a' already exists
+LogStorageServerPlatformFile: Display: Found 'C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Saved/Cooked/Windows/ue.projectstore'
+LogStorageServerPlatformFile: Display: Using connection settings from ue.projectstore: HostAddrs='[::1]+10.0.7.10' and HostPort='8558'
+LogStorageServerPlatformFile: Display: Found 'C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Saved/Cooked/Windows/ue.projectstore'
+LogStorageServerPlatformFile: Display: Using password authentication from ue.projectstore
+LogStorageServerPlatformFile: Display: Using settings from ue.projectstore: ServerProject='ASSET_Showcase2.8432495a' and ServerPlatform='Windows'
+LogStorageServerConnection: Display: Creating zen store connection to [::1]:8558 ("::1").
+LogStorageServerConnection: Display: Zen store connection established to [::1]:8558.
+LogCook: Display: CalculateGlobalDependenciesHash(Windows):
+LogCook: Display: 	FGuid CookIncrementalVersion = ffa12fdc-c822-1fe2-7757-627a12f1d3a7
+LogCook: Display: 	[Editor]:CookSettings.ProjectCookIncrementalVersion = 00000000-0000-0000-0000-000000000000
+LogCook: Display: 	[Engine]:Core.System.CanStripEditorOnlyExportsAndImports = True
+LogCook: Display: 	[Engine]:Core.System.CanSkipEditorReferencedPackagesWhenCooking = False
+LogCook: Display: 	CanUseUnversionedPropertySerialization = True
+LogCook: Display: 	[Editor]:CookSettings.AutomaticOptionalInclusionAssetType = /Script/Niagara.NiagaraScript, /Script/Niagara.NiagaraEmitter, /Script/Niagara.NiagaraSystem, /Script/NiagaraEditor.NiagaraParameterDefinitions, /Script/Niagara.NiagaraEffectType, /Script/Niagara.NiagaraValidationRuleSet, /Script/OptimusCore.OptimusDeformer
+LogCook: Display: 	IsCookFlagSet(ECookInitializationFlags::Unversioned) = True
+LogCook: Display: 	FCoreRedirects::AppendHashOfGlobalRedirects = 02c9fd35aac3c00095df0219fc925d7070b41f449d3b97578d818a4016ee6805
+LogCook: Display: 	GlobalDependenciesHash(Windows) = 2de5b37f143f8e25d634acd39f60ca4c07ed1761ed763f60105e89ce30e27192
+LogCook: Display: FULL COOK: Incremental Cooks are disabled by default in Editor.ini:[CookSettings]:CookIncrementalDefaultIncremental=false, and commandline did not specify -forcerecook=false. Deleting previously cooked packages for platform Windows and recooking all packages discovered in the current cook.
+LogZenStore: Display: Deleting oplog 'ASSET_Showcase2.8432495a/Windows' if it exists
+LogZenStoreWriter: Display: Deleting C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Saved/Cooked/Windows/...
+LogZenStore: Display: Zen oplog 'ASSET_Showcase2.8432495a/Windows' created
+LogCook: Display: Sandbox cleanup took 0.067 seconds for platforms Windows
+LogCook: Display: Compiling global changed shaders for platform 'Windows'
+LogShaderLibrary: Display:
+LogShaderLibrary: Display: Shader Library 'Global' (PCD3D_SM5-PCD3D_SM5) Stats:
+LogShaderLibrary: Display: =================
+LogShaderLibrary: Display: Assets: 1, Unique Shadermaps: 358 (35800.00%)
+LogShaderLibrary: Display: Total Shaders: 4337, Unique Shaders: 4322 (99.65%)
+LogShaderLibrary: Display: Total Shader Size: 12.73mb, Unique Shaders Size: 12.72mb (99.96%)
+LogShaderLibrary: Display: === Extended info:
+LogShaderLibrary: Display: Minimum number of shaders in shadermap: 1
+LogShaderLibrary: Display: Median number of shaders in shadermap: 3
+LogShaderLibrary: Display: Maximum number of shaders in shadermap: 309
+LogShaderLibrary: Display: Number of shadermaps referencing top 10 most shared shaders:
+LogShaderLibrary: Display:     3, 3, 3, 2, 2, 2, 2, 2, 2, 2
+LogShaderLibrary: Display: Unique shaders itemization (sorted by compressed size):
+LogShaderLibrary: Display: SF_Pixel: 1769 shaders (40.93%), compressed size: 6.71 MB (3.88 KB avg per shader), uncompressed size: 31.76 MB (18.39 KB avg per shader)
+LogShaderLibrary: Display: SF_Compute: 2432 shaders (56.27%), compressed size: 5.94 MB (2.50 KB avg per shader), uncompressed size: 22.96 MB (9.67 KB avg per shader)
+LogShaderLibrary: Display: SF_Vertex: 119 shaders (2.75%), compressed size: 0.07 MB (0.61 KB avg per shader), uncompressed size: 0.15 MB (1.32 KB avg per shader)
+LogShaderLibrary: Display: SF_Geometry: 2 shaders (0.05%), compressed size: 0.00 MB (0.49 KB avg per shader), uncompressed size: 0.00 MB (1.55 KB avg per shader)
+LogShaderLibrary: Display: Textual dump saved to 'C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Saved/Shaders/PCD3D_SM5-PCD3D_SM5/ShaderDebug-Global-PCD3D_SM5-PCD3D_SM5/Dump.txt'
+LogShaderLibrary: Display: =================
+LogCook: Display: Discovering localized assets for cultures: en
+LogCook: Display: Found 0 localized assets
+LogCook: Display: ---- Post Content Initialisation: End ----
+LogCook: Display: Cooked packages 0 Packages Remain 492 Total 492
+LogCook: Display: Cook Diagnostics: OpenFileHandles=320, VirtualMemory=1529MiB, VirtualMemoryAvailable=31305MiB
+LogCook: Display: Garbage collection triggered (Soft). Triggered by conditions:
+  CookSettings.SoftGCTimeTrigger: Periodic triggering of SoftGC: No duration data.
+LogCookCommandlet: Display: GarbageCollection... (Periodic GC)
+LogCook: Display: Cooked packages 237 Packages Remain 439 Total 676
+LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.11.dll
+LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.12.dll
+LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.15.dll
+LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.13.dll
+LogCook: Display: Cooked packages 676 Packages Remain 0 Total 676
+LogCook: Display: Cook Diagnostics: OpenFileHandles=5112, VirtualMemory=2116MiB, VirtualMemoryAvailable=30714MiB
+LogCook: Display: ---- Finalisation: Start ----
+LogCook: Display: CookArtifact 'C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Saved/Cooked/Windows/ASSET_Showcase2/Metadata/ValidationCookArtifact.json' saved.
+LogAssetRegistryGenerator: Display: Saving asset registry v24.
+LogAssetRegistryGenerator: Display: Generated development asset registry C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Saved/Cooked/Windows/ASSET_Showcase2/Metadata/DevelopmentAssetRegistry.bin num assets 687, size is 550.38kb, XxHash64[LE] = 0x9508426E40AA4AC3, waited on hash 0.00 seconds
+LogAssetRegistryGenerator: Display: Generated asset registry num assets 680, size is 198.53kb
+LogShaderLibrary: Display:
+LogShaderLibrary: Display: Shader Library 'ASSET_Showcase2' (PCD3D_SM5-PCD3D_SM5) Stats:
+LogShaderLibrary: Display: =================
+LogShaderLibrary: Display: Assets: 138, Unique Shadermaps: 129 (93.48%)
+LogShaderLibrary: Display: Total Shaders: 2060, Unique Shaders: 1383 (67.14%)
+LogShaderLibrary: Display: Total Shader Size: 5.36mb, Unique Shaders Size: 3.88mb (72.24%)
+LogShaderLibrary: Display: === Extended info:
+LogShaderLibrary: Display: Minimum number of shaders in shadermap: 1
+LogShaderLibrary: Display: Median number of shaders in shadermap: 8
+LogShaderLibrary: Display: Maximum number of shaders in shadermap: 476
+LogShaderLibrary: Display: Number of shadermaps referencing top 10 most shared shaders:
+LogShaderLibrary: Display:     41, 19, 18, 17, 17, 16, 16, 16, 16, 10
+LogShaderLibrary: Display: Unique shaders itemization (sorted by compressed size):
+LogShaderLibrary: Display: SF_Pixel: 849 shaders (61.39%), compressed size: 2.55 MB (3.08 KB avg per shader), uncompressed size: 9.01 MB (10.87 KB avg per shader)
+LogShaderLibrary: Display: SF_Vertex: 485 shaders (35.07%), compressed size: 1.23 MB (2.59 KB avg per shader), uncompressed size: 3.72 MB (7.85 KB avg per shader)
+LogShaderLibrary: Display: SF_Compute: 49 shaders (3.54%), compressed size: 0.10 MB (2.06 KB avg per shader), uncompressed size: 0.36 MB (7.47 KB avg per shader)
+LogShaderLibrary: Display: Textual dump saved to 'C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Saved/Shaders/PCD3D_SM5-PCD3D_SM5/ShaderDebug-ASSET_Showcase2-PCD3D_SM5-PCD3D_SM5/Dump.txt'
+LogShaderLibrary: Display: =================
+LogCook: Display: Dependent plugin "SteamShared" referenced by "EOS Shared" wasn't found in enabled plugins list when creating cook metadata file... skipping
+LogCook: Display: Dependent plugin "UAF" referenced by "IK Rig" wasn't found in enabled plugins list when creating cook metadata file... skipping
+LogCook: Display: Dependent plugin "UAFAnimGraph" referenced by "IK Rig" wasn't found in enabled plugins list when creating cook metadata file... skipping
+LogCook: Display: Finalize package store(s)...
+LogZenStoreWriter: Display: Flushing...
+LogZenStoreWriter: Display: Saving Zen filesystem manifest 'C:/Users/Shadow/Desktop/Unreal-Agent/.worktrees/aivido-worker2-ui/assetlib/tests/ue/ASSET_Showcase2/Saved/Cooked/Windows/ASSET_Showcase2/Metadata/zenfs.manifest'
+LogZenStoreWriter: Display: Output:	48755 Public runtime script objects
+LogCook: Display: Cook by the book total time in tick 4.675474s total time 9.370304
+LogCook: Display: Peak Used virtual 2246 MiB Peak Used physical 2422 MiB
+LogCook: Display: Packages Cooked: 669, Packages Incrementally Skipped: 0, Packages Skipped by Platform: 7, Total Packages: 676
+LogCookStats: Display: Hierarchy Timer Information:
+LogCookStats: Display:   Root: 0.000s (0)
+LogCookStats: Display:     CleanSandbox: 0.067s (1)
+LogCookStats: Display:     CollectFilesToCook: 0.007s (1)
+LogCookStats: Display:       CookModificationDelegate: 0.000s (1)
+LogCookStats: Display:     GenerateLongPackageName: 0.001s (1)
+LogCookStats: Display:     TickMainCookLoop: 4.675s (2)
+LogCookStats: Display:       PumpPollables: 0.000s (1)
+LogCookStats: Display:       PumpRequests: 0.029s (22)
+LogCookStats: Display:       LoadPackageForCooking: 1.860s (3885)
+LogCookStats: Display:       ValidateSourcePackage: 0.000s (676)
+LogCookStats: Display:       SavingPackages: 2.609s (75)
+LogCookStats: Display:         PollPendingCookedPlatformDatas: 0.109s (2989)
+LogCookStats: Display:         PrepareSave: 0.214s (2379)
+LogCookStats: Display:         PrecachePlatformDataForNextPackage: 0.218s (675)
+LogCookStats: Display:           PrepareSave: 0.218s (850)
+LogCookStats: Display:         SaveCookedPackage: 2.044s (676)
+LogCookStats: Display:           GEditorSavePackage: 1.860s (676)
+LogCookStats: Display:             VerifyCanCookPackage: 0.003s (669)
+LogCookStats: Display:           TargetDomainDependencies: 0.110s (676)
+LogCookStats: Display:         ClearAllCachedCookedPlatformData: 0.016s (676)
+LogCookStats: Display:       PostLoadPackageFixup: 0.000s (2)
+LogCookStats: Display:     CookByTheBookFinished: 0.524s (1)
+LogCookStats: Display:       SavingCurrentIniSettings: 0.048s (1)
+LogCookStats: Display:         ProcessingAccessedStrings: 0.004s (1)
+LogCookStats: Display:       ChunkGeneration: 0.015s (1)
+LogCookStats: Display:       FinishPopulateShaderLibrary: 0.001s (1)
+LogCookStats: Display:       CalculateReferencedSet: 0.000s (1)
+LogCookStats: Display:       CookArtifacts.UpdateOplogPackages: 0.004s (1)
+LogCookStats: Display:       PruneShaderLibrary: 0.000s (1)
+LogCookStats: Display:       GeneratorPreSave: 0.000s (1)
+LogCookStats: Display:       BuildChunkManifest: 0.015s (1)
+LogCookStats: Display:         FixupPackageDependenciesForChunks: 0.008s (1)
+LogCookStats: Display:       SaveManifests: 0.000s (1)
+LogCookStats: Display:       SaveAssetRegistry: 0.036s (1)
+LogCookStats: Display:       WriteCookerOpenOrder: 0.004s (1)
+LogCookStats: Display:       WriteCookMetadata: 0.001s (1)
+LogCookStats: Display:       WriteReferencedSet: 0.002s (1)
+LogCookStats: Display:       FinalizePackageStore: 0.328s (1)
+LogCookStats: Display: Misc Cook Stats
+LogCookStats: Display: ===============
+LogCookStats: Display: Niagara
+LogCookStats: Display:     NiagaraScriptTranslationCount=0
+LogCookStats: Display:     NiagaraCpuScriptCompileCount=0
+LogCookStats: Display:     NiagaraCpuScriptDdcCacheHitCount=0
+LogCookStats: Display:     NiagaraCpuScriptDdcCacheMissCount=0
+LogCookStats: Display:     NiagaraGpuScriptCompileCount=0
+LogCookStats: Display:     NiagaraGpuScriptDdcCacheHitCount=0
+LogCookStats: Display:     NiagaraGpuScriptDdcCacheMissCount=0
+LogCookStats: Display:     NiagaraSystemWaitForCompilationCompleteTime=0.000000
+LogCookStats: Display: Validation
+LogCookStats: Display:     Stats=[]
+LogCookStats: Display: ComputeKernelShader.Misc
+LogCookStats: Display:     ShadersCompiled=0
+LogCookStats: Display: NiagaraShader.Misc
+LogCookStats: Display:     ShadersCompiled=0
+LogCookStats: Display: ShaderCompiler
+LogCookStats: Display:     BlockingTimeSec=0.000073
+LogCookStats: Display:     AsyncCompileTimeSec=0.000000
+LogCookStats: Display:     GlobalBeginCompileShaderTimeSec=0.000000
+LogCookStats: Display:     GlobalBeginCompileShaderCalls=0
+LogCookStats: Display:     ProcessAsyncResultsTimeSec=0.000097
+LogCookStats: Display: GlobalShader.Misc
+LogCookStats: Display:     ShadersCompiled=0
+LogCookStats: Display: Material
+LogCookStats: Display:     FinishCacheShadersSec=0.100226
+LogCookStats: Display: Cook.Profile.Params
+LogCookStats: Display:     CookProject=ASSET_Showcase2
+LogCookStats: Display:     CookCultures=
+LogCookStats: Display:     CookLabel=
+LogCookStats: Display:     TargetPlatforms=Windows
+LogCookStats: Display:     IsCookAll=false
+LogCookStats: Display:     IsCookOnTheFly=false
+LogCookStats: Display:     IsIncrementalCook=false
+LogCookStats: Display:     IsIterativeCook=false
+LogCookStats: Display:     IsFastCook=false
+LogCookStats: Display:     IsUnversioned=true
+LogCookStats: Display: CookOnTheFlyServer.Package.Load
+LogCookStats: Display:     NumRequestedLoads=3285
+LogCookStats: Display:     NumPackagesLoaded=3444
+LogCookStats: Display:     NumInlineLoads=159
+LogCookStats: Display: CookOnTheFlyServer.Package.Save
+LogCookStats: Display:     NumPackagesIncrementallySkipped=0
+LogCookStats: Display: CookOnTheFlyServer.QueueSize
+LogCookStats: Display:     PeakRequest=675
+LogCookStats: Display:     PeakLoad=64
+LogCookStats: Display:     PeakSave=94
+LogCookStats: Display: Package.Load
+LogCookStats: Display:     LoadPackageTimeSec=2.364384
+LogCookStats: Display: Package.Save
+LogCookStats: Display:     NumPackagesSaved=676
+LogCookStats: Display:     SavePackageTimeSec=1.804281
+LogCookStats: Display:     TagPackageExportsPresaveTimeSec=0.000000
+LogCookStats: Display:     TagPackageExportsTimeSec=0.000000
+LogCookStats: Display:     FullyLoadLoadersTimeSec=0.000000
+LogCookStats: Display:     ResetLoadersTimeSec=0.000000
+LogCookStats: Display:     TagPackageExportsGetObjectsWithOuter=0.000000
+LogCookStats: Display:     TagPackageExportsGetObjectsWithMarks=0.000000
+LogCookStats: Display:     SerializeImportsTimeSec=0.000000
+LogCookStats: Display:     SortExportsSeekfreeInnerTimeSec=0.000000
+LogCookStats: Display:     SerializeExportsTimeSec=0.000000
+LogCookStats: Display:     SerializeBulkDataTimeSec=0.005939
+LogCookStats: Display:     AsyncWriteTimeSec=0.000000
+LogCookStats: Display:     MBWritten=0.000000
+LogCookStats: Display: Package.DifferentPackagesSizeMBPerAsset
+LogCookStats: Display: Package.NumberOfDifferencesInPackagesPerAsset
+LogCookStats: Display: Package.PackageDifferencesSizeMBPerAsset
+LogCookStats: Display: Package.DiffTotal
+LogCookStats: Display:     NumberOfDifferentPackages=0
+LogCookStats: Display:     DifferentPackagesSizeMB=0.000000
+LogCookStats: Display:     NumberOfDifferencesInPackages=0
+LogCookStats: Display:     PackageDifferencesSizeMB=0.000000
+LogCookStats: Display: UnversionedProperties
+LogCookStats: Display:     SavedStructs=0
+LogCookStats: Display:     SavedMB=0
+LogCookStats: Display:     EquivalentTaggedMB=0
+LogCookStats: Display:     CompressionRatio=-nan(ind)
+LogCookStats: Display:     BitfieldWasteKB=0
+LogCookStats: Display:
+LogCookStats: Display: Cook Profile
+LogCookStats: Display: ============
+LogCookStats: Display:  0.CookWallTimeSec=20.204686
+LogCookStats: Display:  0. 0.StartupWallTimeSec=10.629705
+LogCookStats: Display:  0. 1.CookProcessingTime=9.574981
+LogCookStats: Display:  0. 1. 1.StartCookByTheBookTimeSec=4.354110
+LogCookStats: Display:  0. 1. 1. 0.BlockOnAssetRegistryTimeSec=1.944765
+LogCookStats: Display:  0. 1. 1. 1.GameCookModificationDelegateTimeSec=0.000067
+LogCookStats: Display:  0. 1. 2.TickCookOnTheSideTimeSec=0.164378
+LogCookStats: Display:  0. 1. 2. 0.TickCookOnTheSideLoadPackagesTimeSec=1.861218
+LogCookStats: Display:  0. 1. 2. 1.TickCookOnTheSideSaveCookedPackageTimeSec=2.044433
+LogCookStats: Display:  0. 1. 2. 1. 0.TickCookOnTheSideResolveRedirectorsTimeSec=0.000000
+LogCookStats: Display:  0. 1. 2. 2.TickCookOnTheSidePrepareSaveTimeSec=0.432383
+LogCookStats: Display:  0. 1. 3.TickLoopGCTimeSec=0.017343
+LogCookStats: Display:  0. 1. 4.TickLoopRecompileShaderRequestsTimeSec=0.000000
+LogCookStats: Display:  0. 1. 5.TickLoopShaderProcessAsyncResultsTimeSec=0.000017
+LogCookStats: Display:  0. 1. 6.TickLoopProcessDeferredCommandsTimeSec=0.000001
+LogCookStats: Display:  0. 1. 7.TickLoopTickCommandletStatsTimeSec=0.000000
+LogCookStats: Display:  0. 1. 8.TickLoopFlushRenderingCommandsTimeSec=0.000237
+LogCookStats: Display:  0. 1. 9.ShaderFlushTimeSec=0.000000
+LogCookStats: Display:  0. 1. 10.ValidationTimeSec=0.000135
+LogCookStats: Display:
+LogCookStats: Display: DDC Summary Stats
+LogCookStats: Display: =================
+LogCookStats: Display: BackEnd         = Installed
+LogCookStats: Display: HasLocalCache   =      true
+LogCookStats: Display: HasSharedCache  =     false
+LogCookStats: Display: HasCloudCache   =     false
+LogCookStats: Display: HasZenCache     =      true
+LogCookStats: Display: TotalGetHits    =      4611
+LogCookStats: Display: TotalGetMisses  =         0
+LogCookStats: Display: TotalGets       =      4611
+LogCookStats: Display: TotalGetHitPct  =  1.000000
+LogCookStats: Display: GetMissPct      =  0.000000
+LogCookStats: Display: TotalPutHits    =         0
+LogCookStats: Display: TotalPutMisses  =         0
+LogCookStats: Display: TotalPuts       =         0
+LogCookStats: Display: TotalPutHitPct  =  0.000000
+LogCookStats: Display: PutMissPct      =  0.000000
+LogCookStats: Display: LocalGetHits    =      3789
+LogCookStats: Display: LocalGetMisses  =         0
+LogCookStats: Display: LocalGetTotal   =      3789
+LogCookStats: Display: LocalGetHitPct  =  1.000000
+LogCookStats: Display: SharedGetHits   =         0
+LogCookStats: Display: SharedGetTotal  =         0
+LogCookStats: Display: SharedGetHitPct =  0.000000
+LogCookStats: Display: ZenLocalGetHits =      3789
+LogCookStats: Display: ZenLocalGetTotal=      3789
+LogCookStats: Display: ZenLocalGetHitPct=  1.000000
+LogCookStats: Display: ZenRemoteGetHits=         0
+LogCookStats: Display: ZenRemoteGetTotal=         0
+LogCookStats: Display: ZenRemoteGetHitPct=  0.000000
+LogCookStats: Display: ZenRemoteReadSpeed=  0.000000
+LogCookStats: Display: ZenRemoteWriteSpeed=  0.000000
+LogCookStats: Display: ZenRemoteLatency=  0.000000
+LogCookStats: Display: CloudGetHits    =         0
+LogCookStats: Display: CloudGetTotal   =         0
+LogCookStats: Display: CloudGetHitPct  =  0.000000
+LogCookStats: Display: LocalLatency    =  0.238118
+LogCookStats: Display: LocalReadSpeed  = 88.533964
+LogCookStats: Display: LocalWriteSpeed =  0.000000
+LogCookStats: Display: SharedLatency   =  0.000000
+LogCookStats: Display: SharedReadSpeed =  0.000000
+LogCookStats: Display: SharedWriteSpeed=  0.000000
+LogCookStats: Display: CloudLatency    =  0.000000
+LogCookStats: Display: CloudReadSpeed  =  0.000000
+LogCookStats: Display: CloudWriteSpeed =  0.000000
+LogCookStats: Display:
+LogCookStats: Display: DDC Resource Stats
+LogCookStats: Display: =======================================================================================================
+LogCookStats: Display: Asset Type                          Total Time (Sec)  GameThread Time (Sec)  Assets Built  MB Processed
+LogCookStats: Display: ----------------------------------  ----------------  ---------------------  ------------  ------------
+LogCookStats: Display: BulkDataList                                    1.64                   0.00             0          0.58
+LogCookStats: Display: Texture                                         0.41                   0.00             0        130.43
+LogCookStats: Display: GlobalShader                                    0.35                   0.02             0         13.42
+LogCookStats: Display: MaterialShader                                  0.23                   0.08             0          6.68
+LogCookStats: Display: SkeletalMesh                                    0.01                   0.00             0          6.38
+LogCookStats: Display: StaticMesh                                      0.01                   0.00             0          1.01
+LogCookStats: Display: DistanceField                                   0.00                   0.00             0          0.56
+LogCookStats: Display: NavCollision                                    0.00                   0.00             0          0.04
+LogCookStats: Display: AnimationSequence                               0.00                   0.00             0          0.03
+LogCookStats: Display: STREAMEDAUDIO                                   0.00                   0.00             0          0.09
+LogCookStats: Display: CardRepresentation                              0.00                   0.00             0          0.02
+LogCookStats: Display: Audio                                           0.00                   0.00             0          0.08
+LogCookStats: Display: BodySetup                                       0.00                   0.00             0          0.31
+LogCookStats: Display: CKERSM                                          0.00                   0.00             0          0.05
+LogCookStats: Display:
+LogCookStats: Display: Accumulated DDC Resource Stats Per Asset Type
+LogCookStats: Display: =======================================================================================================
+LogCookStats: Display: AnimationSequence                               0.00                   0.00             0          0.03
+LogCookStats: Display: Audio                                           0.00                   0.00             0          0.08
+LogCookStats: Display: CardRepresentation                              0.00                   0.00             0          0.02
+LogCookStats: Display: DistanceField                                   0.00                   0.00             0          0.56
+LogCookStats: Display: MaterialShader                                  0.23                   0.08             0          6.68
+LogCookStats: Display: MaterialTranslation                             0.00                   0.00             0          0.00
+LogCookStats: Display: NiagaraScript                                   0.00                   0.00             0          0.00
+LogCookStats: Display: SkeletalMesh                                    0.01                   0.00             0          6.38
+LogCookStats: Display: StaticMesh                                      0.01                   0.00             0          1.01
+LogCookStats: Display: Texture                                         0.41                   0.00             0        130.43
+LogCookStats: Display: Other                                           1.99                   0.02             0         14.48
+LogPackageBuildDependencyTracker: Display: Package Accesses (286 referencing packages with a total of 2537 unique accesses)
+LogConfigBuildDependencyTracker: Display: Config Accesses (405 referencing packages with a total of 895 unique accesses). 1747 unique accesses that were not associated with a package.
+LogCook: Display: ---- Finalisation: End ----
+LogCook: Display: Done!
+LogSavePackage: Display: Took 0.001527s to verify the EDL loading graph.
+LogInit: Display:
+LogInit: Display: Warning/Error Summary (Unique only)
+LogInit: Display: -----------------------------------
+LogInit: Display: LogAssetRegistry: Warning: PlatformFileJournal is not available on volume 'D:'. AssetRegistry discovery of files on this volume will be uncached. Unavailability reason:
+	NTFS Journal is not active for volume 'D:'. Launch cmd.exe as admin and run command `fsutil usn createJournal D: m=<SizeInBytes>`. Recommended <SizeInBytes> is 0x40000000 (1GB).
+LogInit: Display: LogLinker: Warning: [AssetLog] C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Content\Mannequin\Animations\ThirdPerson_WalkRun_1D.uasset: VerifyImport: Failed to find script package for import object 'Package /Script/BlendSpaceMotionAnalysis'
+LogInit: Display:
+LogInit: Display: Success - 0 error(s), 2 warning(s)
+LogInit: Display:
+
+Execution of commandlet took:  9.58 seconds, PeakPhysMemoryMB=2422 MB, PeakVirtMemoryMB=2246 MB
+LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 1 .ref files found, 1 referenced binaries
+LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+LogStreaming: Display: ============ Loader Stats ============
+LogStreaming: Display: Unique Partial Flushes: 0
+LogStreaming: Display: ============ Loader Stats End ============
+LogShaderCompilers: Display: Exiting ShaderCompilingThread
+Took 22.17s to run UnrealEditor-Cmd.exe, ExitCode=0
+Cook command time: 22.28 s
+********** COOK COMMAND COMPLETED **********
+********** STAGE COMMAND STARTED **********
+Creating Staging Manifest...
+Patching bootstrap executable; C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Intermediate\Staging\AividoV2Game.exe
+Begin update resource 'C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Intermediate\Staging\AividoV2Game.exe' (0)
+Add resource 101, length 104 (True)
+Add resource 1, length 1996 (True)
+Add resource 2, length 2447 (True)
+Add resource 3, length 2535 (True)
+Add resource 4, length 3037 (True)
+Add resource 5, length 3244 (True)
+Add resource 6, length 3531 (True)
+Add resource 7, length 6931 (True)
+Add resource 201, length 96 (True)
+Add resource 202, length 32 (True)
+Add resource 205, length 2 (True)
+End update resource (True/0)
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\PortableObjectExport.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseLightmass.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\WordCount.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Windows\WindowsEditorPerProjectUserSettings.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\Category.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseSourceControlSettings.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseEditorSettings.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseEditor.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\PortableObjectImport.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BasePakFileRules.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Windows\WindowsEditorSettings.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\Editor.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseUnrealInsightsSettings.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\Engine.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseEditorKeyBindings.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\PropertyNames.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\Keywords.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseEditorPerProjectUserSettings.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\RepairData.ini
+Excluding config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Localization\ToolTips.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Layouts\DefaultLayout.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\PluginBase.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\ConsoleVariables.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\ConfigRedirects.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseInput.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseHardware.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseGameUserSettings.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseGame.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseEngine.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Windows\BaseWindowsInput.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Windows\BaseWindowsGame.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Windows\BaseWindowsEngine.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\VulkanPC\DataDrivenPlatformInfo.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseScalability.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseRuntimeOptions.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseMaterialExpressions.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseInstallBundle.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseDeviceProfiles.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\BaseCompat.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Base.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Layouts\UE4ClassicLayout.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Windows\WindowsInput.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Windows\WindowsGame.ini
+Including config file D:\Program Files\Epic Games\UE_5.8\Engine\Config\Windows\DataDrivenPlatformInfo.ini
+Excluding config file C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Config\DefaultEditor.ini
+Excluding config file C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Config\DefaultEditorPerProjectUserSettings.ini
+Including config file C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Config\DefaultInput.ini
+Including config file C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Config\DefaultGame.ini
+Including config file C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Config\DefaultEngine.ini
+Cleaning Stage Directory: C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Saved\StagedBuilds\Windows
+DumpManifest: C:\Users\Shadow\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+Program+Files+Epic+Games+UE_5.8\FinalCopyWin64_UFSFiles.txt, NumItems: 1738
+DumpManifest: C:\Users\Shadow\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+Program+Files+Epic+Games+UE_5.8\FinalCopyWin64_NonUFSFiles.txt, NumItems: 35
+DumpManifest: C:\Users\Shadow\AppData\Roaming\Unreal Engine\AutomationTool\Logs\D+Program+Files+Epic+Games+UE_5.8\FinalCopyWin64_NonUFSFilesDebug.txt, NumItems: 6
+Copying NonUFSFiles to staging directory: C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Saved\StagedBuilds\Windows
+Copying DebugFiles to staging directory: C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\Saved\StagedBuilds\Windows
+Stage command time: 1.95 s
+********** STAGE COMMAND COMPLETED **********
+********** PACKAGE COMMAND STARTED **********
+Package command time: 0.01 s
+********** PACKAGE COMMAND COMPLETED **********
+********** ARCHIVE COMMAND STARTED **********
+Archiving to C:\Users\Shadow\AppData\Local\Temp\aivido-worker2-package
+Archive command time: 0.38 s
+********** ARCHIVE COMMAND COMPLETED **********
+BuildCookRun time: 29.89 s
+BUILD SUCCESSFUL
+AutomationTool executed for 0h 0m 30s
+AutomationTool exiting with ExitCode=0 (Success)

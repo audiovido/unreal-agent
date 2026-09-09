@@ -1,0 +1,4 @@
+@echo off
+cd /d "C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui"
+"D:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun -project="C:\Users\Shadow\Desktop\Unreal-Agent\.worktrees\aivido-worker2-ui\assetlib\tests\ue\ASSET_Showcase2\ASSET_Showcase2.uproject" -noP4 -platform=Win64 -clientconfig=Development -serverconfig=Development -cook -stage -package -archive -archivedirectory="C:\Users\Shadow\AppData\Local\Temp\aivido-worker2-package" -build -AdditionalCookerOptions="-DisablePlugins=MovieRenderPipeline" > "C:\Users\Shadow\AppData\Local\Temp\aivido-worker2-package\uat_log.txt" 2>&1
+echo UAT_EXIT=%ERRORLEVEL% >> "C:\Users\Shadow\AppData\Local\Temp\aivido-worker2-package\uat_log.txt"

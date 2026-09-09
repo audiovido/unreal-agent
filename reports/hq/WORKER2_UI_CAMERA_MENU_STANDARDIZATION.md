@@ -222,13 +222,21 @@ HUD = PASS                  — prompt/banner state-aware, no stale overlays, sa
 INPUT_STATE_MACHINE = PASS  — single SetUIState model; no ad-hoc input-mode calls
 RESPONSIVE_LAYOUT = PASS    — anchored logical-size panels; verified at 1280x720; reviewed for 1080p/ultrawide/small
 RUNTIME_VALIDATION = PASS   — UBT compile (editor+game), live -game proof, window-capture pixel evidence
-PACKAGED_BUILD = BLOCKED_EXTERNAL — no package step run in this lane; game target compiles
+PACKAGED_BUILD = PASS — fresh BuildCookRun package from this committed branch; packaged exe ran the full
+  -AividoAutoProof interaction sequence (RESULT=COMPLETE, 0 ensures/asserts/fatals, no duplicate transitions);
+  OS window captures + in-engine HighResShots archived under reports/hq/evidence_2026-09-09/worker2_ui_packaged_final/
 BRANCH = aivido-worker2-ui (worktree .worktrees/aivido-worker2-ui)
-HEAD = ae68b0c (baseline; changes uncommitted)
-PUSH = NOT_PUSHED
+HEAD = 222795b standardize Aivido camera menu and UI state system
+PUSH = PASS (origin/aivido-worker2-ui, up to date with HEAD)
 REMAINING_ISSUES =
-  - Packaged-build visual re-check still recommended (window captures were done on the editor -game binary).
+  - Enter-to-send / live backend reply not exercised inside the packaged run (chat backend not running in this lane;
+    handler + focus-return verified live in the editor -game run; UFUNCTION bind fix compile-verified in the package).
   - Content/Python/init_unreal.py WRONG_PROJECT_CONTEXT spam when launched from a worktree path (pre-existing, out of UI scope).
   - The level's kinematic "pusher" still displaces the pawn when movement input is applied (pre-existing environment
     behavior, unrelated to UI; the proof parks/re-anchors around it).
+  - Packaging notes: DefaultGame.ini ProjectID rewritten to 32-hex FGuid form (UE 5.8 import requirement; same value);
+    MovieRenderPipeline (editor-only) disabled for cook via -AdditionalCookerOptions; packaged build requires the
+    Zen store server (zenserver on 8558 with the engine security config) at boot.
+  - Validation harness: run_packaged_proof.sh/capture_window.ps1 in the evidence dir contain the deterministic-
+    termination fix (60s deadline, GNU-timeout-wrapped captures, EnumWindows window selection, stray sweep).
 ```
