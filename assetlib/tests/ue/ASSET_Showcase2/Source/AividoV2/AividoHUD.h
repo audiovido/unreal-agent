@@ -35,6 +35,7 @@ private:
 	TObjectPtr<UTextBlock> LinkText;
 	TObjectPtr<UTextBlock> WorkersText;
 	TObjectPtr<UTextBlock> PromptText;
+	TObjectPtr<UBorder> PromptBorder;
 
 	TWeakObjectPtr<AAividoGameMode> GameMode;
 	FString LastWorkersJoined;

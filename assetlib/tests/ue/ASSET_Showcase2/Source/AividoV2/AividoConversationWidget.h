@@ -13,12 +13,7 @@ class UButton;
 class UScrollBox;
 class UBorder;
 
-/**
- * Master Director conversation panel.
- *  - transcript of the session (user + director bubbles as text lines)
- *  - input box + Send button + Enter submit (real round-trip to backend)
- *  - Close button + ESC both close; input mode handled by the GameMode
- */
+/** Premium in-world Master Director conversation panel, built with C++ UMG. */
 UCLASS()
 class AIVIDOV2_API UAividoConversationWidget : public UUserWidget
 {
@@ -28,7 +23,6 @@ public:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void NativeDestruct() override;
 
-	/** Called by the GameMode right after the panel is added to the viewport. */
 	void NotifyOpened();
 
 protected:
@@ -40,10 +34,12 @@ protected:
 
 	TObjectPtr<UBorder> PanelBorder;
 	TObjectPtr<UTextBlock> TitleText;
+	TObjectPtr<UTextBlock> SessionText;
 	TObjectPtr<UScrollBox> Transcript;
 	TObjectPtr<UEditableTextBox> InputBox;
 	TObjectPtr<UButton> SendButton;
 	TObjectPtr<UButton> CloseButton;
 
 	TWeakObjectPtr<AAividoGameMode> GameMode;
+	bool bWelcomeShown = false;
 };

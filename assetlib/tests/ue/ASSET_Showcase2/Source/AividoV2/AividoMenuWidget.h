@@ -10,15 +10,8 @@ class AAividoGameMode;
 class UButton;
 class UTextBlock;
 class UBorder;
-class UVerticalBox;
 
-/**
- * Pause/menu overlay opened with ESC:
- *  - Resume (closes the menu)
- *  - Worker States (requests fresh roster; result shows in HUD banner)
- *  - Quit Session (exits the game)
- * Every button is wired to a real action — no dead production buttons.
- */
+/** Production pause/menu overlay built entirely with native C++ UMG. */
 UCLASS()
 class AIVIDOV2_API UAividoMenuWidget : public UUserWidget
 {
