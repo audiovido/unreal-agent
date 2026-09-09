@@ -15,15 +15,39 @@ class UUserWidget;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMenuStateChanged, bool, bMenuOpen);
 
 /**
+ * Deterministic UI state of the whole experience. Every input-mode, cursor
+ * and camera transition is driven from this single state (see SetUIState).
+ */
+UENUM(BlueprintType)
+enum class EAividoUIState : uint8
+{
+	Gameplay    UMETA(DisplayName = "Gameplay"),
+	MainMenu    UMETA(DisplayName = "Main Menu"),
+	Pause       UMETA(DisplayName = "Pause"),
+	Conversation UMETA(DisplayName = "Conversation")
+};
+
+/** Camera framing mode. Gameplay = third-person follow; ConversationFocus = director framing. */
+UENUM(BlueprintType)
+enum class EAividoCameraMode : uint8
+{
+	Gameplay         UMETA(DisplayName = "Gameplay"),
+	ConversationFocus UMETA(DisplayName = "Conversation Focus")
+};
+
+/**
  * Aivido HQ GameMode.
  *
- * Owns the production flow:
+ * Owns the production flow AND the central UI/camera state machine:
  *  - spawns the playable character at the PlayerStart
  *  - creates the native UMG HUD (state banner + interaction prompt)
+ *  - shows the main menu at boot (Start Session / Quit)
  *  - handles [E] interaction with the master director (opens conversation)
  *  - owns the conversation panel (open/close, submit, real backend reply)
- *  - drives background worker runtime states via AAividoWorkerDirector
- *  - ESC toggles the pause/menu overlay (GameOnly <-> GameAndUI input)
+ *  - blends to the director conversation camera on open and back to the
+ *    pawn on close
+ *  - ESC steps down: conversation -> pause/menu -> gameplay
+ *  - every input-mode/cursor/movement-lock change goes through SetUIState
  */
 UCLASS()
 class AIVIDOV2_API AAividoGameMode : public AGameModeBase
@@ -37,14 +61,35 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Aivido|Menu")
 	FOnMenuStateChanged OnMenuStateChanged;
 
+	/** Current UI state (single source of truth for input/camera mode). */
+	UFUNCTION(BlueprintPure, Category = "Aivido|State")
+	EAividoUIState GetUIState() const { return UIState; }
+
+	/** Current camera framing mode. */
+	UFUNCTION(BlueprintPure, Category = "Aivido|State")
+	EAividoCameraMode GetCameraMode() const { return CameraMode; }
+
 	/** Handle [E]: open conversation with the focused actor. */
 	void HandleInteract(AActor* InstigatorActor, AActor* Target);
 
-	/** ESC menu open/close. */
+	/** ESC handler: steps down conversation -> menu -> gameplay. */
 	UFUNCTION(BlueprintCallable, Category = "Aivido|Menu")
 	void ToggleMenu();
 	UFUNCTION(BlueprintCallable, Category = "Aivido|Menu")
-	bool IsMenuOpen() const { return bMenuOpen; }
+	bool IsMenuOpen() const
+	{
+		return UIState == EAividoUIState::MainMenu || UIState == EAividoUIState::Pause;
+	}
+	UFUNCTION(BlueprintPure, Category = "Aivido|Menu")
+	bool IsMainMenuOpen() const { return UIState == EAividoUIState::MainMenu; }
+
+	/** Boot start screen (shown by BeginPlay). */
+	UFUNCTION(BlueprintCallable, Category = "Aivido|Menu")
+	void ShowMainMenu();
+
+	/** Close the menu overlay (Resume / Start Session) and return to gameplay. */
+	UFUNCTION(BlueprintCallable, Category = "Aivido|Menu")
+	void CloseMenu();
 
 	UFUNCTION(BlueprintCallable, Category = "Aivido|Conversation")
 	void OpenConversation();
@@ -53,7 +98,7 @@ public:
 	void CloseConversation();
 
 	UFUNCTION(BlueprintCallable, Category = "Aivido|Conversation")
-	bool IsConversationOpen() const { return bConversationOpen; }
+	bool IsConversationOpen() const { return UIState == EAividoUIState::Conversation; }
 
 	/** Submit a chat line to the real backend; reply arrives via OnDirectorReply. */
 	UFUNCTION(BlueprintCallable, Category = "Aivido|Chat")
@@ -106,7 +151,10 @@ protected:
 	TSubclassOf<UUserWidget> MenuWidgetClass;
 
 private:
-	void ApplyInputMode(bool bGameAndUI);
+	void OpenPauseMenu();
+
+	/** The ONLY place input mode / cursor / movement locks / camera transitions are applied. */
+	void SetUIState(EAividoUIState NewState);
 
 	UPROPERTY()
 	TObjectPtr<AAividoDirector> Director;
@@ -120,8 +168,12 @@ private:
 	UPROPERTY()
 	TObjectPtr<UUserWidget> MenuWidget;
 
-	bool bConversationOpen = false;
-	bool bMenuOpen = false;
+	EAividoUIState UIState = EAividoUIState::Gameplay;
+	EAividoCameraMode CameraMode = EAividoCameraMode::Gameplay;
+
+	/** Blend duration for camera transitions (conversation open/close). */
+	float CameraBlendTime = 0.6f;
+
 	bool bWaitingReply = false;
 	FString LastReply;
 

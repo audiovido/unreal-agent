@@ -12,6 +12,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+#include "Camera/PlayerCameraManager.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
@@ -50,7 +51,8 @@ void AAividoGameMode::BeginPlay()
 	if (!World) return;
 
 	APlayerController* PC = World->GetFirstPlayerController();
-	ApplyInputMode(false);
+	UIState = EAividoUIState::Gameplay;
+	CameraMode = EAividoCameraMode::Gameplay;
 
 	// 1) The master director — primary conversation character, standing at his
 	//    station from the Worker 2 handoff (0, 700, 0), facing the room.
@@ -152,7 +154,7 @@ void AAividoGameMode::BeginPlay()
 				SC->SetIntensity(8.0f);
 				SC->SetLightColor(FLinearColor(0.75f, 0.82f, 1.0f));
 				SC->SetCastShadows(false);
-			SkyActor = Sky;
+				SkyActor = Sky;
 			}
 		}
 
@@ -210,10 +212,114 @@ void AAividoGameMode::BeginPlay()
 			}
 		}), 1.0f, false);
 	}
+
+	// 5) Boot start screen. Standard production flow: the experience opens on
+	//    the main menu (Start Session / Quit); ESC also starts the session.
+	//    Deferred a short beat out of BeginPlay: widgets added to the viewport
+	//    during world bring-up can miss their first paint (the pause re-add
+	//    renders fine, the boot-time add did not), so let the viewport settle
+	//    one frame before AddToViewport.
+	TWeakObjectPtr<AAividoGameMode> WeakThis(this);
+	FTimerHandle MenuTimer;
+	World->GetTimerManager().SetTimer(MenuTimer, FTimerDelegate::CreateWeakLambda(this, [WeakThis]()
+	{
+		if (WeakThis.IsValid())
+		{
+			WeakThis->ShowMainMenu();
+		}
+	}), 0.5f, false);
 }
+
+// ---------------------------------------------------------------------------
+// UI / camera state machine — the single place transitions are applied.
+// ---------------------------------------------------------------------------
+
+void AAividoGameMode::SetUIState(EAividoUIState NewState)
+{
+	if (UIState == NewState) return;
+	const EAividoUIState Prev = UIState;
+	UIState = NewState;
+
+	UWorld* World = GetWorld();
+	APlayerController* PC = World ? World->GetFirstPlayerController() : nullptr;
+
+	// ---- Camera transitions ----
+	if (NewState == EAividoUIState::Conversation && CameraMode != EAividoCameraMode::ConversationFocus)
+	{
+		if (PC && Director)
+		{
+			if (APawn* Pawn = PC->GetPawn())
+			{
+				Director->FacePlayer(Pawn);
+				Director->PlaceConversationCamera(Pawn);
+				PC->SetViewTargetWithBlend(Director, CameraBlendTime,
+					EViewTargetBlendFunction::VTBlend_Cubic, 1.f, false);
+			}
+		}
+		CameraMode = EAividoCameraMode::ConversationFocus;
+	}
+	else if (NewState == EAividoUIState::Gameplay && CameraMode == EAividoCameraMode::ConversationFocus)
+	{
+		// Always restore to the player camera when leaving a conversation —
+		// never leave the view target stuck on the director.
+		if (PC)
+		{
+			if (APawn* Pawn = PC->GetPawn())
+			{
+				PC->SetViewTargetWithBlend(Pawn, CameraBlendTime,
+					EViewTargetBlendFunction::VTBlend_Cubic, 1.f, false);
+			}
+		}
+		CameraMode = EAividoCameraMode::Gameplay;
+	}
+
+	// ---- Input mode / cursor / movement locks ----
+	const bool bUI = (NewState != EAividoUIState::Gameplay);
+	if (PC)
+	{
+		PC->bShowMouseCursor = bUI;
+		PC->SetIgnoreMoveInput(bUI);
+		PC->SetIgnoreLookInput(bUI);
+		if (bUI)
+		{
+			FInputModeGameAndUI Mode;
+			Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			Mode.SetHideCursorDuringCapture(false);
+			PC->SetInputMode(Mode);
+		}
+		else
+		{
+			PC->SetInputMode(FInputModeGameOnly());
+		}
+	}
+
+	// ---- Notify listeners (HUD hides prompts when menus/conversation open) ----
+	const bool bMenuNow = (NewState == EAividoUIState::MainMenu || NewState == EAividoUIState::Pause);
+	const bool bMenuPrev = (Prev == EAividoUIState::MainMenu || Prev == EAividoUIState::Pause);
+	if (bMenuNow != bMenuPrev)
+	{
+		OnMenuStateChanged.Broadcast(bMenuNow);
+	}
+
+	const bool bConvNow = (NewState == EAividoUIState::Conversation);
+	const bool bConvPrev = (Prev == EAividoUIState::Conversation);
+	if (bConvNow != bConvPrev)
+	{
+		OnConversationChanged.Broadcast(bConvNow);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("AIVIDO_STATE: %d -> %d (camera=%d, cursor=%d)"),
+		static_cast<int32>(Prev), static_cast<int32>(NewState),
+		static_cast<int32>(CameraMode), bUI ? 1 : 0);
+}
+
+// ---------------------------------------------------------------------------
+// Interaction
+// ---------------------------------------------------------------------------
 
 void AAividoGameMode::HandleInteract(AActor* InstigatorActor, AActor* Target)
 {
+	if (UIState != EAividoUIState::Gameplay) return; // no interaction while paused / menu / typing
 	if (!Target) return;
 
 	AAividoDirector* TargetDirector = Cast<AAividoDirector>(Target);
@@ -224,9 +330,112 @@ void AAividoGameMode::HandleInteract(AActor* InstigatorActor, AActor* Target)
 	}
 }
 
+// ---------------------------------------------------------------------------
+// Menus (main menu at boot + ESC pause overlay share the same widget)
+// ---------------------------------------------------------------------------
+
+void AAividoGameMode::ShowMainMenu()
+{
+	UWorld* World = GetWorld();
+	APlayerController* PC = World ? World->GetFirstPlayerController() : nullptr;
+	if (!PC) return;
+
+	if (!MenuWidget && MenuWidgetClass)
+	{
+		MenuWidget = CreateWidget<UUserWidget>(PC, MenuWidgetClass);
+	}
+
+	if (MenuWidget)
+	{
+		if (UAividoMenuWidget* Menu = Cast<UAividoMenuWidget>(MenuWidget))
+		{
+			Menu->SetMainMenuMode(true);
+		}
+		if (!MenuWidget->IsInViewport())
+		{
+			MenuWidget->AddToViewport(30);
+		}
+		if (UAividoMenuWidget* Menu = Cast<UAividoMenuWidget>(MenuWidget))
+		{
+			Menu->NotifyOpened();
+		}
+		UE_LOG(LogTemp, Log, TEXT("AIVIDO_UI: main_menu vp=%d vis=%d geo=%s"),
+			MenuWidget->IsInViewport() ? 1 : 0,
+			MenuWidget->GetIsVisible() ? 1 : 0,
+			*MenuWidget->GetCachedGeometry().GetLocalSize().ToString());
+	}
+
+	SetUIState(EAividoUIState::MainMenu);
+}
+
+void AAividoGameMode::OpenPauseMenu()
+{
+	UWorld* World = GetWorld();
+	APlayerController* PC = World ? World->GetFirstPlayerController() : nullptr;
+	if (!PC) return;
+
+	if (!MenuWidget && MenuWidgetClass)
+	{
+		MenuWidget = CreateWidget<UUserWidget>(PC, MenuWidgetClass);
+	}
+
+	if (MenuWidget)
+	{
+		if (UAividoMenuWidget* Menu = Cast<UAividoMenuWidget>(MenuWidget))
+		{
+			Menu->SetMainMenuMode(false);
+		}
+		if (!MenuWidget->IsInViewport())
+		{
+			MenuWidget->AddToViewport(30);
+		}
+		if (UAividoMenuWidget* Menu = Cast<UAividoMenuWidget>(MenuWidget))
+		{
+			Menu->NotifyOpened();
+		}
+		UE_LOG(LogTemp, Log, TEXT("AIVIDO_UI: pause_menu vp=%d vis=%d geo=%s"),
+			MenuWidget->IsInViewport() ? 1 : 0,
+			MenuWidget->GetIsVisible() ? 1 : 0,
+			*MenuWidget->GetCachedGeometry().GetLocalSize().ToString());
+	}
+
+	SetUIState(EAividoUIState::Pause);
+}
+
+void AAividoGameMode::CloseMenu()
+{
+	if (MenuWidget && MenuWidget->IsInViewport())
+	{
+		MenuWidget->RemoveFromParent();
+	}
+	SetUIState(EAividoUIState::Gameplay);
+}
+
+void AAividoGameMode::ToggleMenu()
+{
+	// ESC steps down one UI level at a time: conversation -> pause -> gameplay.
+	switch (UIState)
+	{
+	case EAividoUIState::Conversation:
+		CloseConversation();
+		break;
+	case EAividoUIState::MainMenu:
+	case EAividoUIState::Pause:
+		CloseMenu();
+		break;
+	case EAividoUIState::Gameplay:
+		OpenPauseMenu();
+		break;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Conversation
+// ---------------------------------------------------------------------------
+
 void AAividoGameMode::OpenConversation()
 {
-	if (bConversationOpen) return;
+	if (UIState != EAividoUIState::Gameplay) return; // never stack over menus
 
 	UWorld* World = GetWorld();
 	APlayerController* PC = World ? World->GetFirstPlayerController() : nullptr;
@@ -247,74 +456,27 @@ void AAividoGameMode::OpenConversation()
 		{
 			Conv->NotifyOpened();
 		}
+		UE_LOG(LogTemp, Log, TEXT("AIVIDO_UI: conversation vp=%d vis=%d geo=%s"),
+			ConversationWidget->IsInViewport() ? 1 : 0,
+			ConversationWidget->GetIsVisible() ? 1 : 0,
+			*ConversationWidget->GetCachedGeometry().GetLocalSize().ToString());
 	}
 
-	bConversationOpen = true;
-	ApplyInputMode(true); // GameAndUI while typing
-	OnConversationChanged.Broadcast(true);
+	// Camera blend + input lock + cursor happen inside SetUIState.
+	SetUIState(EAividoUIState::Conversation);
 }
 
 void AAividoGameMode::CloseConversation()
 {
-	if (!bConversationOpen) return;
+	if (UIState != EAividoUIState::Conversation) return;
 
 	if (ConversationWidget && ConversationWidget->IsInViewport())
 	{
 		ConversationWidget->RemoveFromParent();
 	}
 
-	bConversationOpen = false;
-	ApplyInputMode(false); // back to GameOnly
-	OnConversationChanged.Broadcast(false);
-}
-
-void AAividoGameMode::ToggleMenu()
-{
-	UE_LOG(LogTemp, Log, TEXT("AIVIDO_MENU: toggle requested, conv_open=%d"), bConversationOpen ? 1 : 0);
-	UWorld* World = GetWorld();
-	APlayerController* PC = World ? World->GetFirstPlayerController() : nullptr;
-	if (!PC) return;
-
-	// Conversation takes precedence: ESC closes chat first.
-	if (bConversationOpen)
-	{
-		CloseConversation();
-		return;
-	}
-
-	bMenuOpen = !bMenuOpen;
-
-	if (bMenuOpen)
-	{
-		if (!MenuWidget && MenuWidgetClass)
-		{
-			MenuWidget = CreateWidget<UUserWidget>(PC, MenuWidgetClass);
-		}
-		if (MenuWidget && !MenuWidget->IsInViewport())
-		{
-			MenuWidget->AddToViewport(30);
-		}
-		UE_LOG(LogTemp, Log, TEXT("AIVIDO_MENU: vp=%d vis=%d geo=%s screen=%s"),
-			MenuWidget->IsInViewport() ? 1 : 0,
-			MenuWidget->GetIsVisible() ? 1 : 0,
-			*MenuWidget->GetPaintSpaceGeometry().GetLocalSize().ToString(),
-			*FVector2D(GEngine->GameViewport->Viewport->GetSizeXY()).ToString());
-		if (UAividoMenuWidget* Menu = Cast<UAividoMenuWidget>(MenuWidget))
-		{
-			Menu->NotifyOpened();
-		}
-		ApplyInputMode(true);
-	}
-	else
-	{
-		if (MenuWidget && MenuWidget->IsInViewport())
-		{
-			MenuWidget->RemoveFromParent();
-		}
-		ApplyInputMode(false);
-	}
-
-	OnMenuStateChanged.Broadcast(bMenuOpen);
+	// Camera restore + input restore happen inside SetUIState.
+	SetUIState(EAividoUIState::Gameplay);
 }
 
 void AAividoGameMode::SubmitChatLine(const FString& Message)
@@ -376,24 +538,5 @@ void AAividoGameMode::RequestWorkerStates()
 	if (WorkerDirector)
 	{
 		WorkerDirector->RequestStates();
-	}
-}
-
-void AAividoGameMode::ApplyInputMode(bool bGameAndUI)
-{
-	UWorld* World = GetWorld();
-	APlayerController* PC = World ? World->GetFirstPlayerController() : nullptr;
-	if (!PC) return;
-
-	PC->bShowMouseCursor = bGameAndUI;
-	if (bGameAndUI)
-	{
-		FInputModeGameAndUI Mode;
-		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		PC->SetInputMode(Mode);
-	}
-	else
-	{
-		PC->SetInputMode(FInputModeGameOnly());
 	}
 }

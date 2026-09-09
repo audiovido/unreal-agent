@@ -52,15 +52,17 @@ public:
 
 	/** Actor the player should interact with via E (director support lives in GameMode/HUD). */
 	UPROPERTY(BlueprintReadOnly, Category = "Aivido|Interaction")
-	TWeakObjectPtr<AActor> CurrentInteractTarget;protected:
-    virtual void BeginPlay() override;
-    virtual void Tick(float DeltaSeconds) override;
-    virtual void NotifyControllerChanged() override;
-    virtual void PossessedBy(AController* NewController) override;
-    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	TWeakObjectPtr<AActor> CurrentInteractTarget;
 
-    /** Authors the real Enhanced Input actions + mapping context (no uassets exist). */
-    void EnsureEnhancedInput();
+protected:
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void NotifyControllerChanged() override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	/** Authors the real Enhanced Input actions + mapping context (no uassets exist). */
+	void EnsureEnhancedInput();
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -80,8 +82,8 @@ public:
 	UFUNCTION(Exec)
 	void AividoDrive(float DirX, float DirY, int32 Frames = 30);
 
-	// Debug exec: full standalone validation sequence (screenshots, walk
-	// displacement log, menu open/close via the real handler).
+	// Debug exec: full standalone validation sequence (main menu start, walk
+	// displacement, pause open/close, conversation open/close, camera restore).
 	UFUNCTION(Exec)
 	void AividoProof();
 

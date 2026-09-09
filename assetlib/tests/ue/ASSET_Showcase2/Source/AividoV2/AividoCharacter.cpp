@@ -3,6 +3,7 @@
 #include "AividoCharacter.h"
 
 #include "AividoGameMode.h"
+#include "AividoDirector.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -21,8 +22,8 @@
 #include "Engine/StaticMeshActor.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "AividoGameMode.h"
 
 AAividoCharacter::AAividoCharacter()
 {
@@ -293,7 +294,12 @@ void AAividoCharacter::AividoDrive(float DirX, float DirY, int32 Frames)
 void AAividoCharacter::AividoProof()
 {
 	// Standalone validation sequence, spaced with timers so frames render
-	// between steps. Everything is logged under AIVIDO_PROOF.
+	// between steps. Everything is logged under AIVIDO_PROOF: main menu start,
+	// walk unlock check, pause open/close, conversation open/close and camera
+	// restore are all driven through the real handlers and logged for the log
+	// file to prove deterministic state transitions. Screenshots are taken in
+	// before/after pairs at the SAME camera position so the menu/conversation
+	// overlay paint is verifiable by direct pixel comparison.
 	UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: begin"));
 	ProofStep(0);
 }
@@ -305,68 +311,191 @@ void AAividoCharacter::ProofStep(int32 Step)
 	{
 		return;
 	}
-	auto Next = [this, Step, W]()
+	auto Next = [this, W, Step]()
 	{
 		W->GetTimerManager().SetTimerForNextTick([this, Step]() { ProofStep(Step + 1); });
 	};
+	auto Delay = [this, W](float Seconds, int32 NextStep)
+	{
+		FTimerHandle H;
+		W->GetTimerManager().SetTimer(H, FTimerDelegate::CreateWeakLambda(this,
+			[this, NextStep]() { ProofStep(NextStep); }), Seconds, false);
+	};
+	// Deterministic rest height for teleports (capsule above the walkable box).
+	const float TeleportZ = bRestZInit ? RestZ : 291.f;
 
 	switch (Step)
 	{
-	case 0: // start of walk phase
+	case 0: // boot: main menu open — capture, then close at the same position
+		if (AAividoGameMode* GM = W->GetAuthGameMode<AAividoGameMode>())
+		{
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: boot menu_open=%s"),
+				GM->IsMenuOpen() ? TEXT("true") : TEXT("false"));
+		}
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->ConsoleCommand(TEXT("HighResShot 2"), true);
+		}
+		Delay(0.8f, 1);
+		break;
+
+	case 1: // start the session through the real ESC handler; same-position control shot
+	{
+		if (AAividoGameMode* GM = W->GetAuthGameMode<AAividoGameMode>())
+		{
+			if (GM->IsMenuOpen())
+			{
+				GM->ToggleMenu();
+			}
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: started menu_open=%s"),
+				GM->IsMenuOpen() ? TEXT("true") : TEXT("false"));
+		}
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->ConsoleCommand(TEXT("HighResShot 2"), true);
+		}
 		ProofWalkStart = GetActorLocation();
 		UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: walk_start %s"), *ProofWalkStart.ToString());
 		for (int32 i = 0; i < 30; ++i)
 		{
 			AddMovementInput(FVector(0.f, -1.f, 0.f), 1.f, false);
 		}
-		W->GetTimerManager().SetTimerForNextTick([this, Step]() { ProofStep(Step + 1); });
+		Next();
 		break;
-	case 1:
+	}
 	case 2:
-	case 3:
 		for (int32 i = 0; i < 30; ++i)
 		{
 			AddMovementInput(FVector(0.f, -1.f, 0.f), 1.f, false);
 		}
 		Next();
 		break;
-	case 4: // walk done: log displacement
+	case 3: // walk done: log displacement (proves input is NOT stuck locked)
 	{
 		const FVector End = GetActorLocation();
 		UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: walk_end %s disp=%.1f"), *End.ToString(),
 			FVector::Dist2D(End, ProofWalkStart));
-		if (APlayerController* PC = Cast<APlayerController>(Controller))
-		{
-			PC->ConsoleCommand(TEXT("HighResShot 2"), true);
-		}
-		Next();
+		Delay(0.3f, 4);
 		break;
 	}
-	case 5: // menu open via the real ESC handler path
-		if (AAividoGameMode* GM = GetWorld()->GetAuthGameMode<AAividoGameMode>())
+	case 4: // park the pawn in the lit room, then capture a no-UI control frame
+	{
+		SetActorLocation(FVector(0.f, 2600.f, TeleportZ), false, nullptr, ETeleportType::TeleportPhysics);
+		MovementAnchor = GetActorLocation();
+		bAnchorInit = false;
+		if (UCharacterMovementComponent* CMC2 = GetCharacterMovement())
 		{
-			GM->ToggleMenu();
-			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: menu_open=%s"),
-				GM->IsMenuOpen() ? TEXT("true") : TEXT("false"));
+			CMC2->Velocity = FVector::ZeroVector;
 		}
-		Next();
+		Delay(0.6f, 5);
 		break;
-	case 6:
+	}
+	case 5: // gameplay control shot at the parked position (no menu)
 		if (APlayerController* PC = Cast<APlayerController>(Controller))
 		{
 			PC->ConsoleCommand(TEXT("HighResShot 2"), true);
 		}
-		Next();
+		Delay(0.5f, 6);
 		break;
-	case 7: // menu close via the real handler path
-		if (AAividoGameMode* GM = GetWorld()->GetAuthGameMode<AAividoGameMode>())
+	case 6: // open the pause menu via the real ESC handler
+		if (AAividoGameMode* GM = W->GetAuthGameMode<AAividoGameMode>())
 		{
 			GM->ToggleMenu();
-			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: menu_closed=%s"),
-				!GM->IsMenuOpen() ? TEXT("true") : TEXT("false"));
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: pause_open=%s"),
+				GM->IsMenuOpen() ? TEXT("true") : TEXT("false"));
+		}
+		Delay(0.8f, 7);
+		break;
+	case 7: // capture the pause menu (same position as the control shot)
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			PC->ConsoleCommand(TEXT("HighResShot 2"), true);
+		}
+		Delay(0.8f, 8);
+		break;
+	case 8: // resume via the real handler
+		if (AAividoGameMode* GM = W->GetAuthGameMode<AAividoGameMode>())
+		{
+			GM->ToggleMenu();
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: paused_closed=%s"),
+				GM->IsMenuOpen() ? TEXT("true") : TEXT("false"));
+		}
+		Delay(0.6f, 9);
+		break;
+	case 9: // stand in front of the director (teleport + re-anchor at rest height)
+	{
+		AActor* Dir = UGameplayStatics::GetActorOfClass(W, AAividoDirector::StaticClass());
+		if (Dir)
+		{
+			const FVector Target = Dir->GetActorLocation() + FVector(0.f, 260.f, 0.f);
+			const FVector Final(Target.X, Target.Y, TeleportZ);
+			SetActorLocation(Final, false, nullptr, ETeleportType::TeleportPhysics);
+			MovementAnchor = Final;
+			bAnchorInit = false; // re-anchor on the next tick
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: teleport %s dir=%s"),
+				*Final.ToString(), *Dir->GetActorLocation().ToString());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: DIRECTOR NOT FOUND"));
+		}
+		Delay(0.6f, 10);
+		break;
+	}
+	case 10: // open the conversation through the real interaction path
+	{
+		AActor* Dir = UGameplayStatics::GetActorOfClass(W, AAividoDirector::StaticClass());
+		if (AAividoGameMode* GM = W->GetAuthGameMode<AAividoGameMode>())
+		{
+			if (Dir)
+			{
+				GM->HandleInteract(this, Dir);
+			}
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: conv_open=%s camera=%d"),
+				GM->IsConversationOpen() ? TEXT("true") : TEXT("false"),
+				static_cast<int32>(GM->GetCameraMode()));
+		}
+		Delay(1.5f, 11); // wait for the camera blend to finish
+		break;
+	}
+	case 11: // verify the view target is the director conversation camera
+	{
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			AActor* VT = PC->GetViewTarget();
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: conv_camera_target=%s"),
+				VT ? *VT->GetName() : TEXT("none"));
+			PC->ConsoleCommand(TEXT("HighResShot 2"), true);
+		}
+		Delay(1.0f, 12);
+		break;
+	}
+	case 12: // ESC closes the conversation first
+	{
+		if (AAividoGameMode* GM = W->GetAuthGameMode<AAividoGameMode>())
+		{
+			GM->ToggleMenu();
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: conv_closed=%s menu_open=%s"),
+				GM->IsConversationOpen() ? TEXT("true") : TEXT("false"),
+				GM->IsMenuOpen() ? TEXT("true") : TEXT("false"));
+		}
+		Delay(1.5f, 13); // wait for the restore blend
+		break;
+	}
+	case 13: // verify the camera restored to the pawn
+	{
+		if (APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			AActor* VT = PC->GetViewTarget();
+			APawn* Pawn = PC->GetPawn();
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: restored_camera=%s is_pawn=%s"),
+				VT ? *VT->GetName() : TEXT("none"),
+				(Pawn && VT == Pawn) ? TEXT("true") : TEXT("false"));
+			PC->ConsoleCommand(TEXT("HighResShot 2"), true);
 		}
 		UE_LOG(LogTemp, Log, TEXT("AIVIDO_PROOF: done"));
 		break;
+	}
 	default:
 		break;
 	}
@@ -524,6 +653,13 @@ void AAividoCharacter::Look(const FInputActionValue& Value)
 	const FVector2D Axis = Value.Get<FVector2D>();
 	AddControllerYawInput(Axis.X);
 	AddControllerPitchInput(Axis.Y);
+	// Standard third-person pitch limits: never flip over the top.
+	if (Controller)
+	{
+		FRotator R = Controller->GetControlRotation();
+		R.Pitch = FMath::Clamp(FRotator::NormalizeAxis(R.Pitch), -89.f, 89.f);
+		Controller->SetControlRotation(R);
+	}
 }
 
 void AAividoCharacter::StartRun()
@@ -564,16 +700,25 @@ void AAividoCharacter::LookYaw(float V)
 void AAividoCharacter::LookPitch(float V)
 {
 	AddControllerPitchInput(V);
+	if (Controller)
+	{
+		FRotator R = Controller->GetControlRotation();
+		R.Pitch = FMath::Clamp(FRotator::NormalizeAxis(R.Pitch), -89.f, 89.f);
+		Controller->SetControlRotation(R);
+	}
 }
 
 void AAividoCharacter::Interact()
 {
+	// Interaction is a gameplay-only action: never while paused, at the main
+	// menu or while the conversation panel is open (E must not stack panels).
+	UWorld* World = GetWorld();
+	AAividoGameMode* GM = World ? World->GetAuthGameMode<AAividoGameMode>() : nullptr;
+	if (!GM || GM->GetUIState() != EAividoUIState::Gameplay) return;
+
 	if (CurrentInteractTarget.IsValid())
 	{
-		if (AAividoGameMode* GM = GetWorld() ? GetWorld()->GetAuthGameMode<AAividoGameMode>() : nullptr)
-		{
-			GM->HandleInteract(this, CurrentInteractTarget.Get());
-		}
+		GM->HandleInteract(this, CurrentInteractTarget.Get());
 	}
 }
 

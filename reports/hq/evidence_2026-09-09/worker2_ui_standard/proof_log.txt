@@ -1,0 +1,24 @@
+[2026.09.09-18.20.49:304][  4]LogTemp: AIVIDO_UI: main_menu vp=1 vis=1 geo=X=0.000 Y=0.000
+[2026.09.09-18.20.49:304][  4]LogTemp: AIVIDO_STATE: 0 -> 1 (camera=0, cursor=1)
+[2026.09.09-18.20.49:903][ 57]LogTemp: AIVIDO_UI: menu_geo=X=560.000 Y=440.000 vp=1 vis=1
+[2026.09.09-18.20.52:068][245]LogTemp: AIVIDO_PROOF: begin
+[2026.09.09-18.20.52:068][245]LogTemp: AIVIDO_PROOF: boot menu_open=true
+[2026.09.09-18.20.53:639][286]LogTemp: AIVIDO_STATE: 1 -> 0 (camera=0, cursor=0)
+[2026.09.09-18.20.53:639][286]LogTemp: AIVIDO_PROOF: started menu_open=false
+[2026.09.09-18.20.53:639][286]LogTemp: AIVIDO_PROOF: walk_start X=0.000 Y=3200.000 Z=291.000
+[2026.09.09-18.20.54:195][293]LogTemp: AIVIDO_PROOF: walk_end X=-103.843 Y=5192.764 Z=359.915 disp=1995.5
+[2026.09.09-18.20.55:706][373]LogTemp: AIVIDO_UI: pause_menu vp=1 vis=1 geo=X=0.000 Y=0.000
+[2026.09.09-18.20.55:706][373]LogTemp: AIVIDO_STATE: 0 -> 2 (camera=0, cursor=1)
+[2026.09.09-18.20.55:706][373]LogTemp: AIVIDO_PROOF: pause_open=true
+[2026.09.09-18.20.56:316][416]LogTemp: AIVIDO_UI: menu_geo=X=560.000 Y=440.000 vp=1 vis=1
+[2026.09.09-18.20.57:444][463]LogTemp: AIVIDO_STATE: 2 -> 0 (camera=0, cursor=0)
+[2026.09.09-18.20.57:444][463]LogTemp: AIVIDO_PROOF: paused_closed=false
+[2026.09.09-18.20.58:051][505]LogTemp: AIVIDO_PROOF: teleport X=0.000 Y=960.000 Z=291.000 dir=X=0.000 Y=700.000 Z=96.000
+[2026.09.09-18.20.58:671][548]LogTemp: AIVIDO_UI: conversation vp=1 vis=1 geo=X=0.000 Y=0.000
+[2026.09.09-18.20.58:671][548]LogTemp: AIVIDO_STATE: 0 -> 3 (camera=1, cursor=1)
+[2026.09.09-18.20.58:671][548]LogTemp: AIVIDO_PROOF: conv_open=true camera=1
+[2026.09.09-18.21.00:170][668]LogTemp: AIVIDO_PROOF: conv_camera_target=AividoDirector_0
+[2026.09.09-18.21.01:375][721]LogTemp: AIVIDO_STATE: 3 -> 0 (camera=0, cursor=0)
+[2026.09.09-18.21.01:375][721]LogTemp: AIVIDO_PROOF: conv_closed=false menu_open=false
+[2026.09.09-18.21.02:879][836]LogTemp: AIVIDO_PROOF: restored_camera=AividoCharacter_0 is_pawn=true
+[2026.09.09-18.21.02:879][836]LogTemp: AIVIDO_PROOF: done

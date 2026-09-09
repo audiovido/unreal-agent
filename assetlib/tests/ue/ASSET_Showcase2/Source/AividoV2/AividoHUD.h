@@ -14,6 +14,10 @@ class UBorder;
  * Production HUD, pure native UMG (no editor-authored WBP dependency):
  *  - top-left: AIVIDO HQ banner + director link state + worker activity lines
  *  - bottom-center: interaction prompt when the director is in focus range
+ *
+ * The prompt and banner are hidden whenever the game is not in the Gameplay
+ * UI state (main menu, pause, conversation) so no stale UI sits behind or
+ * overlaps the overlays.
  */
 UCLASS()
 class AIVIDOV2_API UAividoHUD : public UUserWidget
@@ -31,11 +35,11 @@ private:
 	void RebuildBanner(const TArray<FString>& StateLines);
 	void RefreshPrompt();
 
+	TObjectPtr<UBorder> BannerBorder;
 	TObjectPtr<UTextBlock> TitleText;
 	TObjectPtr<UTextBlock> LinkText;
 	TObjectPtr<UTextBlock> WorkersText;
 	TObjectPtr<UTextBlock> PromptText;
-	TObjectPtr<UBorder> PromptBorder;
 
 	TWeakObjectPtr<AAividoGameMode> GameMode;
 	FString LastWorkersJoined;
