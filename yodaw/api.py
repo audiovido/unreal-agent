@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from .commands import CommandRequest
 from .missions import MissionStore
-from .orchestrator import MissionOrchestrator
+from .mission_runner import run_mission
 from .targets import build_targets
 from .workspaces import WorkspaceManager
 
@@ -67,36 +67,10 @@ class TargetConfigBody(BaseModel):
 
 
 def _mission_runner(mission_id: str) -> None:
-    mission = mission_store.get(mission_id)
-    if mission is None: return
-    if mission.cancel_requested:
-        return
-    mission_store.update(mission_id, state="RUNNING", stage="planning")
-    orchestrator = MissionOrchestrator(
-        workspace_manager=workspace_manager,
-        max_workers=mission.max_workers,
-        cancelled=lambda: bool((mission_store.get(mission_id) or mission).cancel_requested),
-        update=lambda **fields: mission_store.update(mission_id, **fields),
-    )
-    result = orchestrator.run(
-        mission_id=mission_id, repo=mission.repo, prompt=mission.prompt,
-        raw_plan=mission.plan or None, auto_commit=mission.auto_commit,
-        auto_push=mission.auto_push, remote=mission.remote or "origin",
-    )
-    current = mission_store.get(mission_id)
-    if current is None or current.cancel_requested:
-        return
-    workers = result.get("workers", [])
-    files = sorted({f for worker in workers for f in worker.get("changed_files", [])})
-    passing = [worker for worker in workers if worker.get("state") == "PASS"]
-    commits = [worker.get("commit_sha") for worker in passing if worker.get("commit_sha")]
-    mission_store.update(
-        mission_id, state=result.get("state", "FAILED"), stage=result.get("stage", "complete"),
-        workers=workers, changed_files=files, blockers=result.get("blockers", []),
-        push_status=result.get("push_status", "not_requested"),
-        commit_sha=commits[-1] if commits else None,
-    )
-    mission_store.append_evidence(mission_id, {"stage": result.get("stage"), "result": result})
+    try:
+        run_mission(mission_store, mission_id)
+    finally:
+        active_threads.pop(mission_id, None)
 
 
 @app.on_event("startup")

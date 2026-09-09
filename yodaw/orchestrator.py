@@ -162,6 +162,8 @@ class MissionOrchestrator:
             for attempt in range(1, len(plan.retry_steps) + 2):
                 if self.cancelled():
                     return WorkerResult(plan.worker_id, "CANCELLED", attempt=attempt - 1, evidence=evidence, branch=ws.branch)
+                # Retries apply incrementally to the existing attempt in the
+                # same worker worktree; never recreate the initial broken plan.
                 self._apply_steps(path, current_steps)
                 changed = self._changed(path)
                 validation = self._validate(path, plan)
@@ -170,7 +172,9 @@ class MissionOrchestrator:
                     stdout=validation["stdout"], stderr=validation["stderr"],
                     changed_files=changed, plan_summary=plan.title, attempt=attempt,
                 )
-                if ev.exit_code == 0 and self._acceptance(path, plan.acceptance) and set(changed).issubset(set(plan.files)):
+                expected = set(plan.files)
+                actual = set(changed)
+                if ev.exit_code == 0 and self._acceptance(path, plan.acceptance) and actual == expected:
                     evidence.append({"attempt": attempt, "status": "PASS", "evidence": ev.concise()})
                     commit = self._commit(path, plan.title)
                     if not commit:
@@ -194,7 +198,10 @@ class MissionOrchestrator:
                 raise ValueError(f"path escapes worker workspace: {rel}")
             op = step.get("op", "write_file")
             if op == "write_file":
-                target.parent.mkdir(parents=True, exist_ok=True); target.write_text(str(step.get("content", "")), encoding="utf-8")
+                target.parent.mkdir(parents=True, exist_ok=True)
+                # A retry plan can intentionally rewrite a file from its
+                # original failed attempt; corrections must remain scoped.
+                target.write_text(str(step.get("content", "")), encoding="utf-8")
             elif op == "replace_text":
                 content = target.read_text(encoding="utf-8"); old = str(step.get("old", ""))
                 if not old or old not in content:
@@ -212,8 +219,18 @@ class MissionOrchestrator:
     def _validate(path: Path, plan: WorkerPlan) -> dict[str, Any]:
         if not plan.tests:
             return {"command": "acceptance-only", "exit_code": 0, "stdout": "", "stderr": ""}
+        # A corrective retry can rewrite a same-size source file within one
+        # filesystem timestamp tick. Remove stale bytecode and disable writes
+        # so validation observes the accepted source, not attempt-one cache.
+        for cache in path.rglob("__pycache__"):
+            if cache.is_dir():
+                import shutil
+                shutil.rmtree(cache, ignore_errors=True)
         spec = plan.tests[0].split()
-        result = run_local(CommandRequest(cwd=str(path), allowed_root=str(path), command=spec, timeout=300))
+        result = run_local(CommandRequest(
+            cwd=str(path), allowed_root=str(path), command=spec, timeout=300,
+            env={"PYTHONDONTWRITEBYTECODE": "1"},
+        ))
         return {"command": " ".join(spec), "exit_code": result.exit_code, "stdout": result.stdout, "stderr": result.stderr}
 
     @staticmethod

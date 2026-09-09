@@ -101,7 +101,7 @@ def plan_from_request(prompt: str, raw_plan: list[dict[str, Any]] | None = None)
                 ],
                 tests=["python -m pytest -q test_feature.py"],
                 acceptance=["exists feature.py", "exists test_feature.py"],
-                retry_steps=[[{"op": "replace_text", "path": "feature.py", "old": "return 41", "new": "return 42"}]],
+                retry_steps=[[{"op": "write_file", "path": "feature.py", "content": "def answer():\n    return 42\n"}]],
             ),
             WorkerPlan(
                 "documentation", "add feature documentation", ["FEATURE.md"],
