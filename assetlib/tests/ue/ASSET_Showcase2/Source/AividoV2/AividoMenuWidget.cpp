@@ -70,9 +70,15 @@ TSharedRef<SWidget> UAividoMenuWidget::RebuildWidget()
 
 	if (UCanvasPanelSlot* CS = Canvas->AddChildToCanvas(PanelBorder))
 	{
+		// Use explicit center extents rather than relying on the widget's
+		// desired-size pass.  This keeps the overlay in logical Slate units
+		// after viewport DPI scaling and avoids the packaged-game
+		// lower-right displacement seen with an auto-sized centered slot.
 		CS->SetAnchors(FAnchors(0.5f, 0.5f, 0.5f, 0.5f));
 		CS->SetAlignment(FVector2D(0.5f, 0.5f));
-		CS->SetAutoSize(true);
+		CS->SetPosition(FVector2D(0.f, 0.f));
+		CS->SetSize(FVector2D(560.f, 440.f));
+		CS->SetAutoSize(false);
 		CS->SetZOrder(30);
 	}
 

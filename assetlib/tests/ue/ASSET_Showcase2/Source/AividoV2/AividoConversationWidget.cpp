@@ -77,9 +77,14 @@ TSharedRef<SWidget> UAividoConversationWidget::RebuildWidget()
 
 	if (UCanvasPanelSlot* CS = Canvas->AddChildToCanvas(PanelBorder))
 	{
+		// Center in the root canvas using explicit offsets.  Offsets are
+		// logical Slate units, so DPI scaling changes the rendered size but
+		// cannot move the panel toward the lower-right in packaged builds.
 		CS->SetAnchors(FAnchors(0.5f, 0.5f, 0.5f, 0.5f));
 		CS->SetAlignment(FVector2D(0.5f, 0.5f));
-		CS->SetSize(FVector2D(720, 440));
+		CS->SetPosition(FVector2D(-360.f, -220.f));
+		CS->SetSize(FVector2D(720.f, 440.f));
+		CS->SetAutoSize(false);
 		CS->SetZOrder(20);
 	}
 

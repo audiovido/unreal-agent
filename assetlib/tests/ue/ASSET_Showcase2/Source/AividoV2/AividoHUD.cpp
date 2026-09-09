@@ -61,8 +61,14 @@ TSharedRef<SWidget> UAividoHUD::RebuildWidget()
 
 	if (UCanvasPanelSlot* BS = Canvas->AddChildToCanvas(BannerBorder))
 	{
-		BS->SetAutoSize(true);
-		BS->SetPosition(FVector2D(16, 16));
+		// Top-left in viewport space.  Explicit logical extents keep the HUD
+		// inside the safe area at packaged resolutions/DPI scales.
+		BS->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
+		BS->SetAlignment(FVector2D::ZeroVector);
+		BS->SetPosition(FVector2D(16.f, 16.f));
+		BS->SetSize(FVector2D(430.f, 180.f));
+		BS->SetAutoSize(false);
+		BS->SetZOrder(10);
 	}
 
 	// --- Interaction prompt (bottom-center) ---
@@ -73,10 +79,12 @@ TSharedRef<SWidget> UAividoHUD::RebuildWidget()
 
 	if (UCanvasPanelSlot* PS = Canvas->AddChildToCanvas(PromptText))
 	{
-		PS->SetAutoSize(true);
 		PS->SetAnchors(FAnchors(0.5f, 1.f, 0.5f, 1.f));
 		PS->SetAlignment(FVector2D(0.5f, 1.f));
-		PS->SetPosition(FVector2D(0, -48));
+		PS->SetPosition(FVector2D(0.f, -48.f));
+		PS->SetSize(FVector2D(600.f, 48.f));
+		PS->SetAutoSize(false);
+		PS->SetZOrder(11);
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("AIVIDO_HUD: tree built, taking root"));
