@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>YODAW Code Core</title>
+  <style>
+    :root{color-scheme:dark;font:14px system-ui,sans-serif}body{margin:0;background:#10141b;color:#e7edf5}header{padding:18px 24px;border-bottom:1px solid #2b3442;display:flex;justify-content:space-between}main{display:grid;grid-template-columns:220px minmax(360px,1fr) 300px;gap:16px;padding:16px;min-height:calc(100vh - 75px);box-sizing:border-box}.panel{background:#171d27;border:1px solid #2b3442;border-radius:8px;padding:14px}.panel h2{font-size:14px;margin:0 0 12px;color:#95b8df}textarea,input,select,button{font:inherit;border-radius:5px;border:1px solid #344255;background:#0f141c;color:#e7edf5;padding:9px;box-sizing:border-box}textarea{width:100%;min-height:145px;resize:vertical}input,select{width:100%;margin:5px 0 9px}button{cursor:pointer;background:#2168a5;border-color:#3287ce}button.secondary{background:#283341}button:disabled{opacity:.5}.row{display:flex;gap:8px}.row>*{flex:1}.muted{color:#91a0b2}.status{margin:12px 0;padding:10px;background:#0e131a;border-radius:5px;white-space:pre-wrap}.worker{padding:8px 0;border-bottom:1px solid #2b3442}.worker b{display:block}.log{max-height:320px;overflow:auto;white-space:pre-wrap;background:#0d1117;padding:10px;border-radius:5px;font:12px ui-monospace,monospace}@media(max-width:900px){main{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header><strong>YODAW CODE CORE</strong><span id="health" class="muted">checking health…</span></header>
+<main>
+  <section class="panel"><h2>MISSION</h2>
+    <label>Repository<input id="repo" placeholder="/path/to/git/repo"></label>
+    <label>Target<select id="target"></select></label>
+    <label>Max workers<input id="workers" type="number" min="1" max="16" value="4"></label>
+    <label>Prompt<textarea id="prompt" placeholder="Create a small feature touching multiple files, introduce a test failure, correct it automatically, run tests, commit and push."></textarea></label>
+    <div class="row"><button id="run">Run mission</button><button id="cancel" class="secondary" disabled>Stop</button></div>
+    <div id="status" class="status muted">No mission started.</div>
+  </section>
+  <section class="panel"><h2>AGENT EVIDENCE</h2><div id="log" class="log">Evidence appears here after a mission starts.</div></section>
+  <section class="panel"><h2>WORKERS</h2><div id="worker-list" class="muted">No active workers.</div><h2 style="margin-top:20px">CHANGES</h2><div id="changes" class="muted">None.</div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);let missionId=null,timer=null;
+async function api(path,opt={}){const r=await fetch(path,{headers:{'Content-Type':'application/json'},...opt});const j=await r.json();if(!r.ok)throw Error(j.detail||JSON.stringify(j));return j}
+async function boot(){try{$('health').textContent=JSON.stringify(await api('/health'));const t=await api('/api/code/targets');$('target').innerHTML=t.targets.map(x=>`<option value="${x.name}">${x.name} (${x.type})</option>`).join('')}catch(e){$('health').textContent='offline: '+e.message}}
+function render(m){$('status').textContent=`${m.state} · ${m.stage}\nmission ${m.mission_id}\ncommit ${m.commit_sha||'—'} · push ${m.push_status}`;$('worker-list').innerHTML=(m.workers||[]).map(w=>`<div class="worker"><b>${w.worker_id} · ${w.state}</b><span class="muted">${(w.changed_files||[]).join(', ')||w.error||''}</span></div>`).join('')||'Planning…';$('changes').textContent=(m.changed_files||[]).join('\n')||'None.'}
+async function poll(){if(!missionId)return;try{const m=await api('/api/code/missions/'+missionId);render(m);const e=await api('/api/code/missions/'+missionId+'/evidence');$('log').textContent=JSON.stringify(e,null,2);if(['PASS','FAILED','BLOCKED','CANCELLED'].includes(m.state)){clearInterval(timer);$('cancel').disabled=true}}catch(e){$('log').textContent=e.message}}
+$('run').onclick=async()=>{try{const j=await api('/api/code/missions',{method:'POST',body:JSON.stringify({prompt:$('prompt').value,repo:$('repo').value,target:$('target').value,max_workers:+$('workers').value,auto_commit:true,auto_push:false})});missionId=j.mission_id;$('cancel').disabled=false;poll();timer=setInterval(poll,700)}catch(e){$('status').textContent=e.message}};
+$('cancel').onclick=async()=>{if(missionId)await api('/api/code/missions/'+missionId+'/cancel',{method:'POST'});poll()};boot();
+</script>
+</body></html>
