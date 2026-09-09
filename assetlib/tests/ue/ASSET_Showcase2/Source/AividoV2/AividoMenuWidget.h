@@ -25,7 +25,7 @@ class AIVIDOV2_API UAividoMenuWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	virtual void NativeConstruct() override;
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void NativeDestruct() override;
 
 	void NotifyOpened();
@@ -39,6 +39,11 @@ protected:
 
 	UFUNCTION()
 	void OnQuitClicked();
+
+	void OnStatesChanged(const TArray<FString>& StateLines);
+
+private:
+	UButton* MakeMenuButton(const FString& Label);
 
 	TObjectPtr<UBorder> PanelBorder;
 	TObjectPtr<UButton> ResumeButton;

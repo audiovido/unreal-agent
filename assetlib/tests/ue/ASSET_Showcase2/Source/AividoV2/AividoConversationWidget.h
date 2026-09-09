@@ -25,7 +25,7 @@ class AIVIDOV2_API UAividoConversationWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	virtual void NativeConstruct() override;
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void NativeDestruct() override;
 
 	/** Called by the GameMode right after the panel is added to the viewport. */

@@ -11,6 +11,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "EnhancedActionKeyMapping.h"
+#include "InputAction.h"
+#include "InputModifiers.h"
 #include "InputActionValue.h"
 #include "Engine/SkeletalMesh.h"
 #include "Engine/OverlapResult.h"
@@ -41,13 +44,23 @@ AAividoCharacter::AAividoCharacter()
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 320.f;
-	CameraBoom->SocketOffset = FVector(0.f, 55.f, 70.f);
+	// Composition: over-the-right-shoulder third person. The pawn occupies
+	// the left-center of frame at a comfortable distance instead of filling
+	// the camera.
+	CameraBoom->TargetArmLength = 420.f;
+	CameraBoom->SocketOffset = FVector(70.f, 60.f, 85.f);
 	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->CameraLagSpeed = 12.f;
+	CameraBoom->CameraLagMaxDistance = 160.f;
+	CameraBoom->ProbeChannel = ECC_Camera;
+	CameraBoom->bDoCollisionTest = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+	// Cinematic focal length (natural perspective, no wide-angle distortion).
+	FollowCamera->SetFieldOfView(65.f);
 
 	// Real third-person locomotion: attach the project's mannequin +
 	// ThirdPerson AnimBP when present so walking is a real walk cycle
@@ -104,6 +117,11 @@ void AAividoCharacter::BeginPlay()
 						SMC->SetStaticMesh(Cube);
 						SMC->SetCollisionProfileName(TEXT("BlockAll"));
 						SMC->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+						// Visual: the support box must be invisible (collision stays) —
+						// otherwise the pawn visibly walks on a raw gray cube floating
+						// above the room's real floor.
+						SMC->SetHiddenInGame(true);
+						SMC->SetCastShadow(false);
 					}
 					Floor->SetActorScale3D(FVector(80.f, 80.f, 0.8f));
 					Floor->SetActorLocation(FVector(0.f, 3200.f, 160.f));
@@ -354,6 +372,24 @@ void AAividoCharacter::ProofStep(int32 Step)
 	}
 }
 
+void AAividoCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	// Presentation only: first frame must frame the room interior (director
+	// sits at ~Y=700), not the void wall behind the spawn point.
+	if (APlayerController* PC = Cast<APlayerController>(NewController))
+	{
+		FVector ToRoom = FVector(0.f, 700.f, 0.f) - GetActorLocation();
+		ToRoom.Z = 0.f;
+		if (ToRoom.SizeSquared() > 1.f)
+		{
+			PC->SetControlRotation(ToRoom.Rotation());
+			UE_LOG(LogTemp, Log, TEXT("AIVIDO_FACE: yaw=%.0f pitch=%.0f"),
+				ToRoom.Rotation().Yaw, ToRoom.Rotation().Pitch);
+		}
+	}
+}
+
 void AAividoCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
@@ -371,25 +407,91 @@ void AAividoCharacter::NotifyControllerChanged()
 	}
 }
 
+// REAL INPUT FIX: the project ships no Enhanced Input assets (no IMC / no
+// UInputAction uassets), but the Enhanced Input plugin is enabled — so
+// PlayerInputComponent IS an UEnhancedInputComponent and Enhanced Input
+// IGNORES the legacy DefaultInput.ini mappings entirely. Result: real
+// WASD/mouse/ESC/E never reached the character in any build; every earlier
+// "pass" was handler-driven. Fix: author the real Enhanced Input mapping
+// programmatically at possession (no editor, no uassets needed).
+void AAividoCharacter::EnsureEnhancedInput()
+{
+	if (MoveAction) return; // built once
+
+	MoveAction = NewObject<UInputAction>(this, TEXT("IA_Aivido_Move"));
+	MoveAction->ValueType = EInputActionValueType::Axis2D;
+	LookAction = NewObject<UInputAction>(this, TEXT("IA_Aivido_Look"));
+	LookAction->ValueType = EInputActionValueType::Axis2D;
+	JumpAction = NewObject<UInputAction>(this, TEXT("IA_Aivido_Jump"));
+	RunAction = NewObject<UInputAction>(this, TEXT("IA_Aivido_Run"));
+	InteractAction = NewObject<UInputAction>(this, TEXT("IA_Aivido_Interact"));
+	MenuAction = NewObject<UInputAction>(this, TEXT("IA_Aivido_Menu"));
+
+	DefaultMappingContext = NewObject<UInputMappingContext>(this, TEXT("IMC_Aivido"));
+
+	auto Map = [this](UInputAction* Action, const FKey& Key, const TArray<UInputModifier*>& Mods)
+	{
+		if (FEnhancedActionKeyMapping* M = &DefaultMappingContext->MapKey(Action, Key))
+		{
+			M->Modifiers = Mods;
+		}
+	};
+
+	// WASD -> 2D move (W/S swizzled into Y, A/D on X; S/A negated)
+	UInputModifierSwizzleAxis* SwizW = NewObject<UInputModifierSwizzleAxis>(DefaultMappingContext);
+	SwizW->Order = EInputAxisSwizzle::YXZ;
+	UInputModifierSwizzleAxis* SwizS = NewObject<UInputModifierSwizzleAxis>(DefaultMappingContext);
+	SwizS->Order = EInputAxisSwizzle::YXZ;
+	UInputModifierNegate* NegS = NewObject<UInputModifierNegate>(DefaultMappingContext);
+	UInputModifierNegate* NegA = NewObject<UInputModifierNegate>(DefaultMappingContext);
+	Map(MoveAction, EKeys::W, { SwizW });
+	Map(MoveAction, EKeys::S, { SwizS, NegS });
+	Map(MoveAction, EKeys::D, {});
+	Map(MoveAction, EKeys::A, { NegA });
+
+	// Mouse look: X yaw; Y pitch (swizzled + negated for natural invert)
+	UInputModifierSwizzleAxis* SwizLook = NewObject<UInputModifierSwizzleAxis>(DefaultMappingContext);
+	SwizLook->Order = EInputAxisSwizzle::YXZ;
+	UInputModifierNegate* NegLook = NewObject<UInputModifierNegate>(DefaultMappingContext);
+	Map(LookAction, EKeys::Mouse2D, {});
+	Map(LookAction, EKeys::MouseX, {});
+	Map(LookAction, EKeys::MouseY, { SwizLook, NegLook });
+
+	Map(JumpAction, EKeys::SpaceBar, {});
+	Map(RunAction, EKeys::LeftShift, {});
+	Map(InteractAction, EKeys::E, {});
+	Map(MenuAction, EKeys::Escape, {});
+}
+
 void AAividoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		EIC->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnsureEnhancedInput();
 		EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAividoCharacter::Move);
 		EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAividoCharacter::Look);
+		EIC->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EIC->BindAction(RunAction, ETriggerEvent::Started, this, &AAividoCharacter::StartRun);
 		EIC->BindAction(RunAction, ETriggerEvent::Completed, this, &AAividoCharacter::StopRun);
 		EIC->BindAction(InteractAction, ETriggerEvent::Started, this, &AAividoCharacter::Interact);
 		EIC->BindAction(MenuAction, ETriggerEvent::Started, this, &AAividoCharacter::ToggleMenu);
+
+		// Register the programmatic IMC with the local player's input stack.
+		if (const APlayerController* PC = Cast<APlayerController>(Controller))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+				ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+			{
+				Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			}
+		}
 	}
 	else
 	{
-		// Legacy input fallback (project ini defines axis + action mappings):
-		// guarantees WASD + mouse look even with no Enhanced Input assets.
+		// Non-Enhanced builds: the project ini fully defines these mappings.
 		PlayerInputComponent->BindAxis("MoveForward", this, &AAividoCharacter::MoveForward);
 		PlayerInputComponent->BindAxis("MoveRight", this, &AAividoCharacter::MoveRight);
 		PlayerInputComponent->BindAxis("Turn", this, &AAividoCharacter::LookYaw);

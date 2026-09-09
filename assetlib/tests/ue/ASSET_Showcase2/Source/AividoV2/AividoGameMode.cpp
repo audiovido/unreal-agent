@@ -18,6 +18,14 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Engine/PostProcessVolume.h"
+#include "Engine/Scene.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/SkyLight.h"
+#include "Engine/PointLight.h"
+#include "Components/LightComponent.h"
+#include "Components/SkyLightComponent.h"
+#include "Components/PointLightComponent.h"
 
 AAividoGameMode::AAividoGameMode()
 {
@@ -87,6 +95,121 @@ void AAividoGameMode::BeginPlay()
 			Hud->BindGameMode(this);
 		}
 	}
+
+	// 4) Presentation pass: the shipped AividoHQ map has no post-process and
+	//    no light rig of its own, so the packaged game rendered raw engine
+	//    defaults — auto-exposure blew the room out to white and everything
+	//    read as a flat test level. This rig gives the intended interior HQ
+	//    presentation deterministically, in editor and packaged builds.
+	if (HasAuthority())
+	{
+		FActorSpawnParameters SP;
+		SP.ObjectFlags |= RF_Transient;
+		SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		// Exposure lock: MANUAL exposure (fixed EV) so the room can no longer
+		// blow out to white. Manual also skips the eye-adaptation histogram
+		// downsample chain entirely — that chain GPU-hung on this machine's
+		// D3D12 driver (38s stall -> engine force-exit).
+		if (APostProcessVolume* PPV = World->SpawnActor<APostProcessVolume>(
+			APostProcessVolume::StaticClass(), FVector(0.f, 3200.f, 200.f), FRotator::ZeroRotator, SP))
+		{
+			PPV->bUnbound = true;
+			FPostProcessSettings& S = PPV->Settings;
+			S.bOverride_AutoExposureMethod = true;
+			S.AutoExposureMethod = EAutoExposureMethod::AEM_Manual;
+			S.bOverride_AutoExposureBias = true;
+			S.AutoExposureBias = 4.0f;
+			S.bOverride_MotionBlurAmount = true;
+			S.MotionBlurAmount = 0.f;
+			S.bOverride_VignetteIntensity = true;
+			S.VignetteIntensity = 0.35f;
+		}
+
+		// Key light: a sun-angle directional through the room, warm neutral.
+		if (ADirectionalLight* Sun = World->SpawnActor<ADirectionalLight>(
+			ADirectionalLight::StaticClass(), FVector(0.f, 3200.f, 600.f), FRotator(-42.f, 35.f, 0.f), SP))
+		{
+			if (ULightComponent* LC = Sun->GetLightComponent())
+			{
+				LC->SetMobility(EComponentMobility::Movable);
+				LC->SetIntensity(16.0f);
+				LC->SetLightColor(FLinearColor(1.0f, 0.96f, 0.90f));
+				LC->SetCastShadows(true);
+			}
+		}
+
+		// Fill: soft ambient so shadows are not crushed black. Recaptured at the
+		// end of this rig — capturing before the practical lights exist would
+		// bake a black hemisphere and leave the room permanently dark.
+		ASkyLight* SkyActor = nullptr;
+		if (ASkyLight* Sky = World->SpawnActor<ASkyLight>(
+			ASkyLight::StaticClass(), FVector(0.f, 3200.f, 500.f), FRotator::ZeroRotator, SP))
+		{
+			if (USkyLightComponent* SC = Sky->GetLightComponent())
+			{
+				SC->SetMobility(EComponentMobility::Movable);
+				SC->SetIntensity(8.0f);
+				SC->SetLightColor(FLinearColor(0.75f, 0.82f, 1.0f));
+				SC->SetCastShadows(false);
+			SkyActor = Sky;
+			}
+		}
+
+		// Practical interior lights over the four stations (cool console,
+		// warm desk, cyan and violet accents from the room's material palette).
+		const struct FStationLight { FVector Pos; FLinearColor C; } Stations[] =
+		{
+			{ FVector(   0.f,  700.f, 420.f), FLinearColor(0.55f, 0.75f, 1.0f) },
+			{ FVector(1400.f, 3200.f, 420.f), FLinearColor(1.0f, 0.75f, 0.40f) },
+			{ FVector(-1400.f, 3200.f, 420.f), FLinearColor(0.45f, 0.85f, 1.0f) },
+			{ FVector(   0.f, 4900.f, 420.f), FLinearColor(0.90f, 0.80f, 1.0f) },
+		};
+		for (const FStationLight& Station : Stations)
+		{
+			if (APointLight* PL = World->SpawnActor<APointLight>(
+				APointLight::StaticClass(), Station.Pos, FRotator::ZeroRotator, SP))
+			{
+				if (UPointLightComponent* PLC = Cast<UPointLightComponent>(PL->GetLightComponent()))
+				{
+					PLC->SetMobility(EComponentMobility::Movable);
+					PLC->SetIntensity(12000.f);
+					PLC->SetLightColor(Station.C);
+					PLC->SetAttenuationRadius(2800.f);
+					PLC->SetCastShadows(true);
+				}
+			}
+		}
+
+		// Recapture the sky/ambient AFTER the practical lights exist so the
+		// fill hemisphere holds real room light instead of a baked black void.
+		if (SkyActor)
+		{
+			SkyActor->GetLightComponent()->RecaptureSky();
+		}
+
+		// Presentation: face the player into the room interior (director at
+		// ~Y=700) so the first frame frames the room, not the void. Deferred —
+		// GameMode BeginPlay runs before the pawn possesses.
+		TWeakObjectPtr<UWorld> WorldWeak(World);
+		FTimerHandle FaceTimer;
+		World->GetTimerManager().SetTimer(FaceTimer, FTimerDelegate::CreateLambda([WorldWeak]()
+		{
+			if (!WorldWeak.IsValid()) return;
+			if (APlayerController* PC = WorldWeak->GetFirstPlayerController())
+			{
+				if (APawn* P = PC->GetPawn())
+				{
+					FVector ToRoom = FVector(0.f, 700.f, 0.f) - P->GetActorLocation();
+					ToRoom.Z = 0.f;
+					if (ToRoom.SizeSquared() > 1.f)
+					{
+						PC->SetControlRotation(ToRoom.Rotation());
+					}
+				}
+			}
+		}), 1.0f, false);
+	}
 }
 
 void AAividoGameMode::HandleInteract(AActor* InstigatorActor, AActor* Target)
@@ -147,6 +270,7 @@ void AAividoGameMode::CloseConversation()
 
 void AAividoGameMode::ToggleMenu()
 {
+	UE_LOG(LogTemp, Log, TEXT("AIVIDO_MENU: toggle requested, conv_open=%d"), bConversationOpen ? 1 : 0);
 	UWorld* World = GetWorld();
 	APlayerController* PC = World ? World->GetFirstPlayerController() : nullptr;
 	if (!PC) return;
@@ -170,6 +294,11 @@ void AAividoGameMode::ToggleMenu()
 		{
 			MenuWidget->AddToViewport(30);
 		}
+		UE_LOG(LogTemp, Log, TEXT("AIVIDO_MENU: vp=%d vis=%d geo=%s screen=%s"),
+			MenuWidget->IsInViewport() ? 1 : 0,
+			MenuWidget->GetIsVisible() ? 1 : 0,
+			*MenuWidget->GetPaintSpaceGeometry().GetLocalSize().ToString(),
+			*FVector2D(GEngine->GameViewport->Viewport->GetSizeXY()).ToString());
 		if (UAividoMenuWidget* Menu = Cast<UAividoMenuWidget>(MenuWidget))
 		{
 			Menu->NotifyOpened();

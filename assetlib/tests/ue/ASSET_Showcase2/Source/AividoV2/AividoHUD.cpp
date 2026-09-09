@@ -1,7 +1,11 @@
 // Aivido V2 — native UMG HUD implementation (widget tree built in C++).
+// Tree built in RebuildWidget() with WidgetTree->ConstructWidget<>() children
+// so the banner/prompt take their Slate widgets and actually render.
 
 #include "AividoHUD.h"
 #include "Blueprint/WidgetTree.h"
+#include "Misc/Parse.h"
+#include "Misc/CommandLine.h"
 #include "AividoGameMode.h"
 #include "AividoCharacter.h"
 #include "AividoWorkerDirector.h"
@@ -18,34 +22,38 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
-void UAividoHUD::NativeConstruct()
+TSharedRef<SWidget> UAividoHUD::RebuildWidget()
 {
-	Super::NativeConstruct();
-
-	UCanvasPanel* Canvas = NewObject<UCanvasPanel>(this);
+	UE_LOG(LogTemp, Log, TEXT("AIVIDO_HUD: rebuild start"));
+	// BISECT A: `-AividoNoHUD` boots with the default empty root to isolate
+	// whether the first-draw hang is inside the HUD tree contents.
+	if (!FParse::Param(FCommandLine::Get(), TEXT("AividoNoHUD")))
+	{
+	// Build the tree first; Super::RebuildWidget() takes the root ONCE.
+	UCanvasPanel* Canvas = WidgetTree->ConstructWidget<UCanvasPanel>();
 	WidgetTree->RootWidget = Canvas;
 
 	// --- Banner (top-left) ---
-	UBorder* BannerBorder = NewObject<UBorder>(this);
+	UBorder* BannerBorder = WidgetTree->ConstructWidget<UBorder>();
 	BannerBorder->SetPadding(FMargin(14.f, 10.f));
 	BannerBorder->SetBrushColor(FLinearColor(0.02f, 0.03f, 0.05f, 0.55f));
 
-	TitleText = NewObject<UTextBlock>(this);
+	TitleText = WidgetTree->ConstructWidget<UTextBlock>();
 	TitleText->SetText(FText::FromString(TEXT("AIVIDO HQ — V2")));
 	TitleText->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(140, 200, 255))));
 	TitleText->SetFont(FCoreStyle::GetDefaultFontStyle("Bold", 20));
 
-	LinkText = NewObject<UTextBlock>(this);
+	LinkText = WidgetTree->ConstructWidget<UTextBlock>();
 	LinkText->SetText(FText::FromString(TEXT("director link: ready")));
 	LinkText->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(190, 190, 190))));
 	LinkText->SetFont(FCoreStyle::GetDefaultFontStyle("Regular", 11));
 
-	WorkersText = NewObject<UTextBlock>(this);
+	WorkersText = WidgetTree->ConstructWidget<UTextBlock>();
 	WorkersText->SetText(FText::GetEmpty());
 	WorkersText->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(200, 200, 210))));
 	WorkersText->SetFont(FCoreStyle::GetDefaultFontStyle("Regular", 11));
 
-	UVerticalBox* Left = NewObject<UVerticalBox>(this);
+	UVerticalBox* Left = WidgetTree->ConstructWidget<UVerticalBox>();
 	Left->AddChildToVerticalBox(TitleText)->SetPadding(FMargin(0, 0, 0, 2));
 	Left->AddChildToVerticalBox(LinkText)->SetPadding(FMargin(0, 0, 0, 6));
 	Left->AddChildToVerticalBox(WorkersText);
@@ -58,7 +66,7 @@ void UAividoHUD::NativeConstruct()
 	}
 
 	// --- Interaction prompt (bottom-center) ---
-	PromptText = NewObject<UTextBlock>(this);
+	PromptText = WidgetTree->ConstructWidget<UTextBlock>();
 	PromptText->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(255, 220, 140))));
 	PromptText->SetFont(FCoreStyle::GetDefaultFontStyle("Bold", 16));
 	PromptText->SetVisibility(ESlateVisibility::Collapsed);
@@ -70,6 +78,10 @@ void UAividoHUD::NativeConstruct()
 		PS->SetAlignment(FVector2D(0.5f, 1.f));
 		PS->SetPosition(FVector2D(0, -48));
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("AIVIDO_HUD: tree built, taking root"));
+	}
+	return Super::RebuildWidget();
 }
 
 void UAividoHUD::NativeDestruct()

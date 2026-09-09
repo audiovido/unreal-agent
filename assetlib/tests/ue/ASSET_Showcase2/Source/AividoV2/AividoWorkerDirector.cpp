@@ -79,9 +79,12 @@ FString AAividoWorkerDirector::NormalizeLabel(const FString& Raw)
 
 void AAividoWorkerDirector::RequestStates()
 {
+	// REAL backend feed: /api/multiclient/status returns the live session
+	// roster (project_name, status, task_count, active task). The previous
+	// URL /api/aivido/agents does not exist on the backend and 404'd forever.
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Req = FHttpModule::Get().CreateRequest();
 	Req->SetVerb(TEXT("GET"));
-	Req->SetURL(TEXT("http://127.0.0.1:8765/api/aivido/agents"));
+	Req->SetURL(TEXT("http://127.0.0.1:8765/api/multiclient/status"));
 	Req->SetTimeout(8.f);
 	Req->OnProcessRequestComplete().BindWeakLambda(this, [this](FHttpRequestPtr, FHttpResponsePtr Response, bool bConnected)
 	{
@@ -94,25 +97,35 @@ void AAividoWorkerDirector::RequestStates()
 		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 		if (!FJsonSerializer::Deserialize(Reader, Json) || !Json.IsValid()) return;
 
-		const TArray<TSharedPtr<FJsonValue>>* Agents;
-		if (!Json->TryGetArrayField(TEXT("agents"), Agents)) return;
+		const TArray<TSharedPtr<FJsonValue>>* Sessions;
+		if (!Json->TryGetArrayField(TEXT("sessions"), Sessions)) return;
 
 		TMap<FString, FString> States;
-		for (const TSharedPtr<FJsonValue>& V : *Agents)
+		int32 Idx = 1;
+		for (const TSharedPtr<FJsonValue>& V : *Sessions)
 		{
 			const TSharedPtr<FJsonObject> O = V->AsObject();
 			if (!O.IsValid()) continue;
-			const FString Id = O->GetStringField(TEXT("agent_id"));
-			const FString St = O->GetStringField(TEXT("state"));
-			States.Add(FString::Printf(TEXT("AVIDO_Human_%s"), *Id), St);
-			// The backend ids look like "aivido.master_director" — also accept the
-			// role tail so label variants keep matching.
-			if (Id.Contains(TEXT(".")))
-			{
-				States.Add(FString::Printf(TEXT("AVIDO_Human_%s"), *Id.Right(Id.Len() - Id.Find(TEXT(".")) - 1)), St);
-			}
+			const FString Name = O->HasField(TEXT("project_name"))
+				? O->GetStringField(TEXT("project_name"))
+				: O->GetStringField(TEXT("session_id"));
+			const FString St = O->GetStringField(TEXT("status"));
+			const int32 Tasks = O->HasField(TEXT("task_count")) ? static_cast<int32>(O->GetNumberField(TEXT("task_count"))) : 0;
+			States.Add(FString::Printf(TEXT("worker_%d"), Idx),
+				FString::Printf(TEXT("%s — %s (%d tasks)"), *Name, *St.ToLower(), Tasks));
+			++Idx;
 		}
-		ApplyStates(States);
+		if (States.Num() == 0)
+		{
+			States.Add(TEXT("backend"), TEXT("no active sessions"));
+		}
+		// Roster-backed display lines; workers themselves stay truthfully idle
+		// (the level's SkeletalMeshActors are static props, not simulated agents).
+		StateLines.Reset();
+		for (const TPair<FString, FString>& KV : States)
+		{
+			StateLines.Add(KV.Value);
+		}
 	});
 	Req->ProcessRequest();
 }

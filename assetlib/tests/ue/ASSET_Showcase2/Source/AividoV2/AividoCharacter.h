@@ -52,13 +52,15 @@ public:
 
 	/** Actor the player should interact with via E (director support lives in GameMode/HUD). */
 	UPROPERTY(BlueprintReadOnly, Category = "Aivido|Interaction")
-	TWeakObjectPtr<AActor> CurrentInteractTarget;
+	TWeakObjectPtr<AActor> CurrentInteractTarget;protected:
+    virtual void BeginPlay() override;
+    virtual void Tick(float DeltaSeconds) override;
+    virtual void NotifyControllerChanged() override;
+    virtual void PossessedBy(AController* NewController) override;
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-protected:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
-	virtual void NotifyControllerChanged() override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+    /** Authors the real Enhanced Input actions + mapping context (no uassets exist). */
+    void EnsureEnhancedInput();
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);

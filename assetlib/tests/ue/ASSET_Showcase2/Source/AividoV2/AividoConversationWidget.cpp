@@ -1,4 +1,6 @@
 // Aivido V2 — conversation panel implementation.
+// Tree built in RebuildWidget() with WidgetTree->ConstructWidget<>() children
+// so every child takes its Slate widget and the panel actually renders.
 
 #include "AividoConversationWidget.h"
 #include "Blueprint/WidgetTree.h"
@@ -17,58 +19,57 @@
 #include "Styling/SlateBrush.h"
 #include "Styling/StyleColors.h"
 #include "Components/VerticalBoxSlot.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 
-void UAividoConversationWidget::NativeConstruct()
+TSharedRef<SWidget> UAividoConversationWidget::RebuildWidget()
 {
-	Super::NativeConstruct();
-
-	UCanvasPanel* Canvas = NewObject<UCanvasPanel>(this);
+	// Build the tree first; Super::RebuildWidget() takes the root ONCE.
+	UCanvasPanel* Canvas = WidgetTree->ConstructWidget<UCanvasPanel>();
 	WidgetTree->RootWidget = Canvas;
 
-	PanelBorder = NewObject<UBorder>(this);
+	PanelBorder = WidgetTree->ConstructWidget<UBorder>();
 	PanelBorder->SetPadding(FMargin(16.f));
 	PanelBorder->SetBrushColor(FLinearColor(0.02f, 0.03f, 0.06f, 0.88f));
 
 	// Title
-	TitleText = NewObject<UTextBlock>(this);
+	TitleText = WidgetTree->ConstructWidget<UTextBlock>();
 	TitleText->SetText(FText::FromString(TEXT("Master Director — Aivido HQ")));
 	TitleText->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(140, 200, 255))));
 	TitleText->SetFont(FCoreStyle::GetDefaultFontStyle("Bold", 18));
 
 	// Transcript
-	Transcript = NewObject<UScrollBox>(this);
-	// Transcript scroll box keeps engine default styling (renders fine).
+	Transcript = WidgetTree->ConstructWidget<UScrollBox>();
 
 	// Input row
-	InputBox = NewObject<UEditableTextBox>(this);
+	InputBox = WidgetTree->ConstructWidget<UEditableTextBox>();
 	InputBox->SetHintText(FText::FromString(TEXT("Ask the Master Director… (Enter to send)")));
 	InputBox->SetForegroundColor(FLinearColor::White);
 	InputBox->OnTextCommitted.AddUniqueDynamic(this, &UAividoConversationWidget::OnCommitted);
 
-	SendButton = NewObject<UButton>(this);
-	UTextBlock* SendLabel = NewObject<UTextBlock>(this);
+	SendButton = WidgetTree->ConstructWidget<UButton>();
+	UTextBlock* SendLabel = WidgetTree->ConstructWidget<UTextBlock>();
 	SendLabel->SetText(FText::FromString(TEXT("Send")));
 	SendLabel->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(230, 230, 230))));
 	SendLabel->SetFont(FCoreStyle::GetDefaultFontStyle("Regular", 12));
 	SendButton->AddChild(SendLabel);
 	SendButton->OnClicked.AddDynamic(this, &UAividoConversationWidget::OnSendClicked);
 
-	CloseButton = NewObject<UButton>(this);
-	UTextBlock* CloseLabel = NewObject<UTextBlock>(this);
+	CloseButton = WidgetTree->ConstructWidget<UButton>();
+	UTextBlock* CloseLabel = WidgetTree->ConstructWidget<UTextBlock>();
 	CloseLabel->SetText(FText::FromString(TEXT("Close (Esc)")));
 	CloseLabel->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(230, 230, 230))));
 	CloseLabel->SetFont(FCoreStyle::GetDefaultFontStyle("Regular", 12));
 	CloseButton->AddChild(CloseLabel);
 	CloseButton->OnClicked.AddDynamic(this, &UAividoConversationWidget::OnCloseClicked);
 
-	UHorizontalBox* Row = NewObject<UHorizontalBox>(this);
+	UHorizontalBox* Row = WidgetTree->ConstructWidget<UHorizontalBox>();
 	Row->AddChildToHorizontalBox(InputBox);
 	Row->AddChildToHorizontalBox(SendButton);
 	Row->AddChildToHorizontalBox(CloseButton);
 
-	UVerticalBox* Body = NewObject<UVerticalBox>(this);
+	UVerticalBox* Body = WidgetTree->ConstructWidget<UVerticalBox>();
 	Body->AddChildToVerticalBox(TitleText)->SetPadding(FMargin(0, 0, 0, 8));
 	Body->AddChildToVerticalBox(Transcript)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
 	Body->AddChildToVerticalBox(Row)->SetPadding(FMargin(0, 8, 0, 0));
@@ -81,6 +82,8 @@ void UAividoConversationWidget::NativeConstruct()
 		CS->SetSize(FVector2D(720, 440));
 		CS->SetZOrder(20);
 	}
+
+	return Super::RebuildWidget();
 }
 
 void UAividoConversationWidget::NativeDestruct()
@@ -114,7 +117,7 @@ void UAividoConversationWidget::AppendLine(const FString& Speaker, const FString
 {
 	if (!Transcript) return;
 
-	UTextBlock* Line = NewObject<UTextBlock>(this);
+	UTextBlock* Line = WidgetTree->ConstructWidget<UTextBlock>();
 	Line->SetText(FText::FromString(FString::Printf(TEXT("%s: %s"), *Speaker, *Text)));
 	Line->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(
 		Speaker == TEXT("You") ? 210 : 255,

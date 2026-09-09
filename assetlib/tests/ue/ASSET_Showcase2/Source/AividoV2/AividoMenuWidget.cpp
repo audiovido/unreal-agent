@@ -1,4 +1,8 @@
 // Aivido V2 — ESC menu implementation.
+// Widget tree is built in RebuildWidget() with WidgetTree->ConstructWidget<>()
+// children: children created that way take their Slate widgets immediately, so
+// the panel actually paints. (A NativeConstruct-built tree via NewObject() on
+// `this` produces an empty viewport widget — vp=1/vis=1/geo=0.)
 
 #include "AividoMenuWidget.h"
 #include "Blueprint/WidgetTree.h"
@@ -15,10 +19,10 @@
 #include "Engine/World.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-static UButton* MakeMenuButton(UUserWidget* Owner, const FString& Label)
+UButton* UAividoMenuWidget::MakeMenuButton(const FString& Label)
 {
-	UButton* Btn = NewObject<UButton>(Owner);
-	UTextBlock* L = NewObject<UTextBlock>(Owner);
+	UButton* Btn = WidgetTree->ConstructWidget<UButton>();
+	UTextBlock* L = WidgetTree->ConstructWidget<UTextBlock>();
 	L->SetText(FText::FromString(Label));
 	L->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(230, 230, 230))));
 	L->SetFont(FCoreStyle::GetDefaultFontStyle("Regular", 14));
@@ -26,27 +30,28 @@ static UButton* MakeMenuButton(UUserWidget* Owner, const FString& Label)
 	return Btn;
 }
 
-void UAividoMenuWidget::NativeConstruct()
+TSharedRef<SWidget> UAividoMenuWidget::RebuildWidget()
 {
-	Super::NativeConstruct();
-
-	UCanvasPanel* Canvas = NewObject<UCanvasPanel>(this);
+	// Build the tree first; Super::RebuildWidget() takes the root ONCE at the
+	// end. (Taking the root twice — Super first + own TakeWidget — creates two
+	// SWidgets around one UWidget and spins Slate forever.)
+	UCanvasPanel* Canvas = WidgetTree->ConstructWidget<UCanvasPanel>();
 	WidgetTree->RootWidget = Canvas;
 
-	PanelBorder = NewObject<UBorder>(this);
+	PanelBorder = WidgetTree->ConstructWidget<UBorder>();
 	PanelBorder->SetPadding(FMargin(28.f, 24.f));
 	PanelBorder->SetBrushColor(FLinearColor(0.02f, 0.03f, 0.06f, 0.9f));
 
-	UTextBlock* Title = NewObject<UTextBlock>(this);
+	UTextBlock* Title = WidgetTree->ConstructWidget<UTextBlock>();
 	Title->SetText(FText::FromString(TEXT("AIVIDO HQ — PAUSED")));
 	Title->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(140, 200, 255))));
 	Title->SetFont(FCoreStyle::GetDefaultFontStyle("Bold", 20));
 
-	ResumeButton = MakeMenuButton(this, TEXT("Resume"));
-	WorkerStatesButton = MakeMenuButton(this, TEXT("Refresh Worker States"));
-	QuitButton = MakeMenuButton(this, TEXT("Quit Session"));
+	ResumeButton = MakeMenuButton(TEXT("Resume"));
+	WorkerStatesButton = MakeMenuButton(TEXT("Refresh Worker States"));
+	QuitButton = MakeMenuButton(TEXT("Quit Session"));
 
-	StatusText = NewObject<UTextBlock>(this);
+	StatusText = WidgetTree->ConstructWidget<UTextBlock>();
 	StatusText->SetText(FText::GetEmpty());
 	StatusText->SetColorAndOpacity(FSlateColor(FLinearColor(FColor(190, 190, 190))));
 	StatusText->SetFont(FCoreStyle::GetDefaultFontStyle("Regular", 12));
@@ -55,7 +60,7 @@ void UAividoMenuWidget::NativeConstruct()
 	WorkerStatesButton->OnClicked.AddDynamic(this, &UAividoMenuWidget::OnWorkerStatesClicked);
 	QuitButton->OnClicked.AddDynamic(this, &UAividoMenuWidget::OnQuitClicked);
 
-	UVerticalBox* Body = NewObject<UVerticalBox>(this);
+	UVerticalBox* Body = WidgetTree->ConstructWidget<UVerticalBox>();
 	Body->AddChildToVerticalBox(Title)->SetPadding(FMargin(0, 0, 0, 14));
 	Body->AddChildToVerticalBox(ResumeButton)->SetPadding(FMargin(0, 3));
 	Body->AddChildToVerticalBox(WorkerStatesButton)->SetPadding(FMargin(0, 3));
@@ -70,13 +75,15 @@ void UAividoMenuWidget::NativeConstruct()
 		CS->SetAutoSize(true);
 		CS->SetZOrder(30);
 	}
+
+	return Super::RebuildWidget();
 }
 
 void UAividoMenuWidget::NativeDestruct()
 {
 	if (AAividoGameMode* GM = GameMode.Get())
 	{
-		// (No persistent delegates from the menu; nothing to clear today.)
+		GM->OnWorkerStatesChanged.RemoveAll(this);
 	}
 	Super::NativeDestruct();
 }
@@ -87,6 +94,42 @@ void UAividoMenuWidget::NotifyOpened()
 	if (World)
 	{
 		GameMode = World->GetAuthGameMode<AAividoGameMode>();
+		if (AAividoGameMode* GM = GameMode.Get())
+		{
+			// Live result text: the click visibly updates this menu's status line.
+			// RemoveAll first — the widget survives open/close cycles.
+			GM->OnWorkerStatesChanged.RemoveAll(this);
+			GM->OnWorkerStatesChanged.AddUObject(this, &UAividoMenuWidget::OnStatesChanged);
+		}
+	}
+}
+
+void UAividoMenuWidget::OnWorkerStatesClicked()
+{
+	if (StatusText)
+	{
+		StatusText->SetText(FText::FromString(TEXT("Refreshing worker states…")));
+	}
+	if (AAividoGameMode* GM = GameMode.Get())
+	{
+		GM->RequestWorkerStates();
+	}
+}
+
+void UAividoMenuWidget::OnQuitClicked()
+{
+	UKismetSystemLibrary::QuitGame(GetWorld(), GetWorld()->GetFirstPlayerController(),
+		EQuitPreference::Quit, false);
+}
+
+void UAividoMenuWidget::OnStatesChanged(const TArray<FString>& StateLines)
+{
+	if (StatusText)
+	{
+		StatusText->SetText(FText::FromString(
+			StateLines.Num()
+				? FString::Join(StateLines, TEXT("\n"))
+				: TEXT("No worker sessions reported.")));
 	}
 }
 
@@ -96,22 +139,4 @@ void UAividoMenuWidget::OnResumeClicked()
 	{
 		GM->ToggleMenu(); // closes
 	}
-}
-
-void UAividoMenuWidget::OnWorkerStatesClicked()
-{
-	if (AAividoGameMode* GM = GameMode.Get())
-	{
-		GM->RequestWorkerStates();
-		if (StatusText)
-		{
-			StatusText->SetText(FText::FromString(TEXT("Requested fresh worker states from backend…")));
-		}
-	}
-}
-
-void UAividoMenuWidget::OnQuitClicked()
-{
-	UKismetSystemLibrary::QuitGame(GetWorld(), GetWorld()->GetFirstPlayerController(),
-		EQuitPreference::Quit, false);
 }
