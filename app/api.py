@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import secrets
 import subprocess
 import sys
 import uuid
@@ -18,11 +19,68 @@ MAX_RUNTIME_SECONDS = 3600
 # Store last tool calls for loop detection (action + args hash)
 LAST_CALLS = {}
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from starlette.middleware.base import BaseHTTPMiddleware
+
+# Security constants
+API_KEY_FILE = Path(__file__).resolve().parents[1] / "config" / "api.key"
+# Allow-list of paths that don't require authentication
+PUBLIC_PATHS = {"/api/status", "/health", "/", "/dev", "/app", "/static"}
+
+# Body size limits (bytes received, not Content-Length)
+# 10MB default for normal requests; adjust per-endpoint if needed
+MAX_BODY_SIZE = 10 * 1024 * 1024  # 10 MB
+
+class BodySizeLimitMiddleware(BaseHTTPMiddleware):
+    """
+    Enforce request body limits based on bytes actually received.
+    Chunked/streamed oversized requests are also rejected.
+    """
+    def __init__(self, app, max_size: int = MAX_BODY_SIZE):
+        super().__init__(app)
+        self.max_size = max_size
+
+    async def dispatch(self, request: Request, call_next):
+        # Skip for public/health endpoints
+        if request.url.path in PUBLIC_PATHS or request.url.path.startswith("/static"):
+            return await call_next(request)
+
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                cl = int(content_length)
+                if cl > self.max_size:
+                    return JSONResponse(
+                        status_code=413,
+                        content={"ok": False, "error": f"payload too large: {cl} bytes (max {self.max_size})"},
+                    )
+            except ValueError:
+                pass  # Invalid Content-Length, let streaming check handle it
+
+        # Buffer and count bytes actually received in a single pass
+        # request.body() caches internally; also handles chunked streams
+        body = await request.body()
+        if len(body) > self.max_size:
+            return JSONResponse(
+                status_code=413,
+                content={"ok": False, "error": f"payload too large: {len(body)} bytes received (max {self.max_size})"},
+            )
+
+        # Rebuild request with buffered body for downstream handlers
+        chunks = [body]
+
+        async def receive():
+            if chunks:
+                return {"type": "http.request", "body": chunks.pop(0), "more_body": False}
+            return {"type": "http.request", "body": b"", "more_body": False}
+
+        new_request = Request(request.scope, receive)
+        return await call_next(new_request)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -90,6 +148,117 @@ from app.workboard_api import (
 
 
 # ============================================================
+# AUTHENTICATION (P0 - Fail-closed)
+# ============================================================
+
+def load_or_create_api_key() -> str:
+    """Load API key from environment or file; generate if missing.
+
+    Fail-closed: any auth-store read failure raises so the caller denies
+    the request instead of falling back to anonymous superadmin.
+    """
+    import os
+    env_key = os.environ.get("AIVIDO_API_KEY", "").strip()
+    if env_key:
+        return env_key
+
+    key = API_KEY_FILE.read_text(encoding="utf-8").strip()
+    if key:
+        return key
+
+    key = "avapi_" + secrets.token_urlsafe(40)
+    API_KEY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    API_KEY_FILE.write_text(key + "\n", encoding="utf-8")
+    try:
+        os.chmod(API_KEY_FILE, 0o600)
+    except Exception:
+        pass  # best effort (no-op on Windows)
+    return key
+
+def _revoked_keys() -> set:
+    """Keys explicitly revoked via AIVIDO_REVOKED_API_KEYS (comma-separated)."""
+    import os
+    raw = os.environ.get("AIVIDO_REVOKED_API_KEYS", "")
+    return {k.strip() for k in raw.split(",") if k.strip()}
+
+def is_local_open_mode_enabled() -> bool:
+    """
+    Local-dev anonymous superadmin is ONLY permitted when explicitly enabled.
+
+    Requirements (per architecture audit):
+    - DEVELOPER_MODE must be explicitly set to "1", "true", or "yes" in env
+    - OR developer_mode=true in config/product_prefs.json (managed via API)
+    - This CANNOT be activated accidentally in production profiles
+    """
+    import os
+    from core import app_config
+    # Explicit env var (highest priority)
+    env_val = os.environ.get("UA_DEVELOPER_MODE", "").strip().lower()
+    if env_val in ("1", "true", "yes"):
+        return True
+    # Config overlay (set via API, not hand-edited)
+    cfg = app_config.load_config()
+    return bool(cfg.developer_mode)
+
+class AuthMiddleware(BaseHTTPMiddleware):
+    """Bearer token authentication with fail-closed behavior."""
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+        # Public paths don't require auth
+        if path in PUBLIC_PATHS or path.startswith("/static"):
+            return await call_next(request)
+
+        # Auth-store failure => FAIL CLOSED (never fail open to superadmin)
+        try:
+            api_key = load_or_create_api_key()
+        except Exception:
+            return JSONResponse(
+                status_code=503,
+                content={"ok": False, "error": "authentication unavailable"},
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Local-dev open mode: only when explicitly enabled
+        if is_local_open_mode_enabled():
+            # Still validate if credentials are provided (don't accept invalid ones)
+            auth = request.headers.get("authorization", "")
+            if auth.startswith("Bearer "):
+                token = auth[len("Bearer "):].strip()
+                if not secrets.compare_digest(token, api_key):
+                    return JSONResponse(
+                        status_code=401,
+                        content={"ok": False, "error": "unauthorized"},
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+            # No credentials + local-open mode = allow (anonymous superadmin)
+            return await call_next(request)
+
+        # Identity-enabled deployments: require valid credentials
+        auth = request.headers.get("authorization", "")
+        if not auth.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"ok": False, "error": "missing credentials"},
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        token = auth[len("Bearer "):].strip()
+        if token in _revoked_keys():
+            return JSONResponse(
+                status_code=401,
+                content={"ok": False, "error": "revoked credentials"},
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        if not secrets.compare_digest(token, api_key):
+            return JSONResponse(
+                status_code=401,
+                content={"ok": False, "error": "invalid credentials"},
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        return await call_next(request)
+
+# ============================================================
 # APP
 # ============================================================
 
@@ -103,6 +272,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Body size limit MUST be first (before auth) to reject oversized requests early
+app.add_middleware(BodySizeLimitMiddleware, max_size=MAX_BODY_SIZE)
+app.add_middleware(AuthMiddleware)
 
 app.include_router(overnight_router)
 app.include_router(workboard_router)

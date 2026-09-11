@@ -37,6 +37,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import requests
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -681,10 +683,53 @@ def build_mcp_server(api_key: str):
     return server
 
 
-def create_gateway_app(api_key: str):
-    from starlette.middleware.base import BaseHTTPMiddleware
-    from starlette.responses import JSONResponse
+# Body size limit for MCP gateway
+MCP_MAX_BODY_SIZE = 10 * 1024 * 1024  # 10 MB
 
+class BodySizeLimitMiddleware(BaseHTTPMiddleware):
+    """Enforce request body limits based on bytes actually received."""
+    def __init__(self, app, max_size: int = MCP_MAX_BODY_SIZE):
+        super().__init__(app)
+        self.max_size = max_size
+
+    async def dispatch(self, request, call_next):
+        # Skip for health endpoint
+        if request.url.path in ("/health", "/"):
+            return await call_next(request)
+
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                cl = int(content_length)
+                if cl > self.max_size:
+                    return JSONResponse(
+                        status_code=413,
+                        content={"ok": False, "error": f"payload too large: {cl} bytes (max {self.max_size})"},
+                    )
+            except ValueError:
+                pass
+
+        # Buffer and count bytes actually received in a single pass
+        body = await request.body()
+        if len(body) > self.max_size:
+            return JSONResponse(
+                status_code=413,
+                content={"ok": False, "error": f"payload too large: {len(body)} bytes received (max {self.max_size})"},
+            )
+
+        # Rebuild request with buffered body
+        chunks = [body]
+
+        async def receive():
+            if chunks:
+                return {"type": "http.request", "body": chunks.pop(0), "more_body": False}
+            return {"type": "http.request", "body": b"", "more_body": False}
+
+        from starlette.requests import Request as StarletteRequest
+        new_request = StarletteRequest(request.scope, receive)
+        return await call_next(new_request)
+
+def create_gateway_app(api_key: str):
     # The MCP Starlette app must stay the TOP-LEVEL app so its own lifespan
     # runs (it starts the StreamableHTTP session manager task group). We add
     # the auth middleware and the public /health probe directly onto it.
@@ -819,6 +864,7 @@ def create_gateway_app(api_key: str):
             "mcp_endpoint": "/mcp",
         })
 
+    app.add_middleware(BodySizeLimitMiddleware, max_size=MCP_MAX_BODY_SIZE)
     app.add_middleware(AuthMiddleware)
     app.add_middleware(CorsMiddleware)
     app.add_route("/health", health, methods=["GET"])

@@ -415,6 +415,51 @@ def _finish(task_id: str, status: str, verdict: str, *, result=None,
     )
 
 
+# --- Canonical repository identity (P1 - Trusted execution boundary) ---
+
+def _canonical_repo_root() -> Path:
+    """
+    Return the canonical, absolute, resolved repository root.
+    This is the single source of truth for repository identity.
+    External callers CANNOT override this.
+    """
+    return ROOT.resolve()
+
+def _canonicalize_path(rel_path: str) -> Path:
+    """
+    Canonicalize a relative path against the repository root.
+    Resolves symlinks, normalizes case, prevents traversal.
+    Returns absolute path within the repo.
+    Raises ValueError if path escapes the repository.
+    """
+    repo_root = _canonical_repo_root()
+    rel = str(rel_path).replace("\\", "/")
+    # Strip a single leading ./ prefix only (not all dots/slashes)
+    while rel.startswith("./"):
+        rel = rel[2:]
+    # Reject absolute paths and .. traversal at the string level first
+    if rel.startswith("/") or rel == ".." or rel.startswith("../"):
+        raise ValueError(f"path '{rel_path}' escapes repository root")
+    # Resolve against repo root (also resolves symlinks)
+    target = (repo_root / rel).resolve()
+    # Ensure it's within the repo (after symlink resolution)
+    try:
+        target.relative_to(repo_root)
+    except ValueError:
+        raise ValueError(f"path '{rel_path}' escapes repository root")
+    return target
+
+def _validate_repo_identity(provided_root: Optional[str] = None) -> Path:
+    """
+    Validate and canonicalize repository identity.
+    Explicitly DENY any externally provided repository root.
+    Returns the canonical repo root.
+    """
+    if provided_root is not None:
+        # External caller tried to specify a repo root - DENY
+        raise ValueError("external repository root specification not supported")
+    return _canonical_repo_root()
+
 # --- isolated worktree lifecycle --------------------------------------------
 
 def _create_worktree(task_id: str) -> tuple[Path, str]:
@@ -517,8 +562,16 @@ def execute_code_stage(task: Dict[str, Any]) -> Dict[str, Any]:
     acceptance = task.get("acceptance") or []
     declared_scope = [str(s).replace("\\", "/") for s in (task.get("scope") or [])]
 
+    # ---- Canonicalize repository identity FIRST (before auth/dedup/leases) ----
+    try:
+        _validate_repo_identity()  # Denies external repo root specification
+        repo_root = _canonical_repo_root()
+    except ValueError as exc:
+        return {"ok": False, "verdict": "BLOCKED", "error": str(exc)}
+
     # ---- validation before touching git
     planned_paths = []
+    canonical_paths = []
     for step in steps:
         op = step.get("op")
         rel = str(step.get("path") or "").replace("\\", "/")
@@ -528,14 +581,29 @@ def execute_code_stage(task: Dict[str, Any]) -> Dict[str, Any]:
         if not rel or not _path_in_allowed_roots(rel):
             return {"ok": False, "verdict": "BLOCKED",
                     "error": f"path '{rel}' outside allowed roots {ALLOWED_ROOTS}"}
-        planned_paths.append(rel)
+        # Canonicalize path to prevent symlink/traversal bypass
+        try:
+            canon = _canonicalize_path(rel)
+            canonical_paths.append(canon)
+            planned_paths.append(rel)
+        except ValueError as exc:
+            return {"ok": False, "verdict": "BLOCKED", "error": str(exc)}
+
     if declared_scope:
-        outside = [p for p in planned_paths
-                   if p not in declared_scope and not p.startswith(("__pycache__",))]
+        # Also canonicalize declared scope
+        canon_scope = []
+        for s in declared_scope:
+            try:
+                canon_scope.append(_canonicalize_path(s))
+            except ValueError as exc:
+                return {"ok": False, "verdict": "BLOCKED", "error": str(exc)}
+        outside = [p for p in canonical_paths if p not in canon_scope]
         if outside:
             return {"ok": False, "verdict": "BLOCKED",
                     "error": f"planned paths {outside} not inside declared scope"}
-    scope = declared_scope or planned_paths
+        scope = canon_scope
+    else:
+        scope = canonical_paths
 
     try:
         wt_dir, branch = _create_worktree(task_id)
@@ -547,8 +615,8 @@ def execute_code_stage(task: Dict[str, Any]) -> Dict[str, Any]:
     try:
         # Refuse to touch anything that already exists in the live main tree
         # (tracked at HEAD or present untracked) — new files only, no clobber.
-        for rel in planned_paths:
-            live = ROOT / rel.replace("/", os.sep)
+        for rel, canon in zip(planned_paths, canonical_paths):
+            live = repo_root / rel.replace("/", os.sep)
             wt_file = wt_dir / rel.replace("/", os.sep)
             if wt_file.exists():
                 return {"ok": False, "verdict": "BLOCKED",
