@@ -1,14 +1,65 @@
 #!/usr/bin/env python3
-import argparse,json,subprocess,sys,time,urllib.request
+import argparse,json,subprocess,sys,time,urllib.request,urllib.error,os
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 GATE=ROOT/"tools"/"aivido_unreal_health_gate.py"
 BASE="http://127.0.0.1:8765"
 
+def ensure_backend():
+    try:
+        urllib.request.urlopen(BASE+"/api/status", timeout=2).read()
+        return
+    except Exception:
+        pass
+
+    backend=str(ROOT)
+    log=str(Path.home()/"Desktop"/"AIVIDO_MAC_LOGS"/"backend_autorecover.log")
+
+    subprocess.Popen(
+        [
+            "/opt/local/bin/python3.12","-m","uvicorn",
+            "app.api:app","--host","127.0.0.1","--port","8765"
+        ],
+        cwd=backend,
+        env={
+            **os.environ,
+            "PYTHONPATH": backend+"/.venv-mac/lib/python3.12/site-packages:"+backend
+        },
+        stdout=open(log,"a"),
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
+
+    for _ in range(30):
+        try:
+            urllib.request.urlopen(BASE+"/api/status", timeout=2).read()
+            return
+        except Exception:
+            time.sleep(1)
+
+    raise RuntimeError("BACKEND_AUTO_RECOVERY_FAILED")
+
 def req(method,path,body=None):
-    data=None if body is None else json.dumps(body).encode()
-    q=urllib.request.Request(BASE+path,data=data,method=method,headers={"Content-Type":"application/json"})
-    with urllib.request.urlopen(q,timeout=10) as r: return json.loads(r.read().decode())
+    last=None
+
+    for attempt in range(3):
+        try:
+            ensure_backend()
+            data=None if body is None else json.dumps(body).encode()
+            q=urllib.request.Request(
+                BASE+path,
+                data=data,
+                method=method,
+                headers={"Content-Type":"application/json"}
+            )
+            with urllib.request.urlopen(q,timeout=10) as r:
+                return json.loads(r.read().decode())
+
+        except (urllib.error.URLError,ConnectionError,OSError) as e:
+            last=e
+            time.sleep(2)
+
+    raise RuntimeError(f"BACKEND_UNAVAILABLE_AFTER_RECOVERY: {last}")
 
 def gate(min_actors,expected,out):
     c=[sys.executable,str(GATE),"--min-actors",str(min_actors),"--json-out",str(out)]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -31,6 +32,7 @@ if str(ROOT) not in sys.path:
 # Import MemorySystem for API integration
 from core.memory_system import MemorySystem
 from core.production_pipeline import production_preflight, visual_scorecard
+from core.production_v2 import atomic_fast_path_allowed, classify_lane
 from core.task_goal import (
     build_acceptance_contract,
     load_task_goal,
@@ -1191,6 +1193,18 @@ def new_execution(task: str):
     plan["production_preflight"] = preflight
     plan.setdefault("_routing", {})["execution_mode"] = preflight.get("execution_mode")
     plan["_routing"]["asset_template_route"] = preflight.get("asset_template_route")
+    plan["_routing"]["lane_v2"] = classify_lane(task)
+
+    # V2 evidence pipeline: capture the pre-execution scene for visual
+    # production missions so the finalize gate can REQUIRE a meaningful
+    # SceneDiff. Best-effort: a failed snapshot is recorded, never raised —
+    # but it will block a production PASS later (missing evidence is never
+    # an empty success).
+    pipeline_v2 = {"lane": plan["_routing"]["lane_v2"]}
+    if preflight.get("visual_task"):
+        before, before_err = _aivido_scene_snapshot()
+        pipeline_v2["snapshot_before"] = dict(before) if before else None
+        pipeline_v2["snapshot_before_error"] = before_err
 
     emit(
         "planning",
@@ -1209,6 +1223,7 @@ def new_execution(task: str):
         "task": task,
         "task_goal": goal,
         "plan": plan,
+        "pipeline_v2": pipeline_v2,
         "project_context": _seed_project_context(),
         "phase": "PLAN",
         "current_phase": "PLAN",
@@ -2193,6 +2208,43 @@ def _finalize_terminal(state, forced_stall=None):
     # always carries a non-null structured stall_reason plus stall_detail.
     if not already:
         if code == "COMPLETE":
+            # V2 graduation gate: before any PASS is emitted, a visual
+            # production mission must prove meaningful SceneDiff + fresh
+            # screenshot evidence + visual acceptance. Any failing gate
+            # downgrades COMPLETE to STALL with the structured reason.
+            # Non-visual executions keep the legacy verdict path unchanged.
+            v2 = _aivido_v2_gate_state(state, include_visual=bool(
+                (state.get("plan") or {}).get("production_preflight", {}).get("visual_task")
+            ))
+            if v2["visual"]["evaluator"] == "not_applicable":
+                # Non-visual mission: legacy PASS path unchanged.
+                emit("complete", "COMPLETE", {"verdict": "PASS"}, "success")
+            elif v2["visual"]["accepted"] is not True:
+                code, verdict = "STALLED", "STALL"
+                stall = "V2_VISUAL_EVIDENCE_GATE"
+                msg = "Execution finished but visual evidence gate rejected the mission."
+                state["state"] = code
+                state["completion_message"] = msg
+                state["stall_reason"] = stall
+                state["stall_detail"] = {"code": stall, "gates": v2}
+                emit(
+                    "error",
+                    "EXECUTION_STALLED",
+                    {
+                        "stall_reason": stall,
+                        "stall_detail": state.get("stall_detail"),
+                        "reason": msg,
+                    },
+                    "error",
+                )
+                execution_state = None
+                return {
+                    "state": "failed",
+                    "message": msg,
+                    "terminal": "STALL",
+                    "stall_reason": stall,
+                    "stall_detail": state.get("stall_detail"),
+                }
             emit("complete", "COMPLETE", {"verdict": "PASS"}, "success")
         elif code == "BLOCKED":
             emit("error", "BLOCKED", {"reason": msg}, "blocked")
@@ -2542,13 +2594,176 @@ def _classify_intent_safe(message: str):
     return mode
 
 
+# ============================================================
+# PRODUCTION PIPELINE V2 — runtime adapters + lane guard
+# ============================================================
+
+def _aivido_scene_snapshot():
+    """Collect full scene evidence via the live Unreal bridge.
+
+    Returns (evidence_dict_or_None, error_or_None). Never raises; a missing
+    scene snapshot must BLOCK a production PASS later, never fake success.
+    """
+    try:
+        if BRIDGE is None:
+            return None, "bridge_unavailable"
+        BRIDGE.ping()
+    except Exception as exc:
+        return None, f"bridge_unreachable: {type(exc).__name__}"
+
+    code = r'''import json
+world = unreal.EditorLevelLibrary.get_editor_world()
+if world is None:
+    __bridge_result__ = {"ok": False, "error": "editor_world_unavailable"}
+else:
+    actors = unreal.EditorLevelLibrary.get_all_level_actors()
+    names = []
+    classes = {}
+    transforms = {}
+    mesh_refs = []
+    material_refs = []
+    lights = []
+    cameras = []
+    for a in actors:
+        try:
+            label = str(a.get_actor_label() or a.get_name())
+            names.append(label)
+            classes[label] = str(a.get_class().get_name())
+            loc = a.get_actor_location()
+            rot = a.get_actor_rotation()
+            scl = a.get_actor_scale3d()
+            transforms[label] = {
+                "location": {"x": loc.x, "y": loc.y, "z": loc.z},
+                "rotation": {"x": rot.x, "y": rot.y, "z": rot.z},
+                "scale": {"x": scl.x, "y": scl.y, "z": scl.z},
+            }
+            smc = getattr(a, "static_mesh_component", None)
+            if smc is not None and smc.static_mesh:
+                mesh_refs.append(smc.static_mesh.get_path_name())
+            for prim in (a.get_components_by_class(unreal.PrimitiveComponent) or []):
+                for mat in (prim.get_materials() or []):
+                    if mat is not None and mat.get_path_name():
+                        material_refs.append(mat.get_path_name())
+            if isinstance(a, unreal.LightBase):
+                lights.append(label)
+            if isinstance(a, unreal.CameraActor):
+                cameras.append(label)
+        except Exception:
+            continue
+    __bridge_result__ = {
+        "ok": True,
+        "map": str(world.get_path_name() or ""),
+        "actors": names,
+        "classes": classes,
+        "transforms": transforms,
+        "mesh_refs": mesh_refs,
+        "material_refs": material_refs,
+        "lights": lights,
+        "cameras": cameras,
+    }
+'''
+    try:
+        result = BRIDGE.execute_python(code)
+        info = result.get("result") if isinstance(result, dict) else None
+        if not isinstance(info, dict):
+            return None, "bridge_result_shape"
+        if not info.get("ok"):
+            return None, str(info.get("error") or "bridge_scene_snapshot_failed")
+        return {k: v for k, v in info.items() if k != "ok"}, None
+    except Exception as exc:
+        return None, f"bridge_scene_snapshot_error: {type(exc).__name__}"
+
+
+def _aivido_runtime_capture():
+    """Fresh viewport capture via the existing bridge helper.
+
+    Returns (capture_dict_or_None, error_or_None). Never raises. The capture
+    is stale=False by construction: it is taken NOW, after the final scene
+    state, by the same bridge that owns the viewport.
+    """
+    try:
+        if BRIDGE is None:
+            return None, "bridge_unavailable"
+        result = BRIDGE.capture_unreal_viewport()
+        info = (result or {}).get("result") or {}
+        if not info.get("ok"):
+            return None, str(info.get("diagnostic") or info.get("error") or "capture_failed")
+        path = str(info.get("path") or "")
+        if not path or not os.path.isfile(path):
+            return None, "capture_file_missing"
+        return {
+            "path": path,
+            "size_bytes": info.get("size", os.path.getsize(path)),
+            "mtime_ns": os.stat(path).st_mtime_ns,
+            "stale": False,
+        }, None
+    except Exception as exc:
+        return None, f"capture_error: {type(exc).__name__}"
+
+
+def _aivido_v2_gate_state(execution: dict, *, include_visual: bool) -> dict:
+    """Assemble the V2 graduation-gate inputs from a finishing execution.
+
+    All adapter calls are best-effort: any failure becomes gate-blocking
+    evidence (missing evidence is never an empty success).
+    """
+    pipeline_v2 = dict((execution or {}).get("pipeline_v2") or {})
+    before = pipeline_v2.get("snapshot_before")
+    if include_visual:
+        from core.production_v2 import evaluate_visual
+        after, after_err = _aivido_scene_snapshot()
+        capture, capture_err = _aivido_runtime_capture()
+        frame = None
+        if capture and os.path.isfile(str(capture.get("path") or "")):
+            try:
+                from tools.visual.shot_quality import classify_frame
+                # classify_frame translates raw luma/letterbox measurements
+                # into the human-readable issues list the V2 evaluator maps
+                # to category penalties (analyze_frame alone only carries
+                # raw bands_blank with no exposure/contrast verdicts).
+                frame = classify_frame(str(capture["path"])).to_dict()
+            except Exception as exc:
+                frame = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+        else:
+            capture = None
+        visual = evaluate_visual(capture, frame, None)
+        capture = dict(capture or {})
+        capture["map"] = str((after or {}).get("map") or "")
+        capture["captured_at"] = time.time()
+        capture["unreal_ok"] = bool(after and not after_err)
+        if after_err:
+            capture["snapshot_error"] = after_err
+        if capture_err:
+            capture["capture_error"] = capture_err
+        if frame is not None:
+            capture["frame_analysis_issues"] = list(frame.get("issues") or [])
+    else:
+        after = None
+        after_err = None
+        capture = None
+        # Non-visual mission: the V2 visual gate must NOT apply — mark it
+        # explicitly skipped so the finalize gate can distinguish "evaluator
+        # rejected" from "evaluator not applicable".
+        visual = {"accepted": None, "overall": 0.0, "scores": {}, "evaluator": "not_applicable"}
+    return {
+        "lane": pipeline_v2.get("lane") or "production",
+        "snapshot_before": before,
+        "snapshot_before_error": pipeline_v2.get("snapshot_before_error"),
+        "snapshot_after": after,
+        "snapshot_after_error": after_err,
+        "capture": capture,
+        "visual": visual,
+    }
+
+
 def _aivido_fast_unreal_command(message: str):
+    # V2 lane guard: the cube fast-path may fire ONLY on the atomic lane.
+    # High-level or negated wording (e.g. "beautiful scene with a cube",
+    # "do not use cubes") must fall through to the full execution pipeline.
+    if not atomic_fast_path_allowed(message):
+        return None
     text = str(message or '').strip()
     low = text.lower()
-    if 'cube' not in low:
-        return None
-    if not any(w in low for w in ('create','craete','creat','spawn','add','place','make')):
-        return None
     if BRIDGE is None:
         raise RuntimeError('Unreal bridge unavailable')
 

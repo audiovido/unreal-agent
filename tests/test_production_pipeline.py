@@ -53,7 +53,10 @@ def test_parallel_discovery_and_cache(tmp_path, monkeypatch):
     assert elapsed < 0.09
     second = discover_reuse_candidates("dashboard", providers={"a": provider("a"), "b": provider("b")})
     assert second == first
-    assert calls == ["a", "b"]
+    # Providers run concurrently, so *start* order is nondeterministic; what
+    # the cache contract guarantees is that BOTH providers ran exactly once.
+    assert sorted(calls) == ["a", "b"]
+    assert len(calls) == 2
 
 
 def test_preflight_is_nonvisual_fast_and_visual_complete():

@@ -218,16 +218,16 @@ def discover_reuse_candidates(
     started = time.perf_counter()
     candidates: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=max(1, min(8, len(providers)))) as pool:
-        futures = {
-            pool.submit(provider, request, context or {}): name
+        futures_by_source = {
+            name: pool.submit(provider, request, context or {})
             for name, provider in providers.items()
         }
-        completed = {}
-        for future in as_completed(futures):
-            source = futures[future]
-            completed[source] = future
+        # Wait for every future, but collect results in the deterministic
+        # providers order so repeated runs are comparable and testable.
+        for future in as_completed(futures_by_source.values()):
+            future.result()
         for source in providers:
-            future = completed[source]
+            future = futures_by_source[source]
             try:
                 for candidate in future.result() or []:
                     item = dict(candidate)
