@@ -1,0 +1,70 @@
+{
+  "phase": "PHASE 2 - VISUAL DIRECTOR",
+  "iteration": 1,
+  "identity": {
+    "bridge": "127.0.0.1:6766",
+    "project": "ASSET_Showcase2",
+    "map": "/Game/ShowcaseMap",
+    "editor_pid": 15892,
+    "editor_mode": "windowed relaunch of same project (prior session had no capturable LevelViewport)",
+    "audiovido_touched": false
+  },
+  "scene_restored": {
+    "note": "Accepted on-disk ShowcaseMap had been overwritten lean by later batch-harness saves; the graduated street scene was re-materialized from the accepted recipe + on-disk verified assets (reversible: pre-change map backed up to assetlib/proof/backup/ShowcaseMap_ACCEPTED_VD0.umap).",
+    "placed": {
+      "modern_building": "9 StaticMeshActor MB_* (3x3 modular, scale 2.5) at x=2400",
+      "black_suv": "7 StaticMeshActor SUV_* (Blender-tinted NLR import) at x=1500",
+      "walking_character": "VD_Fox SkeletalMeshActor + FoxWalk (ANIMATION_SINGLE_NODE verified)",
+      "ground": "VD_Ground BasicShapePlane (scale 200)",
+      "lights": "ACC_Sun + ACC_SkyLight",
+      "lantern_prop": "REMOVED - suspect pivot/scale geometry (documented defect, re-add in iteration 2)"
+    }
+  },
+  "top3_defects": [
+    {
+      "defect": "Near-black exposure/lighting - skylight was SLS_SPECIFIED_CUBEMAP with no cubemap (black ambient) and sun at default dim lux",
+      "fix": "ACC_Sun intensity 100000 lux + 5600K + pitch -40; ACC_SkyLight -> SLS_CAPTURED_SCENE + recapture, intensity 3.0",
+      "applied_and_saved": true
+    },
+    {
+      "defect": "Composition off-axis - SUV (y=-100) and fox (y=260) not on the street axis; mid-ground dead area with no props",
+      "fix": "SUV and fox aligned to street axis y=60; lantern prop flagged for correct re-placement in iteration 2",
+      "applied_and_saved": true
+    },
+    {
+      "defect": "Camera/readability frame - horizon/framing not tuned to the street subjects",
+      "fix": "Viewport camera reframed to street center (x=1800, y=60) with radius tuned to building top; pitch computed for a sky-band composition",
+      "applied_and_saved": true
+    }
+  ],
+  "capture_evidence": {
+    "before_os_window": "assetlib/proof/screens/vd1_before.png (57912 B, 1227x724 window)",
+    "after_os_window": "assetlib/proof/screens/vd1_after.png",
+    "after_engine_automation": "assetlib/proof/screens/vd1_after.png (166169 B automation render)",
+    "blocker": {
+      "detail": "All engine-side render captures (native UnrealAgent capture + AutomationLibrary.take_high_res_screenshot) return pure-black frames in this session (dark_frac=1.0, detail~0.002); OS-window captures are byte-stable across a verified lighting change (window not presenting a live viewport on this desktop session). Scene state changes ARE verified applied and saved (sun 100000 lux, skylight recaptured, actors moved, map saved).",
+      "evidence_stats": "before: mean_lum 0.061/0.030/0.001 thirds; after identical to 3 decimals; engine renders dark_frac 1.0",
+      "resolution": "Visual re-scoring requires an interactive-desktop GUI session where the LevelViewport presents frames (the acceptance GUI pass ran under such a session)."
+    }
+  },
+  "scores": {
+    "note": "Only scene-verifiable categories are scored; pixel categories are BLOCKED by the capture blocker and are NOT faked.",
+    "composition": "BLOCKED_visual",
+    "camera": "BLOCKED_visual",
+    "lighting_exposure_contrast": "FIXED_IN_SCENE (verified property values), visual confirm BLOCKED",
+    "materials_colors": "BLOCKED_visual",
+    "scale": 7,
+    "hierarchy_naming": 7,
+    "dead_areas_repetition": "BLOCKED_visual (lantern dead-area identified, re-add queued)",
+    "asset_fit_clipping": 7,
+    "character_animation": 7,
+    "vfx": 3,
+    "readability_usability": "BLOCKED_visual",
+    "overall": "NOT_ACCEPTED - visual rescore impossible this session; acceptance bar (all >=8, overall >=8.5) cannot be honestly claimed"
+  },
+  "next_iteration_resume": {
+    "why": "Render captures black + OS window stale on this desktop session; scene fixes are saved.",
+    "command_hint": "Reopen ASSET_Showcase2 in a GUI session with a live LevelViewport (interactive desktop), load /Game/ShowcaseMap, then run: python assetlib/tools/vd_capture_check.py-equivalent via bridge 6766 (capture_unreal_viewport / AutomationLibrary high-res) and verify mean_lum > 0.15 before scoring categories; then apply iteration-2 defect list (re-add lantern prop at street edge with verified scale, tune exposure to mid-tones, optional street texture).",
+    "verify_first": "one non-black capture (mean_lum threshold) before any rescore"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "phase": "PHASE 2 - VISUAL DIRECTOR",
+  "iteration": 7,
+  "bridge": "127.0.0.1:6766",
+  "project": "ASSET_Showcase2",
+  "map": "/Game/ShowcaseMap",
+  "date": "2026-09-02",
+  "verdict": "NOT_ACCEPTED",
+  "acceptance_bar": "no critical category below 8 and overall >= 8.5",
+  "overall_score": 5.5,
+  "overall_note": "human-eye review of the real frame returned 'something looks wrong/broken' and 'too bright / color off'; pixel-grid analysis confirms a featureless washed frame - this is the first iteration with a genuine human verdict and it is the truth, not a metric artifact",
+  "gate_1_vfx": {
+    "result": "STILL OPEN - engine content gap, now exhaustively proven",
+    "evidence": [
+      "DefaultSystem dead-on-spawn: spawned 8 m in front of the live PIE camera -> active=false immediately, zero particles; identical result at x1/x15 scale and two street positions in IT-6",
+      "Only loadable NiagaraSystem in project+engine is DefaultSystem; every other on-disk system (Volumetrics NS_SubUV_Preview, ClonerEffector NS_Cloner*, VirtualCamera NS_AimLaser, AnimToTexture NS_InstancerFrameData, Water ShoreFoam) returns NONE - plugins disabled",
+      "Volumetrics has NO Binaries/Win64 -> enabling it would require a source build (out of scope for a live timebox)",
+      "Emitter authoring closed in 5.8 Python (no emitter/loop/duration surface)",
+      "Unblock routes for IT-8: (a) C++ UnrealAgentBridge UFUNCTION emitter authoring, (b) licensed/CC0 looping Niagara pack import, (c) enable a VP/experimental plugin whose binaries exist"
+    ]
+  },
+  "gate_2_human_eye": {
+    "result": "PERFORMED (real user reviewed the real frame in the Preview tab)",
+    "user_answers": ["composition/camera: Something looks wrong/broken", "lighting/color: Too bright / too dark / color off", "vfx: keep low, persist next iteration"],
+    "pixel_grid_confirmation": "below the horizon (rows 4-7 of the 8x8 grid) is featureless gray gradient 155-240 with zero saturation: no black SUV, no fox, no building base, no shadows - dark_frac 0.0; upper-mid shows a blown-white blob where the building reads as a white slab",
+    "score_cap": "visual categories cannot exceed the user's own read - composition/camera/lighting/readability scored against 'broken/washed'"
+  },
+  "fixes_applied_this_iteration": [
+    "SUV rebound to the ACCEPTED black import /Game/NLR/BlackSUV (mesh Cesium_Milk_Truck + truck/glass/window_trim/wheels MICs) - scene was binding the WHITE /Game/Showcase/Vehicles set (state-verified: SUV_0 mats were truck/glass/window_trim from the white Showcase import)",
+    "Camera pull-in: PlayerStart (1350,-1150,250) yaw 63.4 pitch 0 (subjects ~1.9 km standoff instead of 2.5 km)",
+    "Exposure rebalance attempt: sun 12k->6k lux, sky dome constant 0.09/0.17/0.36->0.05/0.10/0.22, ground 0.30->0.22",
+    "Exposure console sweep r.EyeAdaptation.ExposureOffset -1..-4 -> ZERO effect (4 identical frames, recorded)"
+  ],
+  "blocker_edit_propagation": {
+    "observation": "sky top band byte-invariant across dome material constant changes (0.35->0.09->0.05 all render 0.52/0.62/0.75) and the black-SUV rebound + exposure changes did not appear in-capture within the session, despite state-verified application",
+    "interpretation": "light/material edits are not propagating to the PIE render inside this long-lived editor session (asset/compile cache); the same edits DID propagate in IT-5 after fresh PIE cycles",
+    "next_action": "IT-8 must restart the same project editor (proven 1-2 min flow) BEFORE re-capturing so the rebound + dims + camera take effect, then re-run the human-eye review"
+  },
+  "before": "assetlib/proof/screens/vd_iteration7_before.png",
+  "after": "assetlib/proof/screens/vd_iteration7_after.png",
+  "capture_metrics_after": {"mean_lum": 0.711, "thirds": [0.613, 0.77, 0.75], "bright_frac": 0.209, "dark_frac": 0.0, "note": "still washed - edits not visible in-session"},
+  "scores": {
+    "composition": 5, "camera": 5, "lighting_exposure_contrast": 4, "materials_colors": 5,
+    "scale": 7, "hierarchy": 6, "dead_areas_repetition": 4, "asset_fit_clipping": 7,
+    "character_animation": 7, "vfx": 4, "readability_usability": 4,
+    "confidence": "composition/camera/lighting/materials/readability judged by the USER on the real frame; scale/fit/animation from scene state + earlier capture-confirmed motion"
+  },
+  "iteration8_recipe": [
+    "1) RESTART the same ASSET_Showcase2 editor (proven flow; bridge 6766 back up with ASSET identity) so the IT-7 scene edits (NLR BlackSUV rebound, camera 1350,-1150 yaw 63.4, sun 6k, dim sky/ground) actually propagate to the render",
+    "2) After restart, verify in-capture that (a) the SUV reads BLACK at ~(72%,55-70%) screen, (b) sky band responds to dome constant edits, (c) exposure is no longer invariant; adjust sun to the level where the white building stops blowing (bounded probes, one value per PIE cycle)",
+    "3) Re-run the human-eye review of the fresh AFTER frame (Preview tab) and rescore; accept only when no critical < 8 and overall >= 8.5",
+    "4) VFX stays the independent blocker (IT-8 gate 1): C++ emitter UFUNCTION or a licensed looping Niagara pack - no engine asset can satisfy it",
+    "resume_command": "restart editor -> PIE capture flow (start_pie -> capture_pie_viewport -> vd_score.py rgb_bands) -> refresh assetlib/proof/screens/vd_preview.html frame -> user review"
+  ],
+  "audio_vido_modified": false,
+  "baselines_touched": "none; no commits",
+  "reversibility": "backup at assetlib/proof/backup/ShowcaseMap_ACCEPTED_VD0.umap; SUV rebound/camera/light changes live in ShowcaseMap"
+}

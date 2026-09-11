@@ -1,0 +1,112 @@
+{
+  "ok": true,
+  "entries": [
+    {
+      "model": "CesiumMilkTruck",
+      "category": "Vehicles",
+      "glb": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb",
+      "import_ok": true,
+      "objects": 6,
+      "meshes": 3,
+      "triangles": 3624,
+      "armatures": 0,
+      "skeleton": [],
+      "animations": [],
+      "dimensions_m": [
+        4.8689,
+        2.3176,
+        2.792
+      ],
+      "materials": [
+        "glass",
+        "truck",
+        "wheels",
+        "window_trim"
+      ],
+      "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck_preview.png",
+      "preview_ok": true
+    },
+    {
+      "model": "CesiumMan",
+      "category": "Characters",
+      "glb": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+      "import_ok": true,
+      "objects": 3,
+      "meshes": 2,
+      "triangles": 4752,
+      "armatures": 1,
+      "skeleton": [
+        {
+          "name": "Armature",
+          "bones": 19
+        }
+      ],
+      "animations": [
+        "Anim_0_Armature"
+      ],
+      "dimensions_m": [
+        1.9021,
+        2.0,
+        2.0
+      ],
+      "materials": [
+        "Cesium_Man-effect"
+      ],
+      "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Characters/CesiumMan/CesiumMan_preview.png",
+      "preview_ok": true
+    },
+    {
+      "model": "Fox",
+      "category": "Animations",
+      "glb": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Fox/glTF-Binary/Fox.glb",
+      "import_ok": true,
+      "objects": 2,
+      "meshes": 3,
+      "triangles": 736,
+      "armatures": 1,
+      "skeleton": [
+        {
+          "name": "root",
+          "bones": 24
+        }
+      ],
+      "animations": [
+        "Run_root",
+        "Survey_root",
+        "Walk_root"
+      ],
+      "dimensions_m": [
+        41.0156,
+        141.6483,
+        74.723
+      ],
+      "materials": [
+        "fox_material"
+      ],
+      "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Animations/Fox/Fox_preview.png",
+      "preview_ok": true
+    },
+    {
+      "model": "Lantern",
+      "category": "EnvironmentProps",
+      "glb": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Lantern/glTF-Binary/Lantern.glb",
+      "import_ok": true,
+      "objects": 4,
+      "meshes": 5,
+      "triangles": 5554,
+      "armatures": 0,
+      "skeleton": [],
+      "animations": [],
+      "dimensions_m": [
+        15.4912,
+        4.6314,
+        26.8481
+      ],
+      "materials": [
+        "LanternPost_Mat"
+      ],
+      "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/EnvironmentProps/Lantern/Lantern_preview.png",
+      "preview_ok": true
+    }
+  ]
+}

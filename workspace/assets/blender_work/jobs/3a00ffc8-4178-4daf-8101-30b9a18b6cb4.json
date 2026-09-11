@@ -1,0 +1,210 @@
+{
+  "id": "3a00ffc8-4178-4daf-8101-30b9a18b6cb4",
+  "operation": "create_primitive",
+  "inputs": {
+    "name": "UA_Lightbox",
+    "shape": "cube",
+    "dimensions_cm": [
+      300,
+      10,
+      150
+    ],
+    "expected_dimensions_cm": [
+      300,
+      10,
+      150
+    ],
+    "materials": [
+      {
+        "name": "UA_Lightbox",
+        "color": [
+          0.55,
+          0.62,
+          0.95
+        ],
+        "metallic": 0.0,
+        "roughness": 0.42
+      }
+    ],
+    "screenshot": false
+  },
+  "outputs": {
+    "object_name": "UA_Lightbox",
+    "shape": "cube",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Lightbox.fbx",
+      "format": "fbx",
+      "size_bytes": 15212,
+      "object": "UA_Lightbox"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/3a00ffc8-4178-4daf-8101-30b9a18b6cb4.blend",
+    "proof": {}
+  },
+  "status": "COMPLETE",
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      300.0,
+      10.0,
+      150.0
+    ],
+    "vertex_count": 8,
+    "poly_count": 6,
+    "materials": {
+      "applied": true,
+      "object": "UA_Lightbox",
+      "materials": [
+        "UA_Lightbox"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        300.0,
+        10.000000149011612,
+        150.0
+      ],
+      "after_cm": [
+        300.0,
+        10.000000149011612,
+        150.0
+      ]
+    },
+    "expected_dimensions_cm": [
+      300.0,
+      10.0,
+      150.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        300.0,
+        10.0,
+        150.0
+      ],
+      "expected_cm": [
+        300.0,
+        10.0,
+        150.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "3a00ffc8-4178-4daf-8101-30b9a18b6cb4",
+    "exported_at": 1788238137.873075,
+    "source": "generated:cube",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\3a00ffc8-4178-4daf-8101-30b9a18b6cb4.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Lightbox.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      300.0,
+      10.0,
+      150.0
+    ],
+    "materials": [
+      {
+        "name": "UA_Lightbox",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        300.0,
+        10.0,
+        150.0
+      ],
+      "vertex_count": 8,
+      "poly_count": 6,
+      "materials": [
+        {
+          "name": "UA_Lightbox",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Lightbox",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "attempts": 1,
+  "max_attempts": 3,
+  "timeout_seconds": 600,
+  "created_at": 1788238137.1328447,
+  "updated_at": 1788238138.0075898,
+  "log": [
+    {
+      "at": 1788238137.132846,
+      "level": "info",
+      "message": "job created"
+    },
+    {
+      "at": 1788238137.1583672,
+      "level": "info",
+      "message": "attempt 1/3 starting (headless)"
+    },
+    {
+      "at": 1788238138.007034,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238138.0070415,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238138.0070424,
+      "level": "info",
+      "message": "Info: Total files 0 | Changed 0 | Failed 0"
+    },
+    {
+      "at": 1788238138.0070431,
+      "level": "info",
+      "message": ""
+    },
+    {
+      "at": 1788238138.0070436,
+      "level": "info",
+      "message": "FBX export starting... 'C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\workspace\\\\assets\\\\exports\\\\UA_Lightbox.fbx'"
+    },
+    {
+      "at": 1788238138.0070443,
+      "level": "info",
+      "message": "export finished in 0.0156 sec."
+    },
+    {
+      "at": 1788238138.0070448,
+      "level": "info",
+      "message": "Info: Saved \"3a00ffc8-4178-4daf-8101-30b9a18b6cb4.blend\""
+    },
+    {
+      "at": 1788238138.0075881,
+      "level": "info",
+      "message": "job COMPLETE"
+    }
+  ]
+}

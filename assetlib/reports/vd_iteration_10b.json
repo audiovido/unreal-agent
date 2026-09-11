@@ -1,0 +1,97 @@
+{
+ "phase": "PHASE 2 - VD ITERATION 10, sub-step B (exposure/lighting repair)",
+ "date": "2026-09-02",
+ "bridge": "127.0.0.1:6766",
+ "project": "ASSET_Showcase2",
+ "diagnosis": {
+  "highlight_source": "skylight 0.6 sampling emissive dome + bright facade albedo; sun was -35deg pitch (near-overhead, minor facade contributor) - NOT cut globally",
+  "pre_fix_values": {
+   "sun_rot": [
+    -35.0,
+    -88.0,
+    -0.0
+   ],
+   "sun_intensity": 6000.0,
+   "skylight": 0.6
+  }
+ },
+ "fixes": {
+  "sun": "pitch -35 -> -55 (raking), yaw -88 (==272, behind-camera azimuth), intensity kept 6000",
+  "skylight": "0.6 -> 0.45 (dome-bounce reduction)",
+  "saved": true
+ },
+ "pose_verification": {
+  "method": "single-unwrap readback (10A bug fixed), raw dicts in _10b_raw.json",
+  "mid": {
+   "loc": [
+    1350.0,
+    -800.0,
+    200.0
+   ],
+   "rot": [
+    0.0,
+    -3.0,
+    54.1
+   ]
+  },
+  "street": {
+   "loc": [
+    2750.0,
+    -2400.0,
+    260.0
+   ],
+   "rot": [
+    0.0,
+    -6.0,
+    92.0
+   ]
+  },
+  "both_verified": true
+ },
+ "pixel_validation": {
+  "metrics": {
+   "10A_mid": {
+    "mean": 0.313,
+    "bright_frac": 0.0077,
+    "dark_frac": 0.1765,
+    "band16_32_mean": 0.404,
+    "band_max": 0.47
+   },
+   "10B_mid": {
+    "mean": 0.309,
+    "bright_frac": 0.0041,
+    "dark_frac": 0.1807,
+    "band16_32_mean": 0.402,
+    "band_max": 0.47
+   },
+   "10A_street": {
+    "mean": 0.351,
+    "bright_frac": 0.0037,
+    "dark_frac": 0.0734,
+    "band16_32_mean": 0.463,
+    "band_max": 0.477
+   },
+   "10B_street": {
+    "mean": 0.349,
+    "bright_frac": 0.0014,
+    "dark_frac": 0.0759,
+    "band16_32_mean": 0.462,
+    "band_max": 0.477
+   }
+  },
+  "mid_central_dark_frac": 0.3408,
+  "checks": {
+   "bright_under_control": true,
+   "building_band_reduced": true,
+   "suv_dark_patch_retained": true
+  }
+ },
+ "captures": [
+  "assetlib/proof/screens/vd_iteration10_b_mid.png (md5 8667f2da)",
+  "assetlib/proof/screens/vd_iteration10_b_street.png (md5 a2fa66a9)"
+ ],
+ "verdict_10B": "PASS",
+ "audio_vido_modified": false,
+ "baselines_touched": "none; no commits",
+ "next": "10C composition repair (foreground/midground/background layering, SUV anchored, less dead space) - same flow"
+}

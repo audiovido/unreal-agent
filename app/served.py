@@ -1,21 +1,9 @@
 from __future__ import annotations
 
-import os
 import threading
 import time
 import uuid
 from app import api
-
-# ---------------------------------------------------------------------------
-# MULTI-CLIENT INSTANCE GUARD
-# ---------------------------------------------------------------------------
-# The canonical single-project backend owns ONE workboard queue on disk. When
-# a second Aivido instance runs on the same host (e.g. a validation instance
-# while the production backend is live), the workboard autopilot must stay
-# disabled so two processes never fight over the same cards.
-# UA_DISABLE_WORKBOARD_AUTOPILOT=1 -> this instance serves the multi-client
-# sessions/projects surface only.
-_WORKBOARD_AUTOPILOT = os.getenv("UA_DISABLE_WORKBOARD_AUTOPILOT") != "1"
 
 # ============================================================
 # WORKBOARD PERSISTENCE HARDENING
@@ -374,21 +362,10 @@ def deterministic_start():
 
 from tools.unreal.project_manager import inspect_project as _inspect_project
 
-def _active_project_file():
-    """Resolve the active project .uproject through the standard priority
-    chain instead of a baked-in legacy demo path. Returns None when nothing
-    is resolvable (callers then fall through to tool-level resolution)."""
-    try:
-        from tools.unreal import project_context as _pc
-        resolved = _pc.resolve_active_project()
-        if resolved and resolved.get("ok") and resolved.get("uproject_path"):
-            return resolved["uproject_path"]
-    except Exception:
-        pass
-    return None
-
-
-_PROJECT_FILE = _active_project_file()
+_PROJECT_FILE = (
+    r"C:\Users\Shadow\Desktop\app\AudioVidoLivingCity"
+    r"\AudioVidoLivingCity.uproject"
+)
 
 # ------------------------------------------------------------
 # 1. Workboard tasks do NOT need another LLM planning pass.
@@ -500,8 +477,6 @@ def _deterministic_project_audit(task):
         note="Deterministic project audit running",
     )
 
-    # inspect_project(None) runs its own resolution chain (persisted context
-    # -> bridge -> search), so a missing default is safe.
     project = api.serialize(
         _inspect_project(_PROJECT_FILE)
     )
@@ -664,8 +639,7 @@ def _recover_reload_orphans():
     if changed:
         wb._save(data)
 
-if _WORKBOARD_AUTOPILOT:
-    _recover_reload_orphans()
+_recover_reload_orphans()
 
 
 
@@ -680,8 +654,6 @@ app = api.app
 # composition layer over the shared FastAPI app.
 # ============================================================
 from app import proof as _proof
-# setup() accepts None: proof candidates fall back to the live bridge
-# project identity, so proof serving follows the editor the agent used.
 _proof.setup(_PROJECT_FILE)
 app.get("/api/proof/latest")(_proof.proof_latest)
 app.get("/api/proof/live/status")(_proof.proof_live_status)
@@ -696,31 +668,6 @@ app.get("/api/proof/live")(_proof.proof_live)
 from app import speak as _speak
 app.post("/api/chat/speak")(_speak.chat_speak)
 app.get("/api/chat/speak/status")(_speak.chat_speak_status)
-
-
-# ============================================================
-# UNREAL CODER — canonical single API (universal agent platform).
-# One POST /api/unreal-coder request interprets, plans, executes through
-# the EXISTING registry/executor, validates and reports. Routes live in
-# app/unreal_coder_api.py; registered here (composition root).
-# ============================================================
-from app.unreal_coder_api import register_unreal_coder_api
-register_unreal_coder_api(
-    app,
-    tool_registry=lambda: api.REGISTRY,
-    dispatch_bridge=None,   # execute mode uses api.new_execution (L3 plans)
-)
-
-
-# ============================================================
-# UNREAL CAMERA + FRESH PROOF — deterministic framing endpoints.
-# Direct /api/unreal/frame-actor, /api/unreal/capture-proof and
-# /api/unreal/frame-and-proof so "focus actor/cube and return fresh
-# proof" never routes through prompt/world-building classification or
-# mission acceptance criteria. Additive: no existing route is touched.
-# ============================================================
-from app.camera_api import register_camera_api
-register_camera_api(app, bridge_factory=None)
 
 
 app.get("/api/proof/status")(_proof.proof_status)
@@ -1019,17 +966,14 @@ def _final_autopilot_watchdog():
 
 
 # Recover immediately at boot.
-if _WORKBOARD_AUTOPILOT:
-    _recover_deadlocked_tasks()
+_recover_deadlocked_tasks()
 
 # And guarantee progress even if the older watchdog misses a state change.
-# Skipped on multi-client-only instances (see _WORKBOARD_AUTOPILOT).
-if _WORKBOARD_AUTOPILOT:
-    threading.Thread(
-        target=_final_autopilot_watchdog,
-        name="unreal-agent-final-autopilot",
-        daemon=True,
-    ).start()
+threading.Thread(
+    target=_final_autopilot_watchdog,
+    name="unreal-agent-final-autopilot",
+    daemon=True,
+).start()
 
 
 
@@ -1181,37 +1125,14 @@ def _watchdog():
         time.sleep(5)
 
 
-if _WORKBOARD_AUTOPILOT:
-    _recover_all_recoverable_blocked()
+_recover_all_recoverable_blocked()
 
-if _WORKBOARD_AUTOPILOT:
-    threading.Thread(
-        target=_watchdog,
-        daemon=True,
-        name="final-autonomy-watchdog-v2",
-    ).start()
+threading.Thread(
+    target=_watchdog,
+    daemon=True,
+    name="final-autonomy-watchdog-v2",
+).start()
 
 
 
 from app import final_recovery  # FINAL RECOVERY V3
-
-
-# ============================================================
-# MULTI-CLIENT SESSIONS / PROJECTS RUNTIME (Phases 1-10)
-# Additive surface: canonical execution machinery is untouched; session
-# work reuses the mission engine through core.session_execution.
-# ============================================================
-from app.session_api import register_session_api
-register_session_api(app)
-
-# Construct the session runner when the server actually starts (not at import
-# time) so persisted sessions are re-bound to their allocator ports and
-# relinked into the project registry immediately after a restart (health
-# sweeper + resource supervisor also start here).
-@app.on_event("startup")
-def _start_session_runner() -> None:
-    try:
-        from core.session_execution import get_default_runner
-        get_default_runner().start()
-    except Exception:  # pragma: no cover - startup must not take the app down
-        pass

@@ -1,0 +1,295 @@
+{
+  "ok": true,
+  "outputs": {
+    "name": "P2_Table",
+    "exports": [
+      {
+        "format": "fbx",
+        "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/fbx_roundtrip/P2_Table.fbx",
+        "size_bytes": 33292,
+        "ok": true
+      }
+    ],
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_work/P2_Table.blend",
+    "validation_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/fbx_roundtrip/P2_Table_validation.json"
+  },
+  "validation": {
+    "ok": true,
+    "format": "fbx",
+    "meshes": 5,
+    "vertex_total": 264,
+    "polygon_total": 142,
+    "triangle_total": 508,
+    "dimensions_cm": [
+      120.0,
+      70.0,
+      99.0
+    ],
+    "materials": [
+      "P2_Leg",
+      "P2_TableTop"
+    ],
+    "textures": [],
+    "uv_ensured": true,
+    "decimate": {
+      "requested": false
+    },
+    "deferred": {
+      "lods": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      },
+      "collision": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      }
+    },
+    "exports": [
+      "fbx"
+    ]
+  },
+  "report": {
+    "asset": "P2_Table",
+    "job_id": "p2_fbx_roundtrip",
+    "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/samples/sample_table.fbx",
+    "source_format": "fbx",
+    "import": {
+      "ok": true,
+      "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/samples/sample_table.fbx",
+      "format": "fbx",
+      "imported_objects": [
+        {
+          "name": "P2_TableTop",
+          "type": "MESH",
+          "parent": null
+        },
+        {
+          "name": "P2_Leg_-0.5_-0.28",
+          "type": "MESH",
+          "parent": null
+        },
+        {
+          "name": "P2_Leg_0.5_-0.28",
+          "type": "MESH",
+          "parent": null
+        },
+        {
+          "name": "P2_Leg_-0.5_0.28",
+          "type": "MESH",
+          "parent": null
+        },
+        {
+          "name": "P2_Leg_0.5_0.28",
+          "type": "MESH",
+          "parent": null
+        }
+      ],
+      "object_count": 5
+    },
+    "export_formats": [
+      "fbx"
+    ],
+    "export_dir": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/fbx_roundtrip",
+    "meshes_before": [
+      {
+        "name": "P2_Table",
+        "vertices": 8,
+        "polygons": 6,
+        "triangles": 12,
+        "has_uv": true,
+        "materials": [
+          "P2_TableTop"
+        ]
+      },
+      {
+        "name": "P2_Leg_-0.5_-0.28",
+        "vertices": 64,
+        "polygons": 34,
+        "triangles": 124,
+        "has_uv": true,
+        "materials": [
+          "P2_Leg"
+        ]
+      },
+      {
+        "name": "P2_Leg_0.5_-0.28",
+        "vertices": 64,
+        "polygons": 34,
+        "triangles": 124,
+        "has_uv": true,
+        "materials": [
+          "P2_Leg"
+        ]
+      },
+      {
+        "name": "P2_Leg_-0.5_0.28",
+        "vertices": 64,
+        "polygons": 34,
+        "triangles": 124,
+        "has_uv": true,
+        "materials": [
+          "P2_Leg"
+        ]
+      },
+      {
+        "name": "P2_Leg_0.5_0.28",
+        "vertices": 64,
+        "polygons": 34,
+        "triangles": 124,
+        "has_uv": true,
+        "materials": [
+          "P2_Leg"
+        ]
+      }
+    ],
+    "meshes_after": [
+      {
+        "name": "P2_Table",
+        "vertices": 8,
+        "polygons": 6,
+        "triangles": 12,
+        "has_uv": true,
+        "materials": [
+          "P2_TableTop"
+        ]
+      },
+      {
+        "name": "P2_Leg_-0.5_-0.28",
+        "vertices": 64,
+        "polygons": 34,
+        "triangles": 124,
+        "has_uv": true,
+        "materials": [
+          "P2_Leg"
+        ]
+      },
+      {
+        "name": "P2_Leg_0.5_-0.28",
+        "vertices": 64,
+        "polygons": 34,
+        "triangles": 124,
+        "has_uv": true,
+        "materials": [
+          "P2_Leg"
+        ]
+      },
+      {
+        "name": "P2_Leg_-0.5_0.28",
+        "vertices": 64,
+        "polygons": 34,
+        "triangles": 124,
+        "has_uv": true,
+        "materials": [
+          "P2_Leg"
+        ]
+      },
+      {
+        "name": "P2_Leg_0.5_0.28",
+        "vertices": 64,
+        "polygons": 34,
+        "triangles": 124,
+        "has_uv": true,
+        "materials": [
+          "P2_Leg"
+        ]
+      }
+    ],
+    "normalization": {
+      "scene_units": "METRIC",
+      "scale_cm_per_unit": 100.0,
+      "origin_center": "BOUNDS",
+      "transforms_applied": true,
+      "whole_scene_dimensions_cm": [
+        120.0,
+        70.0,
+        99.0
+      ],
+      "target_dimension_cm": null,
+      "scale_result": null
+    },
+    "geometry": {
+      "cleanup": true,
+      "custom_split_normals_cleared": true,
+      "normals_fixed": true,
+      "uv_ensured": true,
+      "decimate": {
+        "requested": false
+      }
+    },
+    "materials": [
+      "P2_Leg",
+      "P2_TableTop"
+    ],
+    "textures": [],
+    "organization": {
+      "requested_name": "P2_Table",
+      "object_names": [
+        "P2_Table",
+        "P2_Leg_-0.5_-0.28",
+        "P2_Leg_0.5_-0.28",
+        "P2_Leg_-0.5_0.28",
+        "P2_Leg_0.5_0.28"
+      ]
+    },
+    "deferred": {
+      "lods": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      },
+      "collision": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      }
+    },
+    "export": {
+      "files": [
+        {
+          "format": "fbx",
+          "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/fbx_roundtrip/P2_Table.fbx",
+          "size_bytes": 33292,
+          "ok": true
+        }
+      ]
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_work/P2_Table.blend",
+    "validation": {
+      "ok": true,
+      "format": "fbx",
+      "meshes": 5,
+      "vertex_total": 264,
+      "polygon_total": 142,
+      "triangle_total": 508,
+      "dimensions_cm": [
+        120.0,
+        70.0,
+        99.0
+      ],
+      "materials": [
+        "P2_Leg",
+        "P2_TableTop"
+      ],
+      "textures": [],
+      "uv_ensured": true,
+      "decimate": {
+        "requested": false
+      },
+      "deferred": {
+        "lods": {
+          "requested": false,
+          "status": "deferred-not-implemented"
+        },
+        "collision": {
+          "requested": false,
+          "status": "deferred-not-implemented"
+        }
+      },
+      "exports": [
+        "fbx"
+      ]
+    },
+    "validation_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/fbx_roundtrip/P2_Table_validation.json",
+    "elapsed_seconds": 1.4
+  },
+  "error": null,
+  "job_id": "p2_fbx_roundtrip"
+}

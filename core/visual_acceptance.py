@@ -51,39 +51,6 @@ class VisualMetrics:
     raw: Dict[str, Any] = field(default_factory=dict)
 
 
-# Score categories and their fixed relative weights. ``score()`` computes
-# every category honestly (never fabricating values) and aggregates the
-# weighted average over ALL categories by default.  A caller whose target
-# declares ``required_visual_categories`` (task-aware acceptance) scopes the
-# aggregation to exactly that category set, renormalizing the SAME weights —
-# categories the task never requested (e.g. UI when the user asked for a
-# prop) no longer drag the overall below acceptance, and their honest low
-# values remain visible in the per-category scores.
-SCORE_CATEGORIES = ("composition", "subject_framing", "lighting",
-                    "environment", "ui", "readability", "target_match",
-                    "technical_integrity")
-SCORE_WEIGHTS = {
-    "composition": 0.15, "subject_framing": 0.20, "lighting": 0.15,
-    "environment": 0.12, "ui": 0.12, "readability": 0.10,
-    "target_match": 0.10, "technical_integrity": 0.06,
-}
-
-
-def _scoped_categories(target: Dict[str, Any]) -> Optional[List[str]]:
-    """Categories the aggregation must cover for this target.
-
-    None means the full default set (historic behavior).  An explicit
-    ``required_visual_categories`` list on the target scopes acceptance to
-    only the categories the task actually requires; unknown names are
-    ignored so a future category never silently vanishes.
-    """
-    req = target.get("required_visual_categories")
-    if not isinstance(req, (list, tuple, set)) or not req:
-        return None
-    cats = [c for c in SCORE_CATEGORIES if c in req]
-    return cats or None
-
-
 @dataclass
 class VisualScore:
     composition: float = 0.0
@@ -134,248 +101,39 @@ def find_subject_bbox(
     min_luma: int = 45,
     max_luma: int = 250,
 ) -> Optional[List[int]]:
-    """Bounding box of the dominant foreground subject inside a region of
-    interest (fractions of the frame).
-
-    Segmentation is component-based instead of marginal row/column density:
-    the ROI is coarse-gridded and a cell counts as foreground only when it is
-    a mid-tone cell with real local structure (contrast). That excludes
-    smooth sky gradients, flat walls and flat floors, which is what made the
-    old marginal scan union the whole ROI on any busy/mid-tone frame and
-    falsely report HEAD_CROPPED and oversized coverage. Connected foreground
-    cells form components and the dominant one (largest area, preferring a
-    centroid in the central band) becomes the subject. Falls back to the flat-
-    field density scan only when no structured component exists. Returns pixel
-    coords [x0, y0, x1, y1] or None when the frame is empty/flat."""
+    """Bounding box of the dominant foreground blob inside a region of
+    interest (fractions of the frame). Heuristic: rows/cols whose mid-tone
+    count significantly exceeds the background baseline. Returns pixel coords
+    [x0, y0, x1, y1] or None when the frame is empty/flat."""
     w, h = image.size
     if roi is None:
         roi = [0.02, 0.05, 0.72, 0.97]   # left-center band where heroes sit
-    rx0, ry0 = int(w * roi[0]), int(h * roi[1])
-    rx1, ry1 = int(w * roi[2]), int(h * roi[3])
-    if rx1 <= rx0 or ry1 <= ry0:
-        return None
+    x0, y0 = int(w * roi[0]), int(h * roi[1])
+    x1, y1 = int(w * roi[2]), int(h * roi[3])
     gray = image.convert("L")
     px = gray.load()
-    step = 6
-    contrast_min = 12          # a cell must carry structure, not smooth fill
-    cell_w = (rx1 - rx0 + step - 1) // step
-    cell_h = (ry1 - ry0 + step - 1) // step
-    grid = [[False] * cell_w for _ in range(cell_h)]
-    for cy in range(cell_h):
-        y0 = ry0 + cy * step
-        y1 = min(ry0 + (cy + 1) * step, ry1)
-        for cx in range(cell_w):
-            x0 = rx0 + cx * step
-            x1 = min(rx0 + (cx + 1) * step, rx1)
-            total = 0
-            lo, hi = 255, 0
-            for y in range(y0, y1):
-                for x in range(x0, x1):
-                    p = px[x, y]
-                    total += p
-                    if p < lo:
-                        lo = p
-                    if p > hi:
-                        hi = p
-            mean = total / max((x1 - x0) * (y1 - y0), 1)
-            if min_luma < mean < max_luma and hi - lo >= contrast_min:
-                grid[cy][cx] = True
-    # connected components over the coarse grid (4-connectivity)
-    seen = [[False] * cell_w for _ in range(cell_h)]
-    comps: List[tuple] = []    # (area, min_x, min_y, max_x, max_y, centroid_y)
-    for cy in range(cell_h):
-        for cx in range(cell_w):
-            if not grid[cy][cx] or seen[cy][cx]:
-                continue
-            stack = [(cx, cy)]
-            seen[cy][cx] = True
-            area = 0
-            mnx = mny = 1 << 30
-            mxx = mxy = -1
-            sy = 0
-            while stack:
-                gx, gy = stack.pop()
-                area += 1
-                sy += gy
-                if gx < mnx:
-                    mnx = gx
-                if gx > mxx:
-                    mxx = gx
-                if gy < mny:
-                    mny = gy
-                if gy > mxy:
-                    mxy = gy
-                for ngx, ngy in ((gx - 1, gy), (gx + 1, gy),
-                                 (gx, gy - 1), (gx, gy + 1)):
-                    if 0 <= ngx < cell_w and 0 <= ngy < cell_h \
-                            and grid[ngy][ngx] and not seen[ngy][ngx]:
-                        seen[ngy][ngx] = True
-                        stack.append((ngx, ngy))
-            comps.append((area, mnx, mny, mxx, mxy, sy / max(area, 1)))
-
-    def _marginal_bbox():
-        # flat-field / hollow-subject scan: luma-band density over rows/cols.
-        # Used only when no structured component exists or the best component
-        # is a hollow outline (flat-filled subjects leave no interior
-        # structure), where band density still frames the subject correctly.
-        xs, ys = [], []
-        for y in range(ry0, ry1, 2):
-            cnt = 0
-            for x in range(rx0, rx1, 2):
-                p = px[x, y]
-                if min_luma < p < max_luma:
-                    cnt += 1
-            if cnt > (rx1 - rx0) / 2 * 0.18:
-                ys.append(y)
-        for x in range(rx0, rx1, 2):
-            cnt = 0
-            for y in range(ry0, ry1, 2):
-                p = px[x, y]
-                if min_luma < p < max_luma:
-                    cnt += 1
-            if cnt > (ry1 - ry0) / 2 * 0.18:
-                xs.append(x)
-        if not xs or not ys:
-            return None
-        pad = 6
-        return [max(rx0, min(xs) - pad), max(ry0, min(ys) - pad),
-                min(rx1, max(xs) + pad), min(ry1, max(ys) + pad)]
-
-    if not comps:
-        return _marginal_bbox()
-    # marginal bbox = the luma-band mass (the classic density scan)
-    marginal = _marginal_bbox()
-    roi_area = (rx1 - rx0) * (ry1 - ry0)
-    # Two views of the scene, each right in different situations:
-    #  * marginal = the luma-band mass. Correct when it covers only a small
-    #    slice of the ROI (a well-defined band subject, e.g. a flat-filled
-    #    hero on an out-of-band background). On busy or sky-heavy frames the
-    #    marginal scan unions nearly the whole ROI and reports a false
-    #    HEAD_CROPPED.
-    #  * component = the dominant STRUCTURED mass. Correct when the marginal
-    #    mass swallows the ROI, but flat-filled subjects leave only thin
-    #    boundary strips (no interior structure), so a small fragmentary
-    #    component must not override a clean marginal subject.
-    if marginal is None:
-        # no in-band mass: the largest structured component is the subject
-        _, mnx, mny, mxx, mxy, _ = max(comps, key=lambda c: c[0])
-        return [max(rx0, rx0 + mnx * step - 6),
-                max(ry0, ry0 + mny * step - 6),
-                min(rx1, rx0 + (mxx + 1) * step + 6),
-                min(ry1, ry0 + (mxy + 1) * step + 6)]
-    m_area = (marginal[2] - marginal[0]) * (marginal[3] - marginal[1])
-    if m_area < roi_area * 0.45:
-        return marginal
-    # Busy/sky-heavy frame: prefer the dominant structured component, but
-    # only when it is a real mass (>= 6% of the ROI cells), not an outline
-    # strip left by a flat-filled subject.
-    total_cells = cell_w * cell_h
-    best = None
-    for c in comps:
-        if c[0] < total_cells * 0.06:
-            continue
-        if 0.15 * cell_h <= c[5] <= 0.85 * cell_h:
-            if best is None or c[0] > best[0]:
-                best = c
-    if best is None:
-        best = max(comps, key=lambda c: c[0])
-    area, mnx, mny, mxx, mxy, _ = best
+    xs, ys = [], []
+    for y in range(y0, y1, 2):
+        cnt = 0
+        for x in range(x0, x1, 2):
+            p = px[x, y]
+            if min_luma < p < max_luma:
+                cnt += 1
+        if cnt > (x1 - x0) / 2 * 0.18:
+            ys.append(y)
+    for x in range(x0, x1, 2):
+        cnt = 0
+        for y in range(y0, y1, 2):
+            p = px[x, y]
+            if min_luma < p < max_luma:
+                cnt += 1
+        if cnt > (y1 - y0) / 2 * 0.18:
+            xs.append(x)
+    if not xs or not ys:
+        return None
     pad = 6
-    if area < total_cells * 0.06:
-        return marginal
-    # hollow check: an outline with an empty interior has a meaningless bbox
-    bbox_cells = (mxx - mnx + 1) * (mxy - mny + 1)
-    if area < bbox_cells * 0.25:
-        return marginal
-    return [max(rx0, rx0 + mnx * step - pad),
-            max(ry0, ry0 + mny * step - pad),
-            min(rx1, rx0 + (mxx + 1) * step + pad),
-            min(ry1, ry0 + (mxy + 1) * step + pad)]
-
-
-# --------------------------------------------------------------------------
-# UI panel detection
-# --------------------------------------------------------------------------
-
-# Structural-evidence thresholds for the generic UI detector.  Low luminance
-# is necessary but never sufficient: a dawn sky, a silhouette or a shadowed
-# region is dark yet is not a UI panel.  A real overlay panel is a slab that
-# is darker than the scene it covers (local contrast, so detection survives
-# time-of-day lighting changes) and carries crisp spatial boundaries: a sharp
-# top and bottom edge plus a sharp left edge or viewport-edge anchoring.
-# Smooth gradients (sky / light falloff) and silhouettes that fade into the
-# scene produce no crisp slab boundary and are never counted as UI.
-_UI_CTX_FRAC = 0.10           # scene-context band width (left of the ROI)
-_UI_LOCAL_MARGIN = 6          # luma a candidate must be darker than its context
-_UI_CRISP_STEP = 10           # luma jump a real panel boundary must show
-_UI_EDGE_SCAN_FRAC = 0.25     # how deep into the region the top/bottom scan looks
-_UI_SIDE_SCAN_FRAC = 0.10     # how far right of the left edge the side scan looks
-_UI_MIN_HEIGHT_FRAC = 0.15    # solid-block floor: reject speckle
-_UI_MIN_WIDTH_FRAC = 0.10
-_UI_ANCHOR_FRAC = 0.12        # right-side panels reach within this of the ROI edge
-_UI_INTERIOR_TOL = 10         # interior median must be dark, not mid-tone texture
-
-
-def _max_step_h(px, y, xa, xb) -> int:
-    """Max |luma(x+1)-luma(x)| along row ``y`` over x in [xa, xb)."""
-    xa = max(0, xa)
-    best = 0
-    for x in range(xa, xb):
-        best = max(best, abs(px[x, y] - px[x + 1, y]))
-    return best
-
-
-def _max_step_v(px, x, ya, yb) -> int:
-    """Max |luma(y+1)-luma(y)| down column ``x`` over y in [ya, yb)."""
-    ya = max(0, ya)
-    best = 0
-    for y in range(ya, yb):
-        best = max(best, abs(px[x, y] - px[x, y + 1]))
-    return best
-
-
-def _ui_panel_structure_gate(px, w, h, bbox, roi, dark_threshold) -> bool:
-    """Structural/spatial evidence that a dark region is a real UI panel.
-
-    A UI panel is a rectangular slab: it must show a crisp top boundary and a
-    crisp bottom boundary (a luminance step, not a fade), and on the sides it
-    must be anchored to the viewport/ROI edge or show a crisp inner boundary.
-    Its interior must actually be dark (not a mid-tone texture that merely
-    reads darker than its context).  Smooth sky gradients and silhouettes
-    that fade into the scene fail these checks regardless of how dark they
-    are.
-    """
-    x0, y0, x1, y1 = roi
-    bx0, by0, bx1, by1 = bbox
-    roi_w = max(1, x1 - x0)
-    roi_h = max(1, y1 - y0)
-    if (by1 - by0) < roi_h * _UI_MIN_HEIGHT_FRAC or \
-            (bx1 - bx0) < roi_w * _UI_MIN_WIDTH_FRAC:
-        return False
-    cx = (bx0 + bx1) // 2
-    cy = (by0 + by1) // 2
-    top = _max_step_v(px, cx, max(0, by0 - 4),
-                      min(h - 1, by0 + int(roi_h * _UI_EDGE_SCAN_FRAC)))
-    bottom = _max_step_v(px, cx, max(0, by1 - int(roi_h * _UI_EDGE_SCAN_FRAC)),
-                         min(h - 1, by1 + 4))
-    left = _max_step_h(px, cy, max(0, bx0 - 4),
-                       min(w - 1, bx0 + int(roi_w * _UI_SIDE_SCAN_FRAC)))
-    right = _max_step_h(px, cy, max(0, bx1 - int(roi_w * _UI_SIDE_SCAN_FRAC)),
-                        min(w - 1, bx1 + 4))
-    if top < _UI_CRISP_STEP or bottom < _UI_CRISP_STEP:
-        return False
-    # interior must be a genuinely dark slab, not busy mid-tone texture
-    pad = max(4, int(min(roi_w, roi_h) * 0.02))
-    if bx1 - bx0 > pad * 2 and by1 - by0 > pad * 2:
-        total = n = 0
-        for y in range(by0 + pad, by1 - pad, 4):
-            for x in range(bx0 + pad, bx1 - pad, 4):
-                total += px[x, y]
-                n += 1
-        if n and total / n > dark_threshold + _UI_INTERIOR_TOL:
-            return False
-    anchored = (x1 - bx1) <= roi_w * _UI_ANCHOR_FRAC
-    return left >= _UI_CRISP_STEP or anchored or right >= _UI_CRISP_STEP
+    return [max(x0, min(xs) - pad), max(y0, min(ys) - pad),
+            min(x1, max(xs) + pad), min(y1, max(ys) + pad)]
 
 
 def find_ui_bbox(
@@ -383,18 +141,8 @@ def find_ui_bbox(
     ui_roi: Optional[List[float]] = None,
     dark_threshold: int = 70,
 ) -> Optional[List[int]]:
-    """Detect a dark UI panel on the right side (fractions).
-
-    Low luminance alone is never treated as UI.  Candidate rows/columns are
-    found against the scene the overlay would cover (the band immediately
-    left of the ROI — local contrast, so a genuine panel keeps being found
-    as lighting changes with time of day — combined with the absolute
-    ``dark_threshold``), and the resulting dark region must pass the
-    panel-structure gate: crisp top/bottom boundaries plus a crisp left
-    boundary or viewport-edge anchoring.  A dawn sky, a silhouette or a
-    shadowed region is dark but smooth or fading, so it fails the gate and
-    is never counted as a UI panel.
-    """
+    """Detect a dark UI panel on the right side (fractions). Uses the region
+    that is consistently darker than the scene average."""
     w, h = image.size
     if ui_roi is None:
         ui_roi = [0.55, 0.05, 0.99, 0.97]
@@ -402,24 +150,13 @@ def find_ui_bbox(
     x1, y1 = int(w * ui_roi[2]), int(h * ui_roi[3])
     gray = image.convert("L")
     px = gray.load()
-    # scene-context band immediately left of the ROI
-    ctx_x0 = max(int(w * 0.02), x0 - int(w * _UI_CTX_FRAC))
-    ctx_x1 = x0
-
-    def _row_cut(y: int) -> float:
-        s = n = 0
-        for x in range(ctx_x0, ctx_x1, 2):
-            s += px[x, y]
-            n += 1
-        return max(dark_threshold, s / max(n, 1) - _UI_LOCAL_MARGIN)
-
-    def _col_cut(x: int) -> float:
-        s = n = 0
-        for y in range(y0, y1, 2):
-            s += px[x, y]
-            n += 1
-        return max(dark_threshold, s / max(n, 1) - _UI_LOCAL_MARGIN)
-
+    # scene baseline brightness from the left side
+    base_sum = base_n = 0
+    for y in range(0, h, 3):
+        for x in range(int(w * 0.02), int(w * 0.4), 3):
+            base_sum += px[x, y]
+            base_n += 1
+    baseline = base_sum / max(base_n, 1)
     xs, ys = [], []
     for y in range(y0, y1, 2):
         row_sum = 0
@@ -427,7 +164,8 @@ def find_ui_bbox(
         for x in range(x0, x1, 2):
             row_sum += px[x, y]
             row_n += 1
-        if row_sum / max(row_n, 1) < _row_cut(y):
+        row_mean = row_sum / max(row_n, 1)
+        if row_mean < min(baseline - 18, dark_threshold):
             ys.append(y)
     for x in range(x0, x1, 2):
         col_sum = 0
@@ -435,29 +173,24 @@ def find_ui_bbox(
         for y in range(y0, y1, 2):
             col_sum += px[x, y]
             col_n += 1
-        if col_sum / max(col_n, 1) < _col_cut(x):
+        col_mean = col_sum / max(col_n, 1)
+        if col_mean < min(baseline - 18, dark_threshold):
             xs.append(x)
     if not xs or not ys:
         return None
-    bbox = [min(xs), min(ys), max(xs), max(ys)]
-    if not _ui_panel_structure_gate(px, w, h, bbox,
-                                    (x0, y0, x1, y1), dark_threshold):
-        return None
-    return bbox
+    return [min(xs), min(ys), max(xs), max(ys)]
 
 
 def detect_camera_roll(image: Image.Image, threshold_deg: float = 4.0) -> float:
-    """Raw median edge-orientation estimate of camera roll.
+    """Cheap horizontal/vertical edge-alignment roll heuristic: measure the
+    dominant gradient orientation on strong edges near the frame border.
 
-    Strong edges near the frame border are sampled and their orientation is
-    folded to [0, 45] degrees (vertical and horizontal edges both fold toward
-    zero for a level camera; a rolled camera shifts them together). The
-    folded median is returned. This raw value is a SENSITIVE signal, not a
-    verdict: perspective keystone and texture noise bias it even for a level
-    camera, so measure() gates it with roll_support() — a roll is only
-    recorded when most strong edges genuinely agree on the angle. Genuine
-    gross rolls (a rotated horizon/skyline with few competing structures)
-    agree strongly; busy or keystoned content does not."""
+    Edge samples are folded to [0, 45] degrees and the median is returned (a
+    median, not a mean, because the sample population is heavily skewed by
+    ambiguous exactly-45-degree rectangle corners — those corner samples are
+    excluded since they carry no roll signal: a truly rolled frame produces
+    thousands of coherent rotated-edge samples, a clean frame produces almost
+    none. A sub-threshold sample count therefore means 'no roll signal'."""
     gray = image.convert("L")
     w, h = gray.size
     px = gray.load()
@@ -468,8 +201,8 @@ def detect_camera_roll(image: Image.Image, threshold_deg: float = 4.0) -> float:
             gx = px[min(x + 4, w - 1), y] - px[max(x - 4, 0), y]
             gy = px[x, min(y + 4, h - 1)] - px[max(y - 4, 0), y]
             if abs(gx) < 12 or abs(gy) < 12:
-                continue     # require a genuinely tilted edge: pure axis
-            mag = math.hypot(gx, gy)     # edges fold to 0 and drown roll
+                continue
+            mag = math.hypot(gx, gy)
             if mag < 30:
                 continue
             angle = math.degrees(math.atan2(gy, gx)) % 90.0
@@ -482,44 +215,6 @@ def detect_camera_roll(image: Image.Image, threshold_deg: float = 4.0) -> float:
         return 0.0
     angles.sort()
     return round(angles[len(angles) // 2], 2)
-
-
-def roll_support(image: Image.Image, roll_deg: float, window: float = 5.0) -> float:
-    """Fraction of strong edge samples agreeing with a candidate roll.
-
-    A camera roll is physically a rotation of the whole frame: if it is real,
-    the dominant edge family follows it and a large share of strong edges
-    agree within `window` degrees. Keystone perspective and texture noise
-    bias the raw median without broad agreement, so support near 1 means
-    'the whole frame really is tilted', support near 0 means the median is an
-    artifact of a mixed-orientation scene. Returns 0.0 when there is nothing
-    to agree on."""
-    if roll_deg <= 0.0:
-        return 0.0
-    gray = image.convert("L")
-    w, h = gray.size
-    px = gray.load()
-    agree = total = 0
-    band = 28
-    for y in range(band, h - band, 12):
-        for x in range(band, w - band, 12):
-            gx = px[min(x + 4, w - 1), y] - px[max(x - 4, 0), y]
-            gy = px[x, min(y + 4, h - 1)] - px[max(y - 4, 0), y]
-            if abs(gx) < 12 or abs(gy) < 12:
-                continue     # same tilted-edge requirement as the detector
-            if math.hypot(gx, gy) < 30:
-                continue
-            angle = math.degrees(math.atan2(gy, gx)) % 90.0
-            if angle > 45.0:
-                angle = 90.0 - angle
-            if 42.5 <= angle <= 47.5:
-                continue
-            total += 1
-            if abs(angle - roll_deg) <= window:
-                agree += 1
-    if total < 12:
-        return 0.0
-    return round(agree / float(total), 2)
 
 
 def _coverage(bbox, w, h) -> float:
@@ -588,16 +283,7 @@ def measure(
     m.empty_space_ratio = round(
         max(0.0, 1.0 - (stat.stddev[0] / max(m.mean_luma + 1e-6, 1.0)) / 3.0), 4
     )
-    # Roll is recorded only when the frame broadly agrees on one tilt angle.
-    # The raw edge-orientation median is a sensitive but noisy signal (keystone
-    # perspective and texture bias it even for a level camera), so a low-
-    # support reading is treated as level. This is intentionally strict:
-    # image-only heuristics never override runtime ground truth (frozen
-    # camera transforms / the documented _post_measure hook), they only
-    # prevent false CAMERA_ROLL defects on level frames.
-    raw_roll = detect_camera_roll(image)
-    support = roll_support(image, raw_roll) if raw_roll > 3.5 else 1.0
-    m.roll_deg = round(raw_roll, 2) if support >= 0.6 else 0.0
+    m.roll_deg = detect_camera_roll(image)
     if m.bands:
         m.issues.append("BLACK_BAND:" + ",".join(m.bands))
     # clipping flags use the TARGET-owned budget (mk. + a small tolerance) so
@@ -612,8 +298,6 @@ def measure(
     if m.stale:
         m.issues.append("STALE_CAPTURE")
     m.raw = raw
-    m.raw["roll_raw"] = raw_roll
-    m.raw["roll_support"] = support
     return m
 
 
@@ -740,22 +424,11 @@ def score(metrics: VisualMetrics, target: Optional[Dict[str, Any]] = None) -> Vi
         match -= 2.0
     s.target_match = _clamp(match)
 
-    cats = _scoped_categories(target)
-    if cats:
-        # Task-aware aggregation: weighted mean over ONLY the categories the
-        # task requires, using the same fixed weights renormalized.  Every
-        # category value above is still the honest measurement — nothing is
-        # awarded to a category the frame does not earn.
-        wsum = sum(SCORE_WEIGHTS[c] for c in cats)
-        overall = (sum(getattr(s, c) * SCORE_WEIGHTS[c] for c in cats)
-                   / wsum) if wsum else 0.0
-    else:
-        overall = (
-            s.composition * 0.15 + s.subject_framing * 0.20 +
-            s.lighting * 0.15 + s.environment * 0.12 + s.ui * 0.12 +
-            s.readability * 0.10 + s.target_match * 0.10 +
-            s.technical_integrity * 0.06
-        )
+    overall = (
+        s.composition * 0.15 + s.subject_framing * 0.20 + s.lighting * 0.15 +
+        s.environment * 0.12 + s.ui * 0.12 + s.readability * 0.10 +
+        s.target_match * 0.10 + s.technical_integrity * 0.06
+    )
     s.overall = _clamp(overall)
     return s
 

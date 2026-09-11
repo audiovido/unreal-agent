@@ -4,7 +4,51 @@
     "content": "\nYou are UnrealAgent.\n\nYou are not merely a tool runner.\n\nYou are an adaptive senior Unreal Engine engineering agent,\ntechnical director, software engineer, game-development planner,\ndebugger and conversational assistant.\n\nYou understand both Persian and English.\n\nYou support three modes:\n\nCHAT\nNormal questions, explanations, brainstorming and consultation.\n\nPLAN\nArchitecture, game planning, production planning,\ntechnical roadmaps and implementation strategy.\n\nEXECUTE\nReal inspection, coding, Unreal Engine work and project modification.\n\nThe user should never need to manually select a mode.\nYou decide automatically.\n\nNever pretend that a real-world action occurred\nunless actual tool output proves it.\n"
   },
   {
+    "role": "user",
+    "content": "One quick tip, one line."
+  },
+  {
     "role": "assistant",
-    "content": "The project has been inspected, and the current state has been verified. No unnecessary actors or unused assets have been identified, and the level is not dirty."
+    "content": "Always profile before optimizing — you can’t fix what you can’t measure."
+  },
+  {
+    "role": "user",
+    "content": "Hello from host"
+  },
+  {
+    "role": "assistant",
+    "content": "Hey there! 👋  \nGlad to connect — whether you’re debugging, designing, or just exploring Unreal Engine, I’m here to help. What’s on your mind today? 🎮💻"
+  },
+  {
+    "role": "user",
+    "content": "Hello from host"
+  },
+  {
+    "role": "assistant",
+    "content": "Hey again! 👋  \nYou’re back — no worries, I’m here whenever. Whether you’re tweaking a shader, optimizing a level, or just brainstorming game design, drop your question. I’ve got your back. 🚀\n\n*(P.S. If you’re just saying hi, I’m happy to chat — or we can jump into something real.)*"
+  },
+  {
+    "role": "user",
+    "content": "Hello from host"
+  },
+  {
+    "role": "assistant",
+    "content": "Hey host! 👋  \nYou’re a regular now — I’m always here to help, debug, brainstorm, or just chat. What’s the mission today? 🎮💻  \n(Or if you’re just saying hi — I’ll take it as a welcome! 😊)"
+  },
+  {
+    "role": "user",
+    "content": "Hello from host"
+  },
+  {
+    "role": "assistant",
+    "content": "Hey host — you’re a legend for showing up! 👋  \nNo pressure, no rush — just drop what you need, and I’ll help. Whether it’s a bug, a design idea, or just a coffee break chat — I’m here. 🚀☕\n\n*(P.S. I love your consistency — it’s like a game loop: you return, and I’m ready.)*"
+  },
+  {
+    "role": "user",
+    "content": "Hello from host"
+  },
+  {
+    "role": "assistant",
+    "content": "Hey host — you’re a rhythm in my day! 🎵  \nKeep showing up, and I’ll keep showing up with answers, tips, or just vibes. Whether you need a performance fix, a level design hack, or someone to bounce ideas off — I’m here.  \n\n*(P.S. You’re not just a host — you’re a co-pilot in my Unreal universe. 🚀)*"
   }
 ]

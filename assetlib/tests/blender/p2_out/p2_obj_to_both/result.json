@@ -1,0 +1,203 @@
+{
+  "ok": true,
+  "outputs": {
+    "name": "P2_Cone",
+    "exports": [
+      {
+        "format": "fbx",
+        "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/obj_to_both/P2_Cone.fbx",
+        "size_bytes": 16076,
+        "ok": true
+      },
+      {
+        "format": "glb",
+        "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/obj_to_both/P2_Cone.glb",
+        "size_bytes": 5716,
+        "ok": true
+      }
+    ],
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_work/P2_Cone.blend",
+    "validation_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/obj_to_both/P2_Cone_validation.json"
+  },
+  "validation": {
+    "ok": true,
+    "format": "obj",
+    "meshes": 1,
+    "vertex_total": 33,
+    "polygon_total": 33,
+    "triangle_total": 62,
+    "dimensions_cm": [
+      70.0,
+      70.0,
+      90.0
+    ],
+    "materials": [
+      "P2_Cone"
+    ],
+    "textures": [],
+    "uv_ensured": true,
+    "decimate": {
+      "requested": false
+    },
+    "deferred": {
+      "lods": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      },
+      "collision": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      }
+    },
+    "exports": [
+      "fbx",
+      "glb"
+    ]
+  },
+  "report": {
+    "asset": "P2_Cone",
+    "job_id": "p2_obj_to_both",
+    "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/samples/sample_cone.obj",
+    "source_format": "obj",
+    "import": {
+      "ok": true,
+      "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/samples/sample_cone.obj",
+      "format": "obj",
+      "imported_objects": [
+        {
+          "name": "P2_Cone",
+          "type": "MESH",
+          "parent": null
+        }
+      ],
+      "object_count": 1
+    },
+    "export_formats": [
+      "fbx",
+      "glb"
+    ],
+    "export_dir": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/obj_to_both",
+    "meshes_before": [
+      {
+        "name": "P2_Cone",
+        "vertices": 33,
+        "polygons": 33,
+        "triangles": 62,
+        "has_uv": true,
+        "materials": [
+          "P2_Cone"
+        ]
+      }
+    ],
+    "meshes_after": [
+      {
+        "name": "P2_Cone",
+        "vertices": 33,
+        "polygons": 33,
+        "triangles": 62,
+        "has_uv": true,
+        "materials": [
+          "P2_Cone"
+        ]
+      }
+    ],
+    "normalization": {
+      "scene_units": "METRIC",
+      "scale_cm_per_unit": 100.0,
+      "origin_center": "BOUNDS",
+      "transforms_applied": true,
+      "whole_scene_dimensions_cm": [
+        70.0,
+        70.0,
+        90.0
+      ],
+      "target_dimension_cm": null,
+      "scale_result": null
+    },
+    "geometry": {
+      "cleanup": true,
+      "custom_split_normals_cleared": true,
+      "normals_fixed": true,
+      "uv_ensured": true,
+      "decimate": {
+        "requested": false
+      }
+    },
+    "materials": [
+      "P2_Cone"
+    ],
+    "textures": [],
+    "organization": {
+      "requested_name": "P2_Cone",
+      "object_names": [
+        "P2_Cone"
+      ]
+    },
+    "deferred": {
+      "lods": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      },
+      "collision": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      }
+    },
+    "export": {
+      "files": [
+        {
+          "format": "fbx",
+          "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/obj_to_both/P2_Cone.fbx",
+          "size_bytes": 16076,
+          "ok": true
+        },
+        {
+          "format": "glb",
+          "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/obj_to_both/P2_Cone.glb",
+          "size_bytes": 5716,
+          "ok": true
+        }
+      ]
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_work/P2_Cone.blend",
+    "validation": {
+      "ok": true,
+      "format": "obj",
+      "meshes": 1,
+      "vertex_total": 33,
+      "polygon_total": 33,
+      "triangle_total": 62,
+      "dimensions_cm": [
+        70.0,
+        70.0,
+        90.0
+      ],
+      "materials": [
+        "P2_Cone"
+      ],
+      "textures": [],
+      "uv_ensured": true,
+      "decimate": {
+        "requested": false
+      },
+      "deferred": {
+        "lods": {
+          "requested": false,
+          "status": "deferred-not-implemented"
+        },
+        "collision": {
+          "requested": false,
+          "status": "deferred-not-implemented"
+        }
+      },
+      "exports": [
+        "fbx",
+        "glb"
+      ]
+    },
+    "validation_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/obj_to_both/P2_Cone_validation.json",
+    "elapsed_seconds": 0.4
+  },
+  "error": null,
+  "job_id": "p2_obj_to_both"
+}

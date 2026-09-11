@@ -5,14 +5,10 @@ import json
 import queue
 import traceback
 import io
-import os
 import contextlib
 
 HOST = "127.0.0.1"
-# Per-session bridge ports: the multi-client runtime launches each editor
-# with UA_BRIDGE_PORT set so every project instance owns a unique endpoint.
-# The default (6766) preserves the legacy single-project behavior exactly.
-PORT = int(os.getenv("UA_BRIDGE_PORT", "6766"))
+PORT = 6766
 REQUEST_TIMEOUT_SECONDS = 180
 
 request_queue = queue.Queue()
@@ -78,7 +74,7 @@ def process_request(payload):
             return {
                 "ok": True,
                 "message": "Python executed on Unreal main thread",
-                "result": json_safe(namespace.get("__bridge_result__")),
+                "result": json_safe(namespace.get("__bridge_result__") if namespace.get("__bridge_result__") is not None else namespace.get("bridge_result")),
                 "stdout": stdout.getvalue()
             }
 

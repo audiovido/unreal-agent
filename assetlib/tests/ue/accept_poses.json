@@ -1,0 +1,40 @@
+[
+  {
+    "kind": "overview"
+  },
+  {
+    "kind": "asset",
+    "id": "truck"
+  },
+  {
+    "kind": "asset",
+    "id": "cesiumman"
+  },
+  {
+    "kind": "asset",
+    "id": "fox"
+  },
+  {
+    "kind": "asset",
+    "id": "lantern"
+  },
+  {
+    "kind": "asset",
+    "id": "black_suv",
+    "extra_z": 0.8
+  },
+  {
+    "kind": "asset",
+    "id": "nlr_fox",
+    "anim": "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxWalk.FoxWalk",
+    "anim_double": true,
+    "extra_z": 0.8
+  },
+  {
+    "kind": "nlr",
+    "id": "nlr_scene",
+    "anim": "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxWalk.FoxWalk",
+    "anim_double": true,
+    "extra_z": 0.95
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "ok": false,
+  "outputs": {},
+  "validation": {},
+  "manifest": {},
+  "error": "TypeError: Converting py args to operator properties:: keyword \"size\" unrecognized",
+  "code": "OPERATION_FAILED",
+  "job_id": "d4bc3b2d-b57b-4af5-a69f-e5212e00858e",
+  "operation": "create_primitive",
+  "finished_at": 1788238067.8922424
+}

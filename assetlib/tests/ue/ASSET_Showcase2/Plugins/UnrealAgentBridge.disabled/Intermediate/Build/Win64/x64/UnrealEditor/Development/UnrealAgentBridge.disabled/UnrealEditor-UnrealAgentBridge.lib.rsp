@@ -1,0 +1,12 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/experimental:deterministic
+/DEF
+/NAME:"UnrealEditor-UnrealAgentBridge.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:/Users/Shadow/Desktop/app/AudioVidoLivingCity/Intermediate/Build/Win64/x64/AudioVidoLivingCityEditor/Development/UnrealEd/SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.h.obj"
+"C:/Users/Shadow/Desktop/app/AudioVidoLivingCity/Plugins/UnrealAgentBridge/Intermediate/Build/Win64/x64/UnrealEditor/Development/UnrealAgentBridge/Module.UnrealAgentBridge.cpp.obj"
+/OUT:"C:/Users/Shadow/Desktop/app/AudioVidoLivingCity/Plugins/UnrealAgentBridge/Intermediate/Build/Win64/x64/UnrealEditor/Development/UnrealAgentBridge/UnrealEditor-UnrealAgentBridge.lib"

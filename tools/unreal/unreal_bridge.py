@@ -7,6 +7,10 @@ import re
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 6766
+PROJECT_TARGETS = {
+    "avalive": ("127.0.0.1", 6766, r"C:/Users/Shadow/Desktop/AvaLive/AvaLive/AvaLive.uproject"),
+    "audiovido": ("127.0.0.1", 6767, r"C:/Users/Shadow/Desktop/app/AudioVidoLivingCity/AudioVidoLivingCity.uproject"),
+}
 
 
 def verify_startup_map_result(result):
@@ -33,8 +37,15 @@ def verify_save_result(result):
 
 
 class UnrealBridge:
-    def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=30):
-        self.expected_project = None
+    def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=30, target=None):
+        if target is not None:
+            if target not in PROJECT_TARGETS:
+                raise ValueError(f"Unknown Unreal project target: {target}")
+            host, port, self.expected_project = PROJECT_TARGETS[target]
+            self.target = target
+        else:
+            self.expected_project = None
+            self.target = None
         self.host = host
         self.port = port
         self.timeout = timeout
@@ -760,14 +771,12 @@ else:
         unreal.Vector({location[0]}, {location[1]}, {location[2]}),
         unreal.Rotator(pitch={rotation[0]}, yaw={rotation[1]}, roll={rotation[2]})
     )
-    mesh_loaded = None
     if actor is not None:
         actor.set_actor_scale3d(unreal.Vector({scale[0]}, {scale[1]}, {scale[2]}))
         if {actor_name!r}:
             actor.set_actor_label({actor_name!r})
         if {mesh_asset!r} and hasattr(actor, "static_mesh_component"):
             mesh = unreal.load_asset({mesh_asset!r})
-            mesh_loaded = mesh is not None
             if mesh is not None:
                 actor.static_mesh_component.set_static_mesh(mesh)
 
@@ -775,14 +784,8 @@ else:
         "ok": actor is not None,
         "name": actor.get_name() if actor else None,
         "label": actor.get_actor_label() if actor else None,
-        "class": actor.get_class().get_name() if actor else None,
-        "mesh_loaded": mesh_loaded,
-        "requested_mesh": {mesh_asset!r} or None,
+        "class": actor.get_class().get_name() if actor else None
     }}
-    if mesh_loaded is False:
-        __bridge_result__["warning"] = (
-            "Requested mesh asset not found: " + {mesh_asset!r}
-        )
 ''')
 
     def move_actor(self, actor_name: str, location):
@@ -884,43 +887,6 @@ if target is not None:
         "name": target.get_name(),
         "label": target.get_actor_label(),
         "rotation": [r.pitch, r.yaw, r.roll]
-    }}
-""")
-
-    def frame_viewport_from_actor(self, actor_name: str, distance: float = 0.0):
-        """Aim the active editor viewport from one unambiguous camera actor.
-
-        This intentionally does not guess at arbitrary scene actors: callers
-        must supply a mission-owned camera label.  It gives visual acceptance
-        evidence a deterministic relationship to the camera it is repairing.
-        """
-        return self.execute_python(f"""
-actors = unreal.EditorLevelLibrary.get_all_level_actors()
-matches = [a for a in actors if a.get_name() == {actor_name!r}
-           or a.get_actor_label() == {actor_name!r}]
-if len(matches) != 1:
-    __bridge_result__ = {{
-        "ok": False,
-        "error": "Camera actor not found or ambiguous: {actor_name}",
-        "matches": [a.get_name() for a in matches],
-    }}
-else:
-    camera = matches[0]
-    loc = camera.get_actor_location()
-    rot = camera.get_actor_rotation()
-    # Pulling back along the camera forward vector is bounded and is used
-    # only for a framing repair.  It never moves the camera actor itself.
-    offset = camera.get_actor_forward_vector() * float({float(distance)!r})
-    view_loc = loc - offset
-    editor = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem)
-    editor.set_level_viewport_camera_info(view_loc, rot)
-    readback = editor.get_level_viewport_camera_info()
-    __bridge_result__ = {{
-        "ok": readback is not None,
-        "camera": camera.get_actor_label(),
-        "location": [view_loc.x, view_loc.y, view_loc.z],
-        "rotation": [rot.pitch, rot.yaw, rot.roll],
-        "distance": float({float(distance)!r}),
     }}
 """)
     def scale_actor(self, actor_name: str, scale):

@@ -1,0 +1,257 @@
+{
+  "out": {
+    "spawn_floor": {
+      "ok": false,
+      "name": null,
+      "label": null,
+      "class": null
+    },
+    "spawn_light": {
+      "ok": false,
+      "name": null,
+      "label": null,
+      "class": null
+    },
+    "spawn_avatar": {
+      "ok": false,
+      "code": "NO_CHARACTER_MESH",
+      "error": "No character mesh found and the generic mannequin could not be installed",
+      "actor_label": "UA_Avatar",
+      "mesh": null,
+      "class": null,
+      "location": [
+        0,
+        500,
+        100
+      ],
+      "visible": false,
+      "verified": false
+    },
+    "assign_animation": {
+      "ok": false,
+      "code": "NO_ANIMATION_ASSET",
+      "error": "No animation asset available to assign",
+      "actor_label": "UA_Avatar",
+      "animation": null,
+      "verified": false
+    },
+    "save_scene": {
+      "ok": false,
+      "code": "NO_ACTIVE_LEVEL",
+      "requested_map": null
+    },
+    "stop_pie_if_running": {
+      "ok": true,
+      "requested": true,
+      "already_stopped": false,
+      "previous_world_name": "AvaLive_Main",
+      "message": "PIE end-play requested"
+    },
+    "start_pie": {
+      "ok": true,
+      "requested": true,
+      "already_running": false,
+      "message": "PIE begin-play requested"
+    },
+    "widget_title": {
+      "ok": true,
+      "code": null,
+      "widget": "TitleText",
+      "widget_name": "TextBlock_0",
+      "class": "TextBlock",
+      "parent": "CanvasPanel_0",
+      "attached": true,
+      "text": "AVA \u2014 Live Unreal Chat",
+      "verified": true
+    },
+    "widget_status": {
+      "ok": true,
+      "code": null,
+      "widget": "StatusText",
+      "widget_name": "TextBlock_1",
+      "class": "TextBlock",
+      "parent": "CanvasPanel_0",
+      "attached": true,
+      "text": "Online",
+      "verified": true
+    },
+    "widget_history": {
+      "ok": true,
+      "code": null,
+      "widget": "HistoryScroll",
+      "widget_name": "ScrollBox_0",
+      "class": "ScrollBox",
+      "parent": "CanvasPanel_0",
+      "attached": true,
+      "text": null,
+      "verified": true
+    },
+    "widget_input": {
+      "ok": true,
+      "code": null,
+      "widget": "InputBox",
+      "widget_name": "EditableTextBox_0",
+      "class": "EditableTextBox",
+      "parent": "CanvasPanel_0",
+      "attached": true,
+      "text": "",
+      "verified": true
+    },
+    "widget_send": {
+      "ok": true,
+      "code": null,
+      "widget": "SendButton",
+      "widget_name": "Button_0",
+      "class": "Button",
+      "parent": "CanvasPanel_0",
+      "attached": true,
+      "text": null,
+      "verified": true
+    },
+    "bind_send": {
+      "ok": true,
+      "code": null,
+      "widget": "SendButton",
+      "class": "Button",
+      "binding": "on_send_clicked",
+      "event": "on_clicked",
+      "bound": true,
+      "broadcast": true,
+      "events": [
+        "send-click",
+        "send-click",
+        "controller-send:Hello Ava. Confirm in one sentence that ",
+        "send-click"
+      ],
+      "verified": true
+    },
+    "bind_enter": {
+      "ok": true,
+      "code": null,
+      "widget": "InputBox",
+      "class": "EditableTextBox",
+      "binding": "enter_to_send",
+      "event": "on_text_committed",
+      "fires_on": "Enter (UMG OnTextCommitted)",
+      "bound": true,
+      "broadcast": false,
+      "verified": true
+    },
+    "viewport_add": {
+      "ok": true,
+      "code": null,
+      "widget": "ChatRoot",
+      "z_order": 10.0,
+      "in_viewport": true,
+      "verified": true
+    },
+    "chat_send": {
+      "ok": true,
+      "code": null,
+      "message": "Hello Ava. Confirm in one sentence that the live Unreal chat is working.",
+      "input_verified": true,
+      "input_text": "Hello Ava. Confirm in one sentence that the live Unreal chat is working.",
+      "user_bubble": "user_bubble_0",
+      "bubble_count": 1,
+      "send_dispatched": true,
+      "status_text": "\u2026 Thinking",
+      "state": "thinking",
+      "verified": true
+    },
+    "state_online": {
+      "ok": true,
+      "code": null,
+      "state": "online",
+      "widget": "StatusText",
+      "text": "\u25cf Online",
+      "history": [
+        "thinking",
+        "thinking",
+        "thinking",
+        "online"
+      ],
+      "verified": true
+    },
+    "user_bubble": {
+      "ok": true,
+      "code": null,
+      "kind": "user",
+      "text": "Hello Ava. Confirm in one sentence that the live Unreal chat is working.",
+      "bubble_widget": "user_bubble_1",
+      "display_text": "User: Hello Ava. Confirm in one sentence that the live Unreal chat is working.",
+      "bubble_count": 2,
+      "verified": true
+    },
+    "assistant_bubble": {
+      "ok": true,
+      "code": null,
+      "kind": "assistant",
+      "text": "Yes, the live Unreal chat is working.",
+      "bubble_widget": "assistant_bubble_2",
+      "display_text": "Assistant: Yes, the live Unreal chat is working.",
+      "bubble_count": 3,
+      "verified": true
+    },
+    "avatar_react": {
+      "ok": true,
+      "actor_label": "UA_Avatar",
+      "actor_name": "UA_Avatar",
+      "reaction": "bob",
+      "amount": 60.0,
+      "location_before": [
+        120.0,
+        0.0,
+        100.0
+      ],
+      "location_after": [
+        120.0,
+        0.0,
+        160.0
+      ],
+      "moved": true,
+      "visible": true,
+      "verified": true
+    },
+    "capture_pie": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/AvaLive/AvaLive/Saved/UnrealAgent/pie_viewport_latest.png",
+      "size": 69732,
+      "world_name": "AvaLive_Main",
+      "diagnostic": "OK|source=GameViewport|width=1912|height=1070|bytes=69732|path=C:/Users/Shadow/Desktop/AvaLive/AvaLive/Saved/UnrealAgent\\pie_viewport_latest.png",
+      "source_is_game_viewport": true,
+      "error": null
+    },
+    "stop_pie": {
+      "ok": true,
+      "requested": true,
+      "already_stopped": false,
+      "previous_world_name": "AvaLive_Main",
+      "message": "PIE end-play requested"
+    },
+    "save_final": {
+      "ok": true,
+      "map_before": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "map_after": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "requested_asset_path": null,
+      "requested_map": null,
+      "saved_map": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "was_temp_level": false,
+      "package_exists": true,
+      "dirty_before": true,
+      "dirty_after": false,
+      "active_map": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "active_map_identity_correct": true,
+      "verified": true,
+      "save_error": null,
+      "startup_map": "/Game/Maps/AvaLive_Main",
+      "startup_map_persisted": true
+    },
+    "runtime_post": {
+      "ok": true,
+      "is_playing": false,
+      "world_name": null,
+      "world_path": null
+    }
+  },
+  "vision": "{\n  \"has_character\": false,\n  \"has_chat_ui\": false,\n  \"has_text\": false,\n  \"environment\": \"empty\",\n  \"summary\": \"A black screen with a small, pixelated, checkerboard-patterned square in the center.\"\n}"
+}

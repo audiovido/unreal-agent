@@ -1,0 +1,15 @@
+{
+  "gui_alive": true,
+  "version": "4.2.0",
+  "python": "3.11.7",
+  "started_at": 1788344139.9594736,
+  "error": null,
+  "workspace": "Layout",
+  "screen": "Layout",
+  "objects": [
+    "Camera",
+    "Cube",
+    "Light"
+  ],
+  "gpu_module": true
+}

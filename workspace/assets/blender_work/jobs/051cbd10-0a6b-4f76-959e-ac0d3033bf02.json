@@ -1,0 +1,119 @@
+{
+  "id": "051cbd10-0a6b-4f76-959e-ac0d3033bf02",
+  "operation": "create_primitive",
+  "inputs": {
+    "name": "UA_Orb_Sphere",
+    "shape": "sphere",
+    "dimensions_cm": [
+      26,
+      26,
+      26
+    ],
+    "expected_dimensions_cm": [
+      26,
+      26,
+      26
+    ],
+    "materials": [
+      {
+        "name": "UA_OrbGlass",
+        "color": [
+          0.03,
+          0.03,
+          0.05
+        ],
+        "metallic": 0.2,
+        "roughness": 0.08
+      }
+    ],
+    "screenshot": false,
+    "segments": 64
+  },
+  "outputs": {},
+  "status": "FAILED",
+  "validation": {},
+  "manifest": {},
+  "error": "AttributeError: Calling operator \"bpy.ops.mesh.primitive_uvsphere_add\" error, could not be found",
+  "attempts": 3,
+  "max_attempts": 3,
+  "timeout_seconds": 600,
+  "created_at": 1788238068.0284574,
+  "updated_at": 1788238070.7757545,
+  "log": [
+    {
+      "at": 1788238068.028459,
+      "level": "info",
+      "message": "job created"
+    },
+    {
+      "at": 1788238068.0632274,
+      "level": "info",
+      "message": "attempt 1/3 starting (headless)"
+    },
+    {
+      "at": 1788238068.9468822,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238068.9468915,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238068.9491317,
+      "level": "error",
+      "message": "job failed inside Blender: AttributeError: Calling operator \"bpy.ops.mesh.primitive_uvsphere_add\" error, could not be found"
+    },
+    {
+      "at": 1788238068.9535365,
+      "level": "warning",
+      "message": "retrying job"
+    },
+    {
+      "at": 1788238068.9754212,
+      "level": "info",
+      "message": "attempt 2/3 starting (headless)"
+    },
+    {
+      "at": 1788238069.8754194,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238069.8754292,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238069.8759012,
+      "level": "error",
+      "message": "job failed inside Blender: AttributeError: Calling operator \"bpy.ops.mesh.primitive_uvsphere_add\" error, could not be found"
+    },
+    {
+      "at": 1788238069.8787994,
+      "level": "warning",
+      "message": "retrying job"
+    },
+    {
+      "at": 1788238069.9005086,
+      "level": "info",
+      "message": "attempt 3/3 starting (headless)"
+    },
+    {
+      "at": 1788238070.7753108,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238070.7753193,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238070.7757533,
+      "level": "error",
+      "message": "job failed inside Blender: AttributeError: Calling operator \"bpy.ops.mesh.primitive_uvsphere_add\" error, could not be found"
+    }
+  ]
+}

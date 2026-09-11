@@ -1,0 +1,119 @@
+{
+  "id": "7e5e90b7-1439-4c8a-b9a6-676a167aebee",
+  "operation": "create_primitive",
+  "inputs": {
+    "name": "UA_Studio_Podium",
+    "shape": "cylinder",
+    "dimensions_cm": [
+      190,
+      190,
+      34
+    ],
+    "expected_dimensions_cm": [
+      190,
+      190,
+      34
+    ],
+    "materials": [
+      {
+        "name": "UA_DarkTile",
+        "color": [
+          0.07,
+          0.08,
+          0.11
+        ],
+        "metallic": 0.78,
+        "roughness": 0.38
+      }
+    ],
+    "screenshot": false,
+    "segments": 64
+  },
+  "outputs": {},
+  "status": "FAILED",
+  "validation": {},
+  "manifest": {},
+  "error": "TypeError: Converting py args to operator properties:: keyword \"size\" unrecognized",
+  "attempts": 3,
+  "max_attempts": 3,
+  "timeout_seconds": 600,
+  "created_at": 1788238052.5799558,
+  "updated_at": 1788238055.3814003,
+  "log": [
+    {
+      "at": 1788238052.5799582,
+      "level": "info",
+      "message": "job created"
+    },
+    {
+      "at": 1788238052.6169057,
+      "level": "info",
+      "message": "attempt 1/3 starting (headless)"
+    },
+    {
+      "at": 1788238053.4940298,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238053.4940357,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238053.494519,
+      "level": "error",
+      "message": "job failed inside Blender: TypeError: Converting py args to operator properties:: keyword \"size\" unrecognized"
+    },
+    {
+      "at": 1788238053.498049,
+      "level": "warning",
+      "message": "retrying job"
+    },
+    {
+      "at": 1788238053.5221508,
+      "level": "info",
+      "message": "attempt 2/3 starting (headless)"
+    },
+    {
+      "at": 1788238054.4412994,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238054.4413064,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238054.4419422,
+      "level": "error",
+      "message": "job failed inside Blender: TypeError: Converting py args to operator properties:: keyword \"size\" unrecognized"
+    },
+    {
+      "at": 1788238054.4454393,
+      "level": "warning",
+      "message": "retrying job"
+    },
+    {
+      "at": 1788238054.4671214,
+      "level": "info",
+      "message": "attempt 3/3 starting (headless)"
+    },
+    {
+      "at": 1788238055.3808439,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238055.3808508,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238055.3813994,
+      "level": "error",
+      "message": "job failed inside Blender: TypeError: Converting py args to operator properties:: keyword \"size\" unrecognized"
+    }
+  ]
+}

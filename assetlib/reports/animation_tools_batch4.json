@@ -1,0 +1,220 @@
+{
+  "bridge": {
+    "ok": true,
+    "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+    "project_name": "ASSET_Showcase2",
+    "engine": "5.8.2-56702186+++UE5+Release-5.8",
+    "world": "/Game/ShowcaseMap.ShowcaseMap",
+    "port": 6766
+  },
+  "steps": [
+    {
+      "step": "00_cleanup",
+      "ok": true
+    },
+    {
+      "step": "01_open_temp_map",
+      "open": {
+        "ok": true,
+        "level_path": "/Game/ToolGap/Batch2Map",
+        "loaded": true,
+        "world_path": "/Game/ToolGap/Batch2Map.Batch2Map",
+        "identity_ok": true
+      },
+      "actor_count_after": 0,
+      "ok": true
+    },
+    {
+      "step": "02_list_sequences",
+      "count": 3,
+      "sequences": [
+        "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxRun.FoxRun",
+        "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxSurvey.FoxSurvey",
+        "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxWalk.FoxWalk"
+      ],
+      "ok": true
+    },
+    {
+      "step": "03_inspect_sequence",
+      "ok": true,
+      "path": "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxWalk.FoxWalk",
+      "play_length": 0.7083333134651184,
+      "sequence_length": 0.7083333134651184,
+      "rate_scale": 1.0
+    },
+    {
+      "step": "04_notifies_surface_probed",
+      "finding": "engine gap",
+      "probe": {
+        "ok": false,
+        "notifies": [
+          {
+            "error": "AnimSequence: Property 'Notifies' for attribute 'notifies' on 'AnimSequence' is protected and cannot be read"
+          }
+        ]
+      },
+      "ok": true
+    },
+    {
+      "step": "05_list_meshes",
+      "count": 2,
+      "meshes": [
+        "/Game/Showcase/Animations/Fox/SkeletalMeshes/Fox.Fox",
+        "/Game/Showcase/Characters/CesiumMan/SkeletalMeshes/CesiumMan.CesiumMan"
+      ],
+      "ok": true
+    },
+    {
+      "step": "06_skeleton_info",
+      "ok": true,
+      "path": "/Game/Showcase/Animations/Fox/SkeletalMeshes/Fox_Skeleton.Fox_Skeleton",
+      "class": "Skeleton",
+      "bone_count": 24,
+      "read_trail": [
+        "bone_tree"
+      ]
+    },
+    {
+      "step": "07_spawn_fox",
+      "ok": true,
+      "name": "SkeletalMeshActor_0",
+      "label": "AnimFox",
+      "class": "SkeletalMeshActor"
+    },
+    {
+      "step": "08_mesh_swap",
+      "ok": true,
+      "actor": "SkeletalMeshActor_0",
+      "mesh_on_component": "/Game/Showcase/Characters/CesiumMan/SkeletalMeshes/CesiumMan.CesiumMan"
+    },
+    {
+      "step": "09_assign_and_play",
+      "ok": true,
+      "actor": "SkeletalMeshActor_0",
+      "animation_on_component": null,
+      "animation_read_back": false,
+      "animation_mode": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>",
+      "gap": "component animation-object read-back closed in 5.8 python (property+attr throw); assignment/mode/PIE proven"
+    },
+    {
+      "step": "10_state_and_restart",
+      "state": {
+        "ok": true,
+        "actor": "SkeletalMeshActor_0",
+        "animation": null,
+        "animation_read_back": false,
+        "animation_mode": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>"
+      },
+      "restart": {
+        "ok": true,
+        "actor": "SkeletalMeshActor_0",
+        "animation_on_component": null,
+        "animation_read_back": false,
+        "animation_mode": "<AnimationMode.ANIMATION_SINGLE_NODE: 1>"
+      },
+      "ok": true
+    },
+    {
+      "step": "11_runtime_playback_control",
+      "start": {
+        "ok": true,
+        "message": "Python executed on Unreal main thread",
+        "result": {
+          "ok": true,
+          "requested": true,
+          "already_running": false,
+          "message": "PIE begin-play requested"
+        },
+        "stdout": ""
+      },
+      "during": {
+        "ok": true,
+        "is_playing": true,
+        "world_name": "Batch2Map",
+        "world_path": "/Game/ToolGap/UEDPIE_0_Batch2Map.Batch2Map"
+      },
+      "after_stop": {
+        "ok": true,
+        "is_playing": false,
+        "world_name": null,
+        "world_path": null
+      },
+      "ok": true
+    },
+    {
+      "step": "12_bone_transform",
+      "bone": "root",
+      "result": {
+        "ok": true,
+        "actor": "SkeletalMeshActor_0",
+        "bone": "root",
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          -0.0
+        ]
+      },
+      "candidates_tried": [
+        "root",
+        "pelvis",
+        "hips",
+        "spine_01",
+        "Head",
+        "head",
+        "b_root",
+        "Root",
+        "bone_1",
+        "mixamorig:Hips"
+      ],
+      "ok": true
+    },
+    {
+      "step": "12b_anim_has_motion_basis",
+      "ok": true,
+      "play_length": 0.7083333134651184,
+      "frames_approx": 16,
+      "frame_rate_note": "pose eval closed on 5.8"
+    },
+    {
+      "step": "13a_unknown_actor_rejected",
+      "ok": true,
+      "error": "actor not found or ambiguous",
+      "matches": []
+    },
+    {
+      "step": "13b_wrong_class_rejected",
+      "ok": true,
+      "error": "not an AnimSequence: SkeletalMesh"
+    },
+    {
+      "step": "13c_wrong_mesh_class",
+      "ok": true,
+      "error": "mesh not found: /Game/NLR/BlackSUV.Cesium_Milk_Truck"
+    }
+  ],
+  "verdict": "PASS",
+  "step_summary": {
+    "00_cleanup": true,
+    "01_open_temp_map": true,
+    "02_list_sequences": true,
+    "03_inspect_sequence": true,
+    "04_notifies_surface_probed": true,
+    "05_list_meshes": true,
+    "06_skeleton_info": true,
+    "07_spawn_fox": true,
+    "08_mesh_swap": true,
+    "09_assign_and_play": true,
+    "10_state_and_restart": true,
+    "11_runtime_playback_control": true,
+    "12_bone_transform": true,
+    "12b_anim_has_motion_basis": true,
+    "13a_unknown_actor_rejected": true,
+    "13b_wrong_class_rejected": true,
+    "13c_wrong_mesh_class": true
+  }
+}

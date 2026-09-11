@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 import subprocess
@@ -32,7 +31,6 @@ if str(ROOT) not in sys.path:
 # Import MemorySystem for API integration
 from core.memory_system import MemorySystem
 from core.production_pipeline import production_preflight, visual_scorecard
-from core.visual_director import is_vehicle_showcase_prompt, parse_intent
 from core.task_goal import (
     build_acceptance_contract,
     load_task_goal,
@@ -40,7 +38,6 @@ from core.task_goal import (
     update_task_goal,
     reconcile_step,
     contract_complete,
-    environment_required_for_request,
 )
 
 from core.orchestrator import (
@@ -73,10 +70,6 @@ from app.workboard_selftest import (
     router as workboard_selftest_router,
     start_selftest,
 )
-from app.code_tasks import (
-    router as code_tasks_router,
-    startup_recovery as code_tasks_startup_recovery,
-)
 from app.workboard_api import (
     router as workboard_router,
     get_next_ready_task,
@@ -107,7 +100,6 @@ app.add_middleware(
 app.include_router(overnight_router)
 app.include_router(workboard_router)
 app.include_router(workboard_selftest_router)
-app.include_router(code_tasks_router)
 
 UI_DIR = ROOT / "ui"
 
@@ -183,10 +175,6 @@ events: list[dict[str, Any]] = []
 pending_approvals: dict[str, dict[str, Any]] = {}
 
 execution_state: dict[str, Any] | None = None
-# Last terminal execution is retained as a read-only projection for the
-# Devboard inspector. It contains only canonical execution/evidence fields;
-# it is not used to make execution or acceptance decisions.
-last_execution_snapshot: dict[str, Any] | None = None
 
 
 # ============================================================
@@ -933,85 +921,6 @@ def normalize_execution_plan(task, plan):
                     "disposable": False,
                     "status": "pending",
                 })
-    # Real-asset vehicle showcase: a request to build/show a vehicle in a
-    # scene must actually place a real project vehicle asset, light and frame
-    # it, save the level, verify it and capture a fresh proof. Without this
-    # deterministic expansion such tasks collapsed to the inspect+ping health
-    # probes and stalled (truthfully) before any real work ran. The vehicle
-    # mesh and environment are the canonical accepted assets already verified
-    # in ASSET_Showcase2 (StaticMesh /Game/NLR/BlackSUV/Cesium_Milk_Truck).
-    # Labels are unique per task so repeated runs never collide.
-    is_vehicle_showcase = bool(
-        re.search(
-            r"\b(vehicle|vehicles|truck|car|suv|automobile|van)\b",
-            task_lower,
-        )
-        and (
-            "showcase" in task_lower
-            or "scene" in task_lower
-            or "display" in task_lower
-            or "exhibit" in task_lower
-            or "garage" in task_lower
-        )
-        and not any(w in task_lower for w in ("delete", "remove", "clean up", "cleanup"))
-    )
-    if is_vehicle_showcase and not p["asset_path"] and not p["actor_name"]:
-        tag = uuid.uuid4().hex[:8]
-        veh_label = f"UA_VehShow_{tag}"
-        cam_label = f"UA_VehShow_{tag}_Cam"
-        wheel1_label = f"UA_VehShow_{tag}_Wheel1"
-        wheel2_label = f"UA_VehShow_{tag}_Wheel2"
-        key_label = f"UA_VehShow_{tag}_KeyLight"
-        fill_label = f"UA_VehShow_{tag}_FillLight"
-        # Body + wheels mirror the proven in-map SUV_0/1/2 placement geometry
-        # (body centre z=-26, wheel meshes z=0, all at scale 1, yaw 0).
-        add("showcase_vehicle", "EDIT", "spawn_actor", "spawn_actor",
-            {"class_name": "StaticMeshActor", "actor_name": veh_label,
-             "location": [0, 0, -26], "rotation": [0, 0, 0],
-             "scale": [1.0, 1.0, 1.0],
-             "mesh_asset": "/Game/NLR/BlackSUV/Cesium_Milk_Truck.Cesium_Milk_Truck"})
-        add("showcase_wheel1", "EDIT", "spawn_actor", "spawn_actor",
-            {"class_name": "StaticMeshActor", "actor_name": wheel1_label,
-             "location": [0, 0, 0], "rotation": [0, 0, 0],
-             "scale": [1.0, 1.0, 1.0],
-             "mesh_asset": "/Game/NLR/BlackSUV/Wheels1.Wheels1"})
-        add("showcase_wheel2", "EDIT", "spawn_actor", "spawn_actor",
-            {"class_name": "StaticMeshActor", "actor_name": wheel2_label,
-             "location": [0, 0, 0], "rotation": [0, 0, 0],
-             "scale": [1.0, 1.0, 1.0],
-             "mesh_asset": "/Game/NLR/BlackSUV/Wheels_001.Wheels_001"})
-        add("showcase_key_light", "EDIT", "spawn_actor", "spawn_actor",
-            {"class_name": "PointLight", "actor_name": key_label,
-             "location": [900, -700, 700]})
-        add("showcase_fill_light", "EDIT", "spawn_actor", "spawn_actor",
-            {"class_name": "PointLight", "actor_name": fill_label,
-             "location": [-700, 500, 250]})
-        # Three-quarter cinematic view: camera at C looking at the vehicle
-        # (target origin). yaw = atan2(dy, dx); pitch points down at the target.
-        import math as _math
-        _cam = (700.0, -420.0, 240.0)
-        _dx, _dy = -_cam[0], -_cam[1]
-        _yaw = _math.degrees(_math.atan2(_dy, _dx))
-        # Looking DOWN at the origin target from z=240 => negative pitch.
-        _pitch = -_math.degrees(_math.atan2(_cam[2], _math.hypot(_dx, _dy)))
-        add("showcase_camera", "EDIT", "spawn_actor", "spawn_actor",
-            {"class_name": "CameraActor", "actor_name": cam_label,
-             "location": [700.0, -420.0, 240.0],
-             "rotation": [round(_pitch, 2), round(_yaw, 2), 0.0]})
-        add("showcase_frame", "EDIT", "frame_viewport_from_actor",
-            "frame_viewport_from_actor", {"actor_name": cam_label})
-        add("showcase_save", "BUILD", "save_level", "save_level", {})
-        add("showcase_validate", "VALIDATE", "get_actor", "get_actor",
-            {"actor_name": veh_label}, {"expected": veh_label})
-        if environment_required_for_request(task) and "list_level_actors" in REGISTRY:
-            # Structured scene read-back is interpreted by reconcile_step;
-            # it must not carry a scalar expected value, because the result is
-            # an actor collection rather than one value to compare.
-            add("showcase_environment_verify", "VALIDATE", "list_level_actors",
-                "list_level_actors", {})
-        add("showcase_evidence", "EVIDENCE", "capture_unreal_viewport",
-            "capture_unreal_viewport", {})
-
     # Never allow the plan to collapse to health checks for a long parent goal.
     if is_long_build and len(steps) <= 2:
         add("parent_goal_guard", "VALIDATE", "list_level_actors", "list_level_actors", {})
@@ -1232,31 +1141,11 @@ def _extract_tool_error(result):
     return None
 
 
-def _default_project_context() -> dict:
-    """Machine-local default project context (no baked-in legacy demo path).
-
-    Resolves the active project through the standard priority chain (durable
-    Active Project Context -> last opened -> known registry -> bounded search)
-    so a fresh machine never inherits another machine's demo project.  Returns
-    an empty context when nothing is resolvable; tool args then fall through to
-    each tool's own resolution chain instead of pointing at a stale path.
-    """
-    try:
-        from tools.unreal import project_context as _pc
-        resolved = _pc.resolve_active_project()
-        if resolved and resolved.get("ok") and resolved.get("uproject_path"):
-            ctx = dict(resolved.get("context") or {})
-            name = ctx.get("project_name") or Path(resolved["uproject_path"]).stem
-            out = {
-                "uproject_path": resolved["uproject_path"],
-                "project_name": name,
-            }
-            if ctx.get("world"):
-                out["world"] = ctx["world"]
-            return out
-    except Exception:
-        pass
-    return {}
+PROJECT_CONTEXT_DEFAULT = {
+    "uproject_path": r"C:\Users\Shadow\Desktop\app\AudioVidoLivingCity\AudioVidoLivingCity.uproject",
+    "project_name": "AudioVidoLivingCity",
+    "world": "/Game/AVLC_Main.AVLC_Main",
+}
 
 _PLACEHOLDER_HINTS = (
     "/path/to/your/project.uproject",
@@ -1280,11 +1169,11 @@ def _is_placeholder(value):
 
 def _seed_project_context():
     """Load the durable Active Project Context (survives backend/editor/Freebuff
-    restarts) and merge it over the machine-local default so the active project
-    is always the one the agent last confirmed, not a hardcoded fallback."""
+    restarts) and merge it over the legacy default so the active project is
+    always the one the agent last confirmed, not a hardcoded fallback."""
     from tools.unreal import project_context
     durable = project_context.load_active_context()
-    context = _default_project_context()
+    context = dict(PROJECT_CONTEXT_DEFAULT)
     up = durable.get("uproject_path")
     if up:
         context["uproject_path"] = up
@@ -1295,47 +1184,10 @@ def _seed_project_context():
     return context
 
 
-def _production_visual_target(task: str) -> dict:
-    """Resolve the one Visual Director target used by production execution.
-
-    /api/action must carry the same target into planning, validation, and the
-    bounded self-fix loop; it must not create a second acceptance path.
-    """
-    try:
-        target = parse_intent(task)
-    except Exception:
-        target = {}
-    if is_vehicle_showcase_prompt(task) and target.get("visual_profile") != "vehicle_showcase":
-        # Keep the profile decision centralized in the Visual Director parser,
-        # while remaining fail-closed if a future parser revision is partial.
-        target["visual_profile"] = "vehicle_showcase"
-    required = environment_required_for_request(task)
-    target["environment_requirement"] = {
-        "required": required,
-        "criterion": "deliverable:environment" if required else None,
-        "evaluated": False,
-        "verified": False,
-        "status": "required/unevaluated" if required else "advisory",
-    }
-    return target
-
-
 def new_execution(task: str):
     task_id = str(uuid.uuid4())
     preflight = production_preflight(task)
-    visual_target = _production_visual_target(task)
-    # The vehicle showcase plan is fully deterministic and already contains
-    # its real asset/camera/evidence chain. Skip the optional LLM planner here
-    # so /api/action can acknowledge immediately and the worker owns all live
-    # execution, just like every other production task after planning.
-    base_plan = ({"goal": task, "steps": [], "success_criteria": []}
-                 if visual_target.get("visual_profile")
-                 else create_execution_plan(task))
-    plan = normalize_execution_plan(task, base_plan)
-    if visual_target.get("visual_profile"):
-        routing = plan.setdefault("_routing", {})
-        routing["visual_profile"] = visual_target["visual_profile"]
-        routing["visual_strategy"] = visual_target.get("visual_strategy")
+    plan = normalize_execution_plan(task, create_execution_plan(task))
     plan["production_preflight"] = preflight
     plan.setdefault("_routing", {})["execution_mode"] = preflight.get("execution_mode")
     plan["_routing"]["asset_template_route"] = preflight.get("asset_template_route")
@@ -1398,23 +1250,6 @@ def new_execution(task: str):
         "parent_goal_id": goal.get("id"),
         "production_preflight": preflight,
         "visual_quality_target": 9.0 if preflight.get("visual_task") else None,
-        "visual_floor": _production_visual_floor(task, visual_target),
-        "visual_score_measured": None,
-        "visual_score_evidence": None,
-        # Canonical production Visual Director target.  The same object is
-        # consumed by evidence scoring and bounded self-fix; it is never a
-        # parallel completion signal.
-        "visual_target": visual_target,
-        "visual_profile": visual_target.get("visual_profile"),
-        "visual_strategy": visual_target.get("visual_strategy"),
-        "environment_required": bool(goal.get("environment_required")),
-        "environment_criterion": goal.get("environment_criterion"),
-        "environment_evaluated": False,
-        "environment_verified": False,
-        "environment_status": "required/unevaluated" if goal.get("environment_required") else "advisory",
-        "environment_evidence": None,
-        "visual_proof": [],
-        "visual_self_fix": None,
     }
 
 
@@ -1439,7 +1274,7 @@ def _next_normalized_step(execution):
 
 def _resolved_step_args(execution, step, project_context=None):
     args = dict(step.get("parameters") or {})
-    context = project_context or execution.get("project_context") or _default_project_context()
+    context = project_context or execution.get("project_context") or PROJECT_CONTEXT_DEFAULT
     spec = REGISTRY.get(step.get("preferred_tool") or "")
     accepted = set((spec.args or {}).keys()) if spec is not None else set()
     tool = step.get("preferred_tool") or ""
@@ -1453,7 +1288,7 @@ def _resolved_step_args(execution, step, project_context=None):
             args[key] = context[key]
     # inspect_project without an EXPLICIT user-provided path must resolve the
     # active project itself (persisted context -> live bridge -> search) rather
-    # than trusting the default project context. Drop any injected
+    # than trusting the hardcoded PROJECT_CONTEXT_DEFAULT. Drop any injected
     # default/placeholder so the tool runs its resolution chain and never
     # returns "uproject not found" for a recoverable task.
     if step.get("preferred_tool") == "inspect_project":
@@ -2167,344 +2002,6 @@ def _progress_signature(state):
     ))
 
 
-_VISUAL_SCORE_RE = re.compile(
-    r"(?:visual\s+)?score"
-    r"(?:\s+(?:must\s+|needs\s+to\s+)?(?:be|of|reach|meet))?"
-    r"(?:\s*(?:>=|≥|>|at least|above|minimum|min\.?))?"
-    r"\s*(\d{1,2}(?:\.\d+)?)\s*(?:/\s*10|out of 10)?",
-    re.IGNORECASE,
-)
-
-# Mission/supervisor phrasing states the same acceptance floor without the
-# literal word "score" next to the number, e.g.
-#   "- If visual quality is below 8.5/10, automatically improve the scene and
-#     repeat validation."
-#   "- Visual quality score meets the 8.5/10 target."
-#   "Visual quality score is at least 8.5/10 after validation."
-# The strict visual gate must arm for these too, or supervisor-routed
-# showcase tasks silently bypass it and "execution finished" becomes DONE.
-_VISUAL_TARGET_RE = re.compile(
-    r"(?:visual\s+)?(?:score|quality|rating|grade)"
-    r"[^0-9]{0,40}?"
-    r"(?:(?:>=|≥|>|at least|above|minimum|min\.?|below|under)\s*)?"
-    r"(\d{1,2}(?:\.\d+)?)\s*(?:/\s*10|out of 10)",
-    re.IGNORECASE,
-)
-
-
-def _production_visual_floor(text, visual_target):
-    """Return the existing visual gate floor, arming it for profiled shots.
-
-    Vehicle showcases use the canonical 8.5 release floor even when the user
-    does not repeat the implementation detail in their prompt. This does not
-    change the threshold; it prevents the production route from bypassing the
-    already-proven acceptance contract.
-    """
-    requested = _requested_visual_floor(text)
-    if requested is not None:
-        return requested
-    if isinstance(visual_target, dict) and visual_target.get("visual_profile"):
-        return 8.5
-    return None
-
-
-def _requested_visual_floor(text):
-    """Parse an explicit visual-score acceptance threshold from the request.
-
-    Returns the numeric floor (0-10) when the user explicitly asked for a
-    visual score (e.g. "visual validation score >= 8.5/10" or the mission
-    phrasing "visual quality is below 8.5/10 ... repeat validation"),
-    otherwise None. An explicit floor turns on the strict visual acceptance
-    gate: the mission can never reach COMPLETE until a real measured visual
-    score meets it.
-    """
-    lowered = re.sub(r"\s+", " ", str(text or "").lower())
-    for pattern in (_VISUAL_SCORE_RE, _VISUAL_TARGET_RE):
-        m = pattern.search(lowered)
-        if not m:
-            continue
-        try:
-            value = float(m.group(1))
-        except (TypeError, ValueError):
-            continue
-        # Only a score phrased as an acceptance target (0-10 scale) is a gate.
-        if not (0.0 <= value <= 10.0):
-            continue
-        # Guard against "what is the current score" style queries: execution-
-        # mode requests that mention a score pair it with validation language.
-        snippet = lowered[max(0, m.start() - 60):m.end()]
-        if any(term in snippet for term in ("visual", "validation", "validate", "acceptance", "quality", "rating", "must", "at least", ">=", "≥", "below", "above", "target", "/10", "/ 10")):
-            return round(value, 2)
-    return None
-
-
-def _find_measured_score(value):
-    """Deep-scan a dispatch payload for a numeric 0-10 visual score."""
-    if isinstance(value, dict):
-        for key in ("score", "visual_score", "overall_score"):
-            raw = value.get(key)
-            if isinstance(raw, (int, float)) and not isinstance(raw, bool):
-                num = float(raw)
-                if 0.0 <= num <= 10.0:
-                    return round(num, 2)
-        for nested in value.values():
-            found = _find_measured_score(nested)
-            if found is not None:
-                return found
-    elif isinstance(value, (list, tuple)):
-        for item in value:
-            found = _find_measured_score(item)
-            if found is not None:
-                return found
-    return None
-
-
-# Acceptance scope for scene/showcase proofs (mirrors the canonical
-# core.product_core.ACTOR_TASK_CATEGORIES set). UI and readability only
-# constrain UI-product builds; scoring a scene against them would make an
-# 8.5 floor mathematically unreachable for any non-UI frame.
-SCENE_VISUAL_CATEGORIES = ["composition", "subject_framing", "lighting",
-                           "environment", "technical_integrity"]
-
-
-def _proof_path_from_dispatch(dispatch):
-    payload = _tool_payload(dispatch or {})
-    if isinstance(payload, dict):
-        path = payload.get("path")
-        if path:
-            return str(path)
-        nested = payload.get("result")
-        if isinstance(nested, dict) and nested.get("path"):
-            return str(nested["path"])
-    raw = (dispatch or {}).get("raw_result") if isinstance(dispatch, dict) else None
-    if isinstance(raw, dict):
-        nested = raw.get("result")
-        if isinstance(nested, dict) and nested.get("path"):
-            return str(nested["path"])
-    return None
-
-
-def _fresh_proof_hash(path):
-    try:
-        normalized = str(path).replace(chr(92), "/")
-        candidate = Path(normalized)
-        if not candidate.is_absolute():
-            candidate = ROOT / candidate
-        return hashlib.sha256(candidate.resolve().read_bytes()).hexdigest()
-    except Exception:
-        return None
-
-
-def _wake_production_editor() -> bool:
-    """Restore the Unreal window for the existing fresh-capture contract."""
-    try:
-        ps = r"""
-$p = Get-Process -Name UnrealEditor -ErrorAction SilentlyContinue |
-     Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
-if (-not $p) { Write-Output 'NO'; exit 1 }
-Add-Type @'
-using System; using System.Runtime.InteropServices;
-public class ApiWake { [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
-[DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h); }
-'@
-[ApiWake]::ShowWindow($p.MainWindowHandle, 9) | Out-Null
-[ApiWake]::SetForegroundWindow($p.MainWindowHandle) | Out-Null
-Write-Output 'OK'
-"""
-        result = subprocess.run(
-            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
-             "-Command", ps], capture_output=True, text=True, timeout=30)
-        return "OK" in (result.stdout or "")
-    except Exception:
-        return False
-
-
-def _run_production_visual_director(execution, initial_path):
-    """Run the canonical bounded Visual Director for a production profile.
-
-    This is invoked by the existing EVIDENCE step, not a parallel executor.
-    It reuses AutonomousVisualLoop, the corrected scene locator, the release
-    gate, and the existing read-back/rollback-aware Unreal adapter.
-    """
-    from assetlib.reports.unreal_coder_release_missions import resolve_scene_locators
-    from core.release_director import release_accept
-    from core.unreal_fix_adapter import UnrealFixAdapter
-    from core.visual_loop import AutonomousVisualLoop
-
-    target = dict(execution.get("visual_target") or {})
-    profile = str(execution.get("visual_profile") or "")
-    locators = resolve_scene_locators(profile) if profile else None
-    locator_kw = {k: v for k, v in (locators or {}).items() if v is not None}
-    adapter = UnrealFixAdapter(
-        BRIDGE, visible_retries=2, wake_editor=_wake_production_editor)
-    proof_dir = ROOT / "assetlib" / "proof" / "product" / str(execution.get("id") or "task_unknown")
-    proof_dir.mkdir(parents=True, exist_ok=True)
-    counter = {"n": 0}
-
-    def capture():
-        counter["n"] += 1
-        path = proof_dir / f"visual_{counter['n']:02d}.png"
-        info = adapter.capture(str(path))
-        return str(Path(info["path"]).resolve())
-
-    environment_requirement = dict(execution.get("visual_target", {}).get("environment_requirement") or {})
-    environment_requirement.update({
-        "required": bool(execution.get("environment_required")),
-        "criterion": execution.get("environment_criterion"),
-        "evaluated": bool(execution.get("environment_evaluated")),
-        "verified": bool(execution.get("environment_verified")),
-        "status": execution.get("environment_status") or "advisory",
-    })
-    target["environment_requirement"] = environment_requirement
-    target["environment_required"] = bool(execution.get("environment_required"))
-    target["environment_verified"] = bool(execution.get("environment_verified"))
-    target["environment_evaluated"] = bool(execution.get("environment_evaluated"))
-
-    def production_gate(metrics, score):
-        return release_accept(
-            metrics,
-            score,
-            environment_required=bool(execution.get("environment_required")),
-            environment_verified=bool(execution.get("environment_verified")),
-        )
-
-    loop = AutonomousVisualLoop(
-        target=target,
-        capture=capture,
-        apply=adapter.apply,
-        max_passes=3,
-        out_dir=str(proof_dir),
-        gate=production_gate,
-        subject_locator=locator_kw.get("subject_locator"),
-        ui_locator=locator_kw.get("ui_locator"),
-        rollback=adapter._restore,
-    )
-    result = loop.run()
-    final_path = ((result.get("final") or {}).get("path") or "")
-    initial_hash = _fresh_proof_hash(initial_path)
-    final_hash = _fresh_proof_hash(final_path)
-    result["initial_proof"] = {"path": str(initial_path or ""), "sha256": initial_hash}
-    result["final_proof"] = {"path": str(final_path), "sha256": final_hash}
-    result["fresh_hash_changed"] = bool(initial_hash and final_hash and initial_hash != final_hash)
-    if not result["fresh_hash_changed"]:
-        result["status"] = "BLOCKED"
-        result["error"] = "fresh production proof hash did not change"
-    return result
-
-
-def _record_visual_director_result(execution, result):
-    """Copy Visual Director evidence into the canonical execution record."""
-    execution["visual_self_fix"] = result
-    final = result.get("final") or {}
-    score = (final.get("score") or {}).get("overall")
-    if isinstance(score, (int, float)):
-        execution["visual_score_measured"] = round(float(score), 2)
-        execution["visual_score_evidence"] = {
-            "source": "autonomous_visual_loop",
-            "measured": round(float(score), 2),
-            "path": final.get("path"),
-            "sha256": (result.get("final_proof") or {}).get("sha256"),
-            "fresh_hash_changed": bool(result.get("fresh_hash_changed")),
-            "at": time.time(),
-        }
-    execution["visual_proof"] = [{
-        "path": (result.get("initial_proof") or {}).get("path"),
-        "sha256": (result.get("initial_proof") or {}).get("sha256"),
-        "role": "initial",
-    }, {
-        "path": (result.get("final_proof") or {}).get("path"),
-        "sha256": (result.get("final_proof") or {}).get("sha256"),
-        "role": "final",
-    }]
-    if result.get("status") != "COMPLETE":
-        execution["visual_acceptance_failure"] = {
-            "status": result.get("status"),
-            "error": result.get("error"),
-            "fresh_hash_changed": bool(result.get("fresh_hash_changed")),
-        }
-    else:
-        execution.pop("visual_acceptance_failure", None)
-
-
-def _measure_proof_score(path, scope=None):
-    """Deterministic local visual measurement of a captured proof PNG.
-
-    Mirrors the mission pipeline's evaluate() path (measure + score). Returns
-    a 0-10 float or None when the image is unreadable / the toolchain is not
-    available. Never raises: measurement failure simply leaves the score
-    unevaluated so the strict acceptance gate fails closed.
-
-    ``scope`` is an optional ``required_visual_categories`` list. Scene/showcase
-    proofs must be scored WITHOUT the UI/readability categories (a scene can
-    never earn them), or the weighted all-categories mean caps every non-UI
-    frame near ~8.0 and an 8.5 floor is unreachable by construction.
-    """
-    if not path:
-        return None
-    try:
-        from core.visual_acceptance import measure, score as visual_score
-        metrics = measure(str(path))
-        if not getattr(metrics, "ok", False):
-            return None
-        target = {}
-        if scope:
-            target["required_visual_categories"] = list(scope)
-        result = visual_score(metrics, target)
-        overall = getattr(result, "overall", None)
-        if isinstance(overall, (int, float)):
-            return round(float(overall), 2)
-    except Exception:
-        return None
-    return None
-
-
-def _record_visual_score(execution, step, dispatch):
-    """Record the measured visual score when the request demands one.
-
-    A score is taken from a completed step payload that reports one (e.g. a
-    visual-review result), or by deterministically measuring the captured proof
-    PNG of an EVIDENCE step. Only the latest verified measurement is kept.
-    """
-    if not execution or execution.get("visual_floor") is None:
-        return
-    if not dispatch.get("transport_success"):
-        return
-    measured = None
-    raw = dispatch.get("raw_result") or dispatch
-    measured = _find_measured_score(raw)
-    source = str((step or {}).get("preferred_tool") or step.get("intent") or "")
-    if measured is None and str(step.get("phase", "")).upper() == "EVIDENCE":
-        payload = _tool_payload(raw)
-        path = payload.get("path") if isinstance(payload, dict) else None
-        if not path and isinstance(payload, dict):
-            nested = payload.get("result")
-            if isinstance(nested, dict):
-                path = nested.get("path")
-        if not path and isinstance(raw, dict):
-            nested = raw.get("result")
-            if isinstance(nested, dict):
-                path = nested.get("path")
-        # Scene/showcase work is scored without UI categories; UI-product
-        # builds keep the strict all-categories gate.
-        task_lower = " ".join(str((execution.get("task") or "")).split()).lower()
-        ui_product = any(
-            term in task_lower
-            for term in ("avatar", "chat", "ollama", "assistant", "widget", "umg")
-        )
-        profile_scope = ((execution.get("visual_target") or {}).get(
-            "required_visual_categories") or None)
-        scope = profile_scope or (None if ui_product else list(SCENE_VISUAL_CATEGORIES))
-        measured = _measure_proof_score(path, scope)
-        source = source or "proof_measure"
-    if measured is not None:
-        execution["visual_score_measured"] = measured
-        execution["visual_score_evidence"] = {
-            "source": source or "tool_result",
-            "measured": measured,
-            "at": time.time(),
-        }
-
-
 def _completion_blocker(execution):
     """Deterministic terminal-state gate.
 
@@ -2552,52 +2049,6 @@ def _completion_blocker(execution):
     if e.get("failed_step"):
         return {"code": "FAILED", "detail": "FAILED_MANDATORY_STEP", "reason": f"Mandatory step {e.get('failed_step')} failed"}
 
-    # A required environment is a contract criterion, not a screenshot guess.
-    # It must be evaluated through structured scene read-back and verified
-    # before COMPLETE. This remains in the canonical blocker so all callers
-    # receive the same truthful terminal state.
-    if e.get("environment_required"):
-        if not e.get("environment_evaluated"):
-            return {
-                "code": "BLOCKED",
-                "detail": "REQUIRED_ENVIRONMENT_UNEVALUATED",
-                "reason": "Required environment/context was never evaluated by structured scene read-back",
-                "stall_detail": {
-                    "environment_required": True,
-                    "environment_status": "required/unevaluated",
-                    "criterion": e.get("environment_criterion"),
-                },
-            }
-        if not e.get("environment_verified"):
-            return {
-                "code": "FAILED",
-                "detail": "REQUIRED_ENVIRONMENT_NOT_VERIFIED",
-                "reason": "Required environment/context was not verified in structured scene read-back",
-                "stall_detail": {
-                    "environment_required": True,
-                    "environment_status": e.get("environment_status") or "required/not_verified",
-                    "criterion": e.get("environment_criterion"),
-                },
-            }
-
-    # A profiled visual task must pass the same Visual Director result that
-    # produced its proof. Never let completed tool steps + a screenshot hide a
-    # blocked/failed visual loop.
-    visual_failure = e.get("visual_acceptance_failure")
-    if visual_failure:
-        status = str(visual_failure.get("status") or "FAILED").upper()
-        code = "BLOCKED" if status == "BLOCKED" else "FAILED"
-        return {
-            "code": code,
-            "detail": "FAILED_VISUAL_ACCEPTANCE" if code == "FAILED" else "BLOCKED_VISUAL_ACCEPTANCE",
-            "reason": str(visual_failure.get("error") or "Canonical visual acceptance did not pass"),
-            "stall_detail": {
-                "visual_profile": e.get("visual_profile"),
-                "fresh_hash_changed": bool(visual_failure.get("fresh_hash_changed")),
-                "visual_self_fix_status": status,
-            },
-        }
-
     # Only this execution's parent contract governs completion. Do not
     # implicitly borrow the last process-wide goal for synthetic/legacy states;
     # restored executions must load it into task_goal explicitly. Checked AFTER
@@ -2636,34 +2087,6 @@ def _completion_blocker(execution):
     if unfinished:
         return {"code": "STALLED", "detail": STALL_NO_PROGRESS,
                 "reason": "Unfinished mandatory steps with no runnable recovery path: " + repr(unfinished)}
-
-    # Strict acceptance gate for explicitly requested visual-score thresholds
-    # (e.g. "visual score >= 8.5/10"). "Execution finished" plus "proof
-    # captured" is NEVER sufficient here: the acceptance criterion must have
-    # been evaluated and the measured score must meet the requested floor.
-    floor = e.get("visual_floor")
-    if floor is not None:
-        measured = e.get("visual_score_measured")
-        detail = {
-            "code": "FAILED_ACCEPTANCE_VISUAL_SCORE",
-            "visual_floor": floor,
-            "visual_score_measured": measured,
-            "pending_acceptance_criteria": list((e.get("task_goal") or {}).get("pending_criteria") or []),
-        }
-        if measured is None:
-            return {
-                "code": "FAILED",
-                "detail": "FAILED_ACCEPTANCE_VISUAL_SCORE",
-                "reason": f"Requested visual score >= {floor} was never evaluated (no measured visual score recorded)",
-                "stall_detail": detail,
-            }
-        if float(measured) < float(floor) - 1e-9:
-            return {
-                "code": "FAILED",
-                "detail": "FAILED_ACCEPTANCE_VISUAL_SCORE",
-                "reason": f"Measured visual score {measured} is below the requested floor {floor}",
-                "stall_detail": detail,
-            }
     return None
 
 
@@ -2702,96 +2125,6 @@ def _make_cleanup_step(state, resource):
         "parameters": {"asset_path": resource["path"]},
         "status": "pending",
         "cleanup_resource_path": resource["path"],
-    }
-
-
-def _visual_observability(execution):
-    """Project canonical Visual Director evidence for read-only UI display.
-
-    This deliberately copies backend evidence instead of measuring, inferring,
-    or deciding anything for the frontend. Missing evidence stays ``None`` so
-    the Devboard can render "Not evaluated".
-    """
-    e = execution or {}
-    result = e.get("visual_self_fix") or {}
-    final = result.get("final") or {}
-    metrics = final.get("metrics") or {}
-    passes = result.get("passes") or []
-    last_pass = passes[-1] if passes else {}
-    proof = e.get("visual_proof") or []
-    initial = next((p for p in proof if p.get("role") == "initial"), {})
-    final_proof = next((p for p in proof if p.get("role") == "final"), {})
-    state = str(e.get("state") or "").upper()
-    verdict = e.get("final_verdict")
-    if verdict is None:
-        acceptance = None
-    elif str(verdict).upper() == "PASS":
-        acceptance = "PASS"
-    elif state == "BLOCKED" or str(verdict).upper() == "BLOCKED":
-        acceptance = "BLOCKED"
-    else:
-        acceptance = "FAILED"
-    terminal_state = None
-    if state in {"COMPLETE", "BLOCKED"}:
-        terminal_state = state
-    elif state in {"FAILED", "STALLED"}:
-        terminal_state = "FAILED"
-    return {
-        "profile": e.get("visual_profile"),
-        "score": e.get("visual_score_measured"),
-        "required_floor": e.get("visual_floor"),
-        "acceptance_verdict": acceptance,
-        "subject_bbox": metrics.get("subject_bbox"),
-        "subject_coverage": metrics.get("subject_coverage"),
-        "issues": last_pass.get("defects") if passes else None,
-        "proof": {
-            "previous": {"path": initial.get("path"), "sha256": initial.get("sha256")},
-            "final": {"path": final_proof.get("path"), "sha256": final_proof.get("sha256")},
-            "fresh": result.get("fresh_hash_changed"),
-        },
-        "passes": [{
-            "index": p.get("index"),
-            "score": (p.get("score") or {}).get("overall"),
-            "strategy": p.get("strategy"),
-            "kept": p.get("kept"),
-            "reverted": p.get("reverted"),
-            "proof_hash": p.get("hash"),
-        } for p in passes],
-        "terminal_state": terminal_state,
-        "environment_requirement": {
-            "required": bool(e.get("environment_required")),
-            "criterion": e.get("environment_criterion"),
-            "evaluated": bool(e.get("environment_evaluated")),
-            "verified": bool(e.get("environment_verified")),
-            "status": e.get("environment_status") or "advisory",
-            "blocking": bool(
-                e.get("environment_required")
-                and (
-                    not e.get("environment_evaluated")
-                    or not e.get("environment_verified")
-                )
-            ),
-            "evidence": e.get("environment_evidence"),
-        },
-        "proof_preview_url": None,
-    }
-
-
-def _execution_detail(execution):
-    """Return the canonical execution projection consumed by Devboard."""
-    e = serialize(execution or {})
-    visual = _visual_observability(e)
-    task_id = e.get("id")
-    if task_id and visual.get("proof", {}).get("final", {}).get("path"):
-        visual["proof_preview_url"] = f"/api/execution/{task_id}/proof/final"
-    return {
-        "task_id": task_id,
-        "task": e.get("task"),
-        "state": e.get("state"),
-        "terminal_state": visual.get("terminal_state"),
-        "final_verdict": e.get("final_verdict"),
-        "message": e.get("completion_message"),
-        "visual": visual,
     }
 
 
@@ -2868,8 +2201,6 @@ def _finalize_terminal(state, forced_stall=None):
         else:
             emit("error", "EXECUTION_STALLED", {"stall_reason": stall, "stall_detail": state.get("stall_detail"), "reason": msg}, "error")
 
-    global last_execution_snapshot
-    last_execution_snapshot = _execution_detail(state)
     execution_state = None
     return {
         "state": {"COMPLETE": "complete", "BLOCKED": "blocked"}.get(code, "failed"),
@@ -3037,29 +2368,6 @@ def run_execution_until_pause():
                     "resolvable after 3 recovery attempts"
                 )
         applied = _apply_step_result(state, step, dispatch)
-        # A profiled visual EVIDENCE step enters the same canonical production
-        # loop used by the product shell. It is deliberately attached to the
-        # existing dispatch/acceptance path, not a second executor.
-        if (
-            step.get("phase") == "EVIDENCE"
-            and dispatch.get("transport_success")
-            and state.get("visual_profile")
-            and not state.get("visual_self_fix")
-        ):
-            try:
-                director_result = _run_production_visual_director(
-                    state, _proof_path_from_dispatch(dispatch))
-            except Exception as exc:
-                director_result = {
-                    "status": "BLOCKED",
-                    "error": f"{type(exc).__name__}: {exc}",
-                    "fresh_hash_changed": False,
-                }
-            _record_visual_director_result(state, director_result)
-        # Strict acceptance gate: when the request demanded a visual score, a
-        # measured score is recorded from review evidence or the captured proof.
-        if not (state.get("visual_profile") and state.get("visual_self_fix")):
-            _record_visual_score(state, step, dispatch)
 
         # Reconcile only verified tool output into the durable parent contract.
         if dispatch.get("transport_success"):
@@ -3071,28 +2379,6 @@ def run_execution_until_pause():
                 )
                 state["completed_criteria"] = list(state["task_goal"].get("completed_criteria", []))
                 state["pending_criteria"] = list(state["task_goal"].get("pending_criteria", []))
-        if state.get("environment_required") and step.get("preferred_tool") == "list_level_actors":
-            state["environment_evaluated"] = bool(dispatch.get("transport_success"))
-            state["environment_verified"] = "deliverable:environment" in set(
-                (state.get("task_goal") or {}).get("completed_criteria") or [])
-            state["environment_status"] = (
-                "required/verified" if state["environment_verified"]
-                else "required/not_verified" if state["environment_evaluated"]
-                else "required/unevaluated")
-            state["environment_evidence"] = {
-                "source": "list_level_actors",
-                "evaluated": state["environment_evaluated"],
-                "verified": state["environment_verified"],
-                "criterion": state.get("environment_criterion"),
-                "at": time.time(),
-            }
-            target_requirement = (state.get("visual_target") or {}).get("environment_requirement")
-            if isinstance(target_requirement, dict):
-                target_requirement.update({
-                    "evaluated": state["environment_evaluated"],
-                    "verified": state["environment_verified"],
-                    "status": state["environment_status"],
-                })
 
         # Project context could not be resolved after recovery attempts:
         # finalize immediately with a structured BLOCKED verdict rather than
@@ -3184,30 +2470,135 @@ def workboard_startup_recovery():
         ).start()
 
 
-@app.on_event("startup")
-def code_tasks_startup():
-    """Durable code-task recovery + autonomous code-worker supervisor.
-
-    After a backend restart, any task left 'running' returns to the queue
-    and the watchdog resumes eligible work automatically (no duplicates:
-    the worker is single-flight and never touches the live checkout).
-    """
-    try:
-        code_tasks_startup_recovery()
-    except Exception:
-        pass
-
-
 # ============================================================
 # ROUTER
 # ============================================================
+
+def _classify_intent_safe(message: str):
+    # Bounded intent router for UI commands.
+    text = str(message or '').strip()
+    low = text.lower()
+
+    execute_verbs = (
+        'create', 'craete', 'creat', 'spawn', 'add', 'make', 'build',
+        'place', 'move', 'rotate', 'scale', 'delete', 'remove', 'set',
+        'change', 'apply', 'attach', 'open', 'save', 'import', 'duplicate',
+    )
+    unreal_objects = (
+        'cube', 'sphere', 'actor', 'mesh', 'blueprint', 'material', 'texture',
+        'light', 'camera', 'player', 'level', 'map', 'widget', 'ui', 'umg',
+        'character', 'metahuman', 'object', 'asset', 'unreal',
+    )
+
+    if any(x in low for x in (
+        'plan ', 'make a plan', 'create a plan', 'roadmap',
+        'break this into tasks', 'what should we do', 'how should we build',
+    )):
+        return 'plan'
+
+
+    if any(v in low for v in execute_verbs) and any(o in low for o in unreal_objects):
+        return 'execute'
+
+    if any(o in low for o in unreal_objects) and any(
+        p in low for p in ('in front of', 'behind', 'next to', 'above', 'below')
+    ):
+        return 'execute'
+
+
+    import queue as _queue
+    import threading as _threading
+    out = _queue.Queue(maxsize=1)
+
+    def _run():
+        try:
+            out.put(('ok', classify_intent(text)), block=False)
+        except Exception as exc:
+            try:
+                out.put(('error', exc), block=False)
+            except Exception:
+                pass
+
+    t = _threading.Thread(target=_run, name='aivido-intent-classifier', daemon=True)
+    t.start()
+    t.join(12.0)
+
+    if t.is_alive():
+        emit('router', 'Intent classifier timeout', {'timeout_seconds': 12, 'fallback_mode': 'chat'}, 'warning')
+        return 'chat'
+
+    try:
+        kind, value = out.get_nowait()
+    except _queue.Empty:
+        return 'chat'
+
+    if kind == 'error':
+        emit('router', 'Intent classifier error', {'error': f'{type(value).__name__}: {value}', 'fallback_mode': 'chat'}, 'warning')
+        return 'chat'
+
+    mode = str(value or '').strip().lower()
+    if mode not in {'chat', 'plan', 'execute'}:
+        return 'chat'
+    return mode
+
+
+def _aivido_fast_unreal_command(message: str):
+    text = str(message or '').strip()
+    low = text.lower()
+    if 'cube' not in low:
+        return None
+    if not any(w in low for w in ('create','craete','creat','spawn','add','place','make')):
+        return None
+    if BRIDGE is None:
+        raise RuntimeError('Unreal bridge unavailable')
+
+    code = '''import unreal
+world = unreal.EditorLevelLibrary.get_editor_world()
+if world is None:
+    raise RuntimeError("Editor world unavailable")
+for a in unreal.GameplayStatics.get_all_actors_of_class(world, unreal.StaticMeshActor):
+    if a.get_actor_label() == "AIVIDO_STAGE_A_Cube":
+        unreal.EditorLevelLibrary.destroy_actor(a)
+starts = unreal.GameplayStatics.get_all_actors_of_class(world, unreal.PlayerStart)
+if starts:
+    ref = starts[0]
+    loc = ref.get_actor_location()
+    rot = ref.get_actor_rotation()
+else:
+    loc = unreal.Vector(0.0,0.0,100.0)
+    rot = unreal.Rotator(0.0,0.0,0.0)
+forward = rot.get_forward_vector()
+spawn_loc = unreal.Vector(loc.x + forward.x*300.0, loc.y + forward.y*300.0, max(50.0, loc.z + forward.z*300.0))
+actor = unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.StaticMeshActor, spawn_loc, unreal.Rotator(0.0,0.0,0.0))
+actor.set_actor_label("AIVIDO_STAGE_A_Cube")
+mesh = unreal.load_asset("/Engine/BasicShapes/Cube.Cube")
+actor.static_mesh_component.set_static_mesh(mesh)
+unreal.EditorLevelLibrary.save_current_level()
+__bridge_result__ = {"ok": True, "actor_name": "AIVIDO_STAGE_A_Cube"}
+'''
+    BRIDGE.ping()
+    result = BRIDGE.execute_python(code)
+    return {
+        'state': 'complete',
+        'mode': 'execute',
+        'message': 'Cube created successfully in Unreal.',
+        'evidence': result,
+        'fast_path': True,
+    }
+
 
 def route_request(message: str):
 
     global execution_state
     global messages
 
-    mode = classify_intent(message)
+    fast_result = _aivido_fast_unreal_command(message)
+    if fast_result is not None:
+        return fast_result
+
+    mode = _classify_intent_safe(message)
+
+    print(f"[AIVIDO_ROUTER] mode={mode} message={message!r}", flush=True)
 
     emit(
         "router",
@@ -4520,65 +3911,6 @@ def dev_console():
     )
 
 
-@app.get("/app")
-def director_booth():
-    """Aivido Director's Booth (UI/UX Phase 1 + 2).
-
-    Additive product route. Static assets resolve from the existing
-    /static mount (ui/), and all /api/* calls are same-origin — the Booth
-    reuses the canonical engine surface with no backend behavior change.
-    """
-    return FileResponse(
-        UI_DIR / "aivido.html"
-    )
-
-
-@app.get("/api/execution/{task_id}")
-def execution_detail(task_id: str):
-    """Read-only canonical execution/evidence projection for Devboard.
-
-    Session-scoped executions resolve through the session store as well, so
-    an execution id from any project session is addressable (session-bound,
-    never leaking between projects).
-    """
-    if execution_state is not None and str(execution_state.get("id")) == str(task_id):
-        return {"ok": True, "execution": _execution_detail(execution_state)}
-    if last_execution_snapshot is not None and str(last_execution_snapshot.get("task_id")) == str(task_id):
-        return {"ok": True, "execution": last_execution_snapshot}
-    from core.session_model import SessionStore
-    from core.mission import MissionState
-    for session in SessionStore().list():
-        task = session.get_task(str(task_id))
-        if task is None:
-            continue
-        checkpoint = MissionState.load(f"mission_{task_id}")
-        return {
-            "ok": True,
-            "session_id": session.session_id,
-            "project_id": session.project_id,
-            "execution": task.to_dict(),
-            "checkpoint": checkpoint.to_dict() if checkpoint else None,
-            "proof": [],
-        }
-    raise HTTPException(404, "Execution detail not found.")
-
-
-@app.get("/api/execution/{task_id}/proof/{role}")
-def execution_proof(task_id: str, role: str):
-    """Serve only a proof path already recorded by the canonical execution."""
-    detail = execution_detail(task_id)
-    proof = ((detail.get("execution") or {}).get("visual") or {}).get("proof") or {}
-    item = proof.get("final" if role == "final" else "previous" if role == "previous" else "") or {}
-    path = item.get("path")
-    if not path:
-        raise HTTPException(404, "Proof was not evaluated.")
-    candidate = Path(str(path)).resolve()
-    proof_root = (ROOT / "assetlib" / "proof").resolve()
-    if proof_root not in candidate.parents or not candidate.is_file():
-        raise HTTPException(404, "Proof was not found.")
-    return FileResponse(str(candidate), media_type="image/png", headers={"Cache-Control": "no-store"})
-
-
 @app.get("/api/status")
 def status():
 
@@ -4804,6 +4136,116 @@ def stream_all_events():
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
     )
 
+from app.command_runtime import CommandRuntime
+
+class CommandSubmitRequest(BaseModel):
+    message: str
+    request_id: str | None = None
+
+
+
+# ============================================================
+# AIVIDO DURABLE COMMAND RUNTIME
+# ============================================================
+
+def _aivido_command_executor(message: str):
+    global messages
+
+    with lock:
+        emit(
+            "user",
+            "New request",
+            message,
+            "info",
+        )
+
+        messages.append(
+            {
+                "role": "user",
+                "content": message,
+            }
+        )
+
+    return route_request(message)
+
+
+_aivido_command_runtime = CommandRuntime(
+    executor=_aivido_command_executor,
+    state_path="/Users/admin/Projects/unreal-agent/runtime/command_jobs.json",
+)
+
+
+@app.get("/api/command/runtime")
+def command_runtime_status():
+    return _aivido_command_runtime.stats()
+
+
+@app.post("/api/command")
+def command_submit(request: CommandSubmitRequest):
+    message = request.message.strip()
+
+    if not message:
+        raise HTTPException(400, "Message cannot be empty.")
+
+    try:
+        job = _aivido_command_runtime.submit(
+            message,
+            request_id=request.request_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+
+    return {
+        "ok": True,
+        "job_id": job["job_id"],
+        "request_id": job["request_id"],
+        "state": job["state"],
+        "progress": job["progress"],
+    }
+
+
+@app.get("/api/command/{job_id}")
+def command_status(job_id: str):
+    job = _aivido_command_runtime.get(job_id)
+    if job is None:
+        raise HTTPException(404, "Command job not found.")
+    return {"ok": True, **job}
+
+
+@app.get("/api/command/{job_id}/evidence")
+def command_evidence(job_id: str):
+    evidence = _aivido_command_runtime.evidence(job_id)
+    if evidence is None:
+        raise HTTPException(404, "Command job not found.")
+    return {"ok": True, "evidence": evidence}
+
+
+@app.post("/api/command/{job_id}/cancel")
+def command_cancel(job_id: str):
+    job = _aivido_command_runtime.cancel(job_id)
+    if job is None:
+        raise HTTPException(404, "Command job not found.")
+    return {
+        "ok": True,
+        "job_id": job["job_id"],
+        "state": job["state"],
+        "cancel_requested": job.get("cancel_requested", False),
+    }
+
+
+@app.post("/api/command/{job_id}/retry")
+def command_retry(job_id: str):
+    job = _aivido_command_runtime.retry(job_id)
+    if job is None:
+        raise HTTPException(404, "Command job not found.")
+    return {
+        "ok": True,
+        "job_id": job["job_id"],
+        "request_id": job["request_id"],
+        "state": job["state"],
+        "progress": job["progress"],
+    }
+
 @app.post("/api/chat")
 def chat(request: ChatRequest):
 
@@ -4969,8 +4411,6 @@ def reset():
         ]
 
         execution_state = None
-        global last_execution_snapshot
-        last_execution_snapshot = None
 
         events.clear()
 
@@ -5275,18 +4715,10 @@ def _start_async_ui_execution(message: str, source: str = "ui"):
         # assistant reply, exactly like /api/chat. Forcing them through the
         # executor loop surfaces internal workflow artifacts (e.g.
         # EXECUTION_STALLED / mandatory-step traces) as the answer.
-        # Vehicle showcases have a deterministic production profile and must
-        # enter the real executor immediately. Do not block the user-facing
-        # /api/action request on an optional model classification round-trip;
-        # the same profile is carried by new_execution() into validation and
-        # self-fix.
-        if is_vehicle_showcase_prompt(message):
+        try:
+            mode = classify_intent(message)
+        except Exception:
             mode = "execute"
-        else:
-            try:
-                mode = classify_intent(message)
-            except Exception:
-                mode = "execute"
 
         if mode in ("chat", "plan"):
             messages.append({"role": "user", "content": message})
@@ -5362,40 +4794,6 @@ def unified_action(request: dict):
 
     if not action:
         raise HTTPException(400, "action is required.")
-
-    # ----------------------------------------------------------------
-    # MULTI-CLIENT SESSION ROUTING (Phase 4): when the caller supplies a
-    # session_id, the action runs inside that session's project context
-    # through the canonical mission machinery (core.session_execution).
-    # Ambiguous identity (no session, or an unknown session) fails closed
-    # instead of falling back to the global single-project executor.
-    # ----------------------------------------------------------------
-    session_id = (context or {}).get("session_id") \
-        or (payload or {}).get("session_id")
-    if session_id and action in ("prompt", "build", "execute", "run"):
-        prompt = str((payload or {}).get("prompt")
-                     or (payload or {}).get("message") or "").strip()
-        if not prompt:
-            raise HTTPException(400,
-                                "payload.prompt is required for session "
-                                "actions")
-        from core.session_execution import get_default_runner
-        from core.session_model import SessionStore
-        if SessionStore().get(str(session_id)) is None:
-            raise HTTPException(
-                404,
-                f"unknown session {session_id}; fail-closed: refusing to "
-                "run an un-scoped action",
-            )
-        read_only_value = (payload or {}).get("read_only")
-        result = get_default_runner().run_prompt(
-            str(session_id), prompt,
-            read_only=(None if read_only_value is None
-                       else bool(read_only_value)),
-            mode=(payload or {}).get("mode"),
-            execution_id=(payload or {}).get("execution_id"),
-        )
-        return result
 
     emit(
         "ui",

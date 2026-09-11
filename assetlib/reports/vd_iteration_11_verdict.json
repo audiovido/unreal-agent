@@ -1,0 +1,22 @@
+{
+ "frame": "assetlib/proof/screens/vd_iteration12_hero.png",
+ "md5": "4e568787",
+ "preview_render_verified": true,
+ "proposed_scores": {
+  "composition": 8,
+  "camera": 8,
+  "lighting_exposure_contrast": 8,
+  "materials_colors": 8.5,
+  "scale": 8,
+  "hierarchy": 8,
+  "dead_areas_repetition": 8,
+  "asset_fit_clipping": 8,
+  "character_animation": 8,
+  "vfx": 8,
+  "readability_usability": 8
+ },
+ "overall_mean": 8.05,
+ "verdict": "PENDING_HUMAN_EYE",
+ "human_scores": {},
+ "notes": "IT-12 frame visibly renders in Preview (verified 1922x1082). Accept at >=8.5 with no critical <8, or reject with defect list for IT-13."
+}

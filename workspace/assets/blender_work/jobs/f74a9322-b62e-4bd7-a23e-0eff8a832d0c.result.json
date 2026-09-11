@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "outputs": {
+    "object_name": "UA_Floor_Tile",
+    "shape": "cube",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Floor_Tile.fbx",
+      "format": "fbx",
+      "size_bytes": 15212,
+      "object": "UA_Floor_Tile"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/f74a9322-b62e-4bd7-a23e-0eff8a832d0c.blend",
+    "proof": {}
+  },
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      180.0,
+      180.0,
+      6.0
+    ],
+    "vertex_count": 8,
+    "poly_count": 6,
+    "materials": {
+      "applied": true,
+      "object": "UA_Floor_Tile",
+      "materials": [
+        "UA_DarkTile"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        179.99999523162842,
+        179.99999523162842,
+        5.999999865889549
+      ],
+      "after_cm": [
+        179.99999523162842,
+        179.99999523162842,
+        5.999999865889549
+      ]
+    },
+    "expected_dimensions_cm": [
+      180.0,
+      180.0,
+      6.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        180.0,
+        180.0,
+        6.0
+      ],
+      "expected_cm": [
+        180.0,
+        180.0,
+        6.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "f74a9322-b62e-4bd7-a23e-0eff8a832d0c",
+    "exported_at": 1788238162.1610937,
+    "source": "generated:cube",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\f74a9322-b62e-4bd7-a23e-0eff8a832d0c.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Floor_Tile.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      180.0,
+      180.0,
+      6.0
+    ],
+    "materials": [
+      {
+        "name": "UA_DarkTile",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        180.0,
+        180.0,
+        6.0
+      ],
+      "vertex_count": 8,
+      "poly_count": 6,
+      "materials": [
+        {
+          "name": "UA_DarkTile",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Floor_Tile",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "job_id": "f74a9322-b62e-4bd7-a23e-0eff8a832d0c",
+  "operation": "create_primitive",
+  "finished_at": 1788238162.169618
+}

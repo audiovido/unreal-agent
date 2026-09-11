@@ -1,12 +1,6 @@
 import inspect
-import json
-import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Callable, Dict, Any, List
-
-
-ROOT = Path(__file__).resolve().parents[1]
 
 
 @dataclass
@@ -16,50 +10,6 @@ class ToolSpec:
     args: Dict[str, str]
     func: Callable
     destructive: bool = False
-
-
-def _unreal_coder_doctor_probe():
-    """Read-only Aivido backend health probe (canonical doctor, Phase D).
-
-    Runs `core.doctor.run_doctor()` — the same deterministic checks behind
-    GET /api/unreal-coder/doctor — and returns an ok/not-ok verdict for the
-    BACKEND-critical checks only (python env, config, API boot, writable
-    dirs, secrets hygiene). Unreal editor/bridge/Ollama/Blender findings are
-    reported but probed by their own dedicated steps, so one optional system
-    (e.g. a closed editor) can never fail the backend-READY probe.
-
-    Writes the full report to memory/diagnostics/<ts>.json so the mission
-    has a real, inspectable evidence artifact (path returned for the
-    gateway's get_evidence).
-    """
-    from core.doctor import run_doctor
-    report = run_doctor()
-    backend_critical = (
-        lambda name: name in ("python_version", "config_file", "api_boot",
-                              "secrets_not_in_config_file")
-        or name.startswith("python:") or name.startswith("writable:")
-    )
-    failures = [
-        {"name": c.get("name"), "detail": c.get("detail")}
-        for c in (report.get("checks") or [])
-        if c.get("status") == "FAIL" and backend_critical(str(c.get("name")))
-    ]
-    ok = not failures
-    out_dir = ROOT / "memory" / "diagnostics"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"backend_doctor_{int(time.time())}.json"
-    path.write_text(json.dumps(report, indent=2, default=str),
-                    encoding="utf-8")
-    return {
-        "ok": ok,
-        "path": str(path),
-        "backend_ready": bool(ok),
-        "overall": report.get("overall"),
-        "summary": report.get("summary"),
-        "failures": failures,
-        "note": "backend-critical doctor checks only; bridge readiness is "
-                "a separate unreal_ping probe",
-    }
 
 
 def build_registry(
@@ -146,19 +96,6 @@ def build_registry(
             description="Check Unreal Engine installation and editor availability.",
             args={},
             func=unreal_status,
-        ),
-
-        "unreal_coder_doctor": ToolSpec(
-            name="unreal_coder_doctor",
-            description=(
-                "Run the canonical Aivido backend health doctor (read-only): "
-                "python deps, config file, API boot, writable dirs. Returns "
-                "the backend-READY verdict and writes a real report file used "
-                "as mission evidence. Unreal editor/bridge readiness is a "
-                "separate probe (unreal_ping)."
-            ),
-            args={},
-            func=_unreal_coder_doctor_probe,
         ),
     }
 
@@ -293,14 +230,12 @@ def build_registry(
         from tools.unreal.chat_tools import ChatTools
         from tools.unreal.runtime_tools import RuntimeTools
         from tools.unreal.import_tools import ImportTools
-        from tools.unreal.sequencer_tools_gap import SequencerToolsGap
 
         blueprints = BlueprintTools(bridge)
         avatar_tools = AvatarTools(bridge)
         chat_tools = ChatTools(bridge)
         runtime_tools = RuntimeTools(bridge)
         import_tools = ImportTools(bridge)
-        sequencer_tools = SequencerToolsGap(bridge)
 
 
         registry.update({
@@ -378,69 +313,6 @@ def build_registry(
                 description="Request Play In Editor for the currently open Unreal level.",
                 args={},
                 func=bridge.start_pie,
-            ),
-
-            # ---------------------------------------------- sequencer (live-probed)
-            "create_level_sequence": ToolSpec(
-                name="create_level_sequence",
-                description="Create, save and verify a real Level Sequence asset under /Game/.",
-                args={"asset_path": "Sequence content path such as /Game/Cinematics/Intro"},
-                func=sequencer_tools.create_level_sequence,
-                destructive=True,
-            ),
-
-            "list_level_sequences": ToolSpec(
-                name="list_level_sequences",
-                description="List Level Sequence assets under a Content path.",
-                args={"path": "Content path such as /Game/Cinematics"},
-                func=sequencer_tools.list_level_sequences,
-            ),
-
-            "add_actor_binding": ToolSpec(
-                name="add_actor_binding",
-                description="Bind a level actor to a sequence as a possessable and return the binding id.",
-                args={
-                    "seq_path": "Level Sequence asset path",
-                    "actor_label": "Actor label or internal name",
-                },
-                func=sequencer_tools.add_actor_binding,
-                destructive=True,
-            ),
-
-            "add_camera_cut": ToolSpec(
-                name="add_camera_cut",
-                description="Spawn/reuse a CineCamera actor and add a camera-cut track section over a time range.",
-                args={
-                    "seq_path": "Level Sequence asset path",
-                    "actor_label": "Camera actor label",
-                    "location": "XYZ array such as [0, -400, 200]",
-                    "start_s": "Cut start time in seconds",
-                    "end_s": "Cut end time in seconds",
-                },
-                func=sequencer_tools.add_camera_cut,
-                destructive=True,
-            ),
-
-            "scrub_and_play": ToolSpec(
-                name="scrub_and_play",
-                description="Open a sequence, scrub, set playback speed, play and pause with read-back.",
-                args={"seq_path": "Level Sequence asset path"},
-                func=sequencer_tools.scrub_and_play,
-            ),
-
-            "read_sequence_structure": ToolSpec(
-                name="read_sequence_structure",
-                description="Read back a sequence's bindings, tracks and section ranges.",
-                args={"seq_path": "Level Sequence asset path"},
-                func=sequencer_tools.read_sequence_structure,
-            ),
-
-            "save_sequence": ToolSpec(
-                name="save_sequence",
-                description="Save a Level Sequence and verify identity after reload.",
-                args={"seq_path": "Level Sequence asset path"},
-                func=sequencer_tools.save_sequence,
-                destructive=True,
             ),
 
             "stop_pie": ToolSpec(
@@ -547,16 +419,6 @@ def build_registry(
                     "rotation": "Pitch/Yaw/Roll array"
                 },
                 func=bridge.rotate_actor,
-                destructive=True,
-            ),
-
-            "frame_viewport_from_actor": ToolSpec(
-                name="frame_viewport_from_actor",
-                description=("Set the editor viewport from one unambiguous "
-                             "mission-owned camera actor, with read-back."),
-                args={"actor_name": "Camera actor label or internal name",
-                      "distance": "Optional bounded pull-back distance"},
-                func=bridge.frame_viewport_from_actor,
                 destructive=True,
             ),
 

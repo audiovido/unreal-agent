@@ -1,0 +1,398 @@
+{
+  "discover_initial": {
+    "ok": true,
+    "found": [],
+    "count": 0,
+    "scanned_path": "/Game",
+    "query": null,
+    "candidates": [],
+    "best": null,
+    "template_available": true,
+    "verified": false
+  },
+  "install_mannequin": {
+    "ok": true,
+    "code": null,
+    "package_root": "/Game/Mannequin",
+    "target_directory": "C:\\Users\\Shadow\\Desktop\\UnrealAgentGraduation\\UA_ProductRegr_20260831\\Content\\Mannequin",
+    "copied_files": [],
+    "copied_count": 0,
+    "engine_template": "D:\\Program Files\\Epic Games\\UE_5.8\\Templates\\TemplateResources\\High\\Mannequin\\Content",
+    "verified": true,
+    "installed": true,
+    "assets": [
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPerson_AnimBP.ThirdPerson_AnimBP",
+        "class": "AnimBlueprint"
+      },
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPerson_IdleRun_2D.ThirdPerson_IdleRun_2D",
+        "class": "BlendSpace1D"
+      },
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPerson_Jump.ThirdPerson_Jump",
+        "class": "AnimSequence"
+      },
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPerson_WalkRun_1D.ThirdPerson_WalkRun_1D",
+        "class": "BlendSpace1D"
+      },
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+        "class": "AnimSequence"
+      },
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPersonJump_End.ThirdPersonJump_End",
+        "class": "AnimSequence"
+      },
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPersonJump_Loop.ThirdPersonJump_Loop",
+        "class": "AnimSequence"
+      },
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPersonJump_Start.ThirdPersonJump_Start",
+        "class": "AnimSequence"
+      },
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPersonRun.ThirdPersonRun",
+        "class": "AnimSequence"
+      },
+      {
+        "path": "/Game/Mannequin/Animations/ThirdPersonWalk.ThirdPersonWalk",
+        "class": "AnimSequence"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/M_Male_Body.M_Male_Body",
+        "class": "Material"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/M_UE4Man_ChestLogo.M_UE4Man_ChestLogo",
+        "class": "MaterialInstanceConstant"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/MaterialLayers/ML_GlossyBlack_Latex_UE4.ML_GlossyBlack_Latex_UE4",
+        "class": "MaterialFunction"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige.ML_Plastic_Shiny_Beige",
+        "class": "MaterialFunction"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/MaterialLayers/ML_Plastic_Shiny_Beige_LOGO.ML_Plastic_Shiny_Beige_LOGO",
+        "class": "MaterialFunction"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/MaterialLayers/ML_SoftMetal_UE4.ML_SoftMetal_UE4",
+        "class": "MaterialFunction"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/MaterialLayers/T_ML_Aluminum01.T_ML_Aluminum01",
+        "class": "Texture2D"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/MaterialLayers/T_ML_Aluminum01_N.T_ML_Aluminum01_N",
+        "class": "Texture2D"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/MaterialLayers/T_ML_Rubber_Blue_01_D.T_ML_Rubber_Blue_01_D",
+        "class": "Texture2D"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/MaterialLayers/T_ML_Rubber_Blue_01_N.T_ML_Rubber_Blue_01_N",
+        "class": "Texture2D"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Materials/MI_Female_Body.MI_Female_Body",
+        "class": "MaterialInstanceConstant"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Mesh/SK_Mannequin.SK_Mannequin",
+        "class": "SkeletalMesh"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+        "class": "SkeletalMesh"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female_PhysicsAsset.SK_Mannequin_Female_PhysicsAsset",
+        "class": "PhysicsAsset"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Mesh/SK_Mannequin_PhysicsAsset.SK_Mannequin_PhysicsAsset",
+        "class": "PhysicsAsset"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton",
+        "class": "Skeleton"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Textures/T_Female_Mask.T_Female_Mask",
+        "class": "Texture2D"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Textures/T_Female_N.T_Female_N",
+        "class": "Texture2D"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Textures/T_Male_Mask.T_Male_Mask",
+        "class": "Texture2D"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Textures/T_Male_N.T_Male_N",
+        "class": "Texture2D"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Textures/T_UE4Logo_Mask.T_UE4Logo_Mask",
+        "class": "Texture2D"
+      },
+      {
+        "path": "/Game/Mannequin/Character/Textures/T_UE4Logo_N.T_UE4Logo_N",
+        "class": "Texture2D"
+      }
+    ],
+    "mesh": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+    "animations": [
+      "/Game/Mannequin/Animations/ThirdPerson_Jump.ThirdPerson_Jump",
+      "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+      "/Game/Mannequin/Animations/ThirdPersonJump_End.ThirdPersonJump_End",
+      "/Game/Mannequin/Animations/ThirdPersonJump_Loop.ThirdPersonJump_Loop",
+      "/Game/Mannequin/Animations/ThirdPersonJump_Start.ThirdPersonJump_Start",
+      "/Game/Mannequin/Animations/ThirdPersonRun.ThirdPersonRun",
+      "/Game/Mannequin/Animations/ThirdPersonWalk.ThirdPersonWalk"
+    ],
+    "skeleton": "/Game/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton",
+    "verify_error": null
+  },
+  "spawn_character": {
+    "ok": true,
+    "code": null,
+    "asset": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+    "mesh": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+    "class": "SkeletalMeshActor",
+    "actor_label": "UA_Avatar",
+    "actor_name": "UA_Avatar",
+    "location": [
+      120,
+      0,
+      100
+    ],
+    "visible": true,
+    "verified": true,
+    "mesh_on_component": true,
+    "reused": true,
+    "animation": null
+  },
+  "assign_animation": {
+    "ok": true,
+    "code": null,
+    "actor_label": "UA_Avatar",
+    "animation": "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+    "animation_assigned": "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+    "property_used": "animation_mode",
+    "skeleton_compatible": true,
+    "verified": true
+  },
+  "verify_character_visible": {
+    "ok": true,
+    "code": null,
+    "actor_label": "UA_Avatar",
+    "actor_name": "UA_Avatar",
+    "asset": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+    "mesh": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+    "animation": "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+    "class": "SkeletalMeshActor",
+    "location": [
+      120.0,
+      0.0,
+      100.0
+    ],
+    "visible": true,
+    "bounds_valid": null,
+    "verified": true
+  },
+  "set_character_transform": {
+    "ok": true,
+    "actor_label": "UA_Avatar",
+    "actor_name": "UA_Avatar",
+    "class": "SkeletalMeshActor",
+    "location": [
+      160.0,
+      0.0,
+      100.0
+    ],
+    "rotation": [
+      0.0,
+      30.000000000000025,
+      -0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "visible": true,
+    "verified": true
+  },
+  "create_widget_blueprint": {
+    "ok": true,
+    "code": null,
+    "asset_path": "/Game/_UA_Chat/WBP_Chat",
+    "created": false,
+    "is_widget": true,
+    "compiled": true,
+    "saved": true,
+    "verified": true,
+    "class": "WidgetBlueprint",
+    "errors": []
+  },
+  "widget_title": {
+    "ok": true,
+    "code": null,
+    "widget": "TitleText",
+    "widget_name": "TitleText",
+    "class": "TextBlock",
+    "parent": "ChatRoot",
+    "attached": true,
+    "reused": true,
+    "text": "AI Assistant",
+    "verified": true
+  },
+  "widget_status": {
+    "ok": true,
+    "code": null,
+    "widget": "StatusText",
+    "widget_name": "StatusText",
+    "class": "TextBlock",
+    "parent": "ChatRoot",
+    "attached": true,
+    "reused": true,
+    "text": "Online",
+    "verified": true
+  },
+  "widget_history": {
+    "ok": true,
+    "code": null,
+    "widget": "HistoryScroll",
+    "widget_name": "HistoryScroll",
+    "class": "ScrollBox",
+    "parent": "ChatRoot",
+    "attached": true,
+    "reused": true,
+    "text": null,
+    "verified": true
+  },
+  "widget_input": {
+    "ok": true,
+    "code": null,
+    "widget": "InputBox",
+    "widget_name": "InputBox",
+    "class": "EditableTextBox",
+    "parent": "ChatRoot",
+    "attached": true,
+    "reused": true,
+    "text": "",
+    "verified": true
+  },
+  "widget_send": {
+    "ok": true,
+    "code": null,
+    "widget": "SendButton",
+    "widget_name": "SendButton",
+    "class": "Button",
+    "parent": "ChatRoot",
+    "attached": true,
+    "reused": true,
+    "text": null,
+    "verified": true
+  },
+  "bind_send_clicked": {
+    "ok": true,
+    "code": null,
+    "widget": "SendButton",
+    "class": "Button",
+    "binding": "on_send_clicked",
+    "event": "on_clicked",
+    "bound": true,
+    "broadcast": true,
+    "events": [
+      "send-click",
+      "send-click",
+      "send-click"
+    ],
+    "verified": true
+  },
+  "bind_enter_submit": {
+    "ok": true,
+    "code": null,
+    "widget": "InputBox",
+    "class": "EditableTextBox",
+    "binding": "enter_to_send",
+    "event": "on_text_committed",
+    "fires_on": "Enter (UMG OnTextCommitted)",
+    "bound": true,
+    "broadcast": false,
+    "verified": true
+  },
+  "set_ui_state_online": {
+    "ok": true,
+    "code": null,
+    "state": "online",
+    "widget": "StatusText",
+    "text": "\u25cf Online",
+    "history": [
+      "thinking",
+      "online",
+      "thinking",
+      "thinking",
+      "online"
+    ],
+    "verified": true
+  },
+  "verify_ui_state_online": {
+    "ok": true,
+    "code": null,
+    "state": "online",
+    "expected_state": "online",
+    "raw": "\u25cf Online",
+    "match": true,
+    "history": [
+      "thinking",
+      "online",
+      "thinking",
+      "thinking",
+      "online"
+    ],
+    "widget": "StatusText",
+    "verified": true
+  },
+  "ollama_chat": {
+    "ok": true,
+    "code": null,
+    "model": "qwen3-vl:8b-instruct",
+    "prompt": "Hello assistant. Confirm in one sentence that the live Unreal chat is working.",
+    "response": "Yes, the live Unreal Engine chat is working.",
+    "latency_ms": 531,
+    "local_only": true,
+    "endpoint": "http://127.0.0.1:11434/api/chat",
+    "verified": true,
+    "error": null
+  },
+  "save_level": {
+    "ok": true,
+    "map_before": "/Temp/Untitled_0.Untitled",
+    "map_after": "/Game/Maps/UA_ProductRegr_20260831.UA_ProductRegr_20260831",
+    "requested_asset_path": "/Game/Maps/UA_ProductRegr_20260831",
+    "requested_map": "/Game/Maps/UA_ProductRegr_20260831",
+    "saved_map": "/Game/Maps/UA_ProductRegr_20260831",
+    "was_temp_level": true,
+    "package_exists": true,
+    "dirty_before": true,
+    "dirty_after": false,
+    "active_map": "/Game/Maps/UA_ProductRegr_20260831.UA_ProductRegr_20260831",
+    "active_map_identity_correct": true,
+    "verified": true,
+    "save_error": null,
+    "startup_map": "/Game/Maps/UA_ProductRegr_20260831",
+    "startup_map_persisted": true
+  }
+}

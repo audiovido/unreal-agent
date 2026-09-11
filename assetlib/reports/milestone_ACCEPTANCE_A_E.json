@@ -1,0 +1,210 @@
+{
+ "project": "ASSET_Showcase2",
+ "bridge": "127.0.0.1:6766",
+ "ok": true,
+ "started_at": 1788358230.8345125,
+ "categories": {
+  "vehicle": {
+   "place": {
+    "ok": true,
+    "actor_count": 3,
+    "classes": [
+     "StaticMeshActor",
+     "StaticMeshActor",
+     "StaticMeshActor"
+    ],
+    "sizes_cm": [
+     [
+      279.2,
+      486.9,
+      231.8
+     ],
+     [
+      211.6,
+      85.0,
+      85.0
+     ],
+     [
+      211.6,
+      85.0,
+      85.0
+     ]
+    ],
+    "camera": [
+     -1773.3,
+     0.4,
+     129.1
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+    "skeleton": null
+   },
+   "ok": true,
+   "copied": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/proof/screens/accept_vehicle.png",
+   "bytes": 130510,
+   "ps": [
+    "CAPTURE_RESULT: ok rect=0,0,1253x750 title=ASSET_Showcase2 - Unreal Editor bytes=130510 file=C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\proof\\screens\\accept_vehicle.png"
+   ]
+  },
+  "character": {
+   "place": {
+    "ok": true,
+    "actor_count": 1,
+    "classes": [
+     "SkeletalMeshActor"
+    ],
+    "sizes_cm": [
+     [
+      111.0,
+      34.7,
+      160.4
+     ]
+    ],
+    "camera": [
+     -899.7,
+     0.2,
+     80.2
+    ],
+    "collision": null,
+    "skeleton": "/Game/Showcase/Characters/CesiumMan/SkeletalMeshes/CesiumMan_Skeleton.CesiumMan_Skeleton"
+   },
+   "ok": true,
+   "copied": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/proof/screens/accept_character.png",
+   "bytes": 68716,
+   "ps": [
+    "CAPTURE_RESULT: ok rect=0,0,1253x750 title=ASSET_Showcase2 - Unreal Editor bytes=68716 file=C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\proof\\screens\\accept_character.png"
+   ]
+  },
+  "environment": {
+   "place": {
+    "ok": true,
+    "actor_count": 3,
+    "classes": [
+     "StaticMeshActor",
+     "StaticMeshActor",
+     "StaticMeshActor"
+    ],
+    "sizes_cm": [
+     [
+      202.0,
+      60.4,
+      334.7
+     ],
+     [
+      3.4,
+      3.4,
+      17.0
+     ],
+     [
+      27.0,
+      27.0,
+      66.0
+     ]
+    ],
+    "camera": [
+     49.9,
+     0.0,
+     167.3
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+    "skeleton": null
+   },
+   "ok": true,
+   "copied": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/proof/screens/accept_environment.png",
+   "bytes": 109419,
+   "ps": [
+    "CAPTURE_RESULT: ok rect=0,0,1253x750 title=ASSET_Showcase2 - Unreal Editor bytes=109419 file=C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\proof\\screens\\accept_environment.png"
+   ]
+  },
+  "animation": {
+   "place": {
+    "ok": true,
+    "actor_count": 1,
+    "classes": [
+     "SkeletalMeshActor"
+    ],
+    "sizes_cm": [
+     [
+      102.7,
+      325.6,
+      168.2
+     ]
+    ],
+    "anim_played": "FoxWalk",
+    "camera": [
+     900.4,
+     -8.8,
+     84.1
+    ],
+    "collision": null,
+    "skeleton": "/Game/Showcase/Animations/Fox/SkeletalMeshes/Fox_Skeleton.Fox_Skeleton"
+   },
+   "ok": true,
+   "copied": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/proof/screens/accept_animation.png",
+   "bytes": 112206,
+   "ps": [
+    "CAPTURE_RESULT: ok rect=0,0,1253x750 title=ASSET_Showcase2 - Unreal Editor bytes=112206 file=C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\proof\\screens\\accept_animation.png"
+   ],
+   "advancing": {
+    "ok": true,
+    "md5_t0": "99691916e78c3d66b86c16e4b732d939",
+    "md5_t1": "1ff2d17e8b69252cbc8e0905f786cd4c",
+    "t1_copied": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/proof/screens/accept_animation_t2.png"
+   }
+  },
+  "blender_import": {
+   "place": {
+    "ok": true,
+    "actor_count": 3,
+    "classes": [
+     "StaticMeshActor",
+     "StaticMeshActor",
+     "StaticMeshActor"
+    ],
+    "sizes_cm": [
+     [
+      279.2,
+      486.9,
+      231.8
+     ],
+     [
+      211.6,
+      85.0,
+      85.0
+     ],
+     [
+      211.6,
+      85.0,
+      85.0
+     ]
+    ],
+    "camera": [
+     1826.7,
+     0.4,
+     129.1
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+    "skeleton": null
+   },
+   "ok": true,
+   "copied": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/proof/screens/accept_blender_import.png",
+   "bytes": 130383,
+   "ps": [
+    "CAPTURE_RESULT: ok rect=0,0,1253x750 title=ASSET_Showcase2 - Unreal Editor bytes=130383 file=C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\proof\\screens\\accept_blender_import.png"
+   ]
+  }
+ },
+ "scene": {
+  "ground_lights_ok": true,
+  "black_suv_imported": true,
+  "black_suv_mesh": "/Game/NLR/BlackSUV/Cesium_Milk_Truck.Cesium_Milk_Truck",
+  "world_ok": true
+ },
+ "save_map": {
+  "saved": true,
+  "map_asset_exists": true,
+  "world_before": "/Game/ShowcaseMap.ShowcaseMap",
+  "map_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/Content//ShowcaseMap.umap"
+ },
+ "elapsed_seconds": 31.5,
+ "map_on_disk": 30302
+}

@@ -1,0 +1,16 @@
+{
+  "id": "p2_origin_bottom_and_name",
+  "inputs": {
+    "source": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\samples\\sample_table.fbx",
+    "name": "P2_Org_Table",
+    "export_formats": [
+      "glb"
+    ],
+    "export_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_out\\origin_bottom_and_name",
+    "blend_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_work",
+    "origin_center": "BOTTOM",
+    "decimate_ratio": null,
+    "lods": false,
+    "collision": false
+  }
+}

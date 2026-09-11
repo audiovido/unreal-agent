@@ -1,0 +1,262 @@
+{
+  "milestone": "P1 Blender 4.2 LTS install + verification",
+  "finished_at": 1788344146.622661,
+  "elapsed_seconds": 20.2,
+  "source": {
+    "download": "downloads/blender-4.2.0-windows-x64.zip",
+    "sha256_official": "b6e72874f8cb5c4ed77f9b03d7f1fde851b9455a7ff02a1e1119c876318ebc65",
+    "sha256_local_match": true,
+    "official_release_page": "https://www.blender.org/download/releases/4-2/"
+  },
+  "version_probe": {
+    "ok": true,
+    "exe": "C:/Users/Shadow/Desktop/Unreal-Agent/vendor/blender/blender-4.2.0-windows-x64/blender.exe",
+    "version_line": "Blender 4.2.0",
+    "raw": [
+      "Blender 4.2.0",
+      "\tbuild date: 2024-07-16",
+      "\tbuild time: 06:29:33"
+    ]
+  },
+  "battery": {
+    "ok": true,
+    "exit_code": 0,
+    "report": {
+      "step": "p1_blender_verify",
+      "started_at": 1788344131.709791,
+      "blender": {
+        "version": "4.2.0",
+        "version_tuple": [
+          4,
+          2,
+          0
+        ],
+        "build_date": "b'2024-07-16'",
+        "build_time": "b'06:29:33'",
+        "python": "3.11.7",
+        "bpy_import_ok": true
+      },
+      "checks": {
+        "addons": true,
+        "scene_build": true,
+        "blend_saved": true,
+        "exports_fbx_glb": true,
+        "render_proof": true,
+        "meshes_valid": true
+      },
+      "ok": true,
+      "addons": {
+        "io_scene_fbx": true,
+        "io_scene_gltf2": true
+      },
+      "scene_objects": [
+        "P1_Floor",
+        "P1_TableTop",
+        "P1_Leg_FL",
+        "P1_Leg_FR",
+        "P1_Leg_BL",
+        "P1_Leg_BR",
+        "P1_Monkey"
+      ],
+      "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p1_smoke_scene.blend",
+      "blend_size_bytes": 1044416,
+      "exports": [
+        {
+          "format": "fbx",
+          "ok": true,
+          "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/exports/P1_TableTop.fbx",
+          "size_bytes": 15372,
+          "validation": {
+            "ok": true,
+            "export_file_exists": true,
+            "object_present": true,
+            "dimensions_cm": [
+              170.0,
+              90.0,
+              6.0
+            ],
+            "vertex_count": 8,
+            "poly_count": 6,
+            "materials": [
+              {
+                "name": "P1_TableMat",
+                "nodes": 2
+              }
+            ],
+            "skeleton": null,
+            "animations": []
+          },
+          "error": null
+        },
+        {
+          "format": "glb",
+          "ok": true,
+          "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/exports/P1_TableTop.glb",
+          "size_bytes": 2104,
+          "validation": {
+            "ok": true,
+            "export_file_exists": true,
+            "object_present": true,
+            "dimensions_cm": [
+              170.0,
+              90.0,
+              6.0
+            ],
+            "vertex_count": 8,
+            "poly_count": 6,
+            "materials": [
+              {
+                "name": "P1_TableMat",
+                "nodes": 2
+              }
+            ],
+            "skeleton": null,
+            "animations": []
+          },
+          "error": null
+        }
+      ],
+      "render": {
+        "engine": "BLENDER_EEVEE_NEXT",
+        "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/proof/blender_p1_render.png",
+        "size_bytes": 858069
+      },
+      "mesh_validation": [
+        {
+          "name": "P1_Floor",
+          "vertices": 4,
+          "polygons": 1,
+          "triangles": null,
+          "has_uv": true,
+          "materials": [
+            "P1_FloorMat"
+          ],
+          "bounds_cm": [
+            800.0,
+            800.0,
+            0.0
+          ]
+        },
+        {
+          "name": "P1_TableTop",
+          "vertices": 8,
+          "polygons": 6,
+          "triangles": null,
+          "has_uv": true,
+          "materials": [
+            "P1_TableMat"
+          ],
+          "bounds_cm": [
+            170.0,
+            90.0,
+            6.0
+          ]
+        },
+        {
+          "name": "P1_Leg_FL",
+          "vertices": 64,
+          "polygons": 34,
+          "triangles": null,
+          "has_uv": true,
+          "materials": [
+            "P1_LegMat"
+          ],
+          "bounds_cm": [
+            7.0,
+            7.0,
+            85.0
+          ]
+        },
+        {
+          "name": "P1_Leg_FR",
+          "vertices": 64,
+          "polygons": 34,
+          "triangles": null,
+          "has_uv": true,
+          "materials": [
+            "P1_LegMat"
+          ],
+          "bounds_cm": [
+            7.0,
+            7.0,
+            85.0
+          ]
+        },
+        {
+          "name": "P1_Leg_BL",
+          "vertices": 64,
+          "polygons": 34,
+          "triangles": null,
+          "has_uv": true,
+          "materials": [
+            "P1_LegMat"
+          ],
+          "bounds_cm": [
+            7.0,
+            7.0,
+            85.0
+          ]
+        },
+        {
+          "name": "P1_Leg_BR",
+          "vertices": 64,
+          "polygons": 34,
+          "triangles": null,
+          "has_uv": true,
+          "materials": [
+            "P1_LegMat"
+          ],
+          "bounds_cm": [
+            7.0,
+            7.0,
+            85.0
+          ]
+        },
+        {
+          "name": "P1_Monkey",
+          "vertices": 507,
+          "polygons": 500,
+          "triangles": null,
+          "has_uv": true,
+          "materials": [
+            "P1_HeadMat"
+          ],
+          "bounds_cm": [
+            46.48,
+            28.95,
+            33.47
+          ]
+        }
+      ],
+      "elapsed_seconds": 5.5
+    },
+    "log_tail": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)\nInfo: Total files 0 | Changed 0 | Failed 0\n03:15:34 | INFO: Starting glTF 2.0 export\n03:15:34 | INFO: Extracting primitive: Cube.001\n03:15:34 | INFO: Primitives created: 1\n03:15:34 | INFO: Finished glTF 2.0 export in 0.009008169174194336 s\nSaved: 'C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\proof\\blender_p1_render.png'\nTime: 00:02.42 (Saving: 00:00.52)\n\nInfo: Saved \"p1_smoke_scene.blend\"\n\nFBX export starting... 'C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\assetlib\\\\tests\\\\blender\\\\exports\\\\P1_TableTop.fbx'\nexport finished in 0.0000 sec.\nINFO Draco mesh compression is available, use library at C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\vendor\\blender\\blender-4.2.0-windows-x64\\4.2\\python\\lib\\site-packages\\extern_draco.dll\n\nBLENDER_BATTERY_DONE ok=True\n"
+  },
+  "gui_probe": {
+    "ok": true,
+    "gui_info": {
+      "gui_alive": true,
+      "version": "4.2.0",
+      "python": "3.11.7",
+      "started_at": 1788344139.9594736,
+      "error": null,
+      "workspace": "Layout",
+      "screen": "Layout",
+      "objects": [
+        "Camera",
+        "Cube",
+        "Light"
+      ],
+      "gpu_module": true
+    },
+    "screenshot": {
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/proof/screens/blender_gui_proof.png",
+      "size_bytes": 576231
+    },
+    "capture_ok": true,
+    "capture_output": [
+      "CAPTURE_RESULT: ok rect=-7,-7,1227x724 title=(Unsaved) - Blender 4.2 bytes=576231 file=C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\proof\\screens\\blender_gui_proof.png"
+    ]
+  },
+  "ok": true
+}

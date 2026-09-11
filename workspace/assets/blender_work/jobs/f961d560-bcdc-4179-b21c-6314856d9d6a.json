@@ -1,0 +1,210 @@
+{
+  "id": "f961d560-bcdc-4179-b21c-6314856d9d6a",
+  "operation": "create_primitive",
+  "inputs": {
+    "name": "UA_Wall_Panel_Slim",
+    "shape": "cube",
+    "dimensions_cm": [
+      260,
+      10,
+      120
+    ],
+    "expected_dimensions_cm": [
+      260,
+      10,
+      120
+    ],
+    "materials": [
+      {
+        "name": "UA_PanelMat",
+        "color": [
+          0.09,
+          0.1,
+          0.13
+        ],
+        "metallic": 0.6,
+        "roughness": 0.55
+      }
+    ],
+    "screenshot": false
+  },
+  "outputs": {
+    "object_name": "UA_Wall_Panel_Slim",
+    "shape": "cube",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Wall_Panel_Slim.fbx",
+      "format": "fbx",
+      "size_bytes": 15228,
+      "object": "UA_Wall_Panel_Slim"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/f961d560-bcdc-4179-b21c-6314856d9d6a.blend",
+    "proof": {}
+  },
+  "status": "COMPLETE",
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      260.0,
+      10.0,
+      120.0
+    ],
+    "vertex_count": 8,
+    "poly_count": 6,
+    "materials": {
+      "applied": true,
+      "object": "UA_Wall_Panel_Slim",
+      "materials": [
+        "UA_PanelMat"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        259.99999046325684,
+        10.000000149011612,
+        120.00000476837158
+      ],
+      "after_cm": [
+        259.99999046325684,
+        10.000000149011612,
+        119.99999284744263
+      ]
+    },
+    "expected_dimensions_cm": [
+      260.0,
+      10.0,
+      120.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        260.0,
+        10.0,
+        120.0
+      ],
+      "expected_cm": [
+        260.0,
+        10.0,
+        120.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "f961d560-bcdc-4179-b21c-6314856d9d6a",
+    "exported_at": 1788238131.0590374,
+    "source": "generated:cube",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\f961d560-bcdc-4179-b21c-6314856d9d6a.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Wall_Panel_Slim.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      260.0,
+      10.0,
+      120.0
+    ],
+    "materials": [
+      {
+        "name": "UA_PanelMat",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        260.0,
+        10.0,
+        120.0
+      ],
+      "vertex_count": 8,
+      "poly_count": 6,
+      "materials": [
+        {
+          "name": "UA_PanelMat",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Wall_Panel_Slim",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "attempts": 1,
+  "max_attempts": 3,
+  "timeout_seconds": 600,
+  "created_at": 1788238130.2993186,
+  "updated_at": 1788238131.205383,
+  "log": [
+    {
+      "at": 1788238130.2993202,
+      "level": "info",
+      "message": "job created"
+    },
+    {
+      "at": 1788238130.3259273,
+      "level": "info",
+      "message": "attempt 1/3 starting (headless)"
+    },
+    {
+      "at": 1788238131.2046185,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238131.2046285,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238131.204629,
+      "level": "info",
+      "message": "Info: Total files 0 | Changed 0 | Failed 0"
+    },
+    {
+      "at": 1788238131.20463,
+      "level": "info",
+      "message": ""
+    },
+    {
+      "at": 1788238131.2046306,
+      "level": "info",
+      "message": "FBX export starting... 'C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\workspace\\\\assets\\\\exports\\\\UA_Wall_Panel_Slim.fbx'"
+    },
+    {
+      "at": 1788238131.2046313,
+      "level": "info",
+      "message": "export finished in 0.0000 sec."
+    },
+    {
+      "at": 1788238131.2046318,
+      "level": "info",
+      "message": "Info: Saved \"f961d560-bcdc-4179-b21c-6314856d9d6a.blend\""
+    },
+    {
+      "at": 1788238131.2053816,
+      "level": "info",
+      "message": "job COMPLETE"
+    }
+  ]
+}

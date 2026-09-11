@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "dir": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/samples",
+  "files": [
+    "sample_cone.mtl",
+    "sample_cone.obj",
+    "sample_monkey.glb",
+    "sample_table.fbx"
+  ]
+}

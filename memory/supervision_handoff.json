@@ -1,0 +1,203 @@
+{
+  "updated_at": "2026-09-02 (phase 2 visual director iteration 3 - sky fixed, balance blocked)",
+  "transport": {
+    "freebuff_desktop": "ONLINE (Freebuff.exe parent PID 9952; helper processes present)",
+    "router": "scripts/freebuff_unreal_router.js",
+    "backend": "http://127.0.0.1:8765",
+    "bridge": "http://127.0.0.1:6766",
+    "ollama": "http://127.0.0.1:11434",
+    "round_trip": "PASS (6766 AvaLive + 6767 AV verified this session)",
+    "backend_status": "ONLINE; Ollama ONLINE; Unreal bridge 6766 up at last verify"
+  },
+  "workers": {
+    "AV": {
+      "identity": "Audiovido",
+      "status": "not separately discoverable in local supervisor state",
+      "latest_pass": "cinema regression 17/17 and visual graduation reports persisted",
+      "active_task": "visual-product audit pending",
+      "next_task": "review actual reusable Chat UI and major Audiovido screens"
+    },
+    "AL": {
+      "identity": "AvaLive / reusable Chat",
+      "status": "existing evidence persisted; bridge currently unreachable",
+      "latest_pass": "live chat/speech and final visual showcase reports persisted",
+      "active_task": "visual-product completion audit pending",
+      "next_task": "capture/review current reusable Chat UI once bridge is available"
+    },
+    "ASSET": {
+      "identity": "Blender + ready-asset library / Unreal Agent asset pipeline",
+      "status": "RUNNING - bridge 6766 identity ASSET_Showcase2 (identity-guarded listener); post-reboot editor PID 6420 session verified",
+      "latest_pass": "A-F acceptance FULL PASS + tool-gap breadth 8/8 (67 primitives live) + VD-1: street scene restored, lighting/axis/camera fixes applied & saved (sun 100k lux, skylight captured-scene recapture, SUV/fox on y=60); visual capture blocked on this desktop session (recorded)",
+      "active_task": "PHASE 2 VISUAL DIRECTOR iteration 3: sky void FIXED (emissive dome) + rendered; lantern + camera applied; balance recapture blocked - PIE no longer enters play after a create_asset overwrite-modal timeout; needs same-project editor restart",
+      "next_task": "VD iteration 4: restart ASSET_Showcase2 editor (graceful close + clear Saved/Autosaves + windowed relaunch) -> recreate dome material as M_VD_SkyDome2 dimmer -> PIE capture -> rescore (recipe in vd_iteration_3.json)"
+    }
+  },
+  "blender": {
+    "version": "4.2.0",
+    "gui_smoke": "PASS",
+    "headless_cli": "PASS",
+    "bpy": "PASS",
+    "fbx_glb": "PASS",
+    "unreal_import": "content evidence PASS (29 uassets); headless placement PASS in-session; GUI screenshot proof blocked by commit starvation"
+  },
+  "assets": {
+    "library": "assetlib",
+    "indexed_samples": [
+      "CesiumMilkTruck",
+      "CesiumMan",
+      "Fox",
+      "Lantern",
+      "BlackSUV (derived tint)"
+    ],
+    "city_sample": "not allowed to block other work",
+    "status": "catalog 5 entries + BlackSUV; street scene + map saved; building category documented gap",
+    "catalog": "assetlib/catalog/assets.json - 5 verified entries; Buildings/Interiors empty (Sponza rejected: Cryengine license)"
+  },
+  "git": {
+    "index_lock": "present since 2026-09-01",
+    "live_owner_proven": false,
+    "action": "leave untouched; no deletion or commit"
+  },
+  "current_blockers": [
+    "Commit starvation: CommitFree 0.3-0.4 GB of 59.9 GB; ~13 windowless ASSET_Showcase2 zombie UnrealEditors are access-protected (taskkill denied, elevation not approved). Single unblock = elevated zombie kill or reboot, then the --route command above."
+  ],
+  "do_not_repeat": [
+    "AV/AL technical graduation",
+    "Blender P1/P2 smoke battery",
+    "existing completed reports"
+  ],
+  "source_files": [
+    "memory/active_project_context.json",
+    "memory/avalive_GRADUATION_report.json",
+    "memory/avalive_FINAL_SHOWCASE_report.json",
+    "assetlib/reports/milestone_ACCEPTANCE.json",
+    "memory/supervisor/supervisor_state.json"
+  ],
+  "thread_id": "9faa947d-0118-4d43-87be-819456137c37",
+  "last_pass": "ASSET: Blender 4.2.0 verified (GUI/CLI/bpy); truck GLB->FBX chain; BlackSUV Blender-tint FBX built (123900B, 5 mats); headless UE placement PASS in-session; P3 catalog+router (13 tests green); -unattended GUI-capture fix + router wiring landed",
+  "current_acceptance_item": "DONE: A-F acceptance PASS (bridge-driven) - category legs placed/validated/captured, FoxWalk advance proven via md5 pair, /Game/ShowcaseMap saved on disk (30KB), street scene (black SUV + walking fox) captured",
+  "bridge_method": "ASSET bridge: in-editor PythonScriptPlugin startup script boots ue_listener_asset.py (identity-guarded) on 127.0.0.1:6766 in ASSET_Showcase2; UnrealAgentBridge native plugin enabled for viewport capture; mapping persisted at assetlib/bridge/config.json (ASSET -> ASSET_Showcase2 -> 6766). Do NOT fall back to AudioVido.",
+  "ready_asset_state": "5 entries (truck, black_suv, cesium_man, fox, lantern); previews + licenses in-tree; router plan headless-tested",
+  "tool_gap_closure": {
+    "status": "RUNNING",
+    "current_batch": "BATCH 5: Sequencer / cameras (DONE)",
+    "next_batch": "BATCH 6: MetaHuman performance probe",
+    "counts": {
+      "target": "50-80",
+      "pass": 45,
+      "partial": 0,
+      "missing": 2
+    },
+    "batch5": {
+      "verdict": "PASS",
+      "live_test": "LS_Batch5Test in ASSET_Showcase2 via 6766 bridge: created, cube possessed, CameraCut actor+track, Transform track+section 0-2s, headless scrub/play/pause/speed, structure read-back, save+reopen",
+      "steps_green": "11/11: open-temp-map/create/list/bind-cube+camera-cam/transform-track+section(0-2s, 9 channels)/key-probe-gap/scrub(1.0s grid)+speed+play+pause/structure(1 binding, 2 tracks)/save-reopen/3-negatives",
+      "evidence": "assetlib/reports/sequencer_tools_batch5.json",
+      "new_primitives": [
+        "create_level_sequence",
+        "list_level_sequences",
+        "add_actor_binding",
+        "add_track_with_section",
+        "add_camera_cut",
+        "scrub_and_play",
+        "read_sequence_structure",
+        "save_sequence"
+      ],
+      "engine_gaps_recorded_not_faked": [
+        "MovieSceneFloatChannel exposes NO key API in 5.8 Python -> per-frame keyframe insertion into transform tracks is closed (exact AttributeError recorded); track+section+range proven instead",
+        "get_bound_objects absent from MovieSceneSequenceExtensions (per-binding object resolution closed; binding count + sequence-wide track inventory proven)",
+        "set_current_time rounds to the frame grid (1.25 -> 1.0 observed); whole-second scrub proven",
+        "camera cut binds via section guid (no separate sequence binding; cut track + camera actor proven)"
+      ]
+    }
+  },
+  "tool_gap_program": {
+    "target": "~50-80 high-value capabilities",
+    "pass": 67,
+    "partial": 0,
+    "missing": [
+      "pin DISCONNECT (C++)",
+      "per-node compile-error text (C++)",
+      "component anim read-back + position/seek (5.8 closed)",
+      "IK Rig/Retarget editor API (5.8 closed)",
+      "MetaHuman identity authoring (MetaHumanAnimator C++ not enabled/mirrored)",
+      "Niagara emitter authoring/emitter enumeration (no python surface)",
+      "Landscape creation (LandscapeEditor C++ tool not mirrored)"
+    ],
+    "current_batch": "BATCH 8 - Landscape/foliage/PCG (DONE - 9/9 live PASS)",
+    "next_batch": "none - breadth complete (8/8 batches)",
+    "batch_evidence": {
+      "b1_blueprint": "assetlib/reports/blueprint_gap_batch1.json",
+      "b2_world": "assetlib/reports/world_tools_batch2.json",
+      "b3_materials": "assetlib/reports/material_tools_batch3.json",
+      "b4_animation": "assetlib/reports/animation_tools_batch4.json",
+      "b5_sequencer": "assetlib/reports/sequencer_tools_batch5.json",
+      "b6_metahuman": "assetlib/reports/metahuman_tools_batch6.json",
+      "b7_niagara": "assetlib/reports/niagara_tools_batch7.json",
+      "b8_terrain": "assetlib/reports/terrain_tools_batch8.json"
+    },
+    "pass_detail": "10 BP-graph + 7 world/level + 11 materials + 9 animation/skeleton + 8 sequencer + 6 metahuman surface",
+    "target_assessment": "67 primitives of the ~50-80 target, all live-validated through the 6766 bridge across 8 batches; depth gaps are engine/C++-closed and recorded with verbatim probe errors in each batch evidence file"
+  },
+  "visual_director": {
+    "phase": "PHASE 2 - VISUAL DIRECTOR",
+    "iteration": 9,
+    "date": "2026-09-02",
+    "verdict": "NOT_ACCEPTED",
+    "overall": 6.0,
+    "report": "assetlib/reports/vd_iteration_9.json",
+    "verified": "camera readbacks verified every pose; NLR BlackSUV renders BLACK at 4 m (dark 24.1%); building renders at 12 m (detail 0.0053); glare-free street frame achieved (sun yaw 272 behind cam + bloom off): mean 0.36, halves 0.362/0.359, saturated blue sky, no blowout",
+    "distance_cutoff": "subjects render at 4-12 m but NOT at ~25-30 m standoff (same assets, verified cameras) - cutoff bracketed 12-25 m; IT-10 probes far-cull/LOD on imported meshes",
+    "captures": {
+      "street": "assetlib/proof/screens/vd_iteration9_street.png",
+      "suv_4m": "assetlib/proof/screens/vd_iteration9_suv.png",
+      "preview": "assetlib/proof/screens/vd_preview.html"
+    },
+    "next": "iteration 10: resolve 12-25 m cutoff (max draw distance / LOD), recompose street with subjects, human-eye rescore; VFX via C++/pack",
+    "bridge": "127.0.0.1:6766",
+    "project": "ASSET_Showcase2",
+    "map": "/Game/ShowcaseMap",
+    "audio_vido_modified": false,
+    "commits": 0
+  },
+  "vd_recovery_checkpoint": {
+    "date": "2026-09-02",
+    "it8_report": "VALID (atomic repair)",
+    "it9_report": "VALID (atomic repair)",
+    "human_verdict": "REJECTED - defects: sparse/distant composition; blown-out building close-up; floating SUV lacking context",
+    "repair_route": "render-distance/cutoff/composition",
+    "step_10A": "PASS - SUV grounded (-25.4cm, 1.0cm contact), fox raised 82m (1.0cm contact), both saved; cutoff refuted (no cull/LOD settings; real cause was sunk fox + floating SUV); pixel-grid: building structured at 25m, SUV dark patch at 14m; captures vd_iteration10_a_{street,mid}.png; caveat: fox in-frame -> 10D human eye; pose readback extraction bug noted",
+    "resume_command": "bridge 6766: start_pie -> set_actor_location/set_control_rotation -> readback -> capture_pie_viewport -> vd_score.py",
+    "next": "Human verdict on IT-12 frame (chat reply or edit vd_iteration_11_verdict.json); accept >=8.5/no critical <8 -> lock; else IT-13",
+    "step_10B": "PASS - sun raked (pitch -55, yaw 272/behind-cam), skylight 0.45; building band 0.463->0.462, bright_frac 0.0037->0.0014; SUV dark patch retained (0.341); poses readback-verified raw-logged",
+    "step_10C": "PASS - hero pose (600,-350,170 yaw20) persisted to VD_PlayerStart; fg/mg/bg layering computed from actor positions; capture vd_iteration10_c_hero.png pose-verified readback-logged; dead bands 0->0; SUV dark patch 0.151",
+    "step_10D": "NOT_ACCEPTED(pending) - real hero frame captured (md5 2f006cae, pose-verified, distinct from 56 prior), scorer clean (halves 0.348/0.344, bright 0.001), proposed 7.45 - VFX=4 is the only structural blocker; human verdict NOT received (ask_questions timeout) -> no self-accept; frame live in Preview tab",
+    "iteration_11": "VFX UNBLOCKED - NS_DustMote (Epic engine template, EULA) imported+placed (VD_FX_DustMotes_IT11); signature TRUE (anchor 0.0047-0.0050 = 10x noise floor, 10x control); hero vd_iteration11_hero.png md5 0485fae5 pose-verified; proposed 7.82; verdict file assetlib/reports/vd_iteration_11_verdict.json PENDING_HUMAN_EYE",
+    "iteration_12": "FIXES RENDERED - facades alternate A/B (diff proof 0.0043/0.60), fox 3.9m, hero vd_iteration12_hero.png md5 4e568787 pose-verified; preview data-URI renders (evaluate-verified 1922x1082); proposed 8.05; verdict PENDING_HUMAN_EYE"
+  },
+  "recovery_gate": {
+    "when": "2026-09-02T15:58Z",
+    "root_cause": "PackageRestoreData.json crash-recovery modal ('Restore Packages' window title) blocked map load + startup scripts + exec-commands on 5 consecutive boots after taskkill //F",
+    "fix": "closed stale editor PID 26188, deleted Saved/Autosaves/PackageRestoreData.json, relaunched ONE editor (PID 21164) with plain project+map cmd",
+    "gate": {
+      "editor_count": 1,
+      "bridge_6766": "PASS (LISTENING pid 21164)",
+      "round_trip": "PASS",
+      "identity": "ASSET_Showcase2",
+      "map": "/Game/ShowcaseMap"
+    },
+    "lesson": "after force-kill, always check for 'Restore Packages' window title + Saved/Autosaves/PackageRestoreData.json before any other boot debugging"
+  },
+  "it13_state": {
+    "step1_catalog_probe": "done (CesiumMan exists; fox stays character, scale-based visibility)",
+    "step2_overhaul": "NOT APPLIED \u2014 combined script died in 30s client timeout; editor dropped it; disk = good IT-12 state",
+    "rules": [
+      "split into SMALL bridge requests with long timeout",
+      "print FULL envelope not r.get('result')",
+      "AssetTools route for material creation",
+      "no in-place edits of loaded in-map materials with expression deletes",
+      "Vector not iterable in UE py"
+    ],
+    "next": "step2 sub-steps: materials -> apply -> capture -> preview/record"
+  }
+}

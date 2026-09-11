@@ -67,28 +67,11 @@ STRATEGY_CHAINS: Dict[str, List[str]] = {
 }
 
 DEFECT_PRIORITY: List[str] = [
-    "STALE_CAPTURE", "BLACK_BAND", "HEAD_CROPPED",    "SUBJECT_TOO_LARGE", "SUBJECT_TOO_SMALL", "SUBJECT_BBOX_INVALID",
-    "WHITE_CLIPPING", "BACKGROUND_OVEREXPOSED",
-
+    "STALE_CAPTURE", "BLACK_BAND", "HEAD_CROPPED", "SUBJECT_TOO_LARGE",
+    "SUBJECT_TOO_SMALL", "WHITE_CLIPPING", "BACKGROUND_OVEREXPOSED",
     "BLACK_CLIPPING", "SUBJECT_TOO_DARK", "UI_OFF_SCREEN", "UI_TOO_SMALL",
     "UI_LOW_CONTRAST", "CAMERA_ROLL", "EMPTY_ENVIRONMENT",
 ]
-
-
-# Vehicle showcase has a stricter, non-destructive policy than generic visual
-# tasks.  The detector/profile is resolved before these chains are used.
-VEHICLE_STRATEGY_CHAINS: Dict[str, List[str]] = {
-    "SUBJECT_BBOX_INVALID": [],
-    "HEAD_CROPPED": ["camera_framing_recompute", "camera_pull_back"],
-    "SUBJECT_TOO_LARGE": ["camera_pull_back", "camera_framing_recompute"],
-    "SUBJECT_TOO_SMALL": ["camera_move_closer", "camera_framing_recompute"],
-    "EMPTY_ENVIRONMENT": ["camera_framing_recompute",
-                           "lighting_reduce_background"],
-    "WHITE_CLIPPING": ["exposure_reduce_highlights",
-                        "lighting_reduce_background"],
-    "BACKGROUND_OVEREXPOSED": ["lighting_reduce_background",
-                                "exposure_reduce_highlights"],
-}
 
 
 @dataclass
@@ -102,10 +85,6 @@ class LoopPass:
     score: Dict[str, float] = field(default_factory=dict)
     metrics: Dict[str, Any] = field(default_factory=dict)
     vision: Optional[Dict[str, Any]] = None
-    strategy: Optional[str] = None
-    change: Dict[str, Any] = field(default_factory=dict)
-    kept: Optional[bool] = None
-    reverted: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -118,10 +97,6 @@ class LoopPass:
             "score": self.score,
             "metrics": self.metrics,
             "vision": self.vision,
-            "strategy": self.strategy,
-            "change": self.change,
-            "kept": self.kept,
-            "reverted": self.reverted,
         }
 
 
@@ -152,27 +127,16 @@ class AutonomousVisualLoop:
         out_dir: Optional[str] = None,
         subject_locator: Optional[Callable] = None,
         ui_locator: Optional[Callable] = None,
-        gate: Optional[Callable[[Any, Any], bool]] = None,
-        rollback: Optional[Callable[[Any, Any], Any]] = None,
     ) -> None:
-        """gate: optional (metrics, score) -> bool terminal predicate.  When
-        provided it REPLACES the default acceptance contract for termination
-        (it may only be stricter; the standard contract is the fallback when
-        gate is None)."""
         self.target = target
         self.subject_locator = subject_locator
         self.ui_locator = ui_locator
-        self.gate = gate
-        self.rollback = rollback
         self.capture = capture
         self.apply = apply
         self.vision = vision
         self.technical_ok = technical_ok
         self.external_blocker = external_blocker
-        requested_passes = int(max_passes)
-        strategy = self.target.get("visual_strategy") or {}
-        profile_limit = strategy.get("max_passes")
-        self.max_passes = min(requested_passes, int(profile_limit)) if profile_limit else requested_passes
+        self.max_passes = int(max_passes)
         self.out_dir = out_dir
         self.passes: List[LoopPass] = []
         self.action_logs: List[Dict[str, Any]] = []
@@ -186,20 +150,6 @@ class AutonomousVisualLoop:
         zero an image-derived camera-roll when the actual camera rotation is
         read back as level). Default: no-op."""
         return None
-
-    def _gate_ok(self, metrics: Any, s: Any) -> bool:
-        """Terminal acceptance predicate.  An injected release-grade gate is
-        honored when provided (it is only ever stricter than the standard
-        contract); otherwise the standard target acceptance contract is
-        used, preserving the historic behavior exactly."""
-        if self.gate is not None:
-            try:
-                return bool(self.gate(metrics, s))
-            except Exception:
-                return False
-        return accepts(
-            s, self.target,
-            allow_external_blocker=bool(self.external_blocker))
 
     # ------------------------------------------------------------------
     # helpers
@@ -216,24 +166,9 @@ class AutonomousVisualLoop:
         light = self.target.get("lighting") or {}
         ui_t = self.target.get("ui") or {}
 
-        if str(self.target.get("visual_profile") or "") == "vehicle_showcase":
-            # A vehicle profile must never let a missing/implausible detector
-            # result flow into camera or scene remediation.  The profile
-            # locator returns None for no plausible assembled vehicle.
-            if not metrics.subject_bbox:
-                d.append("SUBJECT_BBOX_INVALID")
-            elif metrics.subject_coverage > 0.42:
-                d.append("SUBJECT_BBOX_INVALID")
-            elif (getattr(metrics, "empty_space_ratio", 0.0) > 0.78
-                  and not bool((self.target.get("environment_requirement") or {}).get("verified"))):
-                d.append("EMPTY_ENVIRONMENT")
-
-
-        vehicle_bbox_invalid = (str(self.target.get("visual_profile") or "")
-                                == "vehicle_showcase"
-                                and (not metrics.subject_bbox
-                                     or metrics.subject_coverage > 0.42))
-        if metrics.subject_bbox and not vehicle_bbox_invalid:
+        if metrics.head_clipped:
+            d.append("HEAD_CROPPED")
+        if metrics.subject_bbox:
             if metrics.subject_coverage > want[1] + 0.02:
                 d.append("SUBJECT_TOO_LARGE")
             elif metrics.subject_coverage < max(0.0, want[0] - 0.02) \
@@ -255,8 +190,7 @@ class AutonomousVisualLoop:
             d.append("CAMERA_ROLL")
         if (subj.get("head_fully_visible") and not metrics.head_clipped
                 and metrics.entropy > 0 and metrics.entropy < 5.2
-                and metrics.std_luma < 13
-                and not bool((self.target.get("environment_requirement") or {}).get("verified"))):
+                and metrics.std_luma < 13):
             d.append("EMPTY_ENVIRONMENT")
         seen = set()
         ordered = [x for x in DEFECT_PRIORITY if x in d and not (
@@ -268,15 +202,11 @@ class AutonomousVisualLoop:
             return None
         defect = defects[0]
         tried = self._tried.setdefault(defect, [])
-        profile = str(self.target.get("visual_profile") or "")
-        if profile == "vehicle_showcase":
-            chain = VEHICLE_STRATEGY_CHAINS.get(
-                defect, STRATEGY_CHAINS.get(defect, [DEFECT_ACTIONS.get(defect, defect)]))
-        else:
-            chain = STRATEGY_CHAINS.get(defect,
-                                        [DEFECT_ACTIONS.get(defect, defect)])
+        chain = STRATEGY_CHAINS.get(defect,
+                                    [DEFECT_ACTIONS.get(defect, defect)])
         for candidate in chain:
             if candidate not in tried:
+                tried.append(candidate)
                 return candidate
         return None  # every strategy exhausted for the top defect
 
@@ -285,9 +215,7 @@ class AutonomousVisualLoop:
             "width": m.width, "height": m.height, "mean_luma": m.mean_luma,
             "std_luma": m.std_luma, "entropy": m.entropy,
             "pct_white": m.pct_white, "pct_black": m.pct_black,
-            "subject_bbox": getattr(m, "subject_bbox", None),
             "subject_coverage": m.subject_coverage,
-            "empty_space_ratio": getattr(m, "empty_space_ratio", None),
             "ui_coverage": m.ui_screen_coverage, "head_clipped": m.head_clipped,
             "bands": m.bands, "stale": m.stale, "roll_deg": m.roll_deg,
         }
@@ -328,9 +256,11 @@ class AutonomousVisualLoop:
             final_score, final_metrics, final_vision = s, m, vision
 
             defects = self._derive_defects(m, s)
-            gate_ok = self._gate_ok(m, s)
-            verdict = "PASS" if gate_ok else "REVISE"
-            action = self._choose_action(defects) if not gate_ok else None
+            gate = accepts(
+                s, self.target,
+                allow_external_blocker=bool(self.external_blocker))
+            verdict = "PASS" if gate else "REVISE"
+            action = self._choose_action(defects) if not gate else None
             lp = LoopPass(
                 index=i, path=path, hash_md5_12=m.hash_md5_12,
                 defects=defects, actions=[action] if action else [],
@@ -339,48 +269,20 @@ class AutonomousVisualLoop:
             )
             self.passes.append(lp)
 
+            # close out the previous iteration's before/after log
             if self._pending_log is not None:
                 pend = self._pending_log
-                pend["after"] = {k: self._metrics_dict(m).get(k) for k in
+                pend["after"] = {k: self._metrics_dict(m)[k] for k in
                                  ("mean_luma", "pct_white", "pct_black",
-                                  "subject_coverage", "empty_space_ratio",
-                                  "ui_coverage", "head_clipped")}
-                pend["after_score"] = round(float(s.overall), 2)
+                                  "subject_coverage", "ui_coverage",
+                                  "head_clipped")}
                 pend["result"] = "RESOLVED" if not defects else (
                     "CHANGED" if pend["after"] != pend["before"] else "NO_CHANGE")
                 self.action_logs.append(pend)
                 self._pending_log = None
 
-            # A release adapter may provide a verified inverse.  Revert only
-            # a measured regression; never guess or repeat an equivalent fix.
-            # A release adapter may provide a verified inverse. Compare this
-            # capture with the immediately preceding applied pass; the newly
-            # appended pass is only evidence and must never be mistaken for
-            # the change that produced the current frame.
-            if self.rollback is not None and len(self.passes) >= 2:
-                previous = self.passes[-2]
-                before_score = previous.change.get("score_before")
-                if previous.strategy and previous.kept is True and before_score is not None:
-                    from core.release_director import decide_rollback
-                    if decide_rollback(before_score, float(s.overall),
-                                       previous.defects, defects,
-                                       [previous.strategy]):
-                        try:
-                            rb = self.rollback(s, m)
-                        except Exception as exc:  # pragma: no cover
-                            rb = {"ok": False, "error": str(exc)}
-                        reverted = (bool((rb or {}).get("ok"))
-                                    if isinstance(rb, dict) else bool(rb))
-                        if reverted:
-                            previous.kept = False
-                            previous.reverted = True
-                            previous.change["rollback"] = rb
-                            previous.verdict = "REVERTED"
-                            lp.kept = None
-                            # Rollback itself is a scene operation. Capture
-                            # again before selecting the next bounded strategy.
-                            self._pending_log = None
-                            continue
+            if gate:
+                break
 
             if action is None:
                 self._pending_log = None
@@ -391,30 +293,16 @@ class AutonomousVisualLoop:
             except Exception as exc:
                 return self._result("BLOCKED", error=f"apply failed: {exc}",
                                     last_hash=last_hash)
-            change = out if isinstance(out, dict) else {"note": str(out or action)}
-            lp.strategy = action
-            lp.change = dict(change)
-            lp.kept = True
-            self._tried.setdefault(defects[0], []).append(action)
-            # Camera read-back is retained in the pass record when the adapter
-            # provides it; this makes every live correction auditable.
-            if isinstance(change.get("readback"), dict):
-                rb = change["readback"]
-                lp.change["camera"] = {
-                    "position": rb.get("loc_after") or rb.get("loc"),
-                    "rotation": rb.get("rot_after") or rb.get("rot"),
-                }
             note = out if isinstance(out, str) else str(
                 (out or {}).get("note", action))
             self._pending_log = {
                 "index": i, "problem": defects[0],
                 "hypothesis": self._hypothesis(defects[0], m),
                 "change": note,
-                "before": {k: self._metrics_dict(m).get(k) for k in
+                "before": {k: self._metrics_dict(m)[k] for k in
                            ("mean_luma", "pct_white", "pct_black",
-                            "subject_coverage", "empty_space_ratio",
-                            "ui_coverage", "head_clipped")},
-                "score_before": round(float(s.overall), 2),
+                            "subject_coverage", "ui_coverage",
+                            "head_clipped")},
             }
 
         # flush a pending action log that never got a follow-up capture
@@ -451,7 +339,6 @@ class AutonomousVisualLoop:
             "CAMERA_ROLL": "detected roll exceeds threshold; reset roll",
             "EMPTY_ENVIRONMENT": "low entropy/contrast; environment lacks depth",
             "BACKGROUND_OVEREXPOSED": "background dominates the highlights",
-            "SUBJECT_BBOX_INVALID": "vehicle detector returned no plausible assembled-vehicle bbox",
         }
         return hyps.get(defect, f"{defect} detected; applying bounded fix")
 
@@ -476,7 +363,9 @@ class AutonomousVisualLoop:
         visual_ok = False
         critique: Dict[str, Any] = {"verdict": "REVISE"}
         if final_score is not None and final_metrics is not None:
-            visual_ok = self._gate_ok(final_metrics, final_score)
+            visual_ok = accepts(final_score, self.target,
+                                allow_external_blocker=bool(
+                                    self.external_blocker))
             critique = self_critique(final_path, final_metrics, final_score,
                                      vision_review=final_vision)
 

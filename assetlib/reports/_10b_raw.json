@@ -1,0 +1,50 @@
+{
+ "fix": {
+  "sun_rot_after": [
+   -0.0,
+   -55.0,
+   -88.0
+  ],
+  "skylight": [
+   0.6000000238418579,
+   0.45
+  ],
+  "saved": true
+ },
+ "captures": {
+  "vd_iteration10_b_mid": {
+   "pose_verified": true,
+   "raw_readback": {
+    "loc": [
+     1350.0,
+     -800.0,
+     200.0
+    ],
+    "rot": [
+     0.0,
+     -3.0,
+     54.1
+    ]
+   },
+   "png": "assetlib/proof/screens/vd_iteration10_b_mid.png",
+   "md5": "8667f2da"
+  },
+  "vd_iteration10_b_street": {
+   "pose_verified": true,
+   "raw_readback": {
+    "loc": [
+     2750.0,
+     -2400.0,
+     260.0
+    ],
+    "rot": [
+     0.0,
+     -6.0,
+     92.0
+    ]
+   },
+   "png": "assetlib/proof/screens/vd_iteration10_b_street.png",
+   "md5": "a2fa66a9"
+  }
+ }
+}

@@ -1,0 +1,11 @@
+{
+  "ok": false,
+  "outputs": {},
+  "validation": {},
+  "manifest": {},
+  "error": "AttributeError: Calling operator \"bpy.ops.mesh.primitive_uvsphere_add\" error, could not be found",
+  "code": "OPERATION_FAILED",
+  "job_id": "051cbd10-0a6b-4f76-959e-ac0d3033bf02",
+  "operation": "create_primitive",
+  "finished_at": 1788238070.6457753
+}

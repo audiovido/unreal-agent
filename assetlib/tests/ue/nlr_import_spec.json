@@ -1,0 +1,9 @@
+[
+  {
+    "id": "black_suv",
+    "category": "Vehicle",
+    "file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/nlr_in/BlackSUV.fbx",
+    "dest": "/Game/NLR/BlackSUV",
+    "expect_class": "StaticMesh"
+  }
+]

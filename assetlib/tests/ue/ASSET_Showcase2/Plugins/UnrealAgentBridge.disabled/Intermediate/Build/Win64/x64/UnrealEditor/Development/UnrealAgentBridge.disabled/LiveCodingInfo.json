@@ -1,0 +1,12 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.UnrealAgentBridge.cpp.obj": [
+			"UnrealAgentBlueprintLibrary.gen.cpp.obj",
+			"UnrealAgentBridge.init.gen.cpp.obj",
+			"PerModuleInline.gen.cpp.obj",
+			"UnrealAgentBlueprintLibrary.cpp.obj",
+			"UnrealAgentBridge.cpp.obj"
+		]
+	}
+}

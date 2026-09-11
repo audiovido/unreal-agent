@@ -1,0 +1,102 @@
+{
+  "batch": 6,
+  "topic": "MetaHuman / identity surface (probe-first, honest-gap)",
+  "bridge": "127.0.0.1:6766 ASSET_Showcase2",
+  "verdict": "PASS",
+  "steps_total": 6,
+  "steps_passed": 6,
+  "steps": [
+    {
+      "step": "01_probe_surface",
+      "ok": true,
+      "total": 26,
+      "runtime_module": 4,
+      "editor_module": 22,
+      "closed_classes_present": {
+        "MetaHumanIdentity": false,
+        "MetaHumanPreset": false,
+        "MetaHumanComponent": false
+      }
+    },
+    {
+      "step": "02_enums",
+      "ok": true,
+      "asset_types": [
+        "CHARACTER",
+        "CHARACTER_ASSEMBLY",
+        "GROOM",
+        "NONE",
+        "OUTFIT_CLOTHING",
+        "SKELETAL_CLOTHING"
+      ],
+      "quality_levels": [
+        "CINEMATIC",
+        "HIGH",
+        "LOW",
+        "MEDIUM"
+      ]
+    },
+    {
+      "step": "03_factory_capability",
+      "ok": true,
+      "supported_class": "<Object '/Script/CoreUObject.Object' (0x00007FF3EFBE02F0) Class 'Class'>",
+      "can_import_empty": false,
+      "can_import_mhasset": false
+    },
+    {
+      "step": "04_project_scan",
+      "ok": true,
+      "total_assets": 93,
+      "mh_named": 0,
+      "identity_assets": 0
+    },
+    {
+      "step": "05_verify_rule_call_closed",
+      "ok": true,
+      "error_type": "TypeError",
+      "error": "VerifyMetaHumanPackageSource: Failed to convert 'outer' (str) to 'Object'\n  TypeError: NativizeObject: Cannot nativize 'str' as 'Object' (allowed Class type: 'Object')"
+    },
+    {
+      "step": "06_identity_gap_record",
+      "ok": true,
+      "plugins_on_disk": [
+        "MetaHumanAnimationTools",
+        "MetaHumanAnimator",
+        "MetaHumanCalibrationProcessing",
+        "MetaHumanCharacter",
+        "MetaHumanCoreML",
+        "MetaHumanCoreTechLib",
+        "MetaHumanCrowd",
+        "MetaHumanLiveLink",
+        "MetaHumanSDK"
+      ],
+      "sdk_uplugin": true,
+      "identity_module_on_disk": true,
+      "unblock": "enable MetaHumanAnimator + add C++ bridge UFUNCTION wrappers (or obtain a MetaHuman package via the launcher/Bridge pipeline)"
+    }
+  ],
+  "gap_record": {
+    "mirrored_in_session": "MetaHumanSDK only (26 symbols: runtime components, options structs, enums, package factory, verify rule classes)",
+    "closed": [
+      "MetaHumanIdentity asset authoring/import - implemented in C++ module MetaHumanAnimator/MetaHumanIdentityEditor, not Python-mirrored and not enabled in ASSET_Showcase2",
+      "VerifyMetaHuman* helpers are rule classes - not string-callable; package-path invocation raises a nativize TypeError (captured)",
+      "No Python path to acquire MetaHuman content - the launcher/Bridge pipeline produces the package that the SDK factory imports"
+    ],
+    "unblock": "enable MetaHumanAnimator + add C++ bridge UFUNCTION wrappers (or obtain a MetaHuman package via the launcher/Bridge pipeline)",
+    "engine_root_checked": "D:/Program Files/Epic Games/UE_5.8",
+    "plugins_on_disk": [
+      "MetaHumanAnimationTools",
+      "MetaHumanAnimator",
+      "MetaHumanCalibrationProcessing",
+      "MetaHumanCharacter",
+      "MetaHumanCoreML",
+      "MetaHumanCoreTechLib",
+      "MetaHumanCrowd",
+      "MetaHumanLiveLink",
+      "MetaHumanSDK"
+    ],
+    "metahuman_sdk_uplugin_present": true,
+    "identity_module_on_disk": true
+  },
+  "note": "MetaHumanSDK mirrored live (runtime components, enums, factory, verify rule classes); identity AUTHORING is closed - MetaHumanAnimator/MetaHumanIdentityEditor C++ module not enabled/mirrored. Exact error text recorded in step 05. No MH content present in project (step 04)."
+}

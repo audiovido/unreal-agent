@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "outputs": {
+    "object_name": "UA_Console_Desk",
+    "shape": "table",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Console_Desk.fbx",
+      "format": "fbx",
+      "size_bytes": 15612,
+      "object": "UA_Console_Desk"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/9e5bb9cc-a6ba-4def-9304-254e884a0dd0.blend",
+    "proof": {}
+  },
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      260.0,
+      90.0,
+      76.0
+    ],
+    "vertex_count": 40,
+    "poly_count": 30,
+    "materials": {
+      "applied": true,
+      "object": "UA_Console_Desk",
+      "materials": [
+        "UA_Desk_Top"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        260.00001430511475,
+        89.99999761581421,
+        75.99999904632568
+      ],
+      "after_cm": [
+        259.99999046325684,
+        89.99999761581421,
+        75.99999904632568
+      ]
+    },
+    "expected_dimensions_cm": [
+      260.0,
+      90.0,
+      76.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        260.0,
+        90.0,
+        76.0
+      ],
+      "expected_cm": [
+        260.0,
+        90.0,
+        76.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "9e5bb9cc-a6ba-4def-9304-254e884a0dd0",
+    "exported_at": 1788238157.4126945,
+    "source": "generated:table",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\9e5bb9cc-a6ba-4def-9304-254e884a0dd0.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Console_Desk.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      260.0,
+      90.0,
+      76.0
+    ],
+    "materials": [
+      {
+        "name": "UA_Desk_Top",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        260.0,
+        90.0,
+        76.0
+      ],
+      "vertex_count": 40,
+      "poly_count": 30,
+      "materials": [
+        {
+          "name": "UA_Desk_Top",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Console_Desk",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "job_id": "9e5bb9cc-a6ba-4def-9304-254e884a0dd0",
+  "operation": "create_primitive",
+  "finished_at": 1788238157.4177182
+}

@@ -67,55 +67,12 @@ def classify(query: str) -> dict:
             "wants_black": "black" in terms}
 
 
-def _filter_by_validation(catalog: dict, min_status: str = "valid") -> dict:
-    """Return a catalog copy filtered by minimum validation status.
-
-    Status order: indexed < pending < valid < verified
-   Entries below min_status are removed."""
-    status_order = ["indexed", "pending", "valid", "verified"]
-    if min_status not in status_order:
-        return catalog
-    min_idx = status_order.index(min_status)
-    filtered_entries = [e for e in catalog["entries"]
-                        if status_order.index(e.get("validation_status", "indexed")) >= min_idx]
-    return {**catalog, "entries": filtered_entries}
-
-
-def _filter_by_compatibility(catalog: dict, engine_version: str = "5.8") -> dict:
-    """Return a catalog filtered by UE engine compatibility.
-
-    Only entries with ue_compatible matching (or exceeding) the given version are kept."""
-    # Simple version string comparison: "5.8" matches "5.8" exactly;
-    # entries without ue_compatible are kept (assumed compatible)
-    filtered_entries = []
-    for e in catalog["entries"]:
-        compat = e.get("ue_compatible")
-        if not compat or compat == engine_version:
-            filtered_entries.append(e)
-        elif compat >= engine_version:
-            # Allow newer engine versions to pass through
-            filtered_entries.append(e)
-    return {**catalog, "entries": filtered_entries}
-
-
-def score(catalog: dict, query: str, *, min_validation: str = "indexed",
-          engine_compat: str | None = None) -> list[dict]:
-    """Return all catalog entries scored for query, highest first.
-
-    Optional filters:
-      min_validation: minimum validation status to include (default: "indexed")
-      engine_compat: only include entries compatible with this UE version (default: none)
-    """
-    # Apply validation filter first
-    filtered_cat = _filter_by_validation(catalog, min_validation)
-    # Then apply compatibility filter
-    if engine_compat:
-        filtered_cat = _filter_by_compatibility(filtered_cat, engine_compat)
-
+def score(catalog: dict, query: str) -> list[dict]:
+    """Return all catalog entries scored for query, highest first."""
     terms = tokens(query)
     expanded = _expand(terms)
     results = []
-    for e in filtered_cat["entries"]:
+    for e in catalog["entries"]:
         pts = 0
         blob = " ".join([e["id"], e["name"], e["category"].lower()]
                         + list(e.get("tags") or []))
@@ -142,9 +99,6 @@ def score(catalog: dict, query: str, *, min_validation: str = "indexed",
                 "matched_terms": sorted(set(hits)), "name": e["name"],
                 "ue_class": e["ue_class"], "animations": e["animations"],
                 "path": e["path"], "license": e["license"],
-                "format": e.get("format", "unknown"),
-                "materials": e.get("materials", []),
-                "validation_status": e.get("validation_status", "indexed"),
             })
     results.sort(key=lambda r: r["score"], reverse=True)
     return results

@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "outputs": {
+    "object_name": "UA_Wall_Panel",
+    "shape": "cube",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Wall_Panel.fbx",
+      "format": "fbx",
+      "size_bytes": 15228,
+      "object": "UA_Wall_Panel"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/a8591d17-3951-4e4e-bf68-5eaa18af3138.blend",
+    "proof": {}
+  },
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      420.0,
+      12.0,
+      240.0
+    ],
+    "vertex_count": 8,
+    "poly_count": 6,
+    "materials": {
+      "applied": true,
+      "object": "UA_Wall_Panel",
+      "materials": [
+        "UA_PanelMat"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        419.9999809265137,
+        11.999999731779099,
+        240.00000953674316
+      ],
+      "after_cm": [
+        419.9999809265137,
+        11.999999731779099,
+        239.99998569488525
+      ]
+    },
+    "expected_dimensions_cm": [
+      420.0,
+      12.0,
+      240.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        420.0,
+        12.0,
+        240.0
+      ],
+      "expected_cm": [
+        420.0,
+        12.0,
+        240.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "a8591d17-3951-4e4e-bf68-5eaa18af3138",
+    "exported_at": 1788238130.1613595,
+    "source": "generated:cube",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\a8591d17-3951-4e4e-bf68-5eaa18af3138.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Wall_Panel.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      420.0,
+      12.0,
+      240.0
+    ],
+    "materials": [
+      {
+        "name": "UA_PanelMat",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        420.0,
+        12.0,
+        240.0
+      ],
+      "vertex_count": 8,
+      "poly_count": 6,
+      "materials": [
+        {
+          "name": "UA_PanelMat",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Wall_Panel",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "job_id": "a8591d17-3951-4e4e-bf68-5eaa18af3138",
+  "operation": "create_primitive",
+  "finished_at": 1788238130.1648734
+}

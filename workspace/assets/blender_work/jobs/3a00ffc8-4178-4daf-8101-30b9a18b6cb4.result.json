@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "outputs": {
+    "object_name": "UA_Lightbox",
+    "shape": "cube",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Lightbox.fbx",
+      "format": "fbx",
+      "size_bytes": 15212,
+      "object": "UA_Lightbox"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/3a00ffc8-4178-4daf-8101-30b9a18b6cb4.blend",
+    "proof": {}
+  },
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      300.0,
+      10.0,
+      150.0
+    ],
+    "vertex_count": 8,
+    "poly_count": 6,
+    "materials": {
+      "applied": true,
+      "object": "UA_Lightbox",
+      "materials": [
+        "UA_Lightbox"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        300.0,
+        10.000000149011612,
+        150.0
+      ],
+      "after_cm": [
+        300.0,
+        10.000000149011612,
+        150.0
+      ]
+    },
+    "expected_dimensions_cm": [
+      300.0,
+      10.0,
+      150.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        300.0,
+        10.0,
+        150.0
+      ],
+      "expected_cm": [
+        300.0,
+        10.0,
+        150.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "3a00ffc8-4178-4daf-8101-30b9a18b6cb4",
+    "exported_at": 1788238137.873075,
+    "source": "generated:cube",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\3a00ffc8-4178-4daf-8101-30b9a18b6cb4.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Lightbox.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      300.0,
+      10.0,
+      150.0
+    ],
+    "materials": [
+      {
+        "name": "UA_Lightbox",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        300.0,
+        10.0,
+        150.0
+      ],
+      "vertex_count": 8,
+      "poly_count": 6,
+      "materials": [
+        {
+          "name": "UA_Lightbox",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Lightbox",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "job_id": "3a00ffc8-4178-4daf-8101-30b9a18b6cb4",
+  "operation": "create_primitive",
+  "finished_at": 1788238137.8780932
+}

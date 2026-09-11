@@ -1,0 +1,48 @@
+{
+  "phase": "PHASE 2 - VISUAL DIRECTOR",
+  "iteration": 9,
+  "bridge": "127.0.0.1:6766",
+  "project": "ASSET_Showcase2",
+  "map": "/Game/ShowcaseMap",
+  "date": "2026-09-02",
+  "verdict": "NOT_ACCEPTED",
+  "acceptance_bar": "human verdict: no critical category below 8 and overall >= 8.5",
+  "overall_score": 6.0,
+  "camera_discipline": "every pose verified by live PIE camera readback before trusting the capture (cam == pawn == intended loc/rot in all three runs this iteration)",
+  "recipe_executed": [
+    "1) CLOSE-RANGE SUV VERIFY (3-5 m, corrected yaw): camera (1490,-340,150) rot pitch3/yaw88.6 aimed at SUV_0 (1500,60) - readback VERIFIED; frame dark_frac 0.241 -> the freshly respawned NLR BlackSUV RENDERS BLACK at close range (IT-8's close-up failures were wrong-yaw, confirmed and closed)",
+    "2) SHORT-STANDOFF RECOMPOSE (~25 m): camera (2750,-2400,260) yaw92, sun moved BEHIND camera axis (yaw 272), r.BloomQuality 0 + r.EyeAdaptationQuality 0 via game-world console - readback VERIFIED",
+    "3) RESULT: glare-free balanced frame - mean 0.36 (was 0.71 washed), halves 0.362/0.359 (balanced), saturated blue sky top band 0.13/0.25/0.44, bright_frac 0.006 (no blowout), detail 0.0032"
+  ],
+  "distance_cutoff_finding": {
+    "evidence": [
+      "SUV at 4 m: renders (dark_frac 0.241) - camera readback verified",
+      "Building at 12 m: renders (detail 0.0053, structure present) - camera readback verified",
+      "Subjects at ~25-30 m street composition: NOT visible in-capture (featureless ground rows, no SUV/building/fox) - camera readback verified",
+      "Cutoff between 12 m and 25 m standoff; not frustum (targets are 0-30 deg off-axis, within FOV), not visibility flags (all visible), not materials (close-range renders identical assets black)"
+    ],
+    "candidates_for_it10": ["far cull / max draw distance on imported meshes", "distance-based LOD with degenerate far LODs", "ground-plane occlusion/z-order at distance", "PIE draw distance defaults"]
+  },
+  "captures": {
+    "suv_4m": "assetlib/proof/screens/vd_iteration9_suv.png (dark 24.1% - black SUV confirmed)",
+    "street": "assetlib/proof/screens/vd_iteration9_street.png (glare-free balanced frame, subjects absent at 25 m)",
+    "bldg_12m": "assetlib/proof/screens/vd_iteration9_bldg12m.png (building renders at 12 m, detail 0.0053)",
+    "preview": "assetlib/proof/screens/vd_preview.html (shows street + SUV close-up for the human eye)"
+  },
+  "scores": {
+    "composition": 6, "camera": 7, "lighting_exposure_contrast": 7, "materials_colors": 7,
+    "scale": 6, "hierarchy": 6, "dead_areas_repetition": 6, "asset_fit_clipping": 7,
+    "character_animation": 6, "vfx": 4, "readability_usability": 6,
+    "confidence": "camera/lighting from verified readbacks + band/grid metrics; subject-presence at the street standoff still unconfirmed; awaiting human eye on the Preview frames"
+  },
+  "iteration10_recipe": [
+    "1) Resolve the 12-25 m render cutoff: probe for max-draw-distance / LOD settings on the imported meshes (SUV/building/fox), or test 15/20 m in 5 m steps to bracket it; fix by clearing far cull or forcing LOD 0",
+    "2) Once subjects read at standoff, recompose the street frame and re-verify subjects + glare-free lighting in one capture",
+    "3) Human-eye rescore on the fresh frame (Preview tab); accept only on no critical <8 and overall >=8.5",
+    "4) VFX gate: C++ emitter UFUNCTION or licensed looping Niagara pack"
+  ],
+  "resume_command": "bridge 6766 PIE flow with camera readback discipline: start_pie -> readback check -> capture_pie_viewport -> vd_score.py",
+  "audio_vido_modified": false,
+  "baselines_touched": "none; no commits",
+  "reversibility": "backup at assetlib/proof/backup/ShowcaseMap_ACCEPTED_VD0.umap; street pose + sun-behind saved as the current scene state"
+}

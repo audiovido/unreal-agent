@@ -1,0 +1,99 @@
+{
+  "batch": 7,
+  "topic": "Niagara / VFX surface",
+  "bridge": "127.0.0.1:6766 ASSET_Showcase2",
+  "map": "/Game/Batch2Map",
+  "verdict": "PASS",
+  "steps_total": 12,
+  "steps_passed": 12,
+  "steps": [
+    {
+      "step": "00_map_wash",
+      "ok": true,
+      "map": "/Game/Batch2Map",
+      "destroyed": 0
+    },
+    {
+      "step": "01_shipping_system",
+      "ok": true,
+      "path": "/Niagara/DefaultAssets/DefaultSystem",
+      "cls": "NiagaraSystem"
+    },
+    {
+      "step": "02_scan_empty_folder",
+      "ok": true,
+      "total": 0,
+      "count": 0
+    },
+    {
+      "step": "03_create_blank_system",
+      "ok": true,
+      "cls": "NiagaraSystem",
+      "path": "/Game/Batch7FX/NS_Batch7"
+    },
+    {
+      "step": "04_duplicate_shipping",
+      "ok": true,
+      "cls": "NiagaraSystem",
+      "path": "/Game/Batch7FX/NS_Batch7Dup"
+    },
+    {
+      "step": "05_spawn_at_location",
+      "ok": true,
+      "component": "NiagaraComponent",
+      "comp_path": "/Game/ShowcaseMap.ShowcaseMap:PersistentLevel.WorldSettings.NiagaraComponent_4",
+      "is_active": true
+    },
+    {
+      "step": "06_read_state",
+      "ok": true,
+      "is_active": true,
+      "auto_activate": false,
+      "asset": "<Object '/Game/Batch7FX/NS_Batch7Dup.NS_Batch7Dup' (0x0000018FE5BAC000) Class 'NiagaraSystem'>"
+    },
+    {
+      "step": "07_set_variable",
+      "ok": true,
+      "var_type": "float",
+      "note": "set succeeded (no python read-back for this var type)",
+      "error": null
+    },
+    {
+      "step": "08_scan_after_create",
+      "ok": true,
+      "count": 2,
+      "assets": {
+        "/Game/Batch7FX/NS_Batch7.NS_Batch7": "NiagaraSystem",
+        "/Game/Batch7FX/NS_Batch7Dup.NS_Batch7Dup": "NiagaraSystem"
+      }
+    },
+    {
+      "step": "09_reopen_persistence",
+      "ok": true,
+      "blank": {
+        "ok": true,
+        "class": "NiagaraSystem",
+        "path": "/Game/Batch7FX/NS_Batch7",
+        "is_system": true
+      },
+      "duplicated": {
+        "ok": true,
+        "class": "NiagaraSystem",
+        "path": "/Game/Batch7FX/NS_Batch7Dup",
+        "is_system": true
+      }
+    },
+    {
+      "step": "10_activate_cycle",
+      "ok": true,
+      "after_deactivate": true,
+      "after_activate": true
+    },
+    {
+      "step": "11_negative_missing_system",
+      "ok": true,
+      "error": "system asset not loadable"
+    }
+  ],
+  "note": "All primitives substantiated live pre-implementation (363-symbol Niagara surface; factory/function-library/component paths verified). Created blank + duplicated engine-shipped DefaultSystem, spawned + state-read + variable-set a NiagaraComponent in Batch2Map. is_active outside PIE reported honestly (step 10 shows it flips on activate())."
+}

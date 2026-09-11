@@ -1,0 +1,16 @@
+{
+  "id": "p2_error_missing_source",
+  "inputs": {
+    "source": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\samples\\does_not_exist.fbx",
+    "name": null,
+    "export_formats": [
+      "fbx"
+    ],
+    "export_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_out\\error_missing_source",
+    "blend_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_work",
+    "origin_center": "BOUNDS",
+    "decimate_ratio": null,
+    "lods": false,
+    "collision": false
+  }
+}

@@ -15,13 +15,9 @@ _AVALIVE_PROOF_DIR = Path(r"C:/Users/Shadow/Desktop/AvaLive/AvaLive/Saved/Unreal
 
 
 def setup(project_file):
-    """Provide the default project file (uproject path) from the composition root.
-
-    ``None`` is allowed: proof candidates then fall back to the live bridge
-    project identity instead of a stale default.
-    """
+    """Provide the default project file (uproject path) from the composition root."""
     global _PROJECT_FILE
-    _PROJECT_FILE = Path(str(project_file)) if project_file else None
+    _PROJECT_FILE = Path(str(project_file))
 
 
 def _proof_candidates():
@@ -31,8 +27,7 @@ def _proof_candidates():
     """
     dirs = []
     try:
-        if _PROJECT_FILE:
-            dirs.append(_PROJECT_FILE.resolve().parent)
+        dirs.append(_PROJECT_FILE.resolve().parent)
     except Exception:
         pass
     try:

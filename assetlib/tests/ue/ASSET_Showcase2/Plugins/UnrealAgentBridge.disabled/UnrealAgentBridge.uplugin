@@ -1,0 +1,17 @@
+﻿{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "Unreal Agent Bridge",
+  "Description": "Native editor bridge for Unreal Agent Blueprint graph automation.",
+  "Category": "Editor",
+  "CanContainContent": false,
+  "IsBetaVersion": true,
+  "Modules": [
+    {
+      "Name": "UnrealAgentBridge",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

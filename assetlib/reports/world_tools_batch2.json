@@ -1,0 +1,261 @@
+{
+  "bridge": {
+    "ok": true,
+    "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+    "project_name": "ASSET_Showcase2",
+    "engine": "5.8.2-56702186+++UE5+Release-5.8",
+    "world": "/Game/ToolGap/Batch2Map.Batch2Map",
+    "port": 6766
+  },
+  "steps": [
+    {
+      "step": "00_cleanup_prior_map",
+      "removed": [],
+      "remaining": [],
+      "temp_map_deleted": {
+        "deleted": true
+      },
+      "file_removed": true,
+      "ok": true
+    },
+    {
+      "step": "01_create_open_batch2map",
+      "create": {
+        "ok": true,
+        "level_path": "/Game/ToolGap/Batch2Map",
+        "created": true,
+        "saved": true
+      },
+      "open": {
+        "ok": true,
+        "level_path": "/Game/ToolGap/Batch2Map",
+        "loaded": true,
+        "world_path": "/Game/ToolGap/Batch2Map.Batch2Map",
+        "identity_ok": true
+      },
+      "actor_count_after": 0,
+      "ok": true
+    },
+    {
+      "step": "02_bulk_spawn",
+      "ok": true,
+      "created": [
+        {
+          "index": 0,
+          "name": "Gap0",
+          "location": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "index": 1,
+          "name": "Gap1",
+          "location": [
+            250.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "index": 2,
+          "name": "Gap2",
+          "location": [
+            500.0,
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "errors": []
+    },
+    {
+      "step": "03_set_transform",
+      "ok": true,
+      "name": "Gap0",
+      "location": [
+        100.0,
+        200.0,
+        50.0
+      ],
+      "rotation": [
+        0.0,
+        45.00000000000003,
+        -0.0
+      ],
+      "scale": [
+        2.0,
+        2.0,
+        2.0
+      ]
+    },
+    {
+      "step": "03b_transform_readback",
+      "ok": true,
+      "name": "Gap0",
+      "label": "Gap0",
+      "class": "StaticMeshActor",
+      "location": [
+        100.0,
+        200.0,
+        50.0
+      ],
+      "rotation": [
+        0.0,
+        45.00000000000003,
+        -0.0
+      ],
+      "scale": [
+        2.0,
+        2.0,
+        2.0
+      ]
+    },
+    {
+      "step": "04_rename_actor",
+      "ok": true,
+      "name": "Gap0_renamed",
+      "label": "Gap0_renamed"
+    },
+    {
+      "step": "04b_rename_collision_guard",
+      "ok": true,
+      "error": "name already used by another actor",
+      "collides_with": [
+        "Gap1"
+      ]
+    },
+    {
+      "step": "05_set_tags",
+      "ok": true,
+      "tags": [
+        "batch2",
+        "test"
+      ]
+    },
+    {
+      "step": "06_details_query",
+      "actor_count": 3,
+      "target": {
+        "name": "Gap0_renamed",
+        "label": "Gap0_renamed",
+        "class": "StaticMeshActor",
+        "location": [
+          100.0,
+          200.0,
+          50.0
+        ],
+        "rotation": [
+          0.0,
+          45.00000000000003,
+          -0.0
+        ],
+        "scale": [
+          2.0,
+          2.0,
+          2.0
+        ],
+        "tags": [
+          "batch2",
+          "test"
+        ]
+      },
+      "ok": true
+    },
+    {
+      "step": "07_world_summary",
+      "ok": true,
+      "map": "/Game/ToolGap/Batch2Map.Batch2Map",
+      "actor_count": 3,
+      "class_histogram": {
+        "StaticMeshActor": 3
+      },
+      "bounds": {
+        "min": [
+          100.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          500.0,
+          200.0,
+          50.0
+        ]
+      }
+    },
+    {
+      "step": "08_persistence",
+      "save": {
+        "ok": true,
+        "map_before": "/Game/ToolGap/Batch2Map.Batch2Map",
+        "map_after": "/Game/ToolGap/Batch2Map.Batch2Map",
+        "requested_asset_path": "/Game/ToolGap/Batch2Map",
+        "requested_map": "/Game/ToolGap/Batch2Map",
+        "saved_map": "/Game/ToolGap/Batch2Map.Batch2Map",
+        "was_temp_level": false,
+        "package_exists": true,
+        "dirty_before": true,
+        "dirty_after": false,
+        "active_map": "/Game/ToolGap/Batch2Map.Batch2Map",
+        "active_map_identity_correct": true,
+        "verified": true,
+        "save_error": null,
+        "startup_map": "/Game/ToolGap/Batch2Map",
+        "startup_map_persisted": true
+      },
+      "open": {
+        "ok": true,
+        "level_path": "/Game/ToolGap/Batch2Map",
+        "loaded": true,
+        "world_path": "/Game/ToolGap/Batch2Map.Batch2Map",
+        "identity_ok": true
+      },
+      "survivors": [
+        "Gap0_renamed",
+        "Gap1",
+        "Gap2"
+      ],
+      "ok": true
+    },
+    {
+      "step": "09_delete_by_class",
+      "ok": true,
+      "removed": [
+        "Gap0_renamed",
+        "Gap1",
+        "Gap2"
+      ],
+      "remaining": 0
+    },
+    {
+      "step": "10a_bulk_spawn_zero_validated",
+      "ok": true,
+      "error": "count must be >= 1",
+      "created": 0
+    },
+    {
+      "step": "10b_unknown_actor_validated",
+      "ok": true,
+      "error": "actor not found or ambiguous: NoSuchActor_Gap",
+      "matches": []
+    }
+  ],
+  "verdict": "PASS",
+  "step_summary": {
+    "00_cleanup_prior_map": true,
+    "01_create_open_batch2map": true,
+    "02_bulk_spawn": true,
+    "03_set_transform": true,
+    "03b_transform_readback": true,
+    "04_rename_actor": true,
+    "04b_rename_collision_guard": true,
+    "05_set_tags": true,
+    "06_details_query": true,
+    "07_world_summary": true,
+    "08_persistence": true,
+    "09_delete_by_class": true,
+    "10a_bulk_spawn_zero_validated": true,
+    "10b_unknown_actor_validated": true
+  }
+}

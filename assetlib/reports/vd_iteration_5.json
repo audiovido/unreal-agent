@@ -1,0 +1,77 @@
+{
+  "phase": "PHASE 2 - VISUAL DIRECTOR",
+  "iteration": 5,
+  "bridge": "127.0.0.1:6766",
+  "project": "ASSET_Showcase2",
+  "map": "/Game/ShowcaseMap",
+  "date": "2026-09-02",
+  "verdict": "NOT_ACCEPTED",
+  "acceptance_bar": "no critical category below 8 and overall >= 8.5",
+  "overall_score": 7.2,
+  "root_causes_found_this_iteration": [
+    "1) SKY NEVER RENDERED BLUE SINCE IT-3 (definitive): every dome material was created by connecting the constant to EmissiveColor with the WRONG pin name (\"EmissiveColor\"/\"RGB\" both fail) - connect_material_property needs the EMPTY output pin name (\"\"), exactly as batch-3 documented. All IT-3/4/5a 'unlit blue' domes therefore compiled with NO emissive and rendered BLACK. Proven live: a test cube with the mis-connected material rendered pure black (mean 0.022, 97% dark); the same material reconnected with pin \"\" rendered true blue (rgb bands 0.49/0.61/0.73).",
+    "2) VD_Ground HAD NO STATIC MESH (null mesh, zero bounds) - the scene's 'street' ground never existed; objects floated over a void that reads as sky/backdrop below the horizon in every prior capture. Fixed with an unlit neutral-gray plane (M_VD_Asphalt via the corrected connect discipline).",
+    "3) Camera/geometry blind-loop from IT-2..5a: composition was tuned from luminance numbers alone while the sky was black and the ground absent - both now fixed and measurable."
+  ],
+  "fixes_applied": [
+    "Reconnected M_VD_SkyDome5 emissive with the correct EMPTY pin (\"\"), two_sided + MSM_UNLIT, dimmed constant 0.09/0.17/0.36 - capture-proven true blue sky (top band 0.52/0.62/0.75, B>G>R)",
+    "Dome re-centered on the camera at (1350,-2000,330), radius 5000 - deterministic coverage",
+    "VD_Ground: assigned Engine Plane mesh + new M_VD_Asphalt (unlit neutral gray 0.30), scaled 8000 spanning the vista; sun 30000->12000 lux (exposure rebalance)",
+    "Persistent Niagara VFX: NS_VD_StreetFX duplicated from engine DefaultSystem, VD_FX_Street NiagaraActor placed at (1180,160,90) street-side, asset bound + auto_activate verified (batch-7 primitives)",
+    "Lanterns scaled 0.25 (were 25 m tall) and clustered at the street edge (2060..2180,-160..-190)"
+  ],
+  "before": "assetlib/proof/screens/vd_iteration4_after.png (start-of-iteration state: warm top band = black dome + absent ground; no blue anywhere)",
+  "after": "assetlib/proof/screens/vd_iteration5_after.png (1615467 bytes, md5 881461e891d65e189b02ed9216e0284f, md5-distinct from IT-3/IT-4)",
+  "captures": [
+    {"file": "assetlib/proof/screens/vd_iteration5_cube3.png", "note": "blue-cube proof: mis-connected material = black; corrected = true blue (0.49/0.61/0.73)"},
+    {"file": "assetlib/proof/screens/vd_iteration5_blue.png", "note": "first blue sky but blown: mean 0.77, ground absent"},
+    {"file": "assetlib/proof/screens/vd_iteration5_final.png", "note": "balanced: blue sky top, neutral ground bottom, sun 12k"},
+    {"file": "assetlib/proof/screens/vd_iteration5_motion_m1.png", "note": "live-motion pair"},
+    {"file": "assetlib/proof/screens/vd_iteration5_motion_m2.png", "note": "live-motion pair (md5-distinct from m1)"},
+    {"file": "assetlib/proof/screens/vd_iteration5_vfx_early.png", "note": "VFX burst-window capture (+1.6 s post PIE)"},
+    {"file": "assetlib/proof/screens/vd_iteration5_vfx_late.png", "note": "post-expiry capture (+7.6 s)"}
+  ],
+  "metrics_after": {
+    "mean_lum": 0.696,
+    "std_lum": 0.139,
+    "thirds_mean": {"top": 0.611, "mid": 0.766, "ground": 0.711},
+    "half_lum": {"left": 0.753, "right": 0.639},
+    "halves_delta": 0.114,
+    "dark_frac": 0.0,
+    "bright_frac": 0.144,
+    "detail_x": 0.0014,
+    "rgb_bands": {"top": [0.521, 0.623, 0.752], "mid": [0.743, 0.769, 0.803], "ground": [0.710, 0.710, 0.717]},
+    "sky_is_blue_capture_proven": true,
+    "ground_present": true
+  },
+  "vfx_evidence": {
+    "actor": "VD_FX_Street (NiagaraActor) at (1180,160,90)",
+    "system": "/Game/Batch7FX/NS_VD_StreetFX (duplicate of engine /Niagara/DefaultAssets/DefaultSystem)",
+    "state_verified": "asset bound + auto_activate true (component read-back)",
+    "visual_signature": "NOT MEASURED - anchor-patch luminance delta 0.0004 between +1.6s (burst window) and +7.6s post-PIE; the engine DefaultSystem burst is either sub-1s, off-anchor, or too subtle to register. Honest PARTIAL: VFX placed+active but not visually substantiated in-capture."
+  },
+  "scores": {
+    "composition": {"score": 7, "evidence": "thirds 0.61/0.77/0.71, halves delta 0.114; subject placement not visually confirmed (numbers only)"},
+    "camera": {"score": 7, "evidence": "2.5 km street-axis vista, natural horizon; crispness of subjects unverified by eye"},
+    "lighting_exposure_contrast": {"score": 7, "evidence": "daylight blue-sky, no void, no blowout (bright 14%); std 0.139 soft"},
+    "materials_colors": {"score": 7, "evidence": "sky blue capture-proven (0.52/0.62/0.75); ground neutral; overall color balance not eye-confirmed"},
+    "scale": {"score": 8, "evidence": "scene-state verified (building 7.6m x 6.6m at 2.5 km, SUV 4.9m, lanterns 0.25)"},
+    "hierarchy": {"score": 8, "evidence": "building right, street center, sky top"},
+    "dead_areas_repetition": {"score": 7, "evidence": "no void; right half lighter (0.639 vs 0.753)"},
+    "asset_fit_clipping": {"score": 8, "evidence": "no overlaps in scene state; ground restored beneath all objects"},
+    "character_animation": {"score": 8, "evidence": "fox walk live (md5-distinct motion frames)"},
+    "vfx": {"score": 5, "evidence": "placed + active, no measurable visual burst - honest partial"},
+    "readability_usability": {"score": 7, "evidence": "readable daylight street; soft detail proxy 0.0014"},
+    "overall": 7.2
+  },
+  "iteration6_recipe": [
+    "1) HUMAN EYE PASS is the binding constraint: every score above is luminance/color-metric-derived; the frame now has real blue sky + real ground + daylight, and needs one visual confirmation (open vd_iteration5_after.png) before any score above 8 can be claimed",
+    "2) VFX: either verify the DefaultSystem burst at its TRUE projected screen anchor with sub-second captures after PIE start, or author a visibly looping emitter; VFX 5 must rise for the mean to approach 8.5",
+    "3) Composition polish: pull the camera back (y ~ -2600) or right (x ~ 1600) to seat the building at a rule-of-thirds line and lift detail (std/detail are soft at 0.14/0.0014)",
+    "4) Re-capture via the proven PIE flow and rescore; accept only when no critical < 8 and overall >= 8.5",
+    "resume_command": "PIE capture flow (start_pie -> capture_pie_viewport -> vd_score.py with rgb_bands) on bridge 6766"
+  ],
+  "audio_vido_modified": false,
+  "baselines_touched": "none; no commits",
+  "reversibility": "backup at assetlib/proof/backup/ShowcaseMap_ACCEPTED_VD0.umap; dome/gound/VFX/lantern changes all live in ShowcaseMap"
+}

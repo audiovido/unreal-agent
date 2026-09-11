@@ -1,0 +1,12 @@
+{
+  "id": "accept_truck_fbx",
+  "inputs": {
+    "source": "assetlib/source/khronos/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb",
+    "name": "CesiumMilkTruck",
+    "export_formats": ["fbx"],
+    "export_dir": "assetlib/content/Vehicles/CesiumMilkTruck",
+    "blend_dir": "assetlib/tests/blender/p2_work",
+    "origin_center": "BOTTOM",
+    "cleanup": true
+  }
+}

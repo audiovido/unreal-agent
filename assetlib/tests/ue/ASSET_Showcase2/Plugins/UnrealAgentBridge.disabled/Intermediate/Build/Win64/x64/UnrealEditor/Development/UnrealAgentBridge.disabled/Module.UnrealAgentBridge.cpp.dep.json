@@ -1,0 +1,34 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\plugins\\unrealagentbridge\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\unrealagentbridge\\module.unrealagentbridge.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\intermediate\\build\\win64\\x64\\audiovidolivingcityeditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.valexpapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\plugins\\unrealagentbridge\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\unrealagentbridge\\definitions.unrealagentbridge.h",
+            "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\plugins\\unrealagentbridge\\intermediate\\build\\win64\\unrealeditor\\inc\\unrealagentbridge\\uht\\unrealagentblueprintlibrary.gen.cpp",
+            "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\plugins\\unrealagentbridge\\source\\unrealagentbridge\\public\\unrealagentblueprintlibrary.h",
+            "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\plugins\\unrealagentbridge\\intermediate\\build\\win64\\unrealeditor\\inc\\unrealagentbridge\\uht\\unrealagentblueprintlibrary.generated.h",
+            "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\plugins\\unrealagentbridge\\intermediate\\build\\win64\\unrealeditor\\inc\\unrealagentbridge\\uht\\unrealagentbridge.init.gen.cpp",
+            "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\plugins\\unrealagentbridge\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\unrealagentbridge\\permoduleinline.gen.cpp",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\runtime\\core\\public\\hal\\permoduleinline.inl",
+            "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\plugins\\unrealagentbridge\\source\\unrealagentbridge\\private\\unrealagentblueprintlibrary.cpp",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\editor\\unrealed\\public\\leveleditorviewport.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\editor\\unrealed\\public\\assetselection.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\runtime\\engine\\classes\\camera\\cameracomponent.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\cameracomponent.generated.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\runtime\\engine\\public\\imageutils.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\editor\\blueprintgraph\\classes\\k2node_callfunction.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\editor\\kismetcompiler\\public\\kismetcompilermisc.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\editor\\kismetcompiler\\public\\bpterminal.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\editor\\kismetcompiler\\public\\blueprintcompiledstatement.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\blueprintgraph\\uht\\k2node_callfunction.generated.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\editor\\unrealed\\public\\kismet2\\blueprinteditorutils.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\editor\\classviewer\\public\\classviewermodule.h",
+            "d:\\program files\\epic games\\ue_5.8\\engine\\source\\editor\\unrealed\\public\\kismet2\\kismeteditorutilities.h",
+            "c:\\users\\shadow\\desktop\\app\\audiovidolivingcity\\plugins\\unrealagentbridge\\source\\unrealagentbridge\\private\\unrealagentbridge.cpp"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

@@ -40,7 +40,6 @@ D_BULK_ROOTS = {
     "CitySample": Path("D:/CitySample/SourcePacks"),
 }
 ASSET_EXTENSIONS = {".fbx", ".glb", ".gltf", ".blend", ".obj", ".uasset"}
-EXTENSION_TO_FORMAT = {".fbx": "fbx", ".glb": "glb", ".gltf": "gltf", ".blend": "blend", ".obj": "obj", ".uasset": "uasset"}
 
 # Mission category taxonomy (subset backed by on-disk assets is populated).
 CATEGORIES = [
@@ -49,7 +48,7 @@ CATEGORIES = [
     "Robots", "VFX", "Materials", "Cinematic/Sequencer",
 ]
 
-# (id, category, name, license, source_rel, path_rel, preview_rel, tags, desc, format, materials, validation_status)
+# (id, category, name, license, source_rel, path_rel, preview_rel, tags, desc)
 SPEC = [
     dict(id="cesium_milk_truck", category="Vehicles", name="Cesium Milk Truck",
          license="CC-BY 4.0 (see LICENSE.md)",
@@ -57,48 +56,42 @@ SPEC = [
          path=str(CONTENT / "Vehicles" / "CesiumMilkTruck" / "CesiumMilkTruck.fbx"),
          preview=str(CONTENT / "Vehicles" / "CesiumMilkTruck" / "CesiumMilkTruck_preview.png"),
          tags=["truck", "vehicle", "milk truck", "suv proxy", "car"],
-         desc="Khronos official glTF sample; cached as UE-ready FBX (P2 chain).",
-         format="fbx", materials=["MatCesiumMilkTruck"], validation_status="valid"),
+         desc="Khronos official glTF sample; cached as UE-ready FBX (P2 chain)."),
     dict(id="black_suv", category="Vehicles", name="Black SUV (derived)",
          license="derived from cesium_milk_truck (CC-BY)",
          source=str(CONTENT / "Vehicles" / "CesiumMilkTruck" / "CesiumMilkTruck.fbx"),
          path=str(D_VEHICLES / "BlackSUV.fbx"),
          preview="",
          tags=["suv", "black", "vehicle", "car", "derived"],
-         desc="Blender-tinted (base color 0.015) variant via tint_black.py; UE import pending.",
-         format="fbx", materials=["MatBlackSUV"], validation_status="pending"),
+         desc="Blender-tinted (base color 0.015) variant via tint_black.py; UE import pending."),
     dict(id="cesium_man", category="Characters", name="Cesium Man",
          license="CC-BY 4.0 (see LICENSE.md)",
          source=str(SOURCE / "CesiumMan" / "glTF-Binary" / "CesiumMan.glb"),
          path=str(SOURCE / "CesiumMan" / "glTF-Binary" / "CesiumMan.glb"),
          preview=str(CONTENT / "Characters" / "CesiumMan" / "CesiumMan_preview.png"),
          tags=["character", "human", "rigged", "animation", "crowd"],
-         desc="Khronos official rigged humanoid sample; 1 animation.",
-         format="glb", materials=["MatCesiumMan"], validation_status="valid"),
+         desc="Khronos official rigged humanoid sample; 1 animation."),
     dict(id="fox", category="Animations", name="Fox (animated)",
          license="CC0 / CC-BY 4.0 (see LICENSE.md)",
          source=str(SOURCE / "Fox" / "glTF-Binary" / "Fox.glb"),
          path=str(SOURCE / "Fox" / "glTF-Binary" / "Fox.glb"),
          preview=str(CONTENT / "Animations" / "Fox" / "Fox_preview.png"),
          tags=["fox", "animal", "walk", "run", "survey", "animation", "character"],
-         desc="Khronos official quadruped sample; FoxRun/FoxSurvey/FoxWalk.",
-         format="glb", materials=["MatFox"], validation_status="valid"),
+         desc="Khronos official quadruped sample; FoxRun/FoxSurvey/FoxWalk."),
     dict(id="modern_building", category="Buildings", name="Modern Building (modular facade)",
          license="CC0 1.0 (Kenney Modular Buildings; License.txt in pack, in-tree)",
          source=str(Path("D:/AI/_Assets/Buildings/ModularBuildings/modularBuildings.zip")),
          path=str(Path("D:/AI/_Assets/Buildings/ModernBuilding/ModernBuilding.fbx")),
          preview=str(Path("D:/AI/_Assets/Buildings/ModularBuildings/Preview.png")),
          tags=["building", "modern", "facade", "modular", "city", "street", "architecture"],
-         desc="Kenney CC0 modular-building plates (mb_018/021/022/023/028/029/030/035/036) composed headless in Blender into one modern facade slab; imported to /Game/NLR/ModernBuilding (25 uassets, 9 parts).",
-         format="fbx", materials=["MatModernBuilding"], validation_status="valid"),
+         desc="Kenney CC0 modular-building plates (mb_018/021/022/023/028/029/030/035/036) composed headless in Blender into one modern facade slab; imported to /Game/NLR/ModernBuilding (25 uassets, 9 parts)."),
     dict(id="lantern", category="Props", name="Lantern (street)",
          license="CC0 (see LICENSE.md)",
          source=str(SOURCE / "Lantern" / "glTF-Binary" / "Lantern.glb"),
          path=str(SOURCE / "Lantern" / "glTF-Binary" / "Lantern.glb"),
          preview=str(CONTENT / "EnvironmentProps" / "Lantern" / "Lantern_preview.png"),
          tags=["lantern", "prop", "environment", "street", "light pole"],
-         desc="Khronos official street-prop sample (pole+chain+lantern group).",
-         format="glb", materials=["MatLantern"], validation_status="valid")
+         desc="Khronos official street-prop sample (pole+chain+lantern group)."),
 ]
 
 TAG_UNIQUE = {  # terms that admit only one category
@@ -113,40 +106,12 @@ def build_catalog() -> dict:
     """Assemble the catalog, verifying every primary path exists on disk."""
     entries = []
     problems = []
-    seen_ids = set()
     for spec in SPEC:
         primary = Path(str(spec["path"]))
         source = Path(str(spec["source"]))
         missing = [p for p in (primary, source) if not p.exists()]
         if missing:
             problems.append(f"{spec['id']}: missing on disk {missing}")
-            # Still record the entry with validation_status=missing so callers know
-            entry = dict(spec)
-            entry["ue_class"] = None
-            entry["size_cm"] = None
-            entry["skeleton"] = None
-            entry["animations"] = []
-            entry["display_scale"] = 1.0
-            entry["lod"] = "LOD0 only"
-            entry["collision"] = "auto (simple collision on import)"
-            entry["ue_compatible"] = "5.8"
-            entry["validation_status"] = "missing_on_disk"
-            # Derive format from path extension if not set
-            if not entry.get("format"):
-                entry["format"] = EXTENSION_TO_FORMAT.get(Path(entry["path"]).suffix.lower(), "unknown")
-            # Derive materials from tags if not set
-            if not entry.get("materials"):
-                entry["materials"] = []
-            # Normalize path separators
-            for k in ("path", "source", "preview"):
-                entry[k] = str(spec[k]).replace("\\", "/")
-            # Deduplicate check
-            eid = entry["id"].lower()
-            if eid in seen_ids:
-                problems.append(f"duplicate entry id: {entry['id']}")
-                continue
-            seen_ids.add(eid)
-            entries.append(entry)
             continue
         entry = dict(spec)
         entry["ue_class"] = None
@@ -157,21 +122,9 @@ def build_catalog() -> dict:
         entry["lod"] = "LOD0 only"
         entry["collision"] = "auto (simple collision on import)"
         entry["ue_compatible"] = "5.8"
-        # Normalize path separators and ensure format/materials/validation_status are set
+        entry["preview"] = (spec["preview"] or "").replace("\\", "/")
         for k in ("path", "source", "preview"):
             entry[k] = str(spec[k]).replace("\\", "/")
-        if not entry.get("format"):
-            entry["format"] = EXTENSION_TO_FORMAT.get(Path(entry["path"]).suffix.lower(), "unknown")
-        if not entry.get("materials"):
-            entry["materials"] = []
-        if not entry.get("validation_status"):
-            entry["validation_status"] = "valid"
-        # Deduplicate check
-        eid = entry["id"].lower()
-        if eid in seen_ids:
-            problems.append(f"duplicate entry id: {entry['id']}")
-            continue
-        seen_ids.add(eid)
         entries.append(entry)
     # Discover externally stored assets without copying them into the active
     # project.  A newly downloaded D: asset is therefore searchable as soon
@@ -188,8 +141,6 @@ def build_catalog() -> dict:
                 continue
             stem = item.stem.lower().replace(" ", "_")
             asset_id = f"d_{category.lower().replace('/', '_')}_{stem}"
-            # Derive format from extension
-            fmt = EXTENSION_TO_FORMAT.get(item.suffix.lower(), "unknown")
             entries.append({
                 "id": asset_id, "category": category if category in CATEGORIES else "Props",
                 "name": item.stem, "license": "local D: library; verify source license before redistribution",
@@ -198,7 +149,7 @@ def build_catalog() -> dict:
                 "desc": f"D: bulk-library asset discovered from {root}", "ue_class": None,
                 "size_cm": None, "skeleton": None, "animations": [], "display_scale": 1.0,
                 "lod": "unknown", "collision": "configure on import", "ue_compatible": "verify on import",
-                "format": fmt, "materials": [], "validation_status": "indexed",
+                "storage": "D:",
             })
             indexed_paths.add(normalized)
     missing = [c for c in ("Buildings", "Interiors") if not any(e["category"] == c for e in entries)]
@@ -232,14 +183,6 @@ def load_verified_metrics(catalog: dict) -> dict:
     for e in catalog["entries"]:
         if e["id"] in scales:
             e["display_scale"] = scales[e["id"]]
-    # Ensure new metadata fields exist (backfill for old catalog entries)
-    for e in catalog["entries"]:
-        if "format" not in e:
-            e["format"] = "unknown"
-        if "materials" not in e:
-            e["materials"] = []
-        if "validation_status" not in e:
-            e["validation_status"] = "verified"
     return catalog
 
 
@@ -252,18 +195,8 @@ def write_catalog() -> dict:
 
 def load_catalog() -> dict:
     if CATALOG_FILE.exists():
-        catalog = json.loads(CATALOG_FILE.read_text(encoding="utf-8"))
-    else:
-        catalog = load_verified_metrics(build_catalog())
-    # Ensure new metadata fields exist (backfill for old catalog entries)
-    for e in catalog["entries"]:
-        if "format" not in e:
-            e["format"] = "unknown"
-        if "materials" not in e:
-            e["materials"] = []
-        if "validation_status" not in e:
-            e["validation_status"] = "verified"
-    return catalog
+        return json.loads(CATALOG_FILE.read_text(encoding="utf-8"))
+    return load_verified_metrics(build_catalog())
 
 
 if __name__ == "__main__":

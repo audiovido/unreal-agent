@@ -1,0 +1,26 @@
+[
+  {
+    "category": "Vehicles",
+    "model": "CesiumMilkTruck",
+    "glb": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb",
+    "content_dir": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Vehicles/CesiumMilkTruck"
+  },
+  {
+    "category": "Characters",
+    "model": "CesiumMan",
+    "glb": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+    "content_dir": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Characters/CesiumMan"
+  },
+  {
+    "category": "Animations",
+    "model": "Fox",
+    "glb": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Fox/glTF-Binary/Fox.glb",
+    "content_dir": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Animations/Fox"
+  },
+  {
+    "category": "EnvironmentProps",
+    "model": "Lantern",
+    "glb": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Lantern/glTF-Binary/Lantern.glb",
+    "content_dir": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/EnvironmentProps/Lantern"
+  }
+]

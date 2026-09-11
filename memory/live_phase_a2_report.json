@@ -1,0 +1,53 @@
+{
+  "assign_animation": {
+    "ok": true,
+    "code": null,
+    "actor_label": "UA_Avatar",
+    "animation": "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+    "animation_assigned": "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+    "property_used": "animation_mode",
+    "skeleton_compatible": true,
+    "verified": true
+  },
+  "set_character_transform": {
+    "ok": true,
+    "actor_label": "UA_Avatar",
+    "actor_name": "UA_Avatar",
+    "class": "SkeletalMeshActor",
+    "location": [
+      200.0,
+      0.0,
+      100.0
+    ],
+    "rotation": [
+      0.0,
+      40.00000000000003,
+      -0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "visible": true,
+    "verified": true
+  },
+  "verify_character_visible": {
+    "ok": true,
+    "code": null,
+    "actor_label": "UA_Avatar",
+    "actor_name": "UA_Avatar",
+    "asset": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+    "mesh": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+    "animation": "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+    "class": "SkeletalMeshActor",
+    "location": [
+      200.0,
+      0.0,
+      100.0
+    ],
+    "visible": true,
+    "bounds_valid": null,
+    "verified": true
+  }
+}

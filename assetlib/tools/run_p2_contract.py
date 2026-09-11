@@ -30,16 +30,13 @@ def sample(name: str) -> Path:
     return SAMPLES / name
 
 
-def _job(scn: dict, work_root: Path | None = None) -> dict:
-    """Build a P2 job, optionally routing generated artifacts off-repo."""
-    work_root = Path(work_root) if work_root is not None else OUT_ROOT
-    scenario_root = work_root / scn["id"]
+def _job(scn: dict) -> dict:
     inputs = {
         "source": str(sample(scn["source"])),
         "name": scn.get("name"),
         "export_formats": scn.get("export_formats", ["fbx"]),
-        "export_dir": str(scenario_root / "exports"),
-        "blend_dir": str(work_root / "blend"),
+        "export_dir": str(OUT_ROOT / scn["id"]),
+        "blend_dir": str(BLEND_DIR),
         "origin_center": scn.get("origin_center", "BOUNDS"),
         "decimate_ratio": scn.get("decimate_ratio"),
         "lods": scn.get("lods", False),
@@ -124,12 +121,10 @@ def _ensure_samples() -> None:
             raise RuntimeError(f"sample missing after generation: {n}")
 
 
-def run_job_host(job: dict, blender=None, timeout: int = 240,
-                 work_root: Path | None = None) -> dict:
+def run_job_host(job: dict, blender=None, timeout: int = 240) -> dict:
     """Run one convert job through headless Blender; return structured result."""
     blender = blender or discover_blender()
-    work_root = Path(work_root) if work_root is not None else OUT_ROOT
-    out_dir = work_root / str(job["id"])
+    out_dir = OUT_ROOT / str(job["id"])
     out_dir.mkdir(parents=True, exist_ok=True)
     job_path = out_dir / "job.json"
     result_path = out_dir / "result.json"

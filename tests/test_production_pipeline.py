@@ -53,8 +53,7 @@ def test_parallel_discovery_and_cache(tmp_path, monkeypatch):
     assert elapsed < 0.09
     second = discover_reuse_candidates("dashboard", providers={"a": provider("a"), "b": provider("b")})
     assert second == first
-    # Parallel providers race; only membership is deterministic.
-    assert sorted(calls) == ["a", "b"]
+    assert calls == ["a", "b"]
 
 
 def test_preflight_is_nonvisual_fast_and_visual_complete():

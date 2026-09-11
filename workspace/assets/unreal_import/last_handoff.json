@@ -1,0 +1,9 @@
+{
+  "job_id": "cf14bf94-41db-4e1f-a74c-49c26316b873",
+  "operation": "create_primitive",
+  "source": "generated:table",
+  "export_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Blender_Test_Table.fbx",
+  "asset_path": "/Game/Imported/UA_Blender_Test_Table.UA_Blender_Test_Table",
+  "class": "MaterialInstanceConstant",
+  "imported_at": 1788223298.1040149
+}

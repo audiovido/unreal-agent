@@ -1,0 +1,39 @@
+[
+  {
+    "id": "truck",
+    "kind": "StaticMesh",
+    "spawn_folder": "/Game/Showcase/Vehicles"
+  },
+  {
+    "id": "cesiumman",
+    "kind": "SkeletalMesh",
+    "spawn_folder": "/Game/Showcase/Characters",
+    "asset_path": "/Game/Showcase/Characters/CesiumMan/SkeletalMeshes/CesiumMan.CesiumMan"
+  },
+  {
+    "id": "fox",
+    "kind": "SkeletalMesh",
+    "spawn_folder": "/Game/Showcase/Animations",
+    "display_scale": 0.0201,
+    "asset_path": "/Game/Showcase/Animations/Fox/SkeletalMeshes/Fox.Fox"
+  },
+  {
+    "id": "lantern",
+    "kind": "StaticMesh",
+    "spawn_folder": "/Game/Showcase/Props",
+    "display_scale": 0.1304
+  },
+  {
+    "id": "black_suv",
+    "kind": "StaticMesh",
+    "spawn_folder": "/Game/NLR/BlackSUV",
+    "display_scale": 1.0
+  },
+  {
+    "id": "nlr_fox",
+    "kind": "SkeletalMesh",
+    "spawn_folder": "/Game/Showcase/Animations",
+    "asset_path": "/Game/Showcase/Animations/Fox/SkeletalMeshes/Fox.Fox",
+    "display_scale": 0.0201
+  }
+]

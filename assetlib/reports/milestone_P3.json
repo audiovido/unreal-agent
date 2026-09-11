@@ -1,0 +1,401 @@
+{
+  "milestone": "P3 - ready-asset index + natural-language router (pure Python, headless)",
+  "ok": true,
+  "catalog": {
+    "entries": [
+      {
+        "id": "cesium_milk_truck",
+        "category": "Vehicles",
+        "name": "Cesium Milk Truck",
+        "tags": [
+          "truck",
+          "vehicle",
+          "milk truck",
+          "suv proxy",
+          "car"
+        ],
+        "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb",
+        "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck.fbx",
+        "ue_compatible": "5.8",
+        "type": "StaticMesh",
+        "skeleton": null,
+        "size_cm": [
+          279.2,
+          486.89,
+          231.76
+        ],
+        "display_scale": 1.0,
+        "lod": "LOD0 only",
+        "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck_preview.png",
+        "license": "CC-BY 4.0 (see LICENSE.md)"
+      },
+      {
+        "id": "black_suv",
+        "category": "Vehicles",
+        "name": "Black SUV (derived)",
+        "tags": [
+          "suv",
+          "black",
+          "vehicle",
+          "car",
+          "derived"
+        ],
+        "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck.fbx",
+        "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/nlr_in/BlackSUV.fbx",
+        "ue_compatible": "5.8",
+        "type": null,
+        "skeleton": null,
+        "size_cm": null,
+        "display_scale": 1.0,
+        "lod": "LOD0 only",
+        "preview": "",
+        "license": "derived from cesium_milk_truck (CC-BY)"
+      },
+      {
+        "id": "cesium_man",
+        "category": "Characters",
+        "name": "Cesium Man",
+        "tags": [
+          "character",
+          "human",
+          "rigged",
+          "animation",
+          "crowd"
+        ],
+        "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+        "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+        "ue_compatible": "5.8",
+        "type": "SkeletalMesh",
+        "skeleton": "CesiumMan_Skeleton",
+        "size_cm": [
+          111.0,
+          34.68,
+          160.36
+        ],
+        "display_scale": 1.0,
+        "lod": "LOD0 only",
+        "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Characters/CesiumMan/CesiumMan_preview.png",
+        "license": "CC-BY 4.0 (see LICENSE.md)"
+      },
+      {
+        "id": "fox",
+        "category": "Animations",
+        "name": "Fox (animated)",
+        "tags": [
+          "fox",
+          "animal",
+          "walk",
+          "run",
+          "survey",
+          "animation",
+          "character"
+        ],
+        "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Fox/glTF-Binary/Fox.glb",
+        "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Fox/glTF-Binary/Fox.glb",
+        "ue_compatible": "5.8",
+        "type": "SkeletalMesh",
+        "skeleton": "Fox_Skeleton",
+        "size_cm": [
+          5109.78,
+          16198.99,
+          8369.3
+        ],
+        "display_scale": 0.0201,
+        "lod": "LOD0 only",
+        "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Animations/Fox/Fox_preview.png",
+        "license": "CC0 / CC-BY 4.0 (see LICENSE.md)"
+      },
+      {
+        "id": "lantern",
+        "category": "Props",
+        "name": "Lantern (street)",
+        "tags": [
+          "lantern",
+          "prop",
+          "environment",
+          "street",
+          "light pole"
+        ],
+        "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Lantern/glTF-Binary/Lantern.glb",
+        "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Lantern/glTF-Binary/Lantern.glb",
+        "ue_compatible": "5.8",
+        "type": "StaticMesh",
+        "skeleton": null,
+        "size_cm": [
+          1549.12,
+          463.14,
+          2566.42
+        ],
+        "display_scale": 0.1304,
+        "lod": "LOD0 only",
+        "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/EnvironmentProps/Lantern/Lantern_preview.png",
+        "license": "CC0 (see LICENSE.md)"
+      }
+    ],
+    "categories": [
+      "Characters",
+      "Crowd/NPC",
+      "Vehicles",
+      "Buildings",
+      "Interiors",
+      "Furniture",
+      "Props",
+      "Nature",
+      "Roads/City",
+      "Animations",
+      "Creatures",
+      "Robots",
+      "VFX",
+      "Materials",
+      "Cinematic/Sequencer"
+    ],
+    "missing_categories_known_gap": [
+      "Buildings",
+      "Interiors"
+    ],
+    "problems": []
+  },
+  "sponza_rejected": "Sponza (Khronos 2.0) skipped: repo README shows (c) 2016 Crytek - LicenseRef-CRYENGINE-Agreement, not CC; mission rule 'skip if not cleanly available'.",
+  "routing_results": [
+    {
+      "query": "Place a black SUV next to a modern building with a walking character",
+      "intent": "place",
+      "categories": [
+        "Animations",
+        "Buildings",
+        "Characters",
+        "Vehicles"
+      ],
+      "ranked": [
+        {
+          "asset": "black_suv",
+          "score": 11,
+          "matched_terms": [
+            "black",
+            "suv",
+            "vehicle"
+          ]
+        },
+        {
+          "asset": "cesium_milk_truck",
+          "score": 8,
+          "matched_terms": [
+            "suv",
+            "truck",
+            "vehicle"
+          ]
+        },
+        {
+          "asset": "fox",
+          "score": 6,
+          "matched_terms": [
+            "animation",
+            "character",
+            "walk"
+          ]
+        },
+        {
+          "asset": "cesium_man",
+          "score": 4,
+          "matched_terms": [
+            "animation",
+            "character"
+          ]
+        }
+      ],
+      "chosen_assets": [
+        "black_suv",
+        "cesium_milk_truck",
+        "fox",
+        "cesium_man"
+      ],
+      "modification": "blender-tint",
+      "animations_selected": [
+        {
+          "op": "place",
+          "asset": "fox",
+          "display_scale": 0.0201,
+          "anim": "FoxWalk"
+        },
+        {
+          "op": "place",
+          "asset": "cesium_man",
+          "display_scale": 1.0,
+          "anim": "CesiumMan_Anim"
+        }
+      ],
+      "unmatched": [
+        "Buildings"
+      ]
+    },
+    {
+      "query": "show me the milk truck",
+      "intent": "query",
+      "categories": [
+        "Vehicles"
+      ],
+      "ranked": [
+        {
+          "asset": "cesium_milk_truck",
+          "score": 6,
+          "matched_terms": [
+            "milk",
+            "truck"
+          ]
+        }
+      ],
+      "chosen_assets": [
+        "cesium_milk_truck"
+      ],
+      "modification": "none",
+      "animations_selected": [],
+      "unmatched": []
+    },
+    {
+      "query": "a character for a crowd scene",
+      "intent": "query",
+      "categories": [
+        "Characters"
+      ],
+      "ranked": [
+        {
+          "asset": "cesium_man",
+          "score": 4,
+          "matched_terms": [
+            "character",
+            "crowd"
+          ]
+        },
+        {
+          "asset": "fox",
+          "score": 2,
+          "matched_terms": [
+            "character"
+          ]
+        }
+      ],
+      "chosen_assets": [
+        "cesium_man",
+        "fox"
+      ],
+      "modification": "none",
+      "animations_selected": [],
+      "unmatched": []
+    },
+    {
+      "query": "street environment prop",
+      "intent": "query",
+      "categories": [
+        "Props"
+      ],
+      "ranked": [
+        {
+          "asset": "lantern",
+          "score": 10,
+          "matched_terms": [
+            "environment",
+            "lantern",
+            "prop",
+            "street"
+          ]
+        }
+      ],
+      "chosen_assets": [
+        "lantern"
+      ],
+      "modification": "none",
+      "animations_selected": [],
+      "unmatched": []
+    },
+    {
+      "query": "walk cycle animation for a creature",
+      "intent": "query",
+      "categories": [
+        "Animations"
+      ],
+      "ranked": [
+        {
+          "asset": "fox",
+          "score": 4,
+          "matched_terms": [
+            "animation",
+            "walk"
+          ]
+        },
+        {
+          "asset": "cesium_man",
+          "score": 2,
+          "matched_terms": [
+            "animation"
+          ]
+        }
+      ],
+      "chosen_assets": [
+        "fox",
+        "cesium_man"
+      ],
+      "modification": "none",
+      "animations_selected": [
+        {
+          "op": "place",
+          "asset": "fox",
+          "display_scale": 0.0201,
+          "anim": "FoxWalk"
+        },
+        {
+          "op": "place",
+          "asset": "cesium_man",
+          "display_scale": 1.0,
+          "anim": "CesiumMan_Anim"
+        }
+      ],
+      "unmatched": []
+    },
+    {
+      "query": "a GLB asset i can drop into the web viewer",
+      "intent": "query",
+      "categories": [],
+      "ranked": [
+        {
+          "asset": "cesium_man",
+          "score": 3,
+          "matched_terms": []
+        },
+        {
+          "asset": "cesium_milk_truck",
+          "score": 2,
+          "matched_terms": []
+        },
+        {
+          "asset": "fox",
+          "score": 1,
+          "matched_terms": []
+        },
+        {
+          "asset": "lantern",
+          "score": 1,
+          "matched_terms": []
+        }
+      ],
+      "chosen_assets": [
+        "cesium_man",
+        "cesium_milk_truck",
+        "fox",
+        "lantern"
+      ],
+      "modification": "none",
+      "animations_selected": [],
+      "unmatched": []
+    }
+  ],
+  "evidence": {
+    "catalog_json": "assetlib/catalog/assets.json",
+    "contract_tests": "assetlib/tests/test_p3_router.py (11 passed, 0.25s)",
+    "tools": [
+      "assetlib/tools/catalog.py",
+      "assetlib/tools/router.py"
+    ]
+  },
+  "headless": true,
+  "engine_never_booted": true
+}

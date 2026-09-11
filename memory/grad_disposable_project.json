@@ -1,15 +1,64 @@
 {
-  "ok": true,
-  "project_name": "UA_GradAudit_20260831_141010",
-  "project_root": "C:\\Users\\Shadow\\Desktop\\UnrealAgentGraduation\\UA_GradAudit_20260831_141010",
-  "uproject_path": "C:\\Users\\Shadow\\Desktop\\UnrealAgentGraduation\\UA_GradAudit_20260831_141010\\UA_GradAudit_20260831_141010.uproject",
+  "ok": false,
+  "project_name": "UA_GradAudit_20260902_034224",
+  "project_root": "C:\\Users\\Shadow\\Desktop\\UnrealAgentGraduation\\UA_GradAudit_20260902_034224",
+  "uproject_path": "C:\\Users\\Shadow\\Desktop\\UnrealAgentGraduation\\UA_GradAudit_20260902_034224\\UA_GradAudit_20260902_034224.uproject",
   "template": "Blank",
-  "opened": true,
-  "editor_pid": 19020,
-  "bridge_ready": true,
-  "project_identity": {
-    "project_path": "C:/Users/Shadow/Desktop/UnrealAgentGraduation/UA_GradAudit_20260831_141010/UA_GradAudit_20260831_141010.uproject",
-    "project_name": "UA_GradAudit_20260831_141010"
+  "open_result": {
+    "ok": false,
+    "error": "A different Unreal project is open and could not be stopped safely",
+    "current_project": {
+      "project_path": "C:/Users/Shadow/Desktop/AvaLive/AvaLive/AvaLive.uproject",
+      "project_name": "AvaLive"
+    },
+    "stop_result": {
+      "ok": false,
+      "pids": [
+        3552,
+        13452,
+        13580,
+        14016,
+        16576
+      ],
+      "remaining_pids": [
+        13580,
+        14016,
+        16576
+      ],
+      "error": "Unreal Editor or its bridge remained open after stop",
+      "kill_results": [
+        {
+          "pid": 3552,
+          "returncode": 0,
+          "stdout": "SUCCESS: The process with PID 4448 (child process of PID 3552) has been terminated.\nSUCCESS: The process with PID 3552 (child process of PID 13416) has been terminated.",
+          "stderr": ""
+        },
+        {
+          "pid": 13452,
+          "returncode": 0,
+          "stdout": "SUCCESS: The process with PID 17500 (child process of PID 16736) has been terminated.\nSUCCESS: The process with PID 16736 (child process of PID 13452) has been terminated.\nSUCCESS: The process with PID 18104 (child process of PID 13452) has been terminated.\nSUCCESS: The process with PID 13452 (child process of PID 8240) has been terminated.",
+          "stderr": ""
+        },
+        {
+          "pid": 13580,
+          "returncode": 255,
+          "stdout": "",
+          "stderr": "ERROR: The process with PID 13580 (child process of PID 3256) could not be terminated.\nReason: There is no running instance of the task."
+        },
+        {
+          "pid": 14016,
+          "returncode": 255,
+          "stdout": "",
+          "stderr": "ERROR: The process with PID 14016 (child process of PID 16104) could not be terminated.\nReason: There is no running instance of the task."
+        },
+        {
+          "pid": 16576,
+          "returncode": 255,
+          "stdout": "",
+          "stderr": "ERROR: The process with PID 16576 (child process of PID 15428) could not be terminated.\nReason: There is no running instance of the task."
+        }
+      ]
+    }
   },
-  "elapsed_seconds": 39.5
+  "elapsed_seconds": 34.5
 }
