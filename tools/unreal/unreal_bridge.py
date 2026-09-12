@@ -701,52 +701,54 @@ else:
         "class": asset.get_class().get_name()
     }}
 ''')
+    def _identity_script_prelude(self) -> str:
+        """Canonical actor-identity code embedded verbatim into scripts.
+
+        The tested policy lives in core.actor_identity; embedding its real
+        source (inspect.getsource) means runtime behavior cannot drift from
+        the hermetically tested behavior. resolve_actor resolves duplicate
+        labels deterministically and drops UE 5.7 phantom handles instead of
+        failing every label-based verification step.
+        """
+        import inspect
+        import core.actor_identity as _actor_identity
+        resolve_src = inspect.getsource(_actor_identity.resolve_actor)
+        # unreal_actor_resolution_prelude() returns Unreal-side helper code
+        # that closes over resolve_actor in the same namespace, so the real
+        # return value is concatenated directly (never the method source).
+        prelude_code = _actor_identity.unreal_actor_resolution_prelude()
+        return "from typing import Any, Dict, List\n" + resolve_src + prelude_code
+
     def get_actor(self, actor_name: str):
         return self.execute_python(f"""
-actors = unreal.EditorLevelLibrary.get_all_level_actors()
-
-name_matches = [a for a in actors if a.get_name() == "{actor_name}"]
-
-if len(name_matches) == 1:
-    target = name_matches[0]
-elif len(name_matches) > 1:
-    target = None
+{self._identity_script_prelude()}
+_QUERY__ = {actor_name!r}
+__resolution__ = __aivido_resolve_actor__(_QUERY__)
+__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
-        "error": "Multiple actors matched internal name: {actor_name}"
+        "error": "actor_not_resolved: " + str((__resolution__ or {{}}).get("status", "?")),
+        "query": _QUERY__,
+        "matches": list((__resolution__ or {{}}).get("matches", [])),
     }}
 else:
-    label_matches = [a for a in actors if a.get_actor_label() == "{actor_name}"]
-
-    if len(label_matches) == 0:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Actor not found: {actor_name}"
-        }}
-    elif len(label_matches) > 1:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Ambiguous actor label: {actor_name}",
-            "matches": [a.get_name() for a in label_matches]
-        }}
-    else:
-        target = label_matches[0]
-
-if target is not None:
-    loc = target.get_actor_location()
-    rot = target.get_actor_rotation()
-    scale = target.get_actor_scale3d()
-
+    loc = __target__.get_actor_location()
+    rot = __target__.get_actor_rotation()
+    scale = __target__.get_actor_scale3d()
     __bridge_result__ = {{
         "ok": True,
-        "name": target.get_name(),
-        "label": target.get_actor_label(),
-        "class": target.get_class().get_name(),
+        "name": __target__.get_name(),
+        "label": __target__.get_actor_label(),
+        "class": __target__.get_class().get_name(),
         "location": [loc.x, loc.y, loc.z],
         "rotation": [rot.pitch, rot.yaw, rot.roll],
-        "scale": [scale.x, scale.y, scale.z]
+        "scale": [scale.x, scale.y, scale.z],
+        "identity": {{
+            "match": (__resolution__ or {{}}).get("match"),
+            "ambiguous_label": bool((__resolution__ or {{}}).get("ambiguous_label")),
+            "matches": list((__resolution__ or {{}}).get("matches", [])),
+        }},
     }}
 """)
     def spawn_actor(self, class_name: str = None, location=None, rotation=None, actor_type: str = None, scale=None, actor_name: str = None, mesh_asset: str = None):
@@ -875,88 +877,50 @@ else:
 
     def move_actor(self, actor_name: str, location):
         return self.execute_python(f"""
-actors = unreal.EditorLevelLibrary.get_all_level_actors()
-
-name_matches = [a for a in actors if a.get_name() == "{actor_name}"]
-
-if len(name_matches) == 1:
-    target = name_matches[0]
-elif len(name_matches) > 1:
-    target = None
+{self._identity_script_prelude()}
+_QUERY__ = {actor_name!r}
+__resolution__ = __aivido_resolve_actor__(_QUERY__)
+__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
-        "error": "Multiple actors matched internal name: {actor_name}"
+        "error": "actor_not_resolved: " + str((__resolution__ or {{}}).get("status", "?")),
+        "query": _QUERY__,
+        "matches": list((__resolution__ or {{}}).get("matches", [])),
     }}
-else:
-    label_matches = [a for a in actors if a.get_actor_label() == "{actor_name}"]
 
-    if len(label_matches) == 0:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Actor not found: {actor_name}"
-        }}
-    elif len(label_matches) > 1:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Ambiguous actor label: {actor_name}",
-            "matches": [a.get_name() for a in label_matches]
-        }}
-    else:
-        target = label_matches[0]
-
-if target is not None:
-    target.set_actor_location(
+if __target__ is not None:
+    __target__.set_actor_location(
         unreal.Vector({location[0]}, {location[1]}, {location[2]}),
         False,
         False
     )
 
-    loc = target.get_actor_location()
+    loc = __target__.get_actor_location()
 
     __bridge_result__ = {{
         "ok": True,
-        "name": target.get_name(),
-        "label": target.get_actor_label(),
+        "name": __target__.get_name(),
+        "label": __target__.get_actor_label(),
         "location": [loc.x, loc.y, loc.z]
     }}
 """)
     def rotate_actor(self, actor_name: str, rotation):
         return self.execute_python(f"""
-actors = unreal.EditorLevelLibrary.get_all_level_actors()
-
-name_matches = [a for a in actors if a.get_name() == "{actor_name}"]
-
-if len(name_matches) == 1:
-    target = name_matches[0]
-elif len(name_matches) > 1:
-    target = None
+{self._identity_script_prelude()}
+_QUERY__ = {actor_name!r}
+__resolution__ = __aivido_resolve_actor__(_QUERY__)
+__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
-        "error": "Multiple actors matched internal name: {actor_name}"
+        "error": "actor_not_resolved: " + str((__resolution__ or {{}}).get("status", "?")),
+        "query": _QUERY__,
+        "matches": list((__resolution__ or {{}}).get("matches", [])),
     }}
-else:
-    label_matches = [a for a in actors if a.get_actor_label() == "{actor_name}"]
 
-    if len(label_matches) == 0:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Actor not found: {actor_name}"
-        }}
-    elif len(label_matches) > 1:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Ambiguous actor label: {actor_name}",
-            "matches": [a.get_name() for a in label_matches]
-        }}
-    else:
-        target = label_matches[0]
-
-if target is not None:
-    target.set_actor_rotation(
+if __target__ is not None:
+    __target__.set_actor_rotation(
         unreal.Rotator(
             pitch={rotation[0]},
             yaw={rotation[1]},
@@ -965,100 +929,61 @@ if target is not None:
         False
     )
 
-    r = target.get_actor_rotation()
+    r = __target__.get_actor_rotation()
 
     __bridge_result__ = {{
         "ok": True,
-        "name": target.get_name(),
-        "label": target.get_actor_label(),
+        "name": __target__.get_name(),
+        "label": __target__.get_actor_label(),
         "rotation": [r.pitch, r.yaw, r.roll]
     }}
 """)
     def scale_actor(self, actor_name: str, scale):
         return self.execute_python(f"""
-actors = unreal.EditorLevelLibrary.get_all_level_actors()
-
-name_matches = [a for a in actors if a.get_name() == "{actor_name}"]
-
-if len(name_matches) == 1:
-    target = name_matches[0]
-elif len(name_matches) > 1:
-    target = None
+{self._identity_script_prelude()}
+_QUERY__ = {actor_name!r}
+__resolution__ = __aivido_resolve_actor__(_QUERY__)
+__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
-        "error": "Multiple actors matched internal name: {actor_name}"
+        "error": "actor_not_resolved: " + str((__resolution__ or {{}}).get("status", "?")),
+        "query": _QUERY__,
+        "matches": list((__resolution__ or {{}}).get("matches", [])),
     }}
-else:
-    label_matches = [a for a in actors if a.get_actor_label() == "{actor_name}"]
 
-    if len(label_matches) == 0:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Actor not found: {actor_name}"
-        }}
-    elif len(label_matches) > 1:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Ambiguous actor label: {actor_name}",
-            "matches": [a.get_name() for a in label_matches]
-        }}
-    else:
-        target = label_matches[0]
-
-if target is not None:
-    target.set_actor_scale3d(
+if __target__ is not None:
+    __target__.set_actor_scale3d(
         unreal.Vector({scale[0]}, {scale[1]}, {scale[2]})
     )
 
-    s = target.get_actor_scale3d()
+    s = __target__.get_actor_scale3d()
 
     __bridge_result__ = {{
         "ok": True,
-        "name": target.get_name(),
-        "label": target.get_actor_label(),
+        "name": __target__.get_name(),
+        "label": __target__.get_actor_label(),
         "scale": [s.x, s.y, s.z]
     }}
 """)
     def delete_actor(self, actor_name: str):
         return self.execute_python(f"""
+{self._identity_script_prelude()}
 subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
-actors = unreal.EditorLevelLibrary.get_all_level_actors()
-
-name_matches = [a for a in actors if a.get_name() == "{actor_name}"]
-
-if len(name_matches) == 1:
-    target = name_matches[0]
-elif len(name_matches) > 1:
-    target = None
+_QUERY__ = {actor_name!r}
+__resolution__ = __aivido_resolve_actor__(_QUERY__)
+__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
-        "error": "Multiple actors matched internal name: {actor_name}"
+        "error": "actor_not_resolved: " + str((__resolution__ or {{}}).get("status", "?")),
+        "query": _QUERY__,
+        "matches": list((__resolution__ or {{}}).get("matches", [])),
     }}
 else:
-    label_matches = [a for a in actors if a.get_actor_label() == "{actor_name}"]
-
-    if len(label_matches) == 0:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Actor not found: {actor_name}"
-        }}
-    elif len(label_matches) > 1:
-        target = None
-        __bridge_result__ = {{
-            "ok": False,
-            "error": "Ambiguous actor label: {actor_name}",
-            "matches": [a.get_name() for a in label_matches]
-        }}
-    else:
-        target = label_matches[0]
-
-if target is not None:
-    name = target.get_name()
-    label = target.get_actor_label()
-    deleted = subsystem.destroy_actor(target)
+    name = __target__.get_name()
+    label = __target__.get_actor_label()
+    deleted = subsystem.destroy_actor(__target__)
 
     __bridge_result__ = {{
         "ok": bool(deleted),
