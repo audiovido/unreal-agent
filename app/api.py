@@ -2843,46 +2843,68 @@ else:
         try:
             label = str(a.get_actor_label() or a.get_name())
             names.append(label)
+        except Exception as exc:
+            read_errors.append("<unnamed>: " + type(exc).__name__)
+            continue
+        # Granular evidence reads: one failed read must not erase the rest of
+        # the actor's evidence (the previous single try/except turned one
+        # bad attribute into a fully value-blind snapshot for every actor).
+        try:
             classes[label] = str(a.get_class().get_name())
+        except Exception as exc:
+            read_errors.append(label + ": class: " + type(exc).__name__)
+        try:
             loc = a.get_actor_location()
             rot = a.get_actor_rotation()
             scl = a.get_actor_scale3d()
+            # FRotator carries pitch/yaw/roll (rot.x raises AttributeError).
             transforms[label] = {
                 "location": {"x": loc.x, "y": loc.y, "z": loc.z},
-                "rotation": {"x": rot.x, "y": rot.y, "z": rot.z},
+                "rotation": {"pitch": rot.pitch, "yaw": rot.yaw, "roll": rot.roll},
                 "scale": {"x": scl.x, "y": scl.y, "z": scl.z},
             }
+        except Exception as exc:
+            read_errors.append(label + ": transform: " + type(exc).__name__)
+        try:
             smc = getattr(a, "static_mesh_component", None)
             if smc is not None and smc.static_mesh:
                 mesh_refs.append(smc.static_mesh.get_path_name())
-            for prim in (a.get_components_by_class(unreal.PrimitiveComponent) or []):
-                for idx, mat in enumerate(prim.get_materials() or []):
-                    if mat is not None and mat.get_path_name():
-                        material_refs.append(mat.get_path_name())
-                        # Per-actor material state so a re-applied (unchanged
-                        # set) material pass still yields a meaningful diff.
-                        material_state.setdefault(label, {})[str(idx)] = mat.get_path_name()
-            if isinstance(a, unreal.LightBase):
+        except Exception as exc:
+            read_errors.append(label + ": mesh: " + type(exc).__name__)
+        is_light = False
+        try:
+            # isinstance(a, unreal.LightBase) raises AttributeError on UE 5.7
+            # Python wrappers; component lookup is the reliable identity test.
+            lc = a.get_component_by_class(unreal.LightComponentBase)
+            if lc is not None:
+                is_light = True
                 lights.append(label)
                 # Value-aware light evidence: label sets alone cannot show an
                 # intensity/color re-tune, so record per-light state for the
                 # SceneDiff contract (light_state label -> [type, intensity,
                 # r, g, b]).
-                lc = a.get_component_by_class(unreal.LightComponentBase)
-                if lc is not None:
-                    col = lc.get_light_color()
-                    light_state[label] = {
-                        "intensity": round(float(lc.get_editor_property("intensity")), 1),
-                        "color": [round(float(col.r), 3), round(float(col.g), 3), round(float(col.b), 3)],
-                    }
-            if isinstance(a, unreal.CameraActor):
+                col = lc.get_light_color()
+                light_state[label] = {
+                    "intensity": round(float(lc.get_editor_property("intensity")), 1),
+                    "color": [round(float(col.r), 3), round(float(col.g), 3), round(float(col.b), 3)],
+                }
+            if a.get_component_by_class(unreal.CameraComponent) is not None:
                 cameras.append(label)
         except Exception as exc:
-            # Never silently drop evidence: an unreadable actor is recorded so
-            # the runtime gate can see the snapshot was partial.
-            read_errors.append(
-                str(getattr(a, "get_name", lambda: "?")()) + ": " + type(exc).__name__
-            )
+            read_errors.append(label + ": lightstate: " + type(exc).__name__)
+        if not is_light:
+            # Light wrappers raise on the primitive enumeration; lights carry
+            # no material slots anyway.
+            try:
+                for prim in (a.get_components_by_class(unreal.PrimitiveComponent) or []):
+                    for idx, mat in enumerate(prim.get_materials() or []):
+                        if mat is not None and mat.get_path_name():
+                            material_refs.append(mat.get_path_name())
+                            # Per-actor material state so a re-applied (unchanged
+                            # set) material pass still yields a meaningful diff.
+                            material_state.setdefault(label, {})[str(idx)] = mat.get_path_name()
+            except Exception as exc:
+                read_errors.append(label + ": materials: " + type(exc).__name__)
     __bridge_result__ = {
         "ok": True,
         "map": str(world.get_path_name() or ""),

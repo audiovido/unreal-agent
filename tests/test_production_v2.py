@@ -447,3 +447,47 @@ class TestProductionStateMachine:
         assert state.verdict is None
         assert state.state == "BLOCKED"
         assert state.blocker == "EXECUTOR_FAILED"
+
+
+class TestValueAwareSceneDiffFromValueStates:
+    """Run 13 regression: value-state maps drive the property-change deltas."""
+
+    def _snap(self, mat=None, intensity=None):
+        lights = {}
+        if intensity is not None:
+            lights["AIVIDO_KeyWarm"] = {"intensity": intensity, "color": [1.0, 0.72, 0.42]}
+        mats = {"AIVIDO_Floor": {"0": mat}} if mat else {}
+        return {
+            "map": "/Game/AIVIDO_Showcase.AIVIDO_Showcase",
+            "actors": ["AIVIDO_Floor", "AIVIDO_KeyWarm"],
+            "classes": {"AIVIDO_Floor": "StaticMeshActor", "AIVIDO_KeyWarm": "PointLight"},
+            "transforms": {
+                "AIVIDO_Floor": {"location": {"x": 0, "y": 0, "z": 0},
+                                 "rotation": {"pitch": 0, "yaw": 0, "roll": 0},
+                                 "scale": {"x": 1, "y": 1, "z": 1}},
+                "AIVIDO_KeyWarm": {"location": {"x": 1, "y": 2, "z": 3},
+                                   "rotation": {"pitch": 0, "yaw": 0, "roll": 0},
+                                   "scale": {"x": 1, "y": 1, "z": 1}},
+            },
+            "mesh_refs": [], "material_refs": [], "lights": list(lights), "cameras": [],
+            "light_state": lights, "material_state": mats, "read_errors": [],
+        }
+
+    def test_material_state_change_is_meaningful(self):
+        before = self._snap(mat="/Game/Old/M_Old")
+        after = self._snap(mat="/Game/Cinema/Materials/M_Cinema_Floor")
+        d = pv2.scene_diff(before, after)
+        assert "AIVIDO_Floor" in d["materials_changed"]
+        assert not d["empty"] if "empty" in d else True
+
+    def test_light_state_change_is_meaningful(self):
+        before = self._snap(intensity=1000.0)
+        after = self._snap(intensity=3200.0)
+        d = pv2.scene_diff(before, after)
+        assert "AIVIDO_KeyWarm" in d["lights_changed"]
+
+    def test_identical_value_states_are_empty(self):
+        snap = self._snap(mat="/Game/X", intensity=3200.0)
+        d = pv2.scene_diff(snap, dict(snap))
+        assert d["materials_changed"] == []
+        assert d["lights_changed"] == []
