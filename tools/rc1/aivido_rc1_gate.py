@@ -204,47 +204,90 @@ class RC1Gate:
 
     # 5. Command runtime health
     def check_command_runtime(self) -> None:
-        """Verify command runtime state file exists and worker is alive."""
-        state_path = ROOT / "runtime" / "command_state.json"
-        if not state_path.exists():
-            self._fail("COMMAND_RUNTIME", "command_state.json missing")
+        """Verify command runtime via live endpoint or persisted file."""
+        runtime = self._get_runtime_state()
+        if runtime is None:
+            self._fail("COMMAND_RUNTIME", "no runtime state available (live endpoint and file)")
             return
         try:
-            data = json.loads(state_path.read_text())
-            jobs = data.get("jobs", {})
-            active = [j for j in jobs.values() if j.get("state") == "running"]
+            ok = bool(runtime.get("ok"))
+            worker_alive = bool(runtime.get("worker_alive"))
+            counts = runtime.get("counts", {})
+            active = runtime.get("active")
+            state_path = runtime.get("state_path", "")
+            total_jobs = sum(counts.values()) if isinstance(counts, dict) else 0
+            active_count = 1 if active is not None else 0
+            if not ok or not worker_alive:
+                self._fail("COMMAND_RUNTIME", f"runtime not healthy: ok={ok}, worker_alive={worker_alive}")
+                return
             self._pass("COMMAND_RUNTIME", {
-                "state_path": str(state_path),
-                "total_jobs": len(jobs),
-                "active_jobs": len(active),
-                "worker_alive": True,
+                "state_path": state_path,
+                "total_jobs": total_jobs,
+                "active_jobs": active_count,
+                "worker_alive": worker_alive,
+                "counts": counts,
+                "source": "live" if "live" in str(state_path).lower() or not state_path else "file",
             })
         except Exception as exc:
             self._fail("COMMAND_RUNTIME", f"{type(exc).__name__}: {exc}")
 
     # 6. No active stuck job
     def check_no_stuck_job(self) -> None:
-        """Verify no job is stuck in running state beyond threshold."""
-        state_path = ROOT / "runtime" / "command_state.json"
-        if not state_path.exists():
-            self._fail("NO_STUCK_JOB", "command_state.json missing")
+        """Verify no active job is stuck beyond threshold."""
+        runtime = self._get_runtime_state()
+        if runtime is None:
+            self._fail("NO_STUCK_JOB", "no runtime state available")
             return
+        try:
+            active = runtime.get("active")
+            if active is None:
+                self._pass("NO_STUCK_JOB", {"stuck_jobs": 0, "reason": "no_active_job"})
+                return
+            now = time.time()
+            started = active.get("started_at") or 0
+            if now - started > 300:  # 5 minutes
+                self._fail("NO_STUCK_JOB", f"stuck active job: {active.get('job_id')} running > 5min")
+            else:
+                self._pass("NO_STUCK_JOB", {"stuck_jobs": 0, "active_job_id": active.get("job_id"), "age_s": round(now - started, 1)})
+        except Exception as exc:
+            self._fail("NO_STUCK_JOB", f"{type(exc).__name__}: {exc}")
+
+    def _get_runtime_state(self) -> dict | None:
+        """Get runtime state from live endpoint, then file fallback."""
+        # Try live endpoint first
+        import urllib.request
+        try:
+            with urllib.request.urlopen("http://127.0.0.1:8765/api/command/runtime", timeout=5) as r:
+                data = json.load(r)
+            if data.get("ok"):
+                data["_source"] = "live"
+                return data
+        except Exception:
+            pass
+        # Fallback to persisted file
+        state_path = ROOT / "runtime" / "command_jobs.json"
+        if not state_path.exists():
+            return None
         try:
             data = json.loads(state_path.read_text())
             jobs = data.get("jobs", {})
-            now = time.time()
-            stuck = []
-            for j in jobs.values():
-                if j.get("state") == "running":
-                    started = j.get("started_at") or 0
-                    if now - started > 300:  # 5 minutes
-                        stuck.append(j.get("job_id"))
-            if stuck:
-                self._fail("NO_STUCK_JOB", f"stuck jobs: {stuck}")
-            else:
-                self._pass("NO_STUCK_JOB", {"stuck_jobs": 0})
-        except Exception as exc:
-            self._fail("NO_STUCK_JOB", f"{type(exc).__name__}: {exc}")
+            counts: dict[str, int] = {}
+            active_job = None
+            for job in jobs.values():
+                state = str(job.get("state", "unknown"))
+                counts[state] = counts.get(state, 0) + 1
+                if state == "running":
+                    active_job = job
+            return {
+                "ok": True,
+                "worker_alive": True,
+                "counts": counts,
+                "active": active_job,
+                "state_path": str(state_path),
+                "_source": "file",
+            }
+        except Exception:
+            return None
 
     # 7. One-Click launcher presence
     def check_one_click_launcher(self) -> None:

@@ -263,74 +263,184 @@ class TestRC1GateRuntimeBehavior(unittest.TestCase):
         self.gate.check_expected_map()
         self.assertFalse(self.gate.report["checks"].get("EXPECTED_MAP", {}).get("ok"))
 
-    def test_command_runtime_no_state_file(self):
-        """Command runtime check fails when state file missing."""
-        with patch.object(Path, "exists", return_value=False):
+    @patch("urllib.request.urlopen")
+    def test_command_runtime_live_endpoint_ok(self, mock_urlopen):
+        """Command runtime check passes via live endpoint."""
+        mock_response = MagicMock()
+        mock_response.__enter__.return_value = mock_response
+        mock_response.read.return_value = json.dumps({
+            "ok": True,
+            "worker_alive": True,
+            "counts": {"pass": 10, "failed": 2},
+            "active": None,
+            "state_path": "/runtime/command_jobs.json",
+        }).encode()
+        mock_urlopen.return_value = mock_response
+
+        self.gate.check_command_runtime()
+        check = self.gate.report["checks"].get("COMMAND_RUNTIME", {})
+        self.assertTrue(check.get("ok"))
+        self.assertEqual(check.get("active_jobs"), 0)
+
+    @patch("urllib.request.urlopen")
+    def test_command_runtime_live_endpoint_fails_fallback_to_file(self, mock_urlopen):
+        """Command runtime falls back to file when live endpoint fails."""
+        mock_urlopen.side_effect = ConnectionError("connection refused")
+
+        # Mock the file fallback - create proper directory structure
+        with tempfile.TemporaryDirectory() as tmpdir:
+            runtime_dir = Path(tmpdir) / "runtime"
+            runtime_dir.mkdir()
+            state_file = runtime_dir / "command_jobs.json"
+            state_data = {
+                "jobs": {
+                    "job1": {"state": "pass", "started_at": time.time() - 100},
+                    "job2": {"state": "running", "started_at": time.time() - 10},
+                }
+            }
+            state_file.write_text(json.dumps(state_data))
+
+            with patch("aivido_rc1_gate.ROOT", Path(tmpdir)):
+                self.gate.check_command_runtime()
+                check = self.gate.report["checks"].get("COMMAND_RUNTIME", {})
+                self.assertTrue(check.get("ok"))
+                self.assertEqual(check.get("active_jobs"), 1)
+
+    @patch("urllib.request.urlopen")
+    def test_command_runtime_both_fail(self, mock_urlopen):
+        """Command runtime fails when both live endpoint and file are unavailable."""
+        mock_urlopen.side_effect = ConnectionError("connection refused")
+        with patch("aivido_rc1_gate.ROOT", Path("/nonexistent")):
             self.gate.check_command_runtime()
-            self.assertFalse(self.gate.report["checks"].get("COMMAND_RUNTIME", {}).get("ok"))
+            check = self.gate.report["checks"].get("COMMAND_RUNTIME", {})
+            self.assertFalse(check.get("ok"))
 
-    def test_command_runtime_with_state(self):
-        """Command runtime check passes with valid state file."""
-        state_data = {
-            "jobs": {
-                "job1": {"state": "pass", "started_at": time.time() - 100},
-                "job2": {"state": "running", "started_at": time.time() - 10},
-            }
-        }
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            json.dump(state_data, f)
-            state_path = Path(f.name)
-        try:
-            with patch("aivido_rc1_gate.ROOT", Path(state_path).parent.parent):
-                with patch.object(Path, "exists", return_value=True):
-                    with patch("aivido_rc1_gate.Path.read_text", return_value=json.dumps(state_data)):
-                        self.gate.check_command_runtime()
-                        check = self.gate.report["checks"].get("COMMAND_RUNTIME", {})
-                        self.assertTrue(check.get("ok"))
-                        self.assertEqual(check.get("active_jobs"), 1)
-        finally:
-            state_path.unlink(missing_ok=True)
+    @patch("urllib.request.urlopen")
+    def test_no_stuck_job_active_null_passes(self, mock_urlopen):
+        """NO_STUCK_JOB passes when active is null."""
+        mock_response = MagicMock()
+        mock_response.__enter__.return_value = mock_response
+        mock_response.read.return_value = json.dumps({
+            "ok": True,
+            "worker_alive": True,
+            "counts": {"pass": 10},
+            "active": None,
+            "state_path": "/runtime/command_jobs.json",
+        }).encode()
+        mock_urlopen.return_value = mock_response
 
-    def test_no_stuck_job_detects_stuck(self):
-        """No stuck job check detects jobs running > 5 minutes."""
-        state_data = {
-            "jobs": {
-                "stuck_job": {"state": "running", "started_at": time.time() - 400},
-                "ok_job": {"state": "running", "started_at": time.time() - 10},
-            }
-        }
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            json.dump(state_data, f)
-            state_path = Path(f.name)
-        try:
-            with patch("aivido_rc1_gate.ROOT", Path(state_path).parent.parent):
-                with patch.object(Path, "exists", return_value=True):
-                    with patch("aivido_rc1_gate.Path.read_text", return_value=json.dumps(state_data)):
-                        self.gate.check_no_stuck_job()
-                        check = self.gate.report["checks"].get("NO_STUCK_JOB", {})
-                        self.assertFalse(check.get("ok"))
-        finally:
-            state_path.unlink(missing_ok=True)
+        self.gate.check_no_stuck_job()
+        check = self.gate.report["checks"].get("NO_STUCK_JOB", {})
+        self.assertTrue(check.get("ok"))
+        self.assertEqual(check.get("stuck_jobs"), 0)
 
-    def test_no_stuck_job_clean(self):
-        """No stuck job check passes when no stuck jobs."""
-        state_data = {
-            "jobs": {
-                "ok_job": {"state": "running", "started_at": time.time() - 10},
+    @patch("urllib.request.urlopen")
+    def test_no_stuck_job_active_within_window_passes(self, mock_urlopen):
+        """NO_STUCK_JOB passes when active job is within valid window."""
+        mock_response = MagicMock()
+        mock_response.__enter__.return_value = mock_response
+        mock_response.read.return_value = json.dumps({
+            "ok": True,
+            "worker_alive": True,
+            "counts": {"pass": 10, "running": 1},
+            "active": {"job_id": "cmd_abc123", "started_at": time.time() - 10},
+            "state_path": "/runtime/command_jobs.json",
+        }).encode()
+        mock_urlopen.return_value = mock_response
+
+        self.gate.check_no_stuck_job()
+        check = self.gate.report["checks"].get("NO_STUCK_JOB", {})
+        self.assertTrue(check.get("ok"))
+
+    @patch("urllib.request.urlopen")
+    def test_no_stuck_job_stale_active_fails(self, mock_urlopen):
+        """NO_STUCK_JOB fails when active job is stale (> 5 min)."""
+        mock_response = MagicMock()
+        mock_response.__enter__.return_value = mock_response
+        mock_response.read.return_value = json.dumps({
+            "ok": True,
+            "worker_alive": True,
+            "counts": {"pass": 10, "running": 1},
+            "active": {"job_id": "cmd_stuck", "started_at": time.time() - 400},
+            "state_path": "/runtime/command_jobs.json",
+        }).encode()
+        mock_urlopen.return_value = mock_response
+
+        self.gate.check_no_stuck_job()
+        check = self.gate.report["checks"].get("NO_STUCK_JOB", {})
+        self.assertFalse(check.get("ok"))
+
+    @patch("urllib.request.urlopen")
+    def test_no_stuck_job_fallback_file_active_null(self, mock_urlopen):
+        """NO_STUCK_JOB passes via file fallback when active is null."""
+        mock_urlopen.side_effect = ConnectionError("connection refused")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            runtime_dir = Path(tmpdir) / "runtime"
+            runtime_dir.mkdir()
+            state_file = runtime_dir / "command_jobs.json"
+            state_data = {
+                "jobs": {
+                    "job1": {"state": "pass", "started_at": time.time() - 100},
+                }
             }
-        }
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            json.dump(state_data, f)
-            state_path = Path(f.name)
-        try:
-            with patch("aivido_rc1_gate.ROOT", Path(state_path).parent.parent):
-                with patch.object(Path, "exists", return_value=True):
-                    with patch("aivido_rc1_gate.Path.read_text", return_value=json.dumps(state_data)):
-                        self.gate.check_no_stuck_job()
-                        check = self.gate.report["checks"].get("NO_STUCK_JOB", {})
-                        self.assertTrue(check.get("ok"))
-        finally:
-            state_path.unlink(missing_ok=True)
+            state_file.write_text(json.dumps(state_data))
+
+            with patch("aivido_rc1_gate.ROOT", Path(tmpdir)):
+                self.gate.check_no_stuck_job()
+                check = self.gate.report["checks"].get("NO_STUCK_JOB", {})
+                self.assertTrue(check.get("ok"))
+
+    @patch("urllib.request.urlopen")
+    def test_no_stuck_job_fallback_file_stale_active_fails(self, mock_urlopen):
+        """NO_STUCK_JOB fails via file fallback when active job is stale."""
+        mock_urlopen.side_effect = ConnectionError("connection refused")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            runtime_dir = Path(tmpdir) / "runtime"
+            runtime_dir.mkdir()
+            state_file = runtime_dir / "command_jobs.json"
+            state_data = {
+                "jobs": {
+                    "stuck_job": {"state": "running", "started_at": time.time() - 400},
+                }
+            }
+            state_file.write_text(json.dumps(state_data))
+
+            with patch("aivido_rc1_gate.ROOT", Path(tmpdir)):
+                self.gate.check_no_stuck_job()
+                check = self.gate.report["checks"].get("NO_STUCK_JOB", {})
+                self.assertFalse(check.get("ok"))
+
+    def test_no_stuck_job_missing_all_runtime_evidence_fails(self):
+        """NO_STUCK_JOB fails when no runtime evidence available."""
+        with patch("urllib.request.urlopen", side_effect=ConnectionError("refused")):
+            with patch("aivido_rc1_gate.ROOT", Path("/nonexistent")):
+                self.gate.check_no_stuck_job()
+                check = self.gate.report["checks"].get("NO_STUCK_JOB", {})
+                self.assertFalse(check.get("ok"))
+
+    def test_command_runtime_obsolete_command_state_not_required(self):
+        """COMMAND_RUNTIME does not require obsolete command_state.json."""
+        # The gate should work with command_jobs.json, not command_state.json
+        with tempfile.TemporaryDirectory() as tmpdir:
+            runtime_dir = Path(tmpdir) / "runtime"
+            runtime_dir.mkdir()
+            state_file = runtime_dir / "command_jobs.json"
+            state_data = {
+                "jobs": {
+                    "job1": {"state": "pass", "started_at": time.time() - 100},
+                }
+            }
+            state_file.write_text(json.dumps(state_data))
+
+            with patch("urllib.request.urlopen", side_effect=ConnectionError("refused")):
+                with patch("aivido_rc1_gate.ROOT", Path(tmpdir)):
+                    self.gate.check_command_runtime()
+                    check = self.gate.report["checks"].get("COMMAND_RUNTIME", {})
+                    self.assertTrue(check.get("ok"))
+                    # Should use command_jobs.json, not command_state.json
+                    self.assertIn("command_jobs", check.get("state_path", ""))
 
 
 class TestRC1GateVerdict(unittest.TestCase):
