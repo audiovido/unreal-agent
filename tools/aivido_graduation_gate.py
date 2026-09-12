@@ -24,6 +24,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import socket
 import sys
 import time
@@ -55,6 +56,7 @@ else:
         "map": str(world.get_path_name() or ""),
         "actor_count": len(names),
         "read_errors": read_errors,
+        "labels": sorted(names),
     }
 '''
 
@@ -109,10 +111,39 @@ def probe_live_scene(timeout: float = 30.0) -> dict:
     return result
 
 
+def audit_mission_labels(mission_text: str, live_labels: list) -> list:
+    """Fail fast when the mission references actors that do not exist.
+
+    Run 9 lost its first attempt to a stale brief: ``AIVIDO_CommandDais`` no
+    longer existed (the real labels are ``AIVIDO_Dais_Tier1/Tier2``), so the
+    executor burned its two attempts before the honest actor_not_found
+    surfaced. Auditing every ``AIVIDO_*`` reference against the live label
+    list converts that mid-execution stall into a pre-flight gate failure.
+
+    A token is accepted when it IS a live label OR when it is a prefix of one
+    ("the four AIVIDO_WorkerChairSeat actors" expands to real labels). Only
+    tokens matching no live label and no live prefix are reported.
+    """
+    live = set(str(l) for l in (live_labels or []))
+    if not live:
+        return []
+    # Map/asset paths (e.g. /Game/AIVIDO_Showcase) are not actor labels.
+    text = re.sub(r"/Game/[A-Za-z0-9_]+", " ", str(mission_text))
+    missing: list = []
+    for token in sorted(set(re.findall(r"\bAIVIDO_[A-Za-z0-9_]+", text))):
+        if token in live:
+            continue
+        if any(lb.startswith(token + "_") for lb in live):
+            continue
+        missing.append(token)
+    return missing
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--expected-map", default="/Game/AIVIDO_Showcase")
     ap.add_argument("--min-actors", type=int, default=20)
+    ap.add_argument("--mission-file", default="", help="Mission text to audit against live actor labels")
     ap.add_argument("--json-out", default="")
     a = ap.parse_args()
 
@@ -149,6 +180,18 @@ def main() -> int:
         read_errors = scene.get("read_errors") or []
         if len(read_errors) > max(2, actor_count // 4 if actor_count else 2):
             reasons.append(f"SCENE_SNAPSHOT_PARTIAL:read_errors={len(read_errors)}")
+
+    if a.mission_file:
+        mission_path = Path(a.mission_file)
+        if mission_path.is_file():
+            missing = audit_mission_labels(
+                mission_path.read_text(errors="replace"), scene.get("labels") or []
+            )
+            report["mission_label_audit"] = {"file": str(mission_path), "unknown": missing}
+            for token in missing:
+                reasons.append(f"MISSION_LABEL_UNKNOWN:{token}")
+        else:
+            reasons.append(f"MISSION_FILE_MISSING:{a.mission_file}")
 
     report["reasons"] = reasons
     report["verdict"] = "PASS" if not reasons else "FAIL"

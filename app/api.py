@@ -1389,7 +1389,20 @@ def _seed_project_context():
 def new_execution(task: str):
     task_id = str(uuid.uuid4())
     preflight = production_preflight(task)
-    plan = normalize_execution_plan(task, create_execution_plan(task))
+    brief_steps = _brief_explicit_steps(task)
+    if brief_steps:
+        # An explicit tool brief IS the plan. Skipping the LLM planner keeps
+        # mission start bounded even when the local reasoning runner is
+        # wedged or CPU-bound (deepseek-r1:14b on CPU can hold the planning
+        # call for its full 600s timeout before any fallback appears).
+        plan = {
+            "goal": task,
+            "steps": brief_steps,
+            "success_criteria": [],
+            "_planner": "explicit_brief",
+        }
+    else:
+        plan = normalize_execution_plan(task, create_execution_plan(task))
     plan["production_preflight"] = preflight
     plan.setdefault("_routing", {})["execution_mode"] = preflight.get("execution_mode")
     plan["_routing"]["asset_template_route"] = preflight.get("asset_template_route")

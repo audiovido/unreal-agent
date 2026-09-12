@@ -724,7 +724,8 @@ else:
 {self._identity_script_prelude()}
 _QUERY__ = {actor_name!r}
 __resolution__ = __aivido_resolve_actor__(_QUERY__)
-__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__candidate__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__target__ = (__candidate__ or {{}}).get("actor") if isinstance(__candidate__, dict) else None
 if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
@@ -842,8 +843,22 @@ else:
         elif prop in ("light_intensity", "intensity"):
             target.set_light_intensity(float(json.loads({value_json!r})))
         elif prop == "material":
-            asset_path = {asset_json!r}
+            # _json.dumps + !r double-encodes, so unwrap exactly like value_json
+            # above; the raw repr kept literal quote characters around the path
+            # and load_asset could never find the material.
+            asset_path = json.loads({asset_json!r})
             mat = unreal.load_asset(asset_path) if asset_path else None
+            if mat is None and asset_path:
+                # Newly written .uassets (imported while the editor was
+                # already open) can be missing from the live Asset Registry,
+                # making load_asset fail spuriously. One bounded synchronous
+                # rescan of the parent directory heals exactly this case.
+                try:
+                    pkg = asset_path.rsplit("/", 1)[0]
+                    unreal.AssetRegistryHelpers.get_asset_registry().scan_paths_synchronous([pkg], True)
+                    mat = unreal.load_asset(asset_path)
+                except Exception:
+                    mat = None
             if mat is None:
                 ok = False
                 err = "material_asset_not_found: " + asset_path
@@ -880,7 +895,8 @@ else:
 {self._identity_script_prelude()}
 _QUERY__ = {actor_name!r}
 __resolution__ = __aivido_resolve_actor__(_QUERY__)
-__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__candidate__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__target__ = (__candidate__ or {{}}).get("actor") if isinstance(__candidate__, dict) else None
 if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
@@ -910,7 +926,8 @@ if __target__ is not None:
 {self._identity_script_prelude()}
 _QUERY__ = {actor_name!r}
 __resolution__ = __aivido_resolve_actor__(_QUERY__)
-__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__candidate__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__target__ = (__candidate__ or {{}}).get("actor") if isinstance(__candidate__, dict) else None
 if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
@@ -943,7 +960,8 @@ if __target__ is not None:
 {self._identity_script_prelude()}
 _QUERY__ = {actor_name!r}
 __resolution__ = __aivido_resolve_actor__(_QUERY__)
-__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__candidate__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__target__ = (__candidate__ or {{}}).get("actor") if isinstance(__candidate__, dict) else None
 if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
@@ -972,7 +990,8 @@ if __target__ is not None:
 subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 _QUERY__ = {actor_name!r}
 __resolution__ = __aivido_resolve_actor__(_QUERY__)
-__target__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__candidate__ = (__resolution__ or {{}}).get("actor") if isinstance(__resolution__, dict) else None
+__target__ = (__candidate__ or {{}}).get("actor") if isinstance(__candidate__, dict) else None
 if __target__ is None:
     __bridge_result__ = {{
         "ok": False,
