@@ -157,6 +157,35 @@ class TestSceneDiff:
         for key in pv2.SCENEDIFF_KEYS:
             assert key in diff
 
+    def test_light_state_change_is_meaningful_without_actor_set_change(self):
+        """A lighting re-pass keeps the same lights and only re-tunes them;
+        the diff must be meaningful from value changes alone."""
+        before = base_scene(actors=["AIVIDO_KeyWarm"],)
+        before["lights"] = ["AIVIDO_KeyWarm"]
+        before["light_state"] = {"AIVIDO_KeyWarm": {"intensity": 100.0, "color": [1.0, 1.0, 1.0]}}
+        after = base_scene(actors=["AIVIDO_KeyWarm"],)
+        after["lights"] = ["AIVIDO_KeyWarm"]
+        after["light_state"] = {"AIVIDO_KeyWarm": {"intensity": 3200.0, "color": [1.0, 0.72, 0.42]}}
+        diff = pv2.scene_diff(before, after)
+        assert "AIVIDO_KeyWarm" in diff["lights_changed"]
+        assert pv2.scene_diff_is_meaningful(diff)
+
+    def test_material_state_change_is_meaningful_without_actor_set_change(self):
+        before = base_scene(actors=["AIVIDO_Floor"])
+        before["material_state"] = {"AIVIDO_Floor": {"0": "/Game/Old/M_Old"}}
+        after = base_scene(actors=["AIVIDO_Floor"])
+        after["material_state"] = {"AIVIDO_Floor": {"0": "/Game/Cinema/Materials/M_Cinema_Floor"}}
+        diff = pv2.scene_diff(before, after)
+        assert "AIVIDO_Floor" in diff["materials_changed"]
+        assert pv2.scene_diff_is_meaningful(diff)
+
+    def test_identical_light_state_is_not_a_change(self):
+        scene = base_scene(actors=["L"])
+        scene["lights"] = ["L"]
+        scene["light_state"] = {"L": {"intensity": 500.0, "color": [1.0, 0.8, 0.5]}}
+        diff = pv2.scene_diff(scene, scene)
+        assert diff["lights_changed"] == []
+
 
 # ---------------------------------------------------------------------------
 # Fresh screenshot evidence (supports tests D, G)

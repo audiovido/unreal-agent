@@ -215,8 +215,17 @@ def build_acceptance_contract(request, project_context=None):
         "reopen": "reopen verification",
     }
     for term, label in long_terms.items():
-        if term in text.lower():
-            add(f"deliverable:{term.replace(' ', '_')}", label)
+        if term not in text.lower():
+            continue
+        # "camera" as a bare substring matches inside actor/asset names (e.g.
+        # "AIVIDO_HeroCamera") while real camera work uses it as a standalone
+        # word ("a camera", "camera shot"). Word-boundary matching keeps the
+        # deliverable for genuine camera missions and drops it for art-pass
+        # briefs that merely name the hero camera actor — otherwise the
+        # contract is structurally unsatisfiable for no-spawn missions.
+        if term == "camera" and not re.search(r"\bcamera\b", text, re.I):
+            continue
+        add(f"deliverable:{term.replace(' ', '_')}", label)
     # Blender Agent deliverables. These criteria are only emitted when the
     # request actually routes through the Blender Agent, so plain Unreal tasks
     # are never burdened with unsatisfiable 3D-pipeline criteria.
@@ -511,6 +520,20 @@ def reconcile_step(goal, step, result):
     if tool in {"spawn_actor", "get_actor"} and str((step.get("parameters") or {}).get("class_name")) == "PointLight":
         if step_ok:
             completed.append("light:exists")
+    if step_ok and tool == "set_actor_property" and (
+        "light:exists" in required or "deliverable:lighting" in required
+    ):
+        # Editing a live light both proves a light exists and clears the
+        # lighting deliverable for art passes whose rules forbid spawning
+        # anything. Previously these criteria could ONLY be cleared by
+        # spawn_actor PointLight, which made no-spawn lighting passes stall.
+        target = str((step.get("parameters") or {}).get("actor_name") or "")
+        prop = str((step.get("parameters") or {}).get("property") or "").lower()
+        if "light" in target.lower() or prop in ("light_color", "light_intensity", "intensity"):
+            if "light:exists" in required:
+                completed.append("light:exists")
+            if "deliverable:lighting" in required and "deliverable:lighting" not in completed:
+                completed.append("deliverable:lighting")
     # Read-only inspection/query goals complete from real inspection evidence:
     # a successful inspection tool with a non-empty result. This is the only
     # path that satisfies inspection:result, so vague no-criteria requests

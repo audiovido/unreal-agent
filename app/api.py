@@ -2216,10 +2216,12 @@ def _finalize_terminal(state, forced_stall=None):
             v2 = _aivido_v2_gate_state(state, include_visual=bool(
                 (state.get("plan") or {}).get("production_preflight", {}).get("visual_task")
             ))
-            if v2["visual"]["evaluator"] == "not_applicable":
-                # Non-visual mission: legacy PASS path unchanged.
-                emit("complete", "COMPLETE", {"verdict": "PASS"}, "success")
-            elif v2["visual"]["accepted"] is not True:
+            # Persist the gate inputs on the execution state so the durable
+            # job result carries them: the evidence packager (and any audit)
+            # reads pipeline_v2 from the finished job. Dropping it here meant
+            # a fully-gated PASS left NO packaged evidence behind.
+            state["pipeline_v2"] = v2
+            if v2["visual"]["evaluator"] != "not_applicable" and v2["visual"]["accepted"] is not True:
                 code, verdict = "STALLED", "STALL"
                 stall = "V2_VISUAL_EVIDENCE_GATE"
                 msg = "Execution finished but visual evidence gate rejected the mission."
@@ -2245,6 +2247,10 @@ def _finalize_terminal(state, forced_stall=None):
                     "stall_reason": stall,
                     "stall_detail": state.get("stall_detail"),
                 }
+            # Single emit for every COMPLETE outcome (visual and non-visual).
+            # The previous structure emitted twice for non-visual missions:
+            # once inside the not_applicable branch, then fell through to a
+            # second unconditional emit below.
             emit("complete", "COMPLETE", {"verdict": "PASS"}, "success")
         elif code == "BLOCKED":
             emit("error", "BLOCKED", {"reason": msg}, "blocked")
@@ -2628,6 +2634,8 @@ else:
     material_refs = []
     lights = []
     cameras = []
+    light_state = {}
+    material_state = {}
     read_errors = []
     for a in actors:
         try:
@@ -2646,11 +2654,25 @@ else:
             if smc is not None and smc.static_mesh:
                 mesh_refs.append(smc.static_mesh.get_path_name())
             for prim in (a.get_components_by_class(unreal.PrimitiveComponent) or []):
-                for mat in (prim.get_materials() or []):
+                for idx, mat in enumerate(prim.get_materials() or []):
                     if mat is not None and mat.get_path_name():
                         material_refs.append(mat.get_path_name())
+                        # Per-actor material state so a re-applied (unchanged
+                        # set) material pass still yields a meaningful diff.
+                        material_state.setdefault(label, {})[str(idx)] = mat.get_path_name()
             if isinstance(a, unreal.LightBase):
                 lights.append(label)
+                # Value-aware light evidence: label sets alone cannot show an
+                # intensity/color re-tune, so record per-light state for the
+                # SceneDiff contract (light_state label -> [type, intensity,
+                # r, g, b]).
+                lc = a.get_component_by_class(unreal.LightComponentBase)
+                if lc is not None:
+                    col = lc.get_light_color()
+                    light_state[label] = {
+                        "intensity": round(float(lc.get_editor_property("intensity")), 1),
+                        "color": [round(float(col.r), 3), round(float(col.g), 3), round(float(col.b), 3)],
+                    }
             if isinstance(a, unreal.CameraActor):
                 cameras.append(label)
         except Exception as exc:
@@ -2669,6 +2691,8 @@ else:
         "material_refs": material_refs,
         "lights": lights,
         "cameras": cameras,
+        "light_state": light_state,
+        "material_state": material_state,
         "read_errors": read_errors,
     }
 '''

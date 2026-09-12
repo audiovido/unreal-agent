@@ -191,6 +191,46 @@ def test_scene_deliverables_are_satisfiable_by_real_spawns(isolated_goal):
     assert task_goal.contract_complete(goal) is True
 
 
+def test_camera_deliverable_not_requested_by_actor_name_substring(isolated_goal):
+    """Regression: 'AIVIDO_HeroCamera' in an art-pass brief must not create a
+    deliverable:camera criterion. Previously the bare substring matched inside
+    actor names, creating a deliverable that no no-spawn mission could ever
+    clear — a structurally unsatisfiable contract that always STALLed."""
+    request = (
+        "Materials and lighting pass on AIVIDO_Showcase using set_actor_property "
+        "on existing actors including AIVIDO_HeroCamera framing. Do not spawn. "
+        "Finish with save_level and capture_unreal_viewport."
+    )
+    goal = task_goal.build_acceptance_contract(request)
+    assert "deliverable:camera" not in (goal.get("acceptance_criteria") or [])
+
+
+def test_light_criteria_clear_from_set_actor_property(isolated_goal):
+    """Regression: light:exists / deliverable:lighting were only clearable via
+    spawn_actor PointLight, so a no-spawn lighting re-pass could never complete."""
+    request = (
+        "Lighting pass: set light_color of AIVIDO_KeyWarm and set intensity, "
+        "verify with get_actor, then save_level. Do not spawn anything."
+    )
+    goal = task_goal.build_acceptance_contract(request)
+    required = set(goal.get("acceptance_criteria") or [])
+    assert "light:exists" in required and "deliverable:lighting" in required
+
+    step = {"preferred_tool": "set_actor_property",
+            "parameters": {"actor_name": "AIVIDO_KeyWarm", "property": "light_intensity", "value": 3200}}
+    result = {"ok": True, "result": {"ok": True, "actor": "AIVIDO_KeyWarm"}}
+    goal = task_goal.reconcile_step(goal, step, result)
+    completed = set(goal.get("completed_criteria") or [])
+    assert "light:exists" in completed
+    assert "deliverable:lighting" in completed
+
+
+def test_camera_deliverable_still_requested_for_real_camera_work(isolated_goal):
+    request = "Add a camera shot framing the dais with a slow camera move"
+    goal = task_goal.build_acceptance_contract(request)
+    assert "deliverable:camera" in (goal.get("acceptance_criteria") or [])
+
+
 def test_camera_deliverable_not_completed_by_marker_cube(isolated_goal):
     goal = task_goal.build_acceptance_contract("Build a scene with a camera and a cube named C1; save; capture proof.")
     goal = task_goal.reconcile_step(goal, {"preferred_tool": "spawn_actor", "parameters": {"actor_name": "C1", "class_name": "StaticMeshActor"}}, {"ok": True, "result": {"label": "C1"}})

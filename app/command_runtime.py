@@ -227,7 +227,13 @@ class CommandRuntime:
                     job["state"] = "cancelled"
                     job["error"] = "cancel_requested_during_execution"
                 else:
-                    job["state"] = "pass"
+                    # Honest terminal mapping: the executor payload decides.
+                    # A STALL terminal (stall_reason present) is NOT a pass —
+                    # mapping every return to "pass" let unverified executions
+                    # graduate and silently broke the retry path (retry only
+                    # accepts failed/cancelled jobs).
+                    terminal = str((result or {}).get("terminal") or "")
+                    job["state"] = "failed" if terminal == "STALL" else "pass"
                     job["result"] = result
                 job["progress"] = 100
                 job["finished_at"] = self._now()

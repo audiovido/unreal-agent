@@ -145,6 +145,10 @@ def atomic_fast_path_allowed(request: str) -> bool:
 SCENE_EVIDENCE_KEYS: tuple[str, ...] = (
     "map", "actors", "classes", "transforms", "mesh_refs",
     "material_refs", "lights", "cameras",
+    # Optional value maps (label -> state) so SceneDiff can detect property
+    # changes on UNCHANGED actor sets (e.g. a lighting re-pass that keeps the
+    # same lights but changes intensity/color, or re-applied materials).
+    "light_state", "material_state",
 )
 
 SCENEDIFF_KEYS: tuple[str, ...] = (
@@ -172,7 +176,7 @@ def normalize_scene_evidence(raw: Mapping[str, Any] | None) -> Dict[str, Any]:
         if value is None:
             if key == "map":
                 evidence[key] = ""
-            elif key in ("transforms",):
+            elif key in ("transforms", "light_state", "material_state"):
                 evidence[key] = {}
             else:
                 evidence[key] = []
@@ -285,6 +289,27 @@ def scene_diff(
     )
     lights_changed = sorted(set(_sorted_unique(b.get("lights"))) ^ set(_sorted_unique(a.get("lights"))))
     cameras_changed = sorted(set(_sorted_unique(b.get("cameras"))) ^ set(_sorted_unique(a.get("cameras"))))
+
+    # Value-aware deltas: a lighting/material re-pass keeps the same actor set
+    # and only changes properties. Without these, re-applied materials or
+    # re-tuned lights produce an EMPTY diff, which would make any second art
+    # pass honestly unpassable — the empty-diff gate would then be blind to
+    # the exact missions it was built for.
+    b_light_state = b.get("light_state") or {}
+    a_light_state = a.get("light_state") or {}
+    if isinstance(b_light_state, dict) and isinstance(a_light_state, dict):
+        for name in set(b_light_state) | set(a_light_state):
+            if name not in lights_changed and b_light_state.get(name) != a_light_state.get(name):
+                lights_changed.append(name)
+    lights_changed = sorted(set(lights_changed))
+
+    b_mat_state = b.get("material_state") or {}
+    a_mat_state = a.get("material_state") or {}
+    if isinstance(b_mat_state, dict) and isinstance(a_mat_state, dict):
+        for name in set(b_mat_state) | set(a_mat_state):
+            if name not in materials_changed and b_mat_state.get(name) != a_mat_state.get(name):
+                materials_changed.append(name)
+    materials_changed = sorted(set(materials_changed))
 
     return {
         "actors_added": actors_added,

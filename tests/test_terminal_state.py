@@ -219,7 +219,9 @@ def test_true_no_progress_cleanup_recovery_exhausted():
     # A disposable resource that can never be verified clean -> recovery
     # exhausted structured stall, never a false COMPLETE.
     api.events.clear()
-    state = api.new_execution("cleanup probe")
+    # Literal state (not api.new_execution): planning must never run in a
+    # terminal-state unit test, and new_execution dispatches a real LLM plan.
+    state = _cube_state()
     state["plan"] = {"steps": []}
     state["validation_result"] = "passed"
     state["created_resources"] = [{"path": "/Game/Probe", "disposable": True}]
