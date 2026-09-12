@@ -251,3 +251,22 @@ def test_resume_does_not_duplicate_terminal_events():
     assert resumed["state"] == "complete"
     assert resumed["terminal"] == "PASS"
     assert _event_counts()[0] == complete_after_first  # exactly once
+
+def test_complete_result_carries_pipeline_v2_for_evidence_packager():
+    """Run 12 regression: the persisted job result must carry the V2 gate state.
+
+    The finalize path computed _aivido_v2_gate_state on COMPLETE but dropped it
+    from the returned payload — the runtime persists exactly that payload, so
+    the evidence packager saw no capture and a fully-gated PASS left NO
+    packaged evidence behind.
+    """
+    api.events.clear()
+    state = _cube_state()
+    result = _run(state)
+    assert result["state"] == "complete"
+    pv2 = result.get("pipeline_v2")
+    assert isinstance(pv2, dict)
+    assert pv2["visual"]["evaluator"] in {"not_applicable", "pixels", "vision"}
+    assert "snapshot_before" in pv2
+    assert "snapshot_after" in pv2
+    assert "capture" in pv2

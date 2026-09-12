@@ -2464,6 +2464,10 @@ def _finalize_terminal(state, forced_stall=None):
         "terminal": verdict,
         "stall_reason": stall if code == "STALLED" else None,
         "stall_detail": state.get("stall_detail") if code == "STALLED" else None,
+        # The runtime persists this dict as the job result; without the gate
+        # state the evidence packager sees no capture and a fully-gated PASS
+        # leaves NO packaged evidence behind (run 12).
+        "pipeline_v2": state.get("pipeline_v2"),
     }
 
 
