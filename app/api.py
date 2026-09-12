@@ -649,6 +649,193 @@ def _blender_plan_steps(task, p):
     return steps
 
 
+_BRIEF_NEGATION_RE = re.compile(
+    r"\b(?:do\s+not|dont|don't|never|must\s+not|cannot|can't|should\s+not|without|no)\b",
+    re.I,
+)
+
+
+def _strip_negated_clauses(text):
+    """Drop negated clauses so prohibitions never satisfy keyword triggers.
+
+    "Do NOT use Blender. Do NOT create cubes or placeholders." previously
+    matched the blender/create keyword branches and hijacked the whole plan
+    into the canned demo pipeline (blender_create_asset on UA_Blender_Asset),
+    executing destructive demo steps the brief explicitly forbade. Removing
+    every clause that contains a negation cue keeps keyword routing honest
+    for both positive instructions and explicit prohibitions.
+    """
+    clauses = re.split(r"(?<=[.!;])\s+|[\n\r]+", str(text))
+    kept = [c for c in clauses if c and not _BRIEF_NEGATION_RE.search(c)]
+    return " ".join(kept).strip()
+
+
+_BRIEF_ACTOR = r"[A-Za-z_][A-Za-z0-9_]*"
+
+
+def _brief_actor_universe(text):
+    """Actor labels the brief itself declares (intro 'actors including ...').
+
+    Range tokens like ``AIVIDO_Practical_0..3`` expand to their full label
+    list. This universe grounds prefix references ("the four AIVIDO_Worker
+    actors") in labels the brief explicitly names, never in guesses.
+    """
+    universe = []
+    # Line-anchored: the intro sentence ends in "." but the actor list may
+    # contain internal periods (range tokens like AIVIDO_Practical_0..3), so
+    # matching to the first period would silently truncate the universe.
+    for line in str(text).splitlines():
+        m = re.search(r"actors\s+including\s+(.+?)\.?\s*$", line, re.I)
+        if m:
+            break
+    if not m:
+        return universe
+    for token in m.group(1).split(","):
+        token = token.strip().rstrip(".")
+        # The list sometimes reads "... AU, lights AIVIDO_KeyWarm, ..."; the
+        # word "lights" attaches to the first light label.
+        token = re.sub(r"^lights\s+", "", token, flags=re.I)
+        if not token:
+            continue
+        rm = re.fullmatch(r"(" + _BRIEF_ACTOR + r")_0\.\.(\d+)", token)
+        if rm:
+            universe.extend(f"{rm.group(1)}_{i}" for i in range(int(rm.group(2)) + 1))
+        elif re.fullmatch(_BRIEF_ACTOR, token):
+            universe.append(token)
+    return universe
+
+
+def _brief_explicit_steps(task):
+    """Deterministically parse an explicit numbered tool brief into steps.
+
+    Mission text that dictates the exact tool contract ("use ONLY the tool
+    set_actor_property ... 1. Apply material X to Y ... Finish with
+    save_level and capture_unreal_viewport") must never be re-interpreted by
+    the keyword planner. Returns [] when the text is not such a brief, so
+    ordinary requests keep their existing planning paths untouched.
+    """
+    text = str(task)
+    if not re.search(r"use\s+only\s+the\s+tool\s+set_actor_property", text, re.I):
+        return []
+    universe = _brief_actor_universe(text)
+
+    def expand(actor):
+        if actor in universe:
+            return [actor]
+        prefix = [a for a in universe if a.startswith(actor + "_") or a == actor]
+        return prefix or [actor]
+
+    steps = []
+    light_actors = []
+
+    def add_step(step_id, phase, tool, parameters):
+        steps.append({
+            "step_id": re.sub(r"[^A-Za-z0-9_]", "_", step_id),
+            "phase": phase,
+            "intent": phase,
+            "action_category": phase,
+            "preferred_tool": tool,
+            "allowed_tools": [tool],
+            "target_type": "project",
+            "target_resource": None,
+            "parameters": parameters,
+            "expected_result": {},
+            "validation_tool": None,
+            "validation_parameters": {},
+            "depends_on": [steps[-1]["step_id"]] if steps else [],
+            "disposable": False,
+            "status": "pending",
+        })
+
+    def add_light_steps(actor, rgb, intensity, idx):
+        add_step(f"brief_{idx:02d}_light_color_{actor}", "EDIT", "set_actor_property",
+                 {"actor_name": actor, "property": "light_color", "value": rgb})
+        if intensity is not None:
+            add_step(f"brief_{idx:02d}_light_intensity_{actor}", "EDIT", "set_actor_property",
+                     {"actor_name": actor, "property": "light_intensity", "value": intensity})
+        light_actors.append(actor)
+
+    idx = 0
+    for m in re.finditer(r"^\s*\d+[.)]\s+(.+?)\s*$", text, re.M):
+        body = m.group(1)
+        # "Set light_color of X to [r,g,b] and light_intensity to N"
+        lm = re.match(
+            r"Set\s+light_color\s+of\s+(" + _BRIEF_ACTOR + r")\s+to\s+\[([^\]]+)\]",
+            body, re.I,
+        )
+        if lm:
+            idx += 1
+            rgb = [float(x) for x in lm.group(2).split(",")]
+            im = re.search(r"light_intensity\s+to\s+([\d.]+)", body, re.I)
+            add_light_steps(lm.group(1), rgb, float(im.group(1)) if im else None, idx)
+            continue
+        # "Set [the four] BASE lights to [r,g,b] [light_]intensity N"
+        pm = re.match(
+            r"Set\s+(?:the\s+)?(?:[a-z]+\s+)?(" + _BRIEF_ACTOR + r"?)\s+lights?\s+to\s+"
+            r"\[([^\]]+)\]\s+(?:light_)?intensity\s+([\d.]+)",
+            body, re.I,
+        )
+        if pm:
+            idx += 1
+            rgb = [float(x) for x in pm.group(2).split(",")]
+            intensity = float(pm.group(3))
+            for actor in expand(pm.group(1)):
+                add_light_steps(actor, rgb, intensity, idx)
+            continue
+        # "Apply material /Game/X to A, B, C" | "to the four PREFIX actors"
+        mm = re.match(r"Apply\s+material\s+(/\S+)\s+to\s+(.+?)\s*$", body, re.I)
+        if mm:
+            asset, target_text = mm.group(1), mm.group(2).rstrip(".")
+            pm2 = re.match(r"(?:the\s+)?(?:[a-z]+\s+)?(" + _BRIEF_ACTOR + r"?)\s+actors?$",
+                           target_text, re.I)
+            if pm2:
+                actors = expand(pm2.group(1))
+            else:
+                actors = [a.strip().rstrip(".") for a in target_text.split(",") if a.strip()]
+            for actor in actors:
+                idx += 1
+                add_step(f"brief_{idx:02d}_material_{actor}", "EDIT", "set_actor_property",
+                         {"actor_name": actor, "property": "material", "material_asset": asset})
+            continue
+        # "Set light_intensity of X to N"
+        im2 = re.match(
+            r"Set\s+light_intensity\s+of\s+(" + _BRIEF_ACTOR + r")\s+to\s+([\d.]+)",
+            body, re.I,
+        )
+        if im2:
+            idx += 1
+            add_light_steps(im2.group(1), None, float(im2.group(2)), idx)
+
+    for actor in dict.fromkeys(light_actors):
+        idx += 1
+        add_step(f"brief_{idx:02d}_validate_light_{actor}", "VALIDATE", "get_actor",
+                 {"actor_name": actor})
+
+    fm = re.search(r"Finish\s+with\s+(.+)$", text, re.I | re.S)
+    if fm:
+        tail = fm.group(1).lower()
+        if "save_level" in tail:
+            idx += 1
+            add_step(f"brief_{idx:02d}_save", "BUILD", "save_level", {})
+        if "capture_unreal_viewport" in tail:
+            idx += 1
+            add_step(f"brief_{idx:02d}_evidence", "EVIDENCE", "capture_unreal_viewport", {})
+    return steps
+
+
+def _has_task_steps(steps):
+    """True when the plan contains anything beyond environment health checks.
+
+    inspect_project/unreal_ping/blender_status prove the environment is ready;
+    they are not task work. Counting them as task steps previously made the
+    fallback LLM planner unreachable for no-path tasks (the plan 'inspect +
+    ping' looked finished), so arbitrary requests executed a health check and
+    called it a completed mission.
+    """
+    health_only = {"inspect_project", "ping", "unreal_ping", "blender_status"}
+    return any(s.get("step_id") not in health_only for s in steps)
+
+
 def fallback_name():
     return "UA_Blender_Asset"
 
@@ -656,7 +843,20 @@ def fallback_name():
 def normalize_execution_plan(task, plan):
     p = _extract_task_parameters(task)
     steps = []
-    task_lower = str(task).lower()
+    # Prohibition text must never feed keyword routing: "Do NOT create cubes"
+    # contains both "create" and "cubes" and previously hijacked the plan.
+    task_lower = _strip_negated_clauses(task).lower()
+
+    # An explicit numbered tool brief IS the plan: parse it deterministically
+    # and bypass every keyword branch so the mission executes exactly what it
+    # dictates (set_actor_property on existing actors), nothing else.
+    brief_steps = _brief_explicit_steps(task)
+    if brief_steps:
+        return {
+            "goal": (plan or {}).get("goal", task) if isinstance(plan, dict) else task,
+            "steps": brief_steps,
+            "success_criteria": (plan or {}).get("success_criteria", []) if isinstance(plan, dict) else [],
+        }
     # Deterministic long-task expansion prevents an LLM returning only health
     # checks from collapsing the parent goal into inspect+ping.
     is_long_build = (
@@ -709,7 +909,7 @@ def normalize_execution_plan(task, plan):
     # 3D-asset work routes through the headless Blender Agent, then back to
     # the Unreal Agent for import/spawn/validate/evidence. Deterministic and
     # strictly additive: plain Unreal tasks are untouched by this branch.
-    blender_steps = _blender_plan_steps(task, p)
+    blender_steps = _blender_plan_steps(_strip_negated_clauses(task), p)
     if blender_steps is not None:
         steps = steps + blender_steps
         return {
@@ -891,7 +1091,7 @@ def normalize_execution_plan(task, plan):
     # above cannot map still need a real plan. Ask the local coder model
     # for a small structured tool plan and sanitize it against the real
     # registry so the deterministic executor can run it.
-    has_task_steps = any(s["step_id"] != "inspect_project" for s in steps)
+    has_task_steps = _has_task_steps(steps)
     if not has_task_steps:
         llm_steps = _llm_structured_steps(task)
         if len(llm_steps) >= 2:
