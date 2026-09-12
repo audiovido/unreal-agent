@@ -128,7 +128,7 @@ BRIDGE = _resolve_bridge()
 
 PHASE_TOOL_RULES = {
     "INSPECT": {"inspect_project", "unreal_ping", "list_assets", "get_asset_info", "inspect_blueprint", "discover_character_assets", "inspect_character_asset", "runtime_status", "verify_reopen_state", "get_widget_text", "verify_widget_visible", "verify_character_visible", "verify_ui_state", "blender_status", "blender_inspect_asset", "blender_job_status", "blender_jobs_list", "blender_verify_export", "verify_imported_asset", "verify_blender_output", "inspect_imported_asset"},
-    "EDIT": {"create_blueprint", "add_blueprint_variable", "set_blueprint_variable_default", "add_blueprint_component", "spawn_character", "set_character_transform", "assign_animation", "install_character_assets", "create_widget_blueprint", "add_text_widget", "add_scroll_box", "add_editable_text_box", "add_button", "bind_button_event", "bind_enter_submit", "add_widget_to_viewport", "set_widget_text", "set_ui_state", "chat_append_bubble", "chat_send_message", "chat_complete_roundtrip", "avatar_react", "start_pie", "stop_pie", "blender_create_asset", "blender_convert_asset", "blender_prepare_asset", "blender_prepare_character", "blender_cancel_job", "blender_recover", "create_asset_folder", "import_asset", "import_asset_fbx", "import_asset_gltf", "import_blender_output", "spawn_imported_asset", "spawn_blender_output"},
+    "EDIT": {"create_blueprint", "add_blueprint_variable", "set_blueprint_variable_default", "add_blueprint_component", "spawn_character", "set_character_transform", "assign_animation", "install_character_assets", "create_widget_blueprint", "add_text_widget", "add_scroll_box", "add_editable_text_box", "add_button", "bind_button_event", "bind_enter_submit", "add_widget_to_viewport", "set_widget_text", "set_ui_state", "chat_append_bubble", "chat_send_message", "chat_complete_roundtrip", "avatar_react", "start_pie", "stop_pie", "blender_create_asset", "blender_convert_asset", "blender_prepare_asset", "blender_prepare_character", "blender_cancel_job", "blender_recover", "create_asset_folder", "import_asset", "import_asset_fbx", "import_asset_gltf", "import_blender_output", "spawn_imported_asset", "spawn_blender_output", "spawn_actor", "set_actor_property", "move_actor", "rotate_actor", "scale_actor", "delete_actor"},
     "BUILD": {"compile_blueprint", "save_blueprint", "save_level"},
     "VALIDATE": {"get_asset_info", "get_blueprint_variable_default", "inspect_blueprint", "list_assets", "ollama_chat", "runtime_widget_verify", "runtime_actor_verify", "verify_imported_asset", "verify_blender_output", "inspect_imported_asset"},
     "FIX": {"set_blueprint_variable_default", "compile_blueprint", "save_blueprint"},
@@ -2616,7 +2616,11 @@ world = unreal.EditorLevelLibrary.get_editor_world()
 if world is None:
     __bridge_result__ = {"ok": False, "error": "editor_world_unavailable"}
 else:
-    actors = unreal.EditorLevelLibrary.get_all_level_actors()
+    # Iterate via the EditorActorSubsystem: the deprecated
+    # EditorLevelLibrary.get_all_level_actors() can return duplicated handles
+    # on UE 5.7 whose transform reads raise AttributeError, which silently
+    # emptied transforms/material_refs/lights and weakened SceneDiff evidence.
+    actors = unreal.get_editor_subsystem(unreal.EditorActorSubsystem).get_all_level_actors()
     names = []
     classes = {}
     transforms = {}
@@ -2624,6 +2628,7 @@ else:
     material_refs = []
     lights = []
     cameras = []
+    read_errors = []
     for a in actors:
         try:
             label = str(a.get_actor_label() or a.get_name())
@@ -2648,8 +2653,12 @@ else:
                 lights.append(label)
             if isinstance(a, unreal.CameraActor):
                 cameras.append(label)
-        except Exception:
-            continue
+        except Exception as exc:
+            # Never silently drop evidence: an unreadable actor is recorded so
+            # the runtime gate can see the snapshot was partial.
+            read_errors.append(
+                str(getattr(a, "get_name", lambda: "?")()) + ": " + type(exc).__name__
+            )
     __bridge_result__ = {
         "ok": True,
         "map": str(world.get_path_name() or ""),
@@ -2660,6 +2669,7 @@ else:
         "material_refs": material_refs,
         "lights": lights,
         "cameras": cameras,
+        "read_errors": read_errors,
     }
 '''
     try:
@@ -2691,14 +2701,78 @@ def _aivido_runtime_capture():
         path = str(info.get("path") or "")
         if not path or not os.path.isfile(path):
             return None, "capture_file_missing"
+        trimmed_path, trim_note = _aivido_trim_capture_margins(path)
+        final_path = trimmed_path or path
         return {
-            "path": path,
-            "size_bytes": info.get("size", os.path.getsize(path)),
-            "mtime_ns": os.stat(path).st_mtime_ns,
+            "path": final_path,
+            "size_bytes": os.path.getsize(final_path),
+            "mtime_ns": os.stat(final_path).st_mtime_ns,
             "stale": False,
+            "trimmed": bool(trimmed_path),
+            "trim_note": trim_note or "",
         }, None
     except Exception as exc:
         return None, f"capture_error: {type(exc).__name__}"
+
+
+def _aivido_trim_capture_margins(path: str):
+    """Trim dead-black window margins from a native editor-viewport capture.
+
+    The native viewport capture grabs the whole editor window, which on some
+    layouts includes solid-black margins around the actual render. Those
+    margins are real letterbox bands: they fail the framing evidence and they
+    dilute measured exposure. Trim them so evidence describes the RENDER, not
+    the window chrome. Deterministic pixel scan; best-effort (on any failure
+    the original file is used unchanged and the reason is returned).
+    """
+    try:
+        from PIL import Image
+        image = Image.open(path)
+        image.load()
+        gray = image.convert("L")
+        w, h = image.size
+        if w < 64 or h < 64:
+            return None, "frame_too_small_to_trim"
+        pixels = gray.load()
+
+        def row_is_dead(y: int) -> bool:
+            values = [pixels[x, y] for x in range(0, w, 2)]
+            dead = sum(1 for p in values if p < 8)
+            # "Dead" = at least 95% near-black AND no pixel above near-black
+            # chrome level. Editor window chrome margins are not perfectly 0:
+            # antialiasing and dock seams leave pixels up to ~15 luma.
+            return dead / max(1, len(values)) > 0.95 and max(values) < 16
+
+        def col_is_dead(x: int) -> bool:
+            values = [pixels[x, y] for y in range(0, h, 2)]
+            dead = sum(1 for p in values if p < 8)
+            return dead / max(1, len(values)) > 0.95 and max(values) < 16
+
+        top = 0
+        while top < h // 3 and row_is_dead(top):
+            top += 1
+        bottom = h - 1
+        while bottom > 2 * h // 3 and row_is_dead(bottom):
+            bottom -= 1
+        left = 0
+        while left < w // 3 and col_is_dead(left):
+            left += 1
+        right = w - 1
+        while right > 2 * w // 3 and col_is_dead(right):
+            right -= 1
+
+        # A fully dead frame is a real black frame — never trim it away.
+        if top >= bottom or left >= right:
+            return None, "frame_mostly_black_not_trimmed"
+        if (top, bottom, left, right) == (0, h - 1, 0, w - 1):
+            return None, ""
+        cropped = image.crop((left, top, right + 1, bottom + 1))
+        root, ext = os.path.splitext(path)
+        trimmed_path = f"{root}_trimmed{ext or '.png'}"
+        cropped.save(trimmed_path)
+        return trimmed_path, f"trimmed to {cropped.size[0]}x{cropped.size[1]} from {w}x{h}",
+    except Exception as exc:
+        return None, f"trim_failed: {type(exc).__name__}"
 
 
 def _aivido_v2_gate_state(execution: dict, *, include_visual: bool) -> dict:
@@ -2731,6 +2805,29 @@ def _aivido_v2_gate_state(execution: dict, *, include_visual: bool) -> dict:
         capture["map"] = str((after or {}).get("map") or "")
         capture["captured_at"] = time.time()
         capture["unreal_ok"] = bool(after and not after_err)
+        # Capture provenance: pin the exact frame bytes (sha256+size+timestamp+
+        # map) next to the capture so scripts/aivido_evidence.py can prove the
+        # frame is a fresh bridge capture. A stale or hand-placed frame then
+        # fails the evidence gate instead of silently passing.
+        try:
+            cap_path = str(capture.get("path") or "")
+            if cap_path and os.path.isfile(cap_path):
+                from tools.visual.evidence_capture import write_capture_metadata
+                meta = write_capture_metadata(
+                    cap_path,
+                    map_name=capture["map"],
+                    source="bridge",
+                    captured_at_epoch=capture["captured_at"],
+                )
+                capture["provenance"] = {
+                    "metadata": os.path.join(os.path.dirname(meta["path"]), "capture_metadata.json"),
+                    "sha256": meta["sha256"][:12],
+                    "age_s": 0.0,
+                }
+        except Exception as exc:
+            # Fail-closed: the packager will treat missing provenance as stale
+            # evidence, so this error must surface rather than be swallowed.
+            capture["provenance_error"] = f"{type(exc).__name__}: {exc}"
         if after_err:
             capture["snapshot_error"] = after_err
         if capture_err:

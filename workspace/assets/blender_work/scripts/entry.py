@@ -1,7 +1,7 @@
 """Auto-generated headless Blender entry (Blender Agent)."""
 import sys, os, json, traceback
 
-PROJECT_ROOT = 'C:\\Users\\Shadow\\Desktop\\Unreal-Agent'
+PROJECT_ROOT = '/Users/admin/Projects/unreal-agent'
 for _p in (PROJECT_ROOT, os.path.join(PROJECT_ROOT, "blender_agent")):
     if _p not in sys.path:
         sys.path.insert(0, _p)

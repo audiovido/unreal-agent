@@ -411,6 +411,25 @@ def build_registry(
                 destructive=True,
             ),
 
+            "set_actor_property": ToolSpec(
+                name="set_actor_property",
+                description=(
+                    "Set one property on an existing Unreal Actor by name or label. "
+                    "property is one of: location [x,y,z], rotation [pitch,yaw,roll], "
+                    "scale [x,y,z], light_color [r,g,b] 0-1 floats (lights only), "
+                    "light_intensity float (lights only), or material with "
+                    "material_asset=/Game/... asset path (mesh actors only)."
+                ),
+                args={
+                    "actor_name": "Actor internal name or Outliner label",
+                    "property": "location | rotation | scale | light_color | light_intensity | material",
+                    "value": "Value for the property (array or number; unused for material)",
+                    "material_asset": "Material asset path like /Game/Cinema/Materials/M_Cinema_Floor (material property only)",
+                },
+                func=bridge.set_actor_property,
+                destructive=True,
+            ),
+
             "rotate_actor": ToolSpec(
                 name="rotate_actor",
                 description="Rotate an existing Unreal Actor.",

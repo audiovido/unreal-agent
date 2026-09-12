@@ -788,6 +788,91 @@ else:
     }}
 ''')
 
+    def set_actor_property(self, actor_name: str = None, property: str = None, value=None, material_asset: str = None, actor_label: str = None):
+        """Set one property on an existing actor by internal name or label.
+
+        Supported properties:
+          - location: [x, y, z]
+          - rotation: [pitch, yaw, roll]
+          - scale: [x, y, z]
+          - light_color: [r, g, b] floats 0-1 (LightBase only)
+          - light_intensity: float (LightBase only)
+          - material: applies ``material_asset`` to the actor's primitive(s)
+
+        This gives the execution brain the missing vocabulary for a visual
+        art pass: reposition, recolor lights, re-material surfaces — without
+        raw Python. Deterministic, single-actor, verifiable.
+        """
+        import json as _json
+        prop = str(property or "").strip().lower()
+        target_name = str(actor_name or actor_label or "")
+        value_json = _json.dumps(value if value is not None else [])
+        asset_json = _json.dumps(str(material_asset or ""))
+        code = f"""
+import json
+target = None
+for a in unreal.get_editor_subsystem(unreal.EditorActorSubsystem).get_all_level_actors():
+    try:
+        if a.get_name() == {target_name!r} or a.get_actor_label() == {target_name!r}:
+            target = a
+            break
+    except Exception:
+        continue
+if target is None:
+    __bridge_result__ = {{"ok": False, "error": "actor_not_found: {target_name}"}}
+else:
+    ok = True
+    err = ""
+    prop = {prop!r}
+    try:
+        if prop == "location":
+            v = json.loads({value_json!r})
+            target.set_actor_location(unreal.Vector(float(v[0]), float(v[1]), float(v[2])), False, False)
+        elif prop == "rotation":
+            v = json.loads({value_json!r})
+            target.set_actor_rotation(unreal.Rotator(float(v[0]), float(v[1]), float(v[2])), False, False)
+        elif prop == "scale":
+            v = json.loads({value_json!r})
+            target.set_actor_scale3d(unreal.Vector(float(v[0]), float(v[1]), float(v[2])))
+        elif prop == "light_color":
+            v = json.loads({value_json!r})
+            target.set_light_color(unreal.Color(r=int(max(0.0, min(1.0, float(v[0]))) * 255), g=int(max(0.0, min(1.0, float(v[1]))) * 255), b=int(max(0.0, min(1.0, float(v[2]))) * 255), a=255))
+        elif prop in ("light_intensity", "intensity"):
+            target.set_light_intensity(float(json.loads({value_json!r})))
+        elif prop == "material":
+            asset_path = {asset_json!r}
+            mat = unreal.load_asset(asset_path) if asset_path else None
+            if mat is None:
+                ok = False
+                err = "material_asset_not_found: " + asset_path
+            else:
+                placed = False
+                smc = getattr(target, "static_mesh_component", None)
+                if smc is not None:
+                    smc.set_material(0, mat)
+                    placed = True
+                else:
+                    for prim in target.get_components_by_class(unreal.PrimitiveComponent):
+                        prim.set_material(0, mat)
+                        placed = True
+                if not placed:
+                    ok = False
+                    err = "no_primitive_component_on_actor"
+        else:
+            ok = False
+            err = "unsupported_property: " + prop
+    except Exception as exc:
+        ok = False
+        err = type(exc).__name__ + ": " + str(exc)[:200]
+    __bridge_result__ = {{
+        "ok": ok,
+        "actor": target.get_actor_label() if target is not None else None,
+        "property": prop,
+        "error": err,
+    }}
+"""
+        return self.execute_python(code)
+
     def move_actor(self, actor_name: str, location):
         return self.execute_python(f"""
 actors = unreal.EditorLevelLibrary.get_all_level_actors()

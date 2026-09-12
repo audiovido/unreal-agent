@@ -74,7 +74,13 @@ def _luma_stats(image: Image.Image) -> Dict[str, float]:
 
 
 def _bands_blank(image: Image.Image) -> List[str]:
-    """Detect solid black bands on the frame edges (letterbox / pillarbox)."""
+    """Detect solid black bands on the frame edges (letterbox / pillarbox).
+
+    A real letterbox band is (a) nearly black AND (b) flat — uniform, with no
+    scene detail inside the band. The flatness requirement prevents false
+    positives on dark cinematic scenes (a dark night sky or a vignette corner
+    is a legitimate frame edge, not a letterbox bar).
+    """
     w, h = image.size
     gray = image.convert("L")
     issues = []
@@ -86,18 +92,26 @@ def _bands_blank(image: Image.Image) -> List[str]:
     left = gray.crop((0, 0, band_w, h))
     right = gray.crop((w - band_w, 0, w, h))
 
-    def mean_black(im):
-        flattened = im.get_flattened_data()
+    def band_is_black_bar(im):
+        flattened = list(im.get_flattened_data())
         n = float(len(flattened))
-        return sum(1 for p in flattened if p < BLACK_LUMA) / n
+        if n <= 0:
+            return False
+        black_ratio = sum(1 for p in flattened if p < BLACK_LUMA) / n
+        mean = sum(flattened) / n
+        variance = sum((p - mean) ** 2 for p in flattened) / n
+        # Flat = tight variance AND mean still near black. A dark scene edge
+        # has some spread (stars, gradients, geometry silhouettes); a true
+        # letterbox bar is dead uniform black.
+        return black_ratio > 0.95 and variance < 12.0 and mean < BLACK_LUMA
 
-    if mean_black(top) > 0.95:
+    if band_is_black_bar(top):
         issues.append("top letterbox band")
-    if mean_black(bottom) > 0.95:
+    if band_is_black_bar(bottom):
         issues.append("bottom letterbox band")
-    if mean_black(left) > 0.95:
+    if band_is_black_bar(left):
         issues.append("left letterbox band")
-    if mean_black(right) > 0.95:
+    if band_is_black_bar(right):
         issues.append("right letterbox band")
     return issues
 
