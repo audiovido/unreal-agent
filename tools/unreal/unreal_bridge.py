@@ -838,10 +838,22 @@ else:
             v = json.loads({value_json!r})
             target.set_actor_scale3d(unreal.Vector(float(v[0]), float(v[1]), float(v[2])))
         elif prop == "light_color":
+            # UE 5.7 SetLightColor takes FLinearColor (floats 0..1); the
+            # byte-typed unreal.Color fails to nativize, and the actor wrapper
+            # has no get_light_component() method, so use the actor method and
+            # fall back to the light_component editor property.
             v = json.loads({value_json!r})
-            target.set_light_color(unreal.Color(r=int(max(0.0, min(1.0, float(v[0]))) * 255), g=int(max(0.0, min(1.0, float(v[1]))) * 255), b=int(max(0.0, min(1.0, float(v[2]))) * 255), a=255))
+            lc = unreal.LinearColor(r=max(0.0, min(1.0, float(v[0]))), g=max(0.0, min(1.0, float(v[1]))), b=max(0.0, min(1.0, float(v[2]))), a=1.0)
+            try:
+                target.set_light_color(lc)
+            except Exception:
+                target.get_editor_property("light_component").set_light_color(lc)
         elif prop in ("light_intensity", "intensity"):
-            target.set_light_intensity(float(json.loads({value_json!r})))
+            intensity = float(json.loads({value_json!r}))
+            try:
+                target.set_light_intensity(intensity)
+            except Exception:
+                target.get_editor_property("light_component").set_intensity(intensity)
         elif prop == "material":
             # _json.dumps + !r double-encodes, so unwrap exactly like value_json
             # above; the raw repr kept literal quote characters around the path
