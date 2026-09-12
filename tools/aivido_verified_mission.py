@@ -107,13 +107,26 @@ def package_evidence(job, ev: Path, expected_map: str, executor_ok: bool) -> dic
     if not cap_path or not os.path.isfile(cap_path):
         return {"ok": False, "verdict": "FAIL", "dir": "",
                 "detail": "no_capture_path_in_job_result"}
-    ev_dir = ev / "evidence"
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    ev_dir = ev / f"evidence_{stamp}"
     ev_dir.mkdir(parents=True, exist_ok=True)
     final = ev_dir / "FINAL.png"
     shutil.copyfile(cap_path, final)
     meta_src = os.path.join(os.path.dirname(cap_path), "capture_metadata.json")
     if os.path.isfile(meta_src):
-        shutil.copyfile(meta_src, ev_dir / "capture_metadata.json")
+        # Rewrite provenance for the packaged frame name: the backend wrote
+        # metadata for the original capture filename (e.g. viewport_latest.png
+        # or a _trimmed variant), but the evidence dir presents it as
+        # FINAL.png. The packager rejects metadata describing a different
+        # frame, so the frame/path fields must match the packaged copy while
+        # sha256/size/timestamp/map stay byte-pinned to the original capture.
+        try:
+            meta = json.loads(Path(meta_src).read_text())
+            meta["frame"] = "FINAL.png"
+            meta["path"] = str(final)
+            (ev_dir / "capture_metadata.json").write_text(json.dumps(meta, indent=2))
+        except Exception:
+            shutil.copyfile(meta_src, ev_dir / "capture_metadata.json")
     # SceneDiff from before/after snapshots (empty diff must FAIL).
     before = result.get("snapshot_before")
     after = result.get("snapshot_after")

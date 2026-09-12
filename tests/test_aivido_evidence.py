@@ -159,6 +159,37 @@ class TestProvenanceWriter:
         with pytest.raises(FileNotFoundError):
             write_capture_metadata(str(tmp_path / "ghost.png"))
 
+    def test_packaged_metadata_rewrite_survives_freshness_check(self, tmp_path):
+        """package_evidence rewrites metadata frame/path for the packaged copy.
+
+        Regression: the backend writes provenance for the original capture
+        filename (e.g. viewport_latest.png); after the packager copies the
+        frame into the evidence dir as FINAL.png, the metadata must describe
+        FINAL.png or the freshness check would reject a genuinely fresh frame.
+        """
+        import shutil
+        from tools.visual.evidence_capture import write_capture_metadata
+
+        cap_dir = tmp_path / "cap"
+        cap_dir.mkdir()
+        frame = cap_dir / "viewport_latest.png"
+        _make_frame(frame)
+        write_capture_metadata(str(frame), map_name="/Game/AIVIDO_Showcase",
+                               source="bridge", captured_at_epoch=time.time() - 5)
+
+        ev_dir = tmp_path / "ev"
+        ev_dir.mkdir()
+        final = ev_dir / "FINAL.png"
+        shutil.copyfile(frame, final)
+        meta = json.loads((cap_dir / "capture_metadata.json").read_text())
+        meta["frame"] = "FINAL.png"
+        meta["path"] = str(final)
+        (ev_dir / "capture_metadata.json").write_text(json.dumps(meta))
+
+        r = ev.check_frame_freshness(str(ev_dir), str(final), max_age=900)
+        assert r["fresh"] is True, r
+        assert r["sha256"] == meta["sha256"][:12]
+
 
 # ---------------------------------------------------------------------------
 # End-to-end packaging verdicts (vision gate mocked at the HTTP boundary)
