@@ -342,3 +342,41 @@ def test_concrete_criteria_are_never_replaced_by_read_only_path(isolated_goal):
     assert "actor:Z1:exists" in goal["acceptance_criteria"]
     assert "level:saved" in goal["acceptance_criteria"]
     assert "inspection:result" not in goal["acceptance_criteria"]
+
+
+def test_prohibitions_never_mint_acceptance_criteria():
+    """Run 11 regression: 'Do NOT use Blender' must not demand blender assets.
+
+    All 45 dictated mission steps succeeded and the job still stalled because
+    the contract minted deliverable:blender_asset / deliverable:asset_spawned
+    from the negated sentence. Criteria derive from instruction text only.
+    """
+    brief = (
+        "Production-safe materials and lighting pass on the EXISTING scene /Game/AIVIDO_Showcase only.\n"
+        "HARD RULES:\n"
+        "- Do NOT spawn, duplicate, delete, or rename any actor. Do NOT import assets. "
+        "Do NOT use Blender. Do NOT create cubes or placeholders.\n"
+        "TASK - use ONLY the tool set_actor_property on the listed existing actors, "
+        "then verify each light change with get_actor:\n"
+        "1. Apply material /Game/Cinema/Materials/M_Cinema_Floor to AIVIDO_Floor.\n"
+        "2. Set light_color of AIVIDO_KeyWarm to [1.0, 0.72, 0.42] and light_intensity to 3200.\n"
+        "Finish with save_level and capture_unreal_viewport."
+    )
+    goal = task_goal.build_acceptance_contract(brief)
+    labels = goal["acceptance_criteria"]
+    assert not any("blender" in c for c in labels)
+    assert not any("asset_spawned" in c for c in labels)
+    # Positive instructions still mint their criteria.
+    assert "light:exists" in labels
+    assert "level:saved" in labels
+    assert "deliverable:lighting" in labels
+    assert "viewport:captured" in labels
+    # The user's words are preserved verbatim.
+    assert "Do NOT use Blender" in goal["original_user_request"]
+
+
+def test_blender_criteria_survive_for_real_blender_requests():
+    goal = task_goal.build_acceptance_contract(
+        "Use Blender to create a custom 3d asset and export it as fbx."
+    )
+    assert "deliverable:blender_asset" in goal["acceptance_criteria"]

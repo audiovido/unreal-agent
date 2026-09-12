@@ -12,6 +12,28 @@ TASK_GOAL_FILE = ROOT / "memory" / "task_goal.json"
 
 
 def _text(value):
+    """Coerce any request payload to plain text."""
+    return str(value or "")
+
+
+_BRIEF_NEGATION_RE = re.compile(
+    r"\b(?:do\s+not|dont|don't|never|must\s+not|cannot|can't|should\s+not|without|no)\b",
+    re.I,
+)
+
+
+def strip_negated_clauses(text):
+    """Drop negated clauses so prohibitions never mint criteria or keywords.
+
+    "Do NOT use Blender. Do NOT create cubes or placeholders." previously
+    triggered blender/create keyword branches and impossible acceptance
+    criteria (deliverable:blender_asset) for missions that explicitly forbade
+    them. Only the instruction text is filtered; callers that must preserve
+    the user's words keep the original string verbatim.
+    """
+    clauses = re.split(r"(?<=[.!;])\s+|[\n\r]+", str(text))
+    kept = [c for c in clauses if c and not _BRIEF_NEGATION_RE.search(c)]
+    return " ".join(kept).strip()
     return str(value or "").strip()
 
 
@@ -171,7 +193,14 @@ def _blender_request(text):
 
 def build_acceptance_contract(request, project_context=None):
     """Create a deterministic contract; preserve the complete original request."""
-    text = _text(request)
+    original = _text(request)
+    # Prohibition text must never mint acceptance criteria: "Do NOT use
+    # Blender" contains "blender" and would demand deliverable:blender_asset
+    # from a mission that forbids Blender entirely, leaving the contract
+    # structurally unsatisfiable (run 11 executed all 45 dictated steps and
+    # still stalled). Criteria are derived from the instruction text only;
+    # the full original request is preserved verbatim below.
+    text = strip_negated_clauses(original)
     criteria = []
     deliverables = []
 
@@ -193,7 +222,9 @@ def build_acceptance_contract(request, project_context=None):
         add("level:saved", "saved level")
     if _has(text, "verify", "read-back") and actor:
         add(f"actor:{actor}:verified", f"verified {actor}")
-    if re.search(r"\b(?:screenshot|capture|proof)\b", text, re.I):
+    # Also match the exact tool token (capture_unreal_viewport) — word
+    # boundaries alone miss it because "_" is a word character.
+    if re.search(r"\b(?:screenshot|capture|proof)\b|capture_unreal_viewport", text, re.I):
         add("viewport:captured", "viewport proof")
 
     # Long AvaLive-style build criteria. These remain mandatory when requested,
@@ -279,8 +310,8 @@ def build_acceptance_contract(request, project_context=None):
 
     return {
         "id": str(uuid.uuid4()),
-        "original_user_request": text,
-        "primary_goal": text,
+        "original_user_request": original,
+        "primary_goal": original,
         "required_deliverables": deliverables,
         "acceptance_criteria": criteria,
         "completed_criteria": [],

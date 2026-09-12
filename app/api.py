@@ -40,6 +40,7 @@ from core.task_goal import (
     update_task_goal,
     reconcile_step,
     contract_complete,
+    strip_negated_clauses,
 )
 
 from core.orchestrator import (
@@ -649,25 +650,9 @@ def _blender_plan_steps(task, p):
     return steps
 
 
-_BRIEF_NEGATION_RE = re.compile(
-    r"\b(?:do\s+not|dont|don't|never|must\s+not|cannot|can't|should\s+not|without|no)\b",
-    re.I,
-)
-
-
-def _strip_negated_clauses(text):
-    """Drop negated clauses so prohibitions never satisfy keyword triggers.
-
-    "Do NOT use Blender. Do NOT create cubes or placeholders." previously
-    matched the blender/create keyword branches and hijacked the whole plan
-    into the canned demo pipeline (blender_create_asset on UA_Blender_Asset),
-    executing destructive demo steps the brief explicitly forbade. Removing
-    every clause that contains a negation cue keeps keyword routing honest
-    for both positive instructions and explicit prohibitions.
-    """
-    clauses = re.split(r"(?<=[.!;])\s+|[\n\r]+", str(text))
-    kept = [c for c in clauses if c and not _BRIEF_NEGATION_RE.search(c)]
-    return " ".join(kept).strip()
+# Negation handling lives in core.task_goal (single source of truth) so the
+# planner and the acceptance contract can never disagree about prohibitions.
+_strip_negated_clauses = strip_negated_clauses
 
 
 _BRIEF_ACTOR = r"[A-Za-z_][A-Za-z0-9_]*"
