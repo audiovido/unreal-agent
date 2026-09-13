@@ -104,6 +104,19 @@ app.include_router(overnight_router)
 app.include_router(workboard_router)
 app.include_router(workboard_selftest_router)
 
+# Viewport-proof routes. owned by app/proof.py and normally registered in
+# app/served.py (the composition root for run_agent.py). They are ALSO
+# registered here so backends launched directly as app.api:app (one-click,
+# reliability supervisor) serve /api/proof/* instead of 404ing — the Ava UI
+# world stage and PiP depend on them.
+from app import proof as _proof_routes
+_AIVIDO_HOST_UPROJECT = Path("/Users/admin/Projects/AividoAgentHost/AividoAgentHost.uproject")
+_proof_routes.setup(_AIVIDO_HOST_UPROJECT if _AIVIDO_HOST_UPROJECT.is_file() else ROOT / "AividoAgentHost.uproject")
+app.get("/api/proof/latest")(_proof_routes.proof_latest)
+app.get("/api/proof/live/status")(_proof_routes.proof_live_status)
+app.get("/api/proof/live")(_proof_routes.proof_live)
+app.get("/api/proof/status")(_proof_routes.proof_status)
+
 UI_DIR = ROOT / "ui"
 
 app.mount(
@@ -1542,9 +1555,15 @@ def _resource_is_absent(result):
             return True
         text = " ".join(
             str(result.get(key, ""))
-            for key in ("error", "message", "detail", "reason")
+            for key in ("error", "message", "detail", "reason", "status")
         ).lower()
         if "not found" in text or "does not exist" in text:
+            return True
+        # Actor-identity resolution reports absence as
+        # "actor_not_resolved: not_found" (status=not_found from
+        # core.actor_identity). Underscored forms must count as absence too,
+        # otherwise a verified-clean removal stalls as resource_still_present.
+        if "actor_not_found" in text or "actor_not_resolved: not_found" in text:
             return True
         return any(
             _resource_is_absent(value)

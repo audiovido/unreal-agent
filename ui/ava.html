@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#05070d">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><radialGradient id='g' cx='35%' cy='30%'><stop offset='0%' stop-color='%23bdf3ff'/><stop offset='45%' stop-color='%2338bdf8'/><stop offset='100%' stop-color='%2310367c'/></radialGradient></defs><circle cx='32' cy='32' r='26' fill='url(%23g)'/><circle cx='26' cy='28' r='4' fill='%23eafcff'/><circle cx='38' cy='28' r='4' fill='%23eafcff'/><path d='M25 38 q7 5 14 0' stroke='%237dd3fc' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
 <link rel="stylesheet" href="/static/ava.css?v=11">
+<link rel="stylesheet" href="/static/ava_world.css?v=1">
 </head>
 <body data-state="idle" data-voice="off">
 
@@ -25,6 +26,12 @@
     <div class="hud-ring r3"></div>
   </div>
 
+  <!-- ============ LIVE WORLD STAGE (Unreal scene is the hero) ============ -->
+  <div id="worldStage" class="world-stage" aria-hidden="true">
+    <img id="worldFrame" alt="" draggable="false">
+    <div class="world-vignette"></div>
+  </div>
+
   <!-- ============ TOP BAR ============ -->
   <header class="topbar">
     <div class="brand">
@@ -35,6 +42,9 @@
       </div>
     </div>
     <div class="top-right">
+      <button id="worldChip" class="world-chip" title="Live Unreal scene status — Heidi and the Western crew">
+        <span class="wc-dot"></span><span id="worldChipText">WORLD · —</span>
+      </button>
       <button id="statusPill" class="status-pill" title="Backend status">
         <span id="statusDot" class="dot"></span><span id="statusText">Connecting…</span>
       </button>
@@ -164,6 +174,6 @@
   <input type="file" id="fileInput" class="hidden" multiple>
 
 <script src="/static/ava_widget.js?v=11"></script>
-<script src="/static/ava.js?v=11"></script>
+<script src="/static/ava.js?v=12"></script>
 </body>
 </html>

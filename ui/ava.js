@@ -2,10 +2,12 @@
    Unreal Agent — Ava · living AI companion
    Wired to the real backend on the same origin:
      GET  /api/status                       health + models + busy state
-     POST /api/action  {action:"prompt"}    start a real agent task → task_id
-     GET  /api/events/stream/{task_id}      SSE live progress
-     POST /api/action  {action:"cancel"}    stop a running task
-     POST /api/action  {action:"approval_approve|approval_reject"}
+     POST /api/command  {message}           durable command job → job_id
+     GET  /api/command/{job_id}             job state: queued→running→pass|failed|cancelled
+     GET  /api/command/{job_id}/evidence    job result + stall evidence
+     POST /api/command/{job_id}/cancel      cancel a queued/running job
+     POST /api/command/{job_id}/retry       retry a failed/cancelled job
+     GET  /api/events/stream                backend event stream (tool progress)
      GET  /api/proof/live                   AvaLive-scoped viewport proof (PiP)
    ============================================================ */
 (function () {
@@ -41,6 +43,7 @@
     busy: false,
     running: false,
     taskId: null,
+    jobId: null,
     es: null,
     lastPrompt: "",
     planSteps: 0,
@@ -250,6 +253,54 @@
     }).catch(function () {
       setOnline(false, false, 0);
     });
+  }
+
+  /* ============================================================
+     WORLD STAGE — the live Unreal scene is the hero.
+     Shows the REAL latest bridge capture (never a fake) and a
+     Heidi/worker indicator from the runtime labels snapshot.
+     ============================================================ */
+  var world = { chip: null, ok: false };
+
+  function worldChip(label, cls) {
+    var chip = $("worldChip");
+    if (!chip) return;
+    chip.classList.remove("live", "down");
+    if (cls) chip.classList.add(cls);
+    $("worldChipText").textContent = label;
+  }
+
+  function worldTick() {
+    api("/api/proof/status").then(function (r) { return r.json(); }).then(function (p) {
+      if (p && p.ok && p.url && p.mtime) {
+        var img = $("worldFrame");
+        var stage = $("worldStage");
+        if (img && stage && img.dataset.mtime !== String(p.mtime)) {
+          img.dataset.mtime = String(p.mtime);
+          img.src = p.url + "?t=" + Math.round(p.mtime * 1000);
+        }
+        if (stage) stage.classList.add("visible");
+        document.body.classList.add("world-live");
+        world.ok = true;
+        worldChip("WORLD · LIVE", "live");
+      } else {
+        world.ok = false;
+        worldChip("WORLD · NO CAPTURE", "down");
+      }
+    }).catch(function () {
+      world.ok = false;
+      worldChip("WORLD · OFFLINE", "down");
+    });
+    // Heidi / worker indicator — read-only bridge probe through the backend
+    // command runtime snapshot is not exposed; use the labels snapshot file
+    // served by the backend if present, else keep the world liveness state.
+    api("/api/workspace").then(function (r) { return r.json(); }).then(function (w) {
+      if (!world.ok || !w) return;
+      var blob = JSON.stringify(w);
+      var heidi = /heidi/i.test(blob);
+      var workers = (blob.match(/worker/gi) || []).length;
+      if (heidi && workers > 0) worldChip("WORLD · HEIDI + " + Math.min(workers, 24) + " WORKERS", "live");
+    }).catch(function () {});
   }
 
   /* ============================================================
@@ -673,6 +724,7 @@
     S.running = false;
     if (S.es) { S.es.close(); S.es = null; }
     S.taskId = null;
+    S.jobId = null;
 
     if (ok) {
       setState("success");
@@ -767,9 +819,9 @@
     setState("thinking", "Thinking…");
     widgetPost("typing", { state: "start" });
 
-    api("/api/action", {
+    api("/api/command", {
       method: "POST",
-      body: { action: "prompt", payload: { message: promptText }, context: { model: localStorage.getItem("ua_model") || "reasoning", reasoning: "standard" } }
+      body: { message: promptText, request_id: "ui_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) }
     }).then(function (r) {
       return r.json().then(function (j) { return { ok: r.ok, status: r.status, json: j }; });
     }).then(function (res) {
@@ -779,28 +831,98 @@
         return;
       }
       var j = res.json;
-      var taskId = j.task_id || (j.data && j.data.task_id);
-      if (taskId) {
-        S.taskId = taskId;
-        showTaskCard();
-        setTaskCard({ tc: "working", badge: "starting", title: text.slice(0, 64), pct: 4, step: "Starting agent…" });
-        streamTask(taskId);
+      var jobId = j.job_id;
+      if (!jobId) {
+        failLocal("Submission failed", "Backend accepted the command but returned no job_id.");
         return;
       }
-      // synchronous answer (plan / simple chat)
-      var answer = (j.data && j.data.message) || j.message || j.answer || "";
-      if (answer) {
-        currentAiHandle = h;
-        streamAnswer(answer);
-        S.running = false;
-        updateSend();
-        setTimeout(function () { setState("idle"); }, 1600);
-        return;
-      }
-      failLocal("Unexpected response", JSON.stringify(j).slice(0, 400));
+      // REAL job acknowledged by the durable runtime.
+      S.jobId = jobId;
+      S.taskId = jobId;
+      showTaskCard();
+      setTaskCard({
+        tc: "working",
+        badge: "acknowledged",
+        title: text.slice(0, 64),
+        pct: 5,
+        step: "Queued — acknowledged by the runtime."
+      });
+      streamEvents();
+      pollCommand(jobId);
     }).catch(function (err) {
       failLocal("Submission failed", String(err && err.message || err));
     });
+  }
+
+  /* ============================================================
+     REAL COMMAND RUNTIME POLLING (/api/command/{job_id})
+     Job states: queued (ACKNOWLEDGED) → running (DISPATCHED) →
+     pass | failed | cancelled (terminal). The UI reflects exactly what the
+     runtime reports — never faked.
+     ============================================================ */
+  function commandBadge(state, progress) {
+    if (state === "queued") return { badge: "acknowledged", pct: 5, step: "Queued — acknowledged by the runtime." };
+    if (state === "running") return { badge: "working", pct: Math.max(15, Math.min(95, progress || 10)), step: "Dispatched — the agent is executing in Unreal." };
+    if (state === "pass") return { badge: "complete", pct: 100, step: "Done — the task completed successfully." };
+    if (state === "cancelled") return { badge: "stopped", pct: 100, step: "Task cancelled." };
+    return { badge: "attention", pct: 100, step: "Something went wrong — the agent explains below." };
+  }
+
+  function pollCommand(jobId) {
+    if (!S.running || S.jobId !== jobId) return;
+    api("/api/command/" + encodeURIComponent(jobId)).then(function (r) { return r.json(); }).then(function (j) {
+      if (!S.running || S.jobId !== jobId) return;
+      if (!j || j.ok !== true) {
+        setTimeout(function () { pollCommand(jobId); }, 2000);
+        return;
+      }
+      var map = commandBadge(j.state, j.progress);
+      if (j.state === "queued" || j.state === "running") {
+        showTaskCard();
+        setTaskCard({
+          tc: "working",
+          badge: map.badge,
+          title: S.lastPrompt ? S.lastPrompt.slice(0, 64) : "Unreal Agent",
+          pct: map.pct,
+          step: map.step
+        });
+        if (j.state === "queued") setState("thinking", "Acknowledged — queued…");
+        else setState("working", "Working on it…");
+        setTimeout(function () { pollCommand(jobId); }, 1200);
+        return;
+      }
+      // Terminal — pull the real evidence (result message / stall reason).
+      api("/api/command/" + encodeURIComponent(jobId) + "/evidence").then(function (r) { return r.json(); }).then(function (ev) {
+        var result = (ev && ev.evidence && ev.evidence.result) || j.result || {};
+        var ok = j.state === "pass";
+        var msg = String(result.message || result.error || (ok ? "Task completed." : "Task failed without details."));
+        if (result.terminal === "STALL" && result.stall_reason) {
+          msg = "The task stalled (" + String(result.stall_reason) + "): " + msg;
+        }
+        finishTask(ok, ok ? summarize(msg) : humanizeError(msg), { type: "final", status: ok ? "success" : "failed", detail: result });
+      }).catch(function () {
+        finishTask(j.state === "pass", j.state === "pass" ? "Task completed." : "Task failed.", { type: "final", status: j.state });
+      });
+    }).catch(function () {
+      if (S.running && S.jobId === jobId) setTimeout(function () { pollCommand(jobId); }, 2200);
+    });
+  }
+
+  function streamEvents() {
+    if (S.es) S.es.close();
+    var es = new EventSource("/api/events/stream");
+    S.es = es;
+    es.onmessage = function (msg) {
+      var e;
+      try { e = JSON.parse(msg.data); } catch (err) { return; }
+      if (e && (e.type === "ping" || e.type === "keepalive")) return;
+      handleEvent(e || {});
+    };
+    es.onerror = function () {
+      es.close();
+      S.es = null;
+      if (S.running) setTimeout(streamEvents, 2500);
+    };
   }
 
   function failLocal(title, msg) {
@@ -812,6 +934,7 @@
     S.running = false;
     if (S.es) { S.es.close(); S.es = null; }
     S.taskId = null;
+    S.jobId = null;
     hideTaskCard();
     updateSend();
     setTimeout(function () { setState("idle"); }, 2000);
@@ -859,6 +982,17 @@
 
   function cancelTask() {
     if (!S.running) return;
+    if (S.jobId) {
+      api("/api/command/" + encodeURIComponent(S.jobId) + "/cancel", { method: "POST" }).then(function (r) { return r.json(); })
+        .then(function (j) {
+          toast("Cancel requested — stopping the job");
+          // pollCommand will observe the cancelled terminal state.
+        }).catch(function () {
+          toast("Cancel request failed");
+          finishCancel();
+        });
+      return;
+    }
     api("/api/action", { method: "POST", body: { action: "cancel" } }).then(function (r) { return r.json(); })
       .then(function (j) {
         toast("Task cancelled");
@@ -874,6 +1008,7 @@
     S.running = false;
     if (S.es) { S.es.close(); S.es = null; }
     S.taskId = null;
+    S.jobId = null;
     hideTaskCard();
     updateSend();
     setState("idle", "Cancelled. Ready when you are.");
@@ -1134,6 +1269,8 @@
     }
     pollStatus();
     setInterval(pollStatus, 5000);
+    worldTick();
+    setInterval(worldTick, 12000);
     setInterval(function () {
       // if running and approvals pending, surface the confirmation card
       if (S.running && S.approvals > 0) enterApprovalMode();

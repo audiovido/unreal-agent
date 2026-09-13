@@ -7,6 +7,25 @@ def test_not_found_is_absence_success():
     assert api._resource_is_absent({'ok': True, 'result': {'ok': False, 'error': 'Asset not found'}})
 
 
+def test_actor_identity_not_found_is_absence_success():
+    # The bridge identity resolver reports absence as
+    # "actor_not_resolved: not_found" (status=not_found). A verified-clean
+    # actor removal must count this as absence, not as resource_still_present.
+    bridge_envelope = {
+        'ok': True,
+        'message': 'Python executed on Unreal main thread',
+        'result': {
+            'ok': False,
+            'error': 'actor_not_resolved: not_found',
+            'query': 'UI_DEMO_CUBE',
+            'matches': [],
+        },
+        'stdout': '',
+    }
+    assert api._resource_is_absent(bridge_envelope)
+    assert api._resource_is_absent({'ok': False, 'error': 'actor_not_found: Ghost'})
+
+
 def test_cleanup_pending_tracks_only_unverified_disposable_resources():
     s = {'created_resources': [
         {'path': '/Game/A', 'disposable': True, 'verified_clean': False},
