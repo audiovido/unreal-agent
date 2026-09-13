@@ -110,6 +110,9 @@ class SceneActor:
     rotation: Dict[str, float] = field(default_factory=dict)
     scale: Dict[str, float] = field(default_factory=dict)
     readable: bool = True
+    mesh_path: str = ""
+    materials: List[str] = field(default_factory=list)
+    tags: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -630,16 +633,59 @@ def check_no_stale_evidence(evidence: SceneEvidence, prior_hashes: Optional[Set[
     )
 
 
-def check_western_frontier_readability(evidence: SceneEvidence) -> CheckResult:
-    """Verify Western/Frontier-Tech room readability.
+# --------------------------------------------------------------------------
+# Semantic Group Definitions for Western/Frontier Readability
+# --------------------------------------------------------------------------
 
-    Deterministic criteria (proxy measures for readability):
-    - Scene has environment actors (walls, floor, props) — not empty
-    - At least 5 non-worker/non-Heidi environment actors
-    - Environment actors have varied classes (not all same class)
-    - No single class dominates > 50% of environment actors
+# Semantic group keywords - used to categorize actors by their label
+# Order matters: first match wins (more specific groups first)
+SEMANTIC_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("architecture_walls", ("wall", "floor", "ceiling", "pillar", "column", "dais", "pedestal")),
+    ("architecture_structural", ("beam", "trim", "molding", "baseboard", "cornice")),
+    ("furniture_workstation", ("desk", "console", "station", "screen", "monitor", "terminal", "workbench")),
+    ("furniture_seating", ("chair", "seat", "stool", "bench")),
+    ("lighting_practical", ("light", "lamp", "lantern", "sconce", "chandelier", "glow", "practical", "lightbar")),
+    ("lighting_atmosphere", ("skylight", "fog", "postprocess", "atmosphere", "volumetric")),
+    ("tech_core", ("core", "orb", "holo", "hologram", "pedestal", "ring", "console", "screen", "camera", "vcam")),
+    ("tech_pipes", ("pipe", "vent", "duct", "conduit", "cable")),
+    ("western_prop", ("crate", "barrel", "cactus", "rug", "paper", "clipboard", "chalkboard", "mug", "stylus", "toolbox", "lantern_cap")),
+    ("western_nature", ("cactus", "plant", "rock", "boulder", "terrain", "dirt", "soil", "sand")),
+    ("character_accessory", ("hat", "vest", "bandana", "duster", "brim", "crown", "accessory", "acc_")),
+    ("decoration_detail", ("prop_", "detail", "decal", "sign", "banner", "flag")),
+)
+
+# Minimum required semantic groups for a readable Western/Frontier scene
+MIN_SEMANTIC_GROUPS = 5
+
+# Minimum unique mesh paths (non-empty) for asset diversity
+MIN_UNIQUE_MESH_PATHS = 3
+
+# Minimum unique materials for material diversity
+MIN_UNIQUE_MATERIALS = 3
+
+
+def _classify_semantic_group(label: str) -> str:
+    """Classify an actor label into a semantic group."""
+    label_lower = label.lower()
+    for group_name, keywords in SEMANTIC_GROUPS:
+        for kw in keywords:
+            if kw in label_lower:
+                return group_name
+    return "uncategorized"
+
+
+def check_western_frontier_readability(evidence: SceneEvidence) -> CheckResult:
+    """Verify Western/Frontier-Tech room readability via semantic diversity.
+
+    Deterministic criteria:
+    - At least 5 non-critical environment actors (excluding Heidi, workers, stations)
+    - At least MIN_SEMANTIC_GROUPS distinct semantic groups represented
+    - At least MIN_UNIQUE_MESH_PATHS unique non-empty mesh asset paths
+    - At least MIN_UNIQUE_MATERIALS unique non-empty material paths
+    - No single semantic group dominates > 60% of environment actors
+    - Scene has actors from both "architecture" AND ("western_prop" OR "tech_core") groups
     """
-    # Exclude Heidi, workers, stations
+    # Exclude Heidi, workers, stations (critical actors)
     env_actors = [
         a for a in evidence.actors
         if a.readable and not any(
@@ -650,27 +696,89 @@ def check_western_frontier_readability(evidence: SceneEvidence) -> CheckResult:
     issues = []
     details = {
         "environment_actor_count": len(env_actors),
-        "class_distribution": {},
+        "semantic_group_distribution": {},
+        "unique_mesh_paths": 0,
+        "unique_materials": 0,
+        "mesh_paths": [],
+        "materials": [],
+        "has_architecture": False,
+        "has_western_or_tech": False,
     }
 
     if len(env_actors) < 5:
         issues.append(f"INSUFFICIENT_ENVIRONMENT_ACTORS: {len(env_actors)} (need >= 5)")
+        return CheckResult(
+            check_id="WESTERN_FRONTIER_READABILITY",
+            name="Western/Frontier-Tech Room Readability",
+            passed=False,
+            details=details,
+            issues=issues,
+        )
 
-    # Class diversity
-    class_counts: Dict[str, int] = {}
+    # Semantic group classification
+    group_counts: Dict[str, int] = {}
+    mesh_paths: Set[str] = set()
+    materials: Set[str] = set()
+
     for a in env_actors:
-        cls = a.class_name or "Unknown"
-        class_counts[cls] = class_counts.get(cls, 0) + 1
+        group = _classify_semantic_group(a.label)
+        group_counts[group] = group_counts.get(group, 0) + 1
 
-    details["class_distribution"] = class_counts
-    details["unique_classes"] = len(class_counts)
+        if a.mesh_path:
+            mesh_paths.add(a.mesh_path)
+        for m in a.materials:
+            if m:
+                materials.add(m)
 
-    if class_counts:
-        max_class_count = max(class_counts.values())
-        dominance = max_class_count / len(env_actors)
-        details["max_class_dominance"] = round(dominance, 2)
-        if dominance > 0.5:
-            issues.append(f"CLASS_DOMINANCE: {max_class_count}/{len(env_actors)} = {dominance:.0%} > 50%")
+    details["semantic_group_distribution"] = group_counts
+    details["unique_semantic_groups"] = len(group_counts)
+    details["unique_mesh_paths"] = len(mesh_paths)
+    details["mesh_paths"] = sorted(mesh_paths)
+    details["unique_materials"] = len(materials)
+    details["materials"] = sorted(materials)
+
+    # Check semantic group diversity
+    if len(group_counts) < MIN_SEMANTIC_GROUPS:
+        issues.append(
+            f"INSUFFICIENT_SEMANTIC_GROUPS: {len(group_counts)} (need >= {MIN_SEMANTIC_GROUPS}). "
+            f"Groups: {sorted(group_counts.keys())}"
+        )
+
+    # Check mesh asset diversity
+    if len(mesh_paths) < MIN_UNIQUE_MESH_PATHS:
+        issues.append(
+            f"INSUFFICIENT_MESH_DIVERSITY: {len(mesh_paths)} unique meshes (need >= {MIN_UNIQUE_MESH_PATHS})"
+        )
+
+    # Check material diversity
+    if len(materials) < MIN_UNIQUE_MATERIALS:
+        issues.append(
+            f"INSUFFICIENT_MATERIAL_DIVERSITY: {len(materials)} unique materials (need >= {MIN_UNIQUE_MATERIALS})"
+        )
+
+    # Check semantic group dominance (no single group > 60%)
+    if group_counts:
+        max_group_count = max(group_counts.values())
+        dominance = max_group_count / len(env_actors)
+        details["max_semantic_dominance"] = round(dominance, 2)
+        if dominance > 0.6:
+            dominant_group = max(group_counts, key=group_counts.get)
+            issues.append(
+                f"SEMANTIC_GROUP_DOMINANCE: {dominant_group}={max_group_count}/{len(env_actors)} "
+                f"= {dominance:.0%} > 60%"
+            )
+
+    # Check for required architectural + western/tech presence
+    has_arch = any(g.startswith("architecture") for g in group_counts)
+    has_western = "western_prop" in group_counts or "western_nature" in group_counts
+    has_tech = "tech_core" in group_counts or "tech_pipes" in group_counts
+    details["has_architecture"] = has_arch
+    details["has_western_or_tech"] = has_western or has_tech
+
+    if not has_arch:
+        issues.append("MISSING_ARCHITECTURE_GROUP: no walls/floor/ceiling/pillar actors found")
+    if not (has_western or has_tech):
+        issues.append("MISSING_WESTERN_OR_TECH_GROUP: no western props or tech core actors found")
 
     passed = len(issues) == 0
     return CheckResult(

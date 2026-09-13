@@ -54,6 +54,30 @@ else:
             loc = transform.translation
             rot = transform.rotation
             scale = transform.scale3d
+            
+            # Capture semantic data: mesh path, materials, tags
+            mesh_path = ""
+            materials = []
+            tags = []
+            if hasattr(a, "static_mesh_component") and a.static_mesh_component:
+                sm = a.static_mesh_component.static_mesh
+                if sm:
+                    mesh_path = str(sm.get_path_name())
+                mats = a.static_mesh_component.get_materials()
+                for m in mats:
+                    if m:
+                        materials.append(str(m.get_path_name()))
+            elif hasattr(a, "skeletal_mesh_component") and a.skeletal_mesh_component:
+                sm = a.skeletal_mesh_component.skeletal_mesh
+                if sm:
+                    mesh_path = str(sm.get_path_name())
+                mats = a.skeletal_mesh_component.get_materials()
+                for m in mats:
+                    if m:
+                        materials.append(str(m.get_path_name()))
+            if hasattr(a, "tags"):
+                tags = [str(t) for t in a.tags]
+            
             result_actors.append({
                 "name": name,
                 "label": label,
@@ -62,6 +86,9 @@ else:
                 "rotation": {"x": float(rot.x), "y": float(rot.y), "z": float(rot.z), "w": float(rot.w)},
                 "scale": {"x": float(scale.x), "y": float(scale.y), "z": float(scale.z)},
                 "readable": True,
+                "mesh_path": mesh_path,
+                "materials": materials,
+                "tags": tags,
             })
         except Exception as exc:
             read_errors.append({"name": str(a.get_name() or "unknown"), "error": type(exc).__name__})
@@ -187,6 +214,9 @@ class VisualRCGate:
                 rotation=a.get("rotation", {}),
                 scale=a.get("scale", {}),
                 readable=a.get("readable", True),
+                mesh_path=a.get("mesh_path", ""),
+                materials=a.get("materials", []),
+                tags=a.get("tags", []),
             ))
 
         return SceneEvidence(
