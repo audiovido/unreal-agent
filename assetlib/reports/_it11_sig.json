@@ -1,0 +1,34 @@
+{
+ "shots": [
+  "assetlib/proof/screens/_it11_t0.png",
+  "assetlib/proof/screens/_it11_t1.png",
+  "assetlib/proof/screens/_it11_t2.png",
+  "assetlib/proof/screens/_it11_t3.png"
+ ],
+ "pairs": [
+  {
+   "t0_t1": {
+    "anchor": 0.00471,
+    "control": 0.00047,
+    "fox_motion": 0.00066
+   }
+  },
+  {
+   "t1_t2": {
+    "anchor": 0.00462,
+    "control": 0.00047,
+    "fox_motion": 0.00068
+   }
+  },
+  {
+   "t2_t3": {
+    "anchor": 0.00497,
+    "control": 0.00047,
+    "fox_motion": 0.00063
+   }
+  }
+ ],
+ "max_anchor": 0.00497,
+ "max_control": 0.00047,
+ "signature": true
+}

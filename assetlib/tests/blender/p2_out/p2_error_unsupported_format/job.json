@@ -1,0 +1,16 @@
+{
+  "id": "p2_error_unsupported_format",
+  "inputs": {
+    "source": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\samples\\bad_format.dae",
+    "name": null,
+    "export_formats": [
+      "fbx"
+    ],
+    "export_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_out\\error_unsupported_format",
+    "blend_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_work",
+    "origin_center": "BOUNDS",
+    "decimate_ratio": null,
+    "lods": false,
+    "collision": false
+  }
+}

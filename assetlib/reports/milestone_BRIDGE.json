@@ -1,0 +1,29 @@
+{
+ "verified_at": 1788357545.7877457,
+ "port_6766_owner_pid": "6420",
+ "ping": {
+  "ok": true,
+  "message": "UNREAL_BRIDGE_READY",
+  "engine": "5.8.2-56702186+++UE5+Release-5.8"
+ },
+ "identity": {
+  "ok": true,
+  "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+  "project_name": "ASSET_Showcase2",
+  "engine": "5.8.2-56702186+++UE5+Release-5.8",
+  "world": "/Temp/Untitled_0.Untitled",
+  "port": 6766
+ },
+ "round_trip": {
+  "ok": true,
+  "message": "Python executed on Unreal main thread",
+  "result": {
+   "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+   "engine": "5.8.2-56702186+++UE5+Release-5.8",
+   "world": "/Temp/Untitled_0.Untitled",
+   "actor_count": 0,
+   "unreal_agent_bridge_plugin_loaded": true
+  },
+  "stdout": ""
+ }
+}

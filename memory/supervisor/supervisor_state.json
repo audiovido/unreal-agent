@@ -1,0 +1,70 @@
+{
+  "status": "idle",
+  "workers": [
+    {
+      "id": "worker_core",
+      "name": "Core Worker",
+      "role": "core_backend",
+      "status": "idle",
+      "current_task_id": null,
+      "tasks_completed": 0,
+      "tasks_failed": 0,
+      "last_heartbeat": 1788213498.657166,
+      "last_output": "",
+      "error": null,
+      "created_at": 1788213498.6571674
+    },
+    {
+      "id": "worker_ui",
+      "name": "UI Worker",
+      "role": "ui_integration",
+      "status": "idle",
+      "current_task_id": null,
+      "tasks_completed": 0,
+      "tasks_failed": 0,
+      "last_heartbeat": 1788213498.657171,
+      "last_output": "",
+      "error": null,
+      "created_at": 1788213498.6571715
+    }
+  ],
+  "tasks": [],
+  "completed_tasks": [
+    {
+      "id": "db3a73dc-d91f-4b42-a83d-587c4f31a694",
+      "title": "Supervised Unreal graduation probe",
+      "prompt": "Spawn a cube named SUPERVISOR_PROBE, save the level, verify it exists, and capture proof.",
+      "worker_id": null,
+      "status": "passed",
+      "attempt": 0,
+      "max_attempts": 5,
+      "result": null,
+      "last_output": "{\"state\": \"complete\", \"message\": \"Execution complete.\", \"terminal\": \"PASS\", \"stall_reason\": null}",
+      "pass_fail": "PASS",
+      "error": null,
+      "blocked_reason": null,
+      "followup_prompt": null,
+      "created_at": 1788213498.660376,
+      "assigned_at": null,
+      "started_at": null,
+      "finished_at": null,
+      "locked_files": [],
+      "tags": [
+        "unreal"
+      ],
+      "details": {}
+    }
+  ],
+  "activity_log": [
+    {
+      "id": "5a6ba70e-2e36-4b6a-b9d9-90fdb2ebf649",
+      "kind": "task_added",
+      "text": "Task added: Supervised Unreal graduation probe",
+      "timestamp": 1788213498.660392,
+      "task_id": "db3a73dc-d91f-4b42-a83d-587c4f31a694"
+    }
+  ],
+  "started_at": null,
+  "last_tick": null,
+  "total_cycles": 0
+}

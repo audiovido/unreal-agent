@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unreal Agent — Workspace</title>
+<meta name="description" content="Unreal Agent — AI development workspace for the Unreal Editor.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230c1017'/><text x='16' y='21' font-family='Arial' font-size='13' font-weight='800' fill='%236fd98f' text-anchor='middle'>UA</text></svg>">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ======================= SIDEBAR ======================= -->
+  <aside id="sidebar">
+    <div class="brand-row">
+      <div class="brand">UA</div>
+      <div class="brand-text"><strong>Unreal Agent</strong><span>AI Development Workspace</span></div>
+    </div>
+
+    <div class="nav-label">Agents</div>
+    <nav class="agents" id="agentList">
+      <button class="agent active" data-agent="unreal">
+        <span class="dot ok"></span><span class="name">Unreal Agent</span><span class="state">online</span>
+      </button>
+      <button class="agent" data-agent="audio">
+        <span class="dot off"></span><span class="name">Audio Agent</span><span class="state">offline</span>
+      </button>
+      <button class="agent" data-agent="assets">
+        <span class="dot off"></span><span class="name">Assets Agent</span><span class="state">offline</span>
+      </button>
+      <button class="agent" data-agent="avlc">
+        <span class="dot warn"></span><span class="name">AudioVidoLiving…</span><span class="state">idle</span>
+      </button>
+      <button class="agent" data-agent="ops">
+        <span class="dot off"></span><span class="name">Project Ops</span><span class="state">offline</span>
+      </button>
+      <button id="addAgent" class="add-agent" title="Register a new agent workspace">+ Add agent</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="ws-card">
+        <div class="ws-label">Workspace</div>
+        <div class="ws-name" id="wsName">unreal-agent</div>
+        <div class="ws-meta"><span id="wsBranch">—</span> · <span id="wsCommit">—</span></div>
+      </div>
+      <div class="account-row">
+        <div class="avatar">PM</div>
+        <div class="acc-text"><strong>audiovido</strong><span>maintainer</span></div>
+        <button id="devLink" class="icon-btn" title="Open the full developer dashboard in a new tab">▤</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================= CHAT ======================= -->
+  <main id="chat">
+    <header class="chat-head">
+      <button id="menuBtn" class="icon-btn" title="Toggle agent list">☰</button>
+      <div class="chat-title">
+        <strong id="chatAgentName">Unreal Agent</strong>
+        <span class="chat-sub">
+          <span id="onlineDot" class="dot ok"></span>
+          <span id="onlineText">Online</span>
+          <span>·</span>
+          <span id="headModel">—</span>
+        </span>
+      </div>
+      <div class="chat-actions">
+        <button id="panelBtn" class="btn ghost" title="Toggle workspace panel">
+          <span class="btn-label">Workspace</span><span>▤</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="messages" class="messages" aria-live="polite">
+      <div class="msg-col" id="msgCol"></div>
+    </div>
+
+    <div id="emptyState" class="empty-state">
+      <div class="empty-brand">UA</div>
+      <h2>Tell Unreal Agent what to build</h2>
+      <p>Describe a change for the Unreal project. The agent plans, executes, validates and reports proof — no hand-holding required.</p>
+      <div class="prompt-chips">
+        <button class="chip">Create a visible cube actor named Marker, save the level, verify it exists, then remove it and verify cleanup</button>
+        <button class="chip">Build a small scene: floor, light, camera, blueprint actor with a String variable — then capture a screenshot</button>
+        <button class="chip">Add a String variable to a blueprint, set it to a value, compile and verify the read-back</button>
+      </div>
+    </div>
+
+    <div id="composer" class="composer">
+      <div class="composer-inner">
+        <div id="attachChips" class="attach-chips"></div>
+        <div class="composer-bar">
+          <div class="mode-seg">
+            <button class="seg active" data-mode="build" id="modeBuild">Build</button>
+            <button class="seg" data-mode="plan" id="modePlan">Plan</button>
+          </div>
+          <label class="field">Model
+            <select id="modelSel" title="Model preference sent with the task context"></select>
+          </label>
+          <label class="field">Reasoning
+            <select id="reasonSel">
+              <option value="standard">Standard</option>
+              <option value="deep">Deep</option>
+            </select>
+          </label>
+          <span class="spacer"></span>
+          <span id="composerState" class="composer-state"><span class="dot ok"></span> Online</span>
+        </div>
+        <div class="composer-row">
+          <button id="attachBtn" class="icon-btn" title="Attach a file reference">＋</button>
+          <textarea id="input" rows="1" placeholder="Describe a task for Unreal Agent — e.g. “Create a visible cube actor named Marker in the current level, save and verify it.”"></textarea>
+          <button id="sendBtn" class="btn primary" disabled>Run</button>
+        </div>
+        <div class="composer-hint"><kbd>Enter</kbd> send &nbsp;·&nbsp; <kbd>Shift</kbd>+<kbd>Enter</kbd> new line</div>
+        <input type="file" id="fileInput" class="hidden" multiple>
+      </div>
+    </div>
+  </main>
+
+  <!-- ======================= WORKSPACE PANEL ======================= -->
+  <aside id="panel">
+    <div class="panel-head">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="preview">Preview</button>
+        <button class="tab" data-tab="queue">Queue</button>
+        <button class="tab" data-tab="changes">Changes</button>
+        <button class="tab" data-tab="files">Files</button>
+        <button class="tab" data-tab="terminal">Terminal</button>
+      </div>
+      <button id="panelClose" class="icon-btn" title="Close panel">×</button>
+    </div>
+
+    <!-- Preview -->
+    <div class="tab-body" id="tab-preview">
+      <div class="preview-head">
+        <div class="preview-name">
+          <div class="brand sm">UA</div>
+          <div><strong>Unreal Agent</strong><span id="pvVersion">—</span></div>
+        </div>
+        <span id="pvHealth" class="health">…</span>
+      </div>
+      <div class="status-grid">
+        <div class="stat"><label>Backend API</label><span id="pvBackend" class="val">—</span></div>
+        <div class="stat"><label>Unreal bridge</label><span id="pvBridge" class="val">—</span></div>
+        <div class="stat"><label>Ollama</label><span id="pvOllama" class="val">—</span></div>
+      </div>
+      <div class="kv">
+        <div><label>Branch</label><span id="pvBranch">—</span></div>
+        <div><label>Commit</label><span id="pvCommit">—</span></div>
+        <div><label>Project</label><span id="pvProject">—</span></div>
+        <div><label>Last verified</label><span id="pvVerified">—</span></div>
+        <div><label>Updated</label><span id="pvUpdated">—</span></div>
+      </div>
+      <div class="proof-box">
+        <div class="proof-label">Viewport preview — latest proof capture</div>
+        <img id="pvProof" alt="Latest Unreal viewport proof" src="">
+        <div class="proof-meta" id="pvProofMeta">No capture yet.</div>
+      </div>
+      <div class="preview-actions">
+        <button id="pvLaunch" class="btn primary">Launch Preview</button>
+        <button id="pvOpen" class="btn ghost">Open in new tab</button>
+        <button id="pvRefresh" class="btn ghost" title="Refresh now">↻</button>
+        <label class="auto"><input type="checkbox" id="pvAuto" checked> Auto-refresh 5s</label>
+      </div>
+    </div>
+
+    <!-- Queue -->
+    <div class="tab-body hidden" id="tab-queue">
+      <div class="panel-title">Task queue <span id="queueMeta"></span></div>
+      <div id="queueList"></div>
+    </div>
+
+    <!-- Changes -->
+    <div class="tab-body hidden" id="tab-changes">
+      <div class="panel-title">Working tree <span id="changesMeta"></span></div>
+      <div id="changesList"></div>
+    </div>
+
+    <!-- Files -->
+    <div class="tab-body hidden" id="tab-files">
+      <div class="panel-title">Repository files <span id="filesMeta"></span></div>
+      <div class="files-search"><input id="filesSearch" type="text" placeholder="Filter files…"></div>
+      <div id="filesList"></div>
+    </div>
+
+    <!-- Terminal -->
+    <div class="tab-body hidden" id="tab-terminal">
+      <div class="term-head">
+        <strong>Live event log</strong>
+        <span>· backend activity stream (not a shell)</span>
+        <span class="spacer"></span>
+        <button id="termClear" class="btn ghost" style="padding:3px 10px;font-size:11px">Clear</button>
+      </div>
+      <div id="term" class="term"></div>
+    </div>
+  </aside>
+
+  <div id="scrim" class="scrim"></div>
+</div>
+
+<div id="toast" role="status"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

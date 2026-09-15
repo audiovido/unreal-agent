@@ -1,0 +1,44 @@
+{
+  "phase": "PHASE 2 - VISUAL DIRECTOR",
+  "iteration": 8,
+  "bridge": "127.0.0.1:6766",
+  "project": "ASSET_Showcase2",
+  "map": "/Game/ShowcaseMap",
+  "date": "2026-09-02",
+  "verdict": "NOT_ACCEPTED",
+  "acceptance_bar": "no critical category below 8 and overall >= 8.5 on a human verdict",
+  "overall_score": 5.0,
+  "executed_lead": {
+    "clean_restart": "graceful quit (SystemLibrary.quit_editor, no args) -> single windowed relaunch of ASSET_Showcase2 with /Game/ShowcaseMap -> bridge 6766 UP in ~5 s, identity ASSET_Showcase2",
+    "reload_verified": "ShowcaseMap; sun 6000 lux; SUV_0 mesh+mat = /Game/NLR/BlackSUV; camera (1350,-1150,250) yaw 63.4 - all IT-7 edits persisted and re-verified"
+  },
+  "root_cause_narrowed": {
+    "finding": "scene-PLACED imported actors (SUV/fox/building/lanterns) do not render in the PIE frame, while a FRESH spawn of the identical imported mesh at 8 m DOES render (dark_frac 0.38 - the NLR black tint renders dark). Engine-mesh probe cube at 8 m also renders (detail doubled).",
+    "action_taken": "deleted all 16 stale subject actors and rebuilt them FRESH at identical transforms/assets (building 9x mb_* scale 2.5 @2400,0,0; SUV body+wheels NLR BlackSUV @1500,60; Fox + FoxWalk @1100,60; lanterns @0.2)",
+    "result": "street-pose frame after fresh rebuild is still washed/empty at distance (mean 0.71, dark_frac 0.0) - subject visibility at 12 m-1.9 km standoff did NOT improve this session",
+    "remaining_unknown": "why close-range fresh spawns render but the same meshes at the standing street poses/standoffs do not read in-capture; earlier SUV-aimed captures had yaw-math errors (frames pointed at the building/sun side, not the vehicle) so close-up placed-SUV visibility is UNRESOLVED, not disproven"
+  },
+  "capture_evidence": {
+    "after": "assetlib/proof/screens/vd_iteration8_after.png (1700267 bytes, street pose after rebuild)",
+    "close_probe_cube": "assetlib/proof/screens/vd_iteration8_cube.png - engine mesh 8 m renders (dark 2.7%, detail 0.0029)",
+    "close_probe_truck": "assetlib/proof/screens/vd_iteration8_truck.png - imported NLR mesh 8 m renders BLACK (dark 38%, detail 0.003)",
+    "probes_prove": "render path + imported materials + black tint all work at close range"
+  },
+  "scores": {
+    "composition": 5, "camera": 5, "lighting_exposure_contrast": 4, "materials_colors": 5,
+    "scale": 6, "hierarchy": 6, "dead_areas_repetition": 4, "asset_fit_clipping": 7,
+    "character_animation": 6, "vfx": 4, "readability_usability": 4,
+    "confidence": "washed/empty street frame (metrics + prior human verdict); close-range render correctness proven by probes but not usable in the composition"
+  },
+  "iteration9_recipe": [
+    "1) Settle placed-subject visibility with a CORRECT close-up camera: aim yaw = atan2(dy,dx) toward the SUV from ~6 m, verify the fresh SUV reads black in-frame (the earlier attempts used wrong yaw and looked at the building/sun side)",
+    "2) If close-up SUV renders: rebuild the street composition at SHORT standoff (~30-80 m from the building instead of 1.9 km) so subjects occupy the frame at readable size, or scale the ground down and recompose; retake the street frame",
+    "3) Kill the sun-glare blowout: place the sun behind the camera or reduce bloom (console r.BloomQuality 0 / r.EyeAdaptation settings verified by capture deltas), since the white mid-band tracks the sun direction",
+    "4) Human-eye rescore on the fresh frame (Preview tab); accept only on no critical <8 and overall >=8.5",
+    "5) VFX gate remains: C++ emitter UFUNCTION or licensed looping Niagara pack"
+  ],
+  "resume_command": "bridge 6766 PIE flow: start_pie -> capture_pie_viewport -> vd_score.py -> refresh vd_preview.html for the user",
+  "audio_vido_modified": false,
+  "baselines_touched": "none; no commits",
+  "reversibility": "backup at assetlib/proof/backup/ShowcaseMap_ACCEPTED_VD0.umap; rebuild preserved the prior transforms exactly"
+}

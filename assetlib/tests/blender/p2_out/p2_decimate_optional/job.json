@@ -1,0 +1,16 @@
+{
+  "id": "p2_decimate_optional",
+  "inputs": {
+    "source": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\samples\\sample_cone.obj",
+    "name": "P2_Cone_Lo",
+    "export_formats": [
+      "fbx"
+    ],
+    "export_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_out\\decimate_optional",
+    "blend_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_work",
+    "origin_center": "BOUNDS",
+    "decimate_ratio": 0.25,
+    "lods": false,
+    "collision": false
+  }
+}

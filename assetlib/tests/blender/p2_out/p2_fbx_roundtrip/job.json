@@ -1,0 +1,16 @@
+{
+  "id": "p2_fbx_roundtrip",
+  "inputs": {
+    "source": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\samples\\sample_table.fbx",
+    "name": "P2_Table",
+    "export_formats": [
+      "fbx"
+    ],
+    "export_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_out\\fbx_roundtrip",
+    "blend_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_work",
+    "origin_center": "BOUNDS",
+    "decimate_ratio": null,
+    "lods": false,
+    "collision": false
+  }
+}

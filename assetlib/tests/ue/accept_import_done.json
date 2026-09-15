@@ -1,0 +1,72 @@
+{
+  "started_at": 1788347398.0012405,
+  "assets": [
+    {
+      "label": "truck",
+      "asset_path": "/Game/Showcase/Vehicles/Cesium_Milk_Truck.Cesium_Milk_Truck",
+      "class": "StaticMesh",
+      "ok": true,
+      "materials_error": "StaticMesh: Property 'Materials' for attribute 'materials' on 'StaticMesh' is protected and cannot be read",
+      "size_cm": [
+        279.2,
+        486.89,
+        231.76
+      ],
+      "sequences": [],
+      "category": "Vehicle"
+    },
+    {
+      "label": "cesiumman",
+      "asset_path": "/Game/Showcase/Characters/CesiumMan/SkeletalMeshes/CesiumMan.CesiumMan",
+      "class": "SkeletalMesh",
+      "ok": true,
+      "materials_error": "'SkeletalMaterial' object has no attribute 'get_path_name'",
+      "skeleton": "/Game/Showcase/Characters/CesiumMan/SkeletalMeshes/CesiumMan_Skeleton.CesiumMan_Skeleton",
+      "size_cm": [
+        111.0,
+        34.68,
+        160.36
+      ],
+      "sequences": [
+        "/Game/Showcase/Characters/CesiumMan/SkeletalMeshes/CesiumMan_Anim.CesiumMan_Anim"
+      ],
+      "category": "Character"
+    },
+    {
+      "label": "fox",
+      "asset_path": "/Game/Showcase/Animations/Fox/SkeletalMeshes/Fox.Fox",
+      "class": "SkeletalMesh",
+      "ok": true,
+      "materials_error": "'SkeletalMaterial' object has no attribute 'get_path_name'",
+      "skeleton": "/Game/Showcase/Animations/Fox/SkeletalMeshes/Fox_Skeleton.Fox_Skeleton",
+      "size_cm": [
+        5109.78,
+        16198.99,
+        8369.3
+      ],
+      "sequences": [
+        "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxRun.FoxRun",
+        "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxSurvey.FoxSurvey",
+        "/Game/Showcase/Animations/Fox/SkeletalMeshes/FoxWalk.FoxWalk"
+      ],
+      "category": "Animation"
+    },
+    {
+      "label": "lantern",
+      "asset_path": "/Game/Showcase/Props/Lantern/StaticMeshes/LanternPole_Body.LanternPole_Body",
+      "class": "StaticMesh",
+      "ok": true,
+      "materials_error": "StaticMesh: Property 'Materials' for attribute 'materials' on 'StaticMesh' is protected and cannot be read",
+      "size_cm": [
+        1549.12,
+        463.14,
+        2566.42
+      ],
+      "sequences": [],
+      "category": "Environment/Prop"
+    }
+  ],
+  "ok": true,
+  "elapsed_seconds": 9.5,
+  "engine": "5.8.2-56702186+++UE5+Release-5.8"
+}

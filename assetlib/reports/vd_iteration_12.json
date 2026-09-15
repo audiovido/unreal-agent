@@ -1,0 +1,78 @@
+{
+ "phase": "PHASE 2 - VD ITERATION 12 (materials/colors + character presence + preview rendering)",
+ "date": "2026-09-02",
+ "bridge": "127.0.0.1:6766",
+ "project": "ASSET_Showcase2",
+ "human_targets": [
+  "materials/colors 7 -> >=8.5",
+  "character/animation presence 7 -> >=8.5",
+  "hero PNG must visibly render in Preview before verdict"
+ ],
+ "fixes": {
+  "facade_alternation": "9 MB_ pieces alternate M_VD_Facade_A (warm concrete 0.72/0.70/0.66 rough 0.7) / M_VD_Facade_B (dark glass 0.28/0.30/0.33 rough 0.6); created via AssetTools create_asset+MaterialFactoryNew, empty-pin base-color+roughness connect (proven discipline), recompiled+saved; replaces uniform Brick* set",
+  "api_correction": "MaterialEditingLibrary.create_material does NOT exist in 5.8 (AttributeError recorded); batch-3 AssetTools route is the working one",
+  "fox_presence": "VD_Fox moved (1100,60) -> (950,40): 3.9 m from hero camera left-fore, FoxWalk SINGLE_NODE playing, world bottom re-verified 1.0 (origin quirk preserved, XY-only move)"
+ },
+ "propagation_proof": {
+  "facade_region_diff_vs_it11": {
+   "mean": 0.00427,
+   "max": 0.59767
+  },
+  "interpretation": "facade alternation IS rendered (dark vs light pieces); band-mean stability was coincidence, not a stale render"
+ },
+ "capture": {
+  "png": "assetlib/proof/screens/vd_iteration12_hero.png",
+  "md5": "4e5687872ee3bc864693dadb7feb072a",
+  "pose_verified": true,
+  "raw_readback": {
+   "loc": [
+    600.0,
+    -350.0,
+    170.0
+   ],
+   "rot": [
+    0.0,
+    -3.0,
+    20.0
+   ]
+  },
+  "scorer": {
+   "mean": 0.349,
+   "halves": [
+    0.351,
+    0.347
+   ],
+   "dark_frac": 0.037,
+   "bright_frac": 0.003,
+   "sky_rgb": [
+    0.135,
+    0.254,
+    0.439
+   ]
+  },
+  "gains_preserved": "composition/camera/lighting/grounding/VFX signature all intact"
+ },
+ "preview_rendering": {
+  "method": "self-contained data-URI (1.72 MB) + register_preview(replace)",
+  "verified": "preview_evaluate: img#hero complete=true naturalWidth=1922 naturalHeight=1082",
+  "note": "fulfills the human target: frame visibly renders in Preview before any verdict request"
+ },
+ "proposed_scores": {
+  "composition": 8,
+  "camera": 8,
+  "lighting_exposure_contrast": 8,
+  "materials_colors": 8.5,
+  "scale": 8,
+  "hierarchy": 8,
+  "dead_areas_repetition": 8,
+  "asset_fit_clipping": 8,
+  "character_animation": 8,
+  "vfx": 8,
+  "readability_usability": 8,
+  "overall_mean": 8.05,
+  "honesty": "materials 8.5 and character 8 are PROPOSED on render-verified scene facts (alternation rendered, fox 3.9 m); the 8.5 bar still needs the human eye to confirm or raise - no metric inflation"
+ },
+ "verdict_file": "assetlib/reports/vd_iteration_11_verdict.json (refreshed for IT-12, PENDING_HUMAN_EYE)",
+ "audio_vido_modified": false,
+ "baselines_touched": "none; no commits"
+}

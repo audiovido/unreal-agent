@@ -1,0 +1,172 @@
+{
+  "asset": "sample_monkey",
+  "job_id": "p2_glb_roundtrip",
+  "validation": {
+    "ok": true,
+    "format": "glb",
+    "meshes": 1,
+    "vertex_total": 505,
+    "polygon_total": 968,
+    "triangle_total": 968,
+    "dimensions_cm": [
+      75.2,
+      46.84,
+      54.14
+    ],
+    "materials": [
+      "P2_Monkey"
+    ],
+    "textures": [],
+    "uv_ensured": true,
+    "decimate": {
+      "requested": false
+    },
+    "deferred": {
+      "lods": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      },
+      "collision": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      }
+    },
+    "exports": [
+      "glb"
+    ]
+  },
+  "report": {
+    "asset": "sample_monkey",
+    "job_id": "p2_glb_roundtrip",
+    "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/samples/sample_monkey.glb",
+    "source_format": "glb",
+    "import": {
+      "ok": true,
+      "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/samples/sample_monkey.glb",
+      "format": "glb",
+      "imported_objects": [
+        {
+          "name": "P2_Monkey",
+          "type": "MESH",
+          "parent": null
+        }
+      ],
+      "object_count": 1
+    },
+    "export_formats": [
+      "glb"
+    ],
+    "export_dir": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/glb_roundtrip",
+    "meshes_before": [
+      {
+        "name": "sample_monkey",
+        "vertices": 1966,
+        "polygons": 968,
+        "triangles": 968,
+        "has_uv": true,
+        "materials": [
+          "P2_Monkey"
+        ]
+      }
+    ],
+    "meshes_after": [
+      {
+        "name": "sample_monkey",
+        "vertices": 505,
+        "polygons": 968,
+        "triangles": 968,
+        "has_uv": true,
+        "materials": [
+          "P2_Monkey"
+        ]
+      }
+    ],
+    "normalization": {
+      "scene_units": "METRIC",
+      "scale_cm_per_unit": 100.0,
+      "origin_center": "BOUNDS",
+      "transforms_applied": true,
+      "whole_scene_dimensions_cm": [
+        75.2,
+        46.84,
+        54.14
+      ],
+      "target_dimension_cm": null,
+      "scale_result": null
+    },
+    "geometry": {
+      "cleanup": true,
+      "custom_split_normals_cleared": true,
+      "normals_fixed": true,
+      "uv_ensured": true,
+      "decimate": {
+        "requested": false
+      }
+    },
+    "materials": [
+      "P2_Monkey"
+    ],
+    "textures": [],
+    "organization": {
+      "requested_name": "sample_monkey",
+      "object_names": [
+        "sample_monkey"
+      ]
+    },
+    "deferred": {
+      "lods": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      },
+      "collision": {
+        "requested": false,
+        "status": "deferred-not-implemented"
+      }
+    },
+    "export": {
+      "files": [
+        {
+          "format": "glb",
+          "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/glb_roundtrip/sample_monkey.glb",
+          "size_bytes": 29724,
+          "ok": true
+        }
+      ]
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_work/sample_monkey.blend",
+    "validation": {
+      "ok": true,
+      "format": "glb",
+      "meshes": 1,
+      "vertex_total": 505,
+      "polygon_total": 968,
+      "triangle_total": 968,
+      "dimensions_cm": [
+        75.2,
+        46.84,
+        54.14
+      ],
+      "materials": [
+        "P2_Monkey"
+      ],
+      "textures": [],
+      "uv_ensured": true,
+      "decimate": {
+        "requested": false
+      },
+      "deferred": {
+        "lods": {
+          "requested": false,
+          "status": "deferred-not-implemented"
+        },
+        "collision": {
+          "requested": false,
+          "status": "deferred-not-implemented"
+        }
+      },
+      "exports": [
+        "glb"
+      ]
+    }
+  }
+}

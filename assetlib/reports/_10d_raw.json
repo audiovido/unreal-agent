@@ -1,0 +1,19 @@
+{
+ "capture": "assetlib/proof/screens/vd_iteration10_d_final.png",
+ "md5": "2f006cae39787a90dc7bc930160f515f",
+ "pose_verified": true,
+ "raw_readback": {
+  "loc": [
+   600.0,
+   -350.0,
+   170.0
+  ],
+  "rot": [
+   0.0,
+   -3.0,
+   20.0
+  ]
+ },
+ "distinct_from_all_prior": true,
+ "prior_frame_count": 56
+}

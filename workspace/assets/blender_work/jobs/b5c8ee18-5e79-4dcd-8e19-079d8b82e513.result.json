@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "outputs": {
+    "object_name": "UA_Wall_Panel_Slim",
+    "shape": "cube",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Wall_Panel_Slim.fbx",
+      "format": "fbx",
+      "size_bytes": 15228,
+      "object": "UA_Wall_Panel_Slim"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/b5c8ee18-5e79-4dcd-8e19-079d8b82e513.blend",
+    "proof": {}
+  },
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      260.0,
+      10.0,
+      120.0
+    ],
+    "vertex_count": 8,
+    "poly_count": 6,
+    "materials": {
+      "applied": true,
+      "object": "UA_Wall_Panel_Slim",
+      "materials": [
+        "UA_PanelMat"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        259.99999046325684,
+        10.000000149011612,
+        120.00000476837158
+      ],
+      "after_cm": [
+        259.99999046325684,
+        10.000000149011612,
+        119.99999284744263
+      ]
+    },
+    "expected_dimensions_cm": [
+      260.0,
+      10.0,
+      120.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        260.0,
+        10.0,
+        120.0
+      ],
+      "expected_cm": [
+        260.0,
+        10.0,
+        120.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "b5c8ee18-5e79-4dcd-8e19-079d8b82e513",
+    "exported_at": 1788238057.8831995,
+    "source": "generated:cube",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\b5c8ee18-5e79-4dcd-8e19-079d8b82e513.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Wall_Panel_Slim.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      260.0,
+      10.0,
+      120.0
+    ],
+    "materials": [
+      {
+        "name": "UA_PanelMat",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        260.0,
+        10.0,
+        120.0
+      ],
+      "vertex_count": 8,
+      "poly_count": 6,
+      "materials": [
+        {
+          "name": "UA_PanelMat",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Wall_Panel_Slim",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "job_id": "b5c8ee18-5e79-4dcd-8e19-079d8b82e513",
+  "operation": "create_primitive",
+  "finished_at": 1788238057.8917499
+}

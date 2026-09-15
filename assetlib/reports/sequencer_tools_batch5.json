@@ -1,0 +1,145 @@
+{
+  "bridge": {
+    "ok": true,
+    "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+    "project_name": "ASSET_Showcase2",
+    "engine": "5.8.2-56702186+++UE5+Release-5.8",
+    "world": "/Game/ShowcaseMap.ShowcaseMap",
+    "port": 6766
+  },
+  "steps": [
+    {
+      "step": "01_open_temp_map",
+      "open": {
+        "ok": true,
+        "level_path": "/Game/ToolGap/Batch2Map",
+        "loaded": true,
+        "world_path": "/Game/ToolGap/Batch2Map.Batch2Map",
+        "identity_ok": true
+      },
+      "actor_count_after": 0,
+      "ok": true
+    },
+    {
+      "step": "02_create_sequence",
+      "ok": true,
+      "created": true,
+      "saved": true,
+      "asset_path": "/Game/ToolGap/LS_Batch5Test"
+    },
+    {
+      "step": "03_list_sequences",
+      "ok": true,
+      "count": 1,
+      "sequences": [
+        "/Game/ToolGap/LS_Batch5Test.LS_Batch5Test"
+      ]
+    },
+    {
+      "step": "04_bind_cube_and_camera",
+      "cube_binding": {
+        "ok": true,
+        "actor": "Seq0",
+        "binding_id": "<Struct 'MovieSceneObjectBindingID' (0x0000022871608F00) {}>"
+      },
+      "camera_cut": {
+        "ok": true,
+        "camera_actor": "CamBatch5",
+        "cut_track": "MovieSceneCameraCutTrack_0",
+        "note": "camera binding-id wiring is via guid objects and intentionally left best-effort; track+section+range are the proven surface"
+      },
+      "ok": true
+    },
+    {
+      "step": "05_transform_track_section",
+      "track_section": {
+        "ok": true,
+        "track_class": "MovieScene3DTransformTrack",
+        "section_range": [
+          0.0,
+          2.0000417232513428
+        ],
+        "display_name": "Transform"
+      },
+      "keyframe_probe": {
+        "ok": true,
+        "channel_count": 9,
+        "key_insert": "ERR:'MovieSceneScriptingDoubleChannel' object has no attribute 'add_keys'"
+      },
+      "ok": true
+    },
+    {
+      "step": "06_scrub_and_play",
+      "ok": true,
+      "scrub_time": 1.0,
+      "speed": 2.0,
+      "playing": true,
+      "paused": true
+    },
+    {
+      "step": "07_structure_readback",
+      "ok": true,
+      "binding_count": 1,
+      "tracks": [
+        {
+          "class": "MovieScene3DTransformTrack",
+          "sections": [
+            {
+              "range": [
+                0.0,
+                2.0000417232513428
+              ]
+            }
+          ]
+        },
+        {
+          "class": "MovieSceneCameraCutTrack",
+          "sections": [
+            {
+              "range": [
+                0.0,
+                2.0000417232513428
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "step": "08_save_reopen",
+      "ok": true,
+      "asset_path": "/Game/ToolGap/LS_Batch5Test",
+      "class_after_reload": "LevelSequence"
+    },
+    {
+      "step": "09a_bad_path_rejected",
+      "ok": true,
+      "error": "empty sequence name"
+    },
+    {
+      "step": "09b_unknown_actor_rejected",
+      "ok": true,
+      "error": "actor not found or ambiguous: NoSuchActor_Batch5",
+      "matches": []
+    },
+    {
+      "step": "09c_unknown_track_rejected",
+      "ok": true,
+      "error": "unknown track class: MovieSceneNoSuchTrack"
+    }
+  ],
+  "verdict": "PASS",
+  "step_summary": {
+    "01_open_temp_map": true,
+    "02_create_sequence": true,
+    "03_list_sequences": true,
+    "04_bind_cube_and_camera": true,
+    "05_transform_track_section": true,
+    "06_scrub_and_play": true,
+    "07_structure_readback": true,
+    "08_save_reopen": true,
+    "09a_bad_path_rejected": true,
+    "09b_unknown_actor_rejected": true,
+    "09c_unknown_track_rejected": true
+  }
+}

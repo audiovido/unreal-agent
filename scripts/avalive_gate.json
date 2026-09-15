@@ -1,0 +1,23 @@
+{
+  "avalive_uproject": "C:/Users/Shadow/Desktop/AvaLive/AvaLive/AvaLive.uproject",
+  "unreal_editor_exe": "D:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor.exe",
+  "project_cwd": "C:/Users/Shadow/Desktop/AvaLive/AvaLive",
+  "host": "127.0.0.1",
+  "port": 6766,
+  "expected_project": "AvaLive",
+  "expected_map": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+  "expected_listener": "multi-project-v3",
+  "listen_timeout_seconds": 180,
+  "backend_base": "http://127.0.0.1:8765",
+  "chat_prompt": "Hello! Please say hi to me in one short friendly sentence.",
+  "chat_model": null,
+  "chat_timeout_seconds": 180,
+  "speech": {
+    "anim_sequence": "/Game/UnrealAgent/AS_AgentLine_Performance",
+    "sound_wave": "/Game/UnrealAgent/agent_line",
+    "actor_name": "BP_MH_Ava_AgentCharacter_C_0",
+    "frame_interval": 1.1,
+    "frame_count": 4,
+    "mouth_churn_threshold_pct": 1.0
+  }
+}

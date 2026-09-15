@@ -1,0 +1,215 @@
+{
+  "categories": [
+    "Characters",
+    "Crowd/NPC",
+    "Vehicles",
+    "Buildings",
+    "Interiors",
+    "Furniture",
+    "Props",
+    "Nature",
+    "Roads/City",
+    "Animations",
+    "Creatures",
+    "Robots",
+    "VFX",
+    "Materials",
+    "Cinematic/Sequencer"
+  ],
+  "entries": [
+    {
+      "id": "cesium_milk_truck",
+      "category": "Vehicles",
+      "name": "Cesium Milk Truck",
+      "license": "CC-BY 4.0 (see LICENSE.md)",
+      "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb",
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck.fbx",
+      "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck_preview.png",
+      "tags": [
+        "truck",
+        "vehicle",
+        "milk truck",
+        "suv proxy",
+        "car"
+      ],
+      "desc": "Khronos official glTF sample; cached as UE-ready FBX (P2 chain).",
+      "ue_class": "StaticMesh",
+      "size_cm": [
+        279.2,
+        486.89,
+        231.76
+      ],
+      "skeleton": null,
+      "animations": [],
+      "display_scale": 1.0,
+      "lod": "LOD0 only",
+      "collision": "auto (simple collision on import)",
+      "ue_compatible": "5.8"
+    },
+    {
+      "id": "black_suv",
+      "category": "Vehicles",
+      "name": "Black SUV (derived)",
+      "license": "derived from cesium_milk_truck (CC-BY)",
+      "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck.fbx",
+      "path": "D:/AI/_Assets/Vehicles/BlackSUV.fbx",
+      "preview": "",
+      "tags": [
+        "suv",
+        "black",
+        "vehicle",
+        "car",
+        "derived"
+      ],
+      "desc": "Blender-tinted (base color 0.015) variant via tint_black.py; UE import pending.",
+      "ue_class": null,
+      "size_cm": null,
+      "skeleton": null,
+      "animations": [],
+      "display_scale": 1.0,
+      "lod": "LOD0 only",
+      "collision": "auto (simple collision on import)",
+      "ue_compatible": "5.8"
+    },
+    {
+      "id": "cesium_man",
+      "category": "Characters",
+      "name": "Cesium Man",
+      "license": "CC-BY 4.0 (see LICENSE.md)",
+      "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+      "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Characters/CesiumMan/CesiumMan_preview.png",
+      "tags": [
+        "character",
+        "human",
+        "rigged",
+        "animation",
+        "crowd"
+      ],
+      "desc": "Khronos official rigged humanoid sample; 1 animation.",
+      "ue_class": "SkeletalMesh",
+      "size_cm": [
+        111.0,
+        34.68,
+        160.36
+      ],
+      "skeleton": "CesiumMan_Skeleton",
+      "animations": [
+        "CesiumMan_Anim"
+      ],
+      "display_scale": 1.0,
+      "lod": "LOD0 only",
+      "collision": "auto (simple collision on import)",
+      "ue_compatible": "5.8"
+    },
+    {
+      "id": "fox",
+      "category": "Animations",
+      "name": "Fox (animated)",
+      "license": "CC0 / CC-BY 4.0 (see LICENSE.md)",
+      "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Fox/glTF-Binary/Fox.glb",
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Fox/glTF-Binary/Fox.glb",
+      "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Animations/Fox/Fox_preview.png",
+      "tags": [
+        "fox",
+        "animal",
+        "walk",
+        "run",
+        "survey",
+        "animation",
+        "character"
+      ],
+      "desc": "Khronos official quadruped sample; FoxRun/FoxSurvey/FoxWalk.",
+      "ue_class": "SkeletalMesh",
+      "size_cm": [
+        5109.78,
+        16198.99,
+        8369.3
+      ],
+      "skeleton": "Fox_Skeleton",
+      "animations": [
+        "FoxRun",
+        "FoxSurvey",
+        "FoxWalk"
+      ],
+      "display_scale": 0.0201,
+      "lod": "LOD0 only",
+      "collision": "auto (simple collision on import)",
+      "ue_compatible": "5.8"
+    },
+    {
+      "id": "modern_building",
+      "category": "Buildings",
+      "name": "Modern Building (modular facade)",
+      "license": "CC0 1.0 (Kenney Modular Buildings; License.txt in pack, in-tree)",
+      "source": "D:/AI/_Assets/Buildings/ModularBuildings/modularBuildings.zip",
+      "path": "D:/AI/_Assets/Buildings/ModernBuilding/ModernBuilding.fbx",
+      "preview": "D:/AI/_Assets/Buildings/ModularBuildings/Preview.png",
+      "tags": [
+        "building",
+        "modern",
+        "facade",
+        "modular",
+        "city",
+        "street",
+        "architecture"
+      ],
+      "desc": "Kenney CC0 modular-building plates (mb_018/021/022/023/028/029/030/035/036) composed headless in Blender into one modern facade slab; imported to /Game/NLR/ModernBuilding (25 uassets, 9 parts).",
+      "ue_class": null,
+      "size_cm": null,
+      "skeleton": null,
+      "animations": [],
+      "display_scale": 1.0,
+      "lod": "LOD0 only",
+      "collision": "auto (simple collision on import)",
+      "ue_compatible": "5.8"
+    },
+    {
+      "id": "lantern",
+      "category": "Props",
+      "name": "Lantern (street)",
+      "license": "CC0 (see LICENSE.md)",
+      "source": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Lantern/glTF-Binary/Lantern.glb",
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Lantern/glTF-Binary/Lantern.glb",
+      "preview": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/EnvironmentProps/Lantern/Lantern_preview.png",
+      "tags": [
+        "lantern",
+        "prop",
+        "environment",
+        "street",
+        "light pole"
+      ],
+      "desc": "Khronos official street-prop sample (pole+chain+lantern group).",
+      "ue_class": "StaticMesh",
+      "size_cm": [
+        1549.12,
+        463.14,
+        2566.42
+      ],
+      "skeleton": null,
+      "animations": [],
+      "display_scale": 0.1304,
+      "lod": "LOD0 only",
+      "collision": "auto (simple collision on import)",
+      "ue_compatible": "5.8"
+    }
+  ],
+  "problems": [],
+  "storage_roots": {
+    "Characters": "D:/AI/_Assets/Characters",
+    "Vehicles": "D:/AI/_Assets/Vehicles",
+    "Animations": "D:/AI/_Assets/Animations",
+    "Buildings": "D:/AI/_Assets/Environments/Buildings",
+    "Environment": "D:/AI/_Assets/Environments",
+    "Props": "D:/AI/_Assets/Environments/Props",
+    "Materials": "D:/AI/_Assets/Environments/Materials",
+    "VFX": "D:/AI/_Assets/Environments/VFX",
+    "Raw": "D:/AI/_Assets/Raw_FBX_GLB",
+    "Blender": "D:/BlenderAssets/SourceAssets",
+    "Fab": "D:/FabLibrary/ReadyAssets",
+    "CitySample": "D:/CitySample/SourcePacks"
+  },
+  "missing_categories": [
+    "Interiors"
+  ]
+}

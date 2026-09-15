@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "outputs": {
+    "object_name": "UA_Pillar_Column",
+    "shape": "cylinder",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Pillar_Column.fbx",
+      "format": "fbx",
+      "size_bytes": 16668,
+      "object": "UA_Pillar_Column"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/b90596c1-c9b0-4ba7-9346-88ba5c0943eb.blend",
+    "proof": {}
+  },
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      64.0,
+      64.0,
+      520.0
+    ],
+    "vertex_count": 64,
+    "poly_count": 34,
+    "materials": {
+      "applied": true,
+      "object": "UA_Pillar_Column",
+      "materials": [
+        "UA_DarkMetal"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        63.999998569488525,
+        63.999998569488525,
+        519.9999809265137
+      ],
+      "after_cm": [
+        63.999998569488525,
+        63.999998569488525,
+        519.9999809265137
+      ]
+    },
+    "expected_dimensions_cm": [
+      64.0,
+      64.0,
+      520.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        64.0,
+        64.0,
+        520.0
+      ],
+      "expected_cm": [
+        64.0,
+        64.0,
+        520.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "b90596c1-c9b0-4ba7-9346-88ba5c0943eb",
+    "exported_at": 1788238132.9170442,
+    "source": "generated:cylinder",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\b90596c1-c9b0-4ba7-9346-88ba5c0943eb.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Pillar_Column.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      64.0,
+      64.0,
+      520.0
+    ],
+    "materials": [
+      {
+        "name": "UA_DarkMetal",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        64.0,
+        64.0,
+        520.0
+      ],
+      "vertex_count": 64,
+      "poly_count": 34,
+      "materials": [
+        {
+          "name": "UA_DarkMetal",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Pillar_Column",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "job_id": "b90596c1-c9b0-4ba7-9346-88ba5c0943eb",
+  "operation": "create_primitive",
+  "finished_at": 1788238132.9210465
+}

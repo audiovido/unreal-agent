@@ -1,0 +1,48 @@
+{
+  "phase": "PHASE 2 - VISUAL DIRECTOR",
+  "iteration": 3,
+  "identity": {
+    "bridge": "127.0.0.1:6766",
+    "project": "ASSET_Showcase2",
+    "map": "/Game/ShowcaseMap",
+    "capture_path": "PIE game-viewport (source=GameViewport, 1922x1082)",
+    "audiovido_touched": false
+  },
+  "fixes_applied_and_saved": {
+    "sky_fill": "Added VD_SkyDome: StaticMeshActor (Engine Sphere, scale 6000) with unlit emissive material M_VD_SkyDome (Constant3Vector 0.55/0.75/1.0 -> EmissiveColor, MSM_UNLIT, recompiled+saved) - fixes the iteration-2 void-black sky band/horizon",
+    "lantern_props": "Re-added CC0 lantern at the street edge (3 pieces, single-anchor composition per acceptance recipe at x=2060, y=-160, common lift grounding)",
+    "camera": "VD_PlayerStart repositioned (1750,-1702,330) - composition pass",
+    "lighting_state": "ACC_Sun 30000 lux; ACC_SkyLight SLS_CAPTURED_SCENE intensity 1.2 recaptured (verified live)"
+  },
+  "capture_evidence": {
+    "before_metrics_reference": "Iteration-2 balanced frame (no sky): thirds [0.143, 0.435, 0.545], bright 0.117 - recorded in vd_iteration_2.json",
+    "after_real_render": "assetlib/proof/screens/vd_iteration3_after.png (1,389,570 B game-viewport render)",
+    "after_metrics": {"thirds_mean": [0.844, 0.25, 0.095], "mean_lum": 0.397, "std_lum": 0.413, "bright_frac": 0.241, "dark_frac": 0.518},
+    "sky_fix_proof": "Top (sky) band 0.143 (void black) -> 0.844 (sky now reads as sky/horizon filled); primary iteration-3 defect closed and rendered",
+    "remaining_balance_defect": "Sky dome reads bright (0.844, 24% blowout) while lower bands are dark (0.25/0.095) - the dome brightness/ambient balance pass could not be recaptured because PIE stopped entering play"
+  },
+  "blocker": {
+    "detail": "A create_asset over the in-use dome material timed out (overwrite modal; editor survived); after that the editor no longer enters PIE (game world never created on editor_request_begin_play) - final balance recapture blocked.",
+    "recovery": "Restart the same project editor (proven flow: graceful close, clear Saved/Autosaves, windowed relaunch), then PIE capture works again (proven in iteration 2).",
+    "iteration4_recipe": "1) Recreate the dome material under a UNIQUE name (e.g. M_VD_SkyDome2) with a dimmer constant (~0.35/0.5/0.8) to avoid the overwrite modal and cut the 0.844 sky band toward ~0.6; 2) skylight 1.2 (already), sun 30000 (already); 3) PlayerStart pitch 0 yaw 90 to rebalance thirds; 4) PIE -> capture_pie_viewport -> vd_score.py; 5) rescore all rubric categories; repeat until no critical <8 and overall >=8.5, else persist iteration 5."
+  },
+  "scores_from_actual_capture": {
+    "note": "Scored from the real dome render (assetlib/proof/screens/vd_iteration3_after.png) + verified scene state. Sky void fix is REAL; brightness balance is REGRESSED vs iteration 2 lower bands.",
+    "composition": 6,
+    "camera": 7,
+    "lighting_exposure_contrast": 5,
+    "materials_colors": 6,
+    "scale": 8,
+    "hierarchy": 8,
+    "dead_areas_repetition": 7,
+    "asset_fit_clipping": 8,
+    "character_animation": 8,
+    "vfx": 3,
+    "readability_usability": 5,
+    "overall": 6.4
+  },
+  "verdict": {
+    "accepted": false,
+    "reason": "Primary defect (void sky) FIXED and rendered, but the brightness balance regression (dome 0.844 vs street 0.095) dropped lighting/readability; overall 6.4 < 8.5. Full acceptance deferred to iteration 4 per the recipe above."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "started_at": 1788345404.9934876,
+  "level_actors": [
+    {
+      "label": "ASSET_Sun",
+      "class": "DirectionalLight"
+    },
+    {
+      "label": "ASSET_Mesh0",
+      "class": "StaticMeshActor",
+      "mesh": "/Game/Smoke/FBX/P1_TableTop.P1_TableTop"
+    },
+    {
+      "label": "ASSET_Mesh1",
+      "class": "StaticMeshActor",
+      "mesh": "/Game/Smoke/GLB/P1_TableTop/StaticMeshes/P1_TableTop.P1_TableTop"
+    }
+  ],
+  "viewport_ready": true,
+  "ok": true,
+  "elapsed_seconds": 10.4,
+  "engine": "5.8.2-56702186+++UE5+Release-5.8"
+}

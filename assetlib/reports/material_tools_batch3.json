@@ -1,0 +1,257 @@
+{
+  "bridge": {
+    "ok": true,
+    "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+    "project_name": "ASSET_Showcase2",
+    "engine": "5.8.2-56702186+++UE5+Release-5.8",
+    "world": "/Game/ShowcaseMap.ShowcaseMap",
+    "port": 6766
+  },
+  "steps": [
+    {
+      "step": "00_cleanup",
+      "ok": true
+    },
+    {
+      "step": "01_open_batch2map_clean",
+      "open": {
+        "ok": true,
+        "level_path": "/Game/ToolGap/Batch2Map",
+        "loaded": true,
+        "world_path": "/Game/ToolGap/Batch2Map.Batch2Map",
+        "identity_ok": true
+      },
+      "swept": {
+        "removed": []
+      },
+      "actor_count_after": 0,
+      "ok": true
+    },
+    {
+      "step": "02_create_material",
+      "ok": true,
+      "created": true,
+      "saved": true,
+      "asset_path": "/Game/ToolGap/M_Batch3Test"
+    },
+    {
+      "step": "03_pins_unwired",
+      "ok": true,
+      "pins": [
+        {
+          "pin": "MP_BASE_COLOR",
+          "connected": false
+        },
+        {
+          "pin": "MP_ROUGHNESS",
+          "connected": false
+        },
+        {
+          "pin": "MP_METALLIC",
+          "connected": false
+        },
+        {
+          "pin": "MP_SPECULAR",
+          "connected": false
+        }
+      ]
+    },
+    {
+      "step": "04_create_scalar_param",
+      "ok": true,
+      "param_name": "Intensity",
+      "class": "MaterialExpressionScalarParameter",
+      "object_path": "/Game/ToolGap/M_Batch3Test.M_Batch3Test:MaterialExpressionScalarParameter_0",
+      "default": "0.5"
+    },
+    {
+      "step": "05_create_vector_param",
+      "ok": true,
+      "param_name": "Tint",
+      "class": "MaterialExpressionVectorParameter",
+      "object_path": "/Game/ToolGap/M_Batch3Test.M_Batch3Test:MaterialExpressionVectorParameter_0",
+      "default": "[1.0, 0.0, 0.0, 1.0]"
+    },
+    {
+      "step": "06_connect_roughness",
+      "ok": true,
+      "param_name": "Intensity",
+      "property": "MP_ROUGHNESS",
+      "connected_node": "MaterialExpressionScalarParameter_0"
+    },
+    {
+      "step": "06b_connect_basecolor",
+      "ok": true,
+      "param_name": "Tint",
+      "property": "MP_BASE_COLOR",
+      "connected_node": "MaterialExpressionVectorParameter_0"
+    },
+    {
+      "step": "07_pin_readback",
+      "ok": true,
+      "pins": [
+        {
+          "pin": "MP_BASE_COLOR",
+          "connected": true,
+          "node_class": "MaterialExpressionVectorParameter",
+          "param": "Tint",
+          "default": [
+            1.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "pin": "MP_ROUGHNESS",
+          "connected": true,
+          "node_class": "MaterialExpressionScalarParameter",
+          "param": "Intensity",
+          "default": 0.5
+        },
+        {
+          "pin": "MP_METALLIC",
+          "connected": false
+        },
+        {
+          "pin": "MP_SPECULAR",
+          "connected": false
+        }
+      ]
+    },
+    {
+      "step": "08_set_pin_default",
+      "set": {
+        "ok": true,
+        "value_after": 0.25,
+        "expression": "/Game/ToolGap/M_Batch3Test.M_Batch3Test:MaterialExpressionScalarParameter_0"
+      },
+      "pin_after": {
+        "pin": "MP_ROUGHNESS",
+        "connected": true,
+        "node_class": "MaterialExpressionScalarParameter",
+        "param": "Intensity",
+        "default": 0.25
+      },
+      "ok": true
+    },
+    {
+      "step": "09_create_instance",
+      "ok": true,
+      "created": true,
+      "saved": true,
+      "asset_path": "/Game/ToolGap/MI_Batch3Test",
+      "parent": "/Game/ToolGap/M_Batch3Test"
+    },
+    {
+      "step": "10_instance_scalar",
+      "ok": true,
+      "param": "Intensity",
+      "set": 0.75,
+      "read_back": 0.75
+    },
+    {
+      "step": "10b_instance_vector",
+      "ok": true,
+      "param": "Tint",
+      "read_back": [
+        1.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "step": "11_parameter_inventory",
+      "ok": true,
+      "scalars": [
+        {
+          "name": "Intensity",
+          "value": 0.75
+        }
+      ],
+      "vectors": [
+        {
+          "name": "Tint",
+          "value": [
+            1.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": "12_assign_to_mesh",
+      "ok": true,
+      "actor": "Mat0",
+      "slot": 0,
+      "material_on_slot": "/Game/ToolGap/MI_Batch3Test.MI_Batch3Test"
+    },
+    {
+      "step": "13_save_reopen",
+      "material": {
+        "ok": true,
+        "asset_path": "/Game/ToolGap/M_Batch3Test",
+        "class_after_reload": "Material"
+      },
+      "instance": {
+        "ok": true,
+        "asset_path": "/Game/ToolGap/MI_Batch3Test",
+        "class_after_reload": "MaterialInstanceConstant"
+      },
+      "reopen_scalar": {
+        "ok": true,
+        "param": "Intensity",
+        "set": 0.75,
+        "read_back": 0.75
+      },
+      "ok": true
+    },
+    {
+      "step": "14a_unknown_property_rejected",
+      "ok": true,
+      "error": "unknown material property: MP_NOT_A_REAL_PROPERTY"
+    },
+    {
+      "step": "14b_missing_expression_rejected",
+      "ok": true,
+      "error": "expression object not found: /Game/Nope.ThisDoesNotExist_99"
+    },
+    {
+      "step": "14c_malformed_path_rejected",
+      "ok": true,
+      "error": "empty material name in path: /Game/ToolGap/ZzNotReallyPath/"
+    },
+    {
+      "step": "14d_unknown_actor_rejected",
+      "ok": true,
+      "error": "actor not found or ambiguous: NoSuchActor_Batch3",
+      "matches": []
+    }
+  ],
+  "verdict": "PASS",
+  "step_summary": {
+    "00_cleanup": true,
+    "01_open_batch2map_clean": true,
+    "02_create_material": true,
+    "03_pins_unwired": true,
+    "04_create_scalar_param": true,
+    "05_create_vector_param": true,
+    "06_connect_roughness": true,
+    "06b_connect_basecolor": true,
+    "07_pin_readback": true,
+    "08_set_pin_default": true,
+    "09_create_instance": true,
+    "10_instance_scalar": true,
+    "10b_instance_vector": true,
+    "11_parameter_inventory": true,
+    "12_assign_to_mesh": true,
+    "13_save_reopen": true,
+    "14a_unknown_property_rejected": true,
+    "14b_missing_expression_rejected": true,
+    "14c_malformed_path_rejected": true,
+    "14d_unknown_actor_rejected": true
+  }
+}

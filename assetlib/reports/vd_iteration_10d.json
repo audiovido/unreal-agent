@@ -1,0 +1,85 @@
+{
+ "phase": "PHASE 2 - VD ITERATION 10, sub-step D (real frame capture + human-eye score)",
+ "date": "2026-09-02",
+ "bridge": "127.0.0.1:6766",
+ "project": "ASSET_Showcase2",
+ "capture": {
+  "png": "assetlib/proof/screens/vd_iteration10_d_final.png",
+  "md5": "2f006cae39787a90dc7bc930160f515f",
+  "pose_verified": true,
+  "raw_readback": {
+   "loc": [
+    600.0,
+    -350.0,
+    170.0
+   ],
+   "rot": [
+    0.0,
+    -3.0,
+    20.0
+   ]
+  },
+  "distinct_from_all_prior_frames": true,
+  "scorer": {
+   "mean_lum": 0.346,
+   "std_lum": 0.136,
+   "halves": [
+    0.348,
+    0.344
+   ],
+   "thirds": [
+    0.237,
+    0.342,
+    0.458
+   ],
+   "dark_frac": 0.047,
+   "bright_frac": 0.001,
+   "sky_band_rgb": [
+    0.132,
+    0.249,
+    0.43
+   ]
+  }
+ },
+ "proposed_scores": {
+  "composition": 8,
+  "camera": 8,
+  "lighting_exposure_contrast": 8,
+  "materials_colors": 7,
+  "scale": 8,
+  "hierarchy": 8,
+  "dead_areas_repetition": 8,
+  "asset_fit_clipping": 8,
+  "character_animation": 7,
+  "vfx": 4,
+  "readability_usability": 8,
+  "evidence_tags": "composition/camera/lighting/dead-areas/readability capture-confirmed (band+grid); scale/hierarchy/fit scene-state-verified (bounds readback); materials/character metric-proxy; VFX capture-confirmed ABSENT (engine content gap, IT-6/7)",
+  "overall_mean": 7.45
+ },
+ "verdict": "NOT_ACCEPTED - HUMAN_VERDICT_NOT_RECEIVED (ask_questions timed out); self-accept on metrics is forbidden by the acceptance rule",
+ "iteration11_recipe": [
+  "1) VFX is the ONLY structural blocker (vfx=4 caps the mean at ~7.45 even with all-critical 8s): acquire ONE free licensed looping Niagara system via the D:-first ready-asset router (verify license text in-tree; reject testing-only terms) OR enable a plugin that ships loadable systems (probe Volumetrics binaries first - recorded absent)",
+  "2) Place the looping system street-side (unique collision-safe name), prove a measurable anchor-patch visual delta across time in PIE (the IT-6 test), target vfx >= 7",
+  "3) Re-present the frame in Preview for the human verdict; accept only at overall >= 8.5 with no critical < 8",
+  "4) Optional hygiene before lock: normalize VD_Fox actor origin (component carries -82m relative offset; renders correctly)"
+ ],
+ "scene_state_locked_candidate": {
+  "hero_pose": [
+   600.0,
+   -350.0,
+   170.0,
+   0.0,
+   -3.0,
+   20.0
+  ],
+  "sun": "6000 lux pitch -55 yaw -88(272)",
+  "skylight": 0.45,
+  "grounded": {
+   "suv_bottom": 1.0,
+   "fox_bottom": 1.0
+  },
+  "map": "/Game/ShowcaseMap"
+ },
+ "audio_vido_modified": false,
+ "baselines_touched": "none; no commits"
+}

@@ -1,0 +1,211 @@
+{
+  "id": "9647c407-3b42-4f47-b101-b0ceaab10c5c",
+  "operation": "create_primitive",
+  "inputs": {
+    "name": "UA_Pillar_Column",
+    "shape": "cylinder",
+    "dimensions_cm": [
+      64,
+      64,
+      520
+    ],
+    "expected_dimensions_cm": [
+      64,
+      64,
+      520
+    ],
+    "materials": [
+      {
+        "name": "UA_DarkMetal",
+        "color": [
+          0.055,
+          0.06,
+          0.09
+        ],
+        "metallic": 0.95,
+        "roughness": 0.32
+      }
+    ],
+    "screenshot": false,
+    "segments": 48
+  },
+  "outputs": {
+    "object_name": "UA_Pillar_Column",
+    "shape": "cylinder",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Pillar_Column.fbx",
+      "format": "fbx",
+      "size_bytes": 16668,
+      "object": "UA_Pillar_Column"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/9647c407-3b42-4f47-b101-b0ceaab10c5c.blend",
+    "proof": {}
+  },
+  "status": "COMPLETE",
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      64.0,
+      64.0,
+      520.0
+    ],
+    "vertex_count": 64,
+    "poly_count": 34,
+    "materials": {
+      "applied": true,
+      "object": "UA_Pillar_Column",
+      "materials": [
+        "UA_DarkMetal"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        63.999998569488525,
+        63.999998569488525,
+        519.9999809265137
+      ],
+      "after_cm": [
+        63.999998569488525,
+        63.999998569488525,
+        519.9999809265137
+      ]
+    },
+    "expected_dimensions_cm": [
+      64.0,
+      64.0,
+      520.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        64.0,
+        64.0,
+        520.0
+      ],
+      "expected_cm": [
+        64.0,
+        64.0,
+        520.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "9647c407-3b42-4f47-b101-b0ceaab10c5c",
+    "exported_at": 1788238163.1069303,
+    "source": "generated:cylinder",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\9647c407-3b42-4f47-b101-b0ceaab10c5c.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Pillar_Column.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      64.0,
+      64.0,
+      520.0
+    ],
+    "materials": [
+      {
+        "name": "UA_DarkMetal",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        64.0,
+        64.0,
+        520.0
+      ],
+      "vertex_count": 64,
+      "poly_count": 34,
+      "materials": [
+        {
+          "name": "UA_DarkMetal",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Pillar_Column",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "attempts": 1,
+  "max_attempts": 3,
+  "timeout_seconds": 600,
+  "created_at": 1788238162.3116748,
+  "updated_at": 1788238163.2690747,
+  "log": [
+    {
+      "at": 1788238162.3116763,
+      "level": "info",
+      "message": "job created"
+    },
+    {
+      "at": 1788238162.3381355,
+      "level": "info",
+      "message": "attempt 1/3 starting (headless)"
+    },
+    {
+      "at": 1788238163.2684824,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238163.2684908,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238163.2684917,
+      "level": "info",
+      "message": "Info: Total files 0 | Changed 0 | Failed 0"
+    },
+    {
+      "at": 1788238163.2684922,
+      "level": "info",
+      "message": ""
+    },
+    {
+      "at": 1788238163.268493,
+      "level": "info",
+      "message": "FBX export starting... 'C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\workspace\\\\assets\\\\exports\\\\UA_Pillar_Column.fbx'"
+    },
+    {
+      "at": 1788238163.2684937,
+      "level": "info",
+      "message": "export finished in 0.0156 sec."
+    },
+    {
+      "at": 1788238163.2684941,
+      "level": "info",
+      "message": "Info: Saved \"9647c407-3b42-4f47-b101-b0ceaab10c5c.blend\""
+    },
+    {
+      "at": 1788238163.2690735,
+      "level": "info",
+      "message": "job COMPLETE"
+    }
+  ]
+}

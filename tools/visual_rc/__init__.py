@@ -1,0 +1,1 @@
+"""AIVIDO Visual RC — Independent acceptance system for Visual Vertical Slice V1."""

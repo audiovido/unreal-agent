@@ -1,0 +1,6 @@
+{
+  "ok": false,
+  "code": "SOURCE_NOT_FOUND",
+  "error": "source file not found: C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\samples\\does_not_exist.fbx",
+  "job_id": "p2_error_missing_source"
+}

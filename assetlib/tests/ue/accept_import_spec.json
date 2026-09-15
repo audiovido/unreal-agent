@@ -1,0 +1,30 @@
+[
+  {
+    "id": "truck",
+    "category": "Vehicle",
+    "file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/content/Vehicles/CesiumMilkTruck/CesiumMilkTruck.fbx",
+    "dest": "/Game/Showcase/Vehicles",
+    "expect_class": "StaticMesh"
+  },
+  {
+    "id": "cesiumman",
+    "category": "Character",
+    "file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+    "dest": "/Game/Showcase/Characters",
+    "expect_class": "SkeletalMesh"
+  },
+  {
+    "id": "fox",
+    "category": "Animation",
+    "file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Fox/glTF-Binary/Fox.glb",
+    "dest": "/Game/Showcase/Animations",
+    "expect_class": "SkeletalMesh"
+  },
+  {
+    "id": "lantern",
+    "category": "Environment/Prop",
+    "file": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/source/khronos/Models/Lantern/glTF-Binary/Lantern.glb",
+    "dest": "/Game/Showcase/Props",
+    "expect_class": "StaticMesh"
+  }
+]

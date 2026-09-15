@@ -1,0 +1,101 @@
+{
+  "runtime_widget_verify": {
+    "ok": true,
+    "code": null,
+    "widget": "StatusText",
+    "found": true,
+    "text": "\u25cf Online",
+    "expected_text": "Online",
+    "text_match": true,
+    "world": "UA_ProductRegr_20260831",
+    "is_playing": true,
+    "verified": true
+  },
+  "runtime_actor_verify": {
+    "ok": true,
+    "code": null,
+    "actor_label": "UA_Avatar",
+    "class": "SkeletalMeshActor",
+    "expected_class": "SkeletalMeshActor",
+    "found": true,
+    "location": [
+      160.0,
+      0.0,
+      150.0
+    ],
+    "world": "UA_ProductRegr_20260831",
+    "is_playing": true,
+    "verified": true
+  },
+  "capture_pie_viewport": {
+    "ok": true,
+    "path": "C:/Users/Shadow/Desktop/UnrealAgentGraduation/UA_ProductRegr_20260831/Saved/UnrealAgent/pie_viewport_latest.png",
+    "size": 38311,
+    "world_name": "UA_ProductRegr_20260831",
+    "diagnostic": "OK|source=GameViewport|width=1912|height=1070|bytes=38311|path=C:/Users/Shadow/Desktop/UnrealAgentGraduation/UA_ProductRegr_20260831/Saved/UnrealAgent\\pie_viewport_latest.png",
+    "source_is_game_viewport": true,
+    "error": null
+  },
+  "stop_pie": {
+    "ok": true,
+    "requested": true,
+    "already_stopped": false,
+    "previous_world_name": "UA_ProductRegr_20260831",
+    "message": "PIE end-play requested"
+  },
+  "runtime_status_after": {
+    "ok": true,
+    "is_playing": false,
+    "world_name": null,
+    "world_path": null
+  },
+  "save_level_final": {
+    "ok": true,
+    "map_before": "/Game/Maps/UA_ProductRegr_20260831.UA_ProductRegr_20260831",
+    "map_after": "/Game/Maps/UA_ProductRegr_20260831.UA_ProductRegr_20260831",
+    "requested_asset_path": null,
+    "requested_map": null,
+    "saved_map": "/Game/Maps/UA_ProductRegr_20260831.UA_ProductRegr_20260831",
+    "was_temp_level": false,
+    "package_exists": true,
+    "dirty_before": false,
+    "dirty_after": false,
+    "active_map": "/Game/Maps/UA_ProductRegr_20260831.UA_ProductRegr_20260831",
+    "active_map_identity_correct": true,
+    "verified": true,
+    "save_error": null,
+    "startup_map": "/Game/Maps/UA_ProductRegr_20260831",
+    "startup_map_persisted": true
+  },
+  "reopen_map": {
+    "ok": true,
+    "level_path": "/Game/Maps/UA_ProductRegr_20260831",
+    "loaded": true,
+    "world_path": "/Game/Maps/UA_ProductRegr_20260831.UA_ProductRegr_20260831",
+    "identity_ok": true
+  },
+  "verify_reopen_state": {
+    "ok": true,
+    "code": null,
+    "project_name": "UA_ProductRegr_20260831",
+    "project_path": "C:/Users/Shadow/Desktop/UnrealAgentGraduation/UA_ProductRegr_20260831/UA_ProductRegr_20260831.uproject",
+    "expected_project": "UA_ProductRegr_20260831",
+    "active_map": "/Game/Maps/UA_ProductRegr_20260831.UA_ProductRegr_20260831",
+    "expected_map": "/Game/Maps/UA_ProductRegr_20260831",
+    "startup_map": "/Game/Maps/UA_ProductRegr_20260831",
+    "checks": {
+      "project_identity_ok": true,
+      "active_map_ok": true,
+      "startup_map_ok": true
+    },
+    "verified": true
+  },
+  "final_screenshot": {
+    "ok": true,
+    "path": "C:/Users/Shadow/Desktop/UnrealAgentGraduation/UA_ProductRegr_20260831/Saved/UnrealAgent/viewport_latest.png",
+    "size": 40796,
+    "diagnostic": "OK|source=LevelViewport[1]|perspective=1|visible=1|width=1912|height=1070|bytes=40796|path=C:/Users/Shadow/Desktop/UnrealAgentGraduation/UA_ProductRegr_20260831/Saved/UnrealAgent\\viewport_latest.png",
+    "capture_source": "NativeEditorViewport",
+    "capture_requested": false
+  }
+}

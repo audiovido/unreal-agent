@@ -1,0 +1,157 @@
+{
+ "phase": "PHASE 2 - VD ITERATION 10, sub-step C (composition repair)",
+ "date": "2026-09-02",
+ "bridge": "127.0.0.1:6766",
+ "project": "ASSET_Showcase2",
+ "diagnosis": {
+  "dead_bands_10B": [],
+  "basis": "12-band std<0.015 on 10B captures; SUV mid-frame; fox left; building background",
+  "fox_origin_note": "VD_Fox actor origin z=8273 (component -82m relative offset); world bounds bottom=1.0 -> renders grounded; left as-is"
+ },
+ "composition_fix": {
+  "hero_pose_persisted_to_VD_PlayerStart": {
+   "loc": [
+    600.0,
+    -350.0,
+    170.0
+   ],
+   "rot": [
+    0.0,
+    -3.0,
+    20.0
+   ]
+  },
+  "layering": "SUV 9.9m near anchor center; fox 6.5m left-fore; building 18-25m background; lanterns mid-far; street bottom third",
+  "subjects_grounded": {
+   "suv_bottom": 1.0,
+   "fox_bottom": 1.0
+  },
+  "saved": true
+ },
+ "capture": {
+  "png": "assetlib/proof/screens/vd_iteration10_c_hero.png",
+  "md5": "eae34328",
+  "raw_readback": {
+   "loc": [
+    600.0,
+    -350.0,
+    170.0
+   ],
+   "rot": [
+    0.0,
+    -3.0,
+    20.0
+   ]
+  },
+  "pose_verified": true
+ },
+ "validation": {
+  "bands_10C": [
+   {
+    "lum": 0.224,
+    "std": 0.051
+   },
+   {
+    "lum": 0.235,
+    "std": 0.042
+   },
+   {
+    "lum": 0.242,
+    "std": 0.043
+   },
+   {
+    "lum": 0.247,
+    "std": 0.067
+   },
+   {
+    "lum": 0.248,
+    "std": 0.105
+   },
+   {
+    "lum": 0.271,
+    "std": 0.166
+   },
+   {
+    "lum": 0.373,
+    "std": 0.189
+   },
+   {
+    "lum": 0.471,
+    "std": 0.054
+   },
+   {
+    "lum": 0.47,
+    "std": 0.038
+   },
+   {
+    "lum": 0.463,
+    "std": 0.037
+   },
+   {
+    "lum": 0.454,
+    "std": 0.037
+   },
+   {
+    "lum": 0.443,
+    "std": 0.036
+   }
+  ],
+  "bands_10B_mid": [
+   {
+    "lum": 0.161,
+    "std": 0.112
+   },
+   {
+    "lum": 0.174,
+    "std": 0.112
+   },
+   {
+    "lum": 0.179,
+    "std": 0.115
+   },
+   {
+    "lum": 0.175,
+    "std": 0.173
+   },
+   {
+    "lum": 0.215,
+    "std": 0.122
+   },
+   {
+    "lum": 0.27,
+    "std": 0.184
+   },
+   {
+    "lum": 0.343,
+    "std": 0.218
+   },
+   {
+    "lum": 0.372,
+    "std": 0.19
+   },
+   {
+    "lum": 0.459,
+    "std": 0.077
+   },
+   {
+    "lum": 0.463,
+    "std": 0.037
+   },
+   {
+    "lum": 0.454,
+    "std": 0.037
+   },
+   {
+    "lum": 0.444,
+    "std": 0.036
+   }
+  ],
+  "dead_bands_10C": [],
+  "dead_bands_10B_mid": [],
+  "suv_dark_patch": 0.1513
+ },
+ "verdict_10C": "PASS",
+ "audio_vido_modified": false,
+ "baselines_touched": "none; no commits",
+ "next": "10D real frame capture + human-eye score via Preview tab (accept >=8.5, no critical <8)"
+}

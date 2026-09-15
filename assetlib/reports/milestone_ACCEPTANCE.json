@@ -1,0 +1,107 @@
+{
+  "milestone": "ACCEPTANCE A-F LIVE \u2014 PASS (bridge-driven, one ASSET_Showcase2 editor)",
+  "verdict": "PASS \u2014 all A\u2013F legs placed/validated/captured with real window screenshots; map saved to disk; bridge identity/round-trip proven on 6766 for ASSET_Showcase2; modern building acquired (Kenney CC0) and Buildings removed from unmatched.",
+  "verdict_key": {
+    "A_vehicle": "PASS (truck FBX: 3 actors, display sizes 279x487x232cm, collision QUERY_AND_PHYSICS, screenshot)",
+    "B_character": "PASS (CesiumMan: SkeletalMesh 111x35x160cm, skeleton bound, screenshot)",
+    "C_environment": "PASS (Lantern group incl. pole/chain/lamp, display-scaled 202x60x335cm, lit scene ground+sun+sky, screenshot) + modern building placed 9-part facade",
+    "D_animation": "PASS (Fox SkeletalMesh display-scaled 103x326x168cm, FoxWalk playing, two captures md5 99691916.. != 1ff2d17e.. => visibly advancing)",
+    "E_blender_import": "PASS (BlackSUV FBX from Blender tint chain imported to /Game/NLR/BlackSUV, 3 meshes placed, collision set, screenshot)",
+    "F_nl_route": "PASS (black SUV + walking character + modern building: Kenney CC0 facade acquired, indexed, imported, placed 9-part x2.5 scale 762x250x656cm; unmatched=[] after catalog rebuild)",
+    "G_building_acquisition": "PASS (OpenGameArt CC0 1.0 modular buildings by Kenney; License.txt in-tree at D:/AI/_Assets/Buildings/ModularBuildings/License.txt; zip + composed FBX on D:; Blender-composed 3x3 facade; UE import 25 uassets) \u2014 the last open A-F item"
+  },
+  "bridge": {
+    "mapping": "ASSET -> ASSET_Showcase2 -> 127.0.0.1:6766 (assetlib/bridge/config.json)",
+    "evidence": "assetlib/reports/milestone_BRIDGE.json (ping UNREAL_BRIDGE_READY, identity ASSET_Showcase2, UnrealAgentBridge plugin loaded)",
+    "plugin": "UnrealAgentBridge (copied, binaries 5.8) + PythonScriptPlugin both enabled",
+    "startup": "Content/Python/init_unreal.py -> ue_listener_asset.py (identity-guarded, slate-tick server on 6766)"
+  },
+  "map": {
+    "saved": true,
+    "asset": "/Game/ShowcaseMap",
+    "file": "assetlib/tests/ue/ASSET_Showcase2/Content/ShowcaseMap.umap",
+    "bytes": 30302
+  },
+  "screenshots": [
+    "assetlib/proof/screens/accept_animation.png",
+    "assetlib/proof/screens/accept_animation_t2.png",
+    "assetlib/proof/screens/accept_blender_import.png",
+    "assetlib/proof/screens/accept_bridge_live.png",
+    "assetlib/proof/screens/accept_character.png",
+    "assetlib/proof/screens/accept_environment.png",
+    "assetlib/proof/screens/accept_fox_os.png",
+    "assetlib/proof/screens/accept_street_scene.png",
+    "assetlib/proof/screens/accept_vehicle.png",
+    "assetlib/proof/screens/accept_building.png"
+  ],
+  "screenshot_md5_unique": true,
+  "router": {
+    "query": "Create a modern street scene with a black SUV, one walking character, and a modern building",
+    "intent": "place",
+    "modification": "blender-tint",
+    "unmatched": [],
+    "ranked": [
+      [
+        "black_suv",
+        11
+      ],
+      [
+        "cesium_milk_truck",
+        8
+      ],
+      [
+        "modern_building",
+        8
+      ],
+      [
+        "lantern",
+        8
+      ],
+      [
+        "fox",
+        6
+      ],
+      [
+        "cesium_man",
+        4
+      ]
+    ],
+    "executed_in_ue": "building placed+framed (accept_building.png 52141387) and full street scene re-captured with building (accept_street_scene.png acc4403e); map re-saved"
+  },
+  "building_acquisition_attempts": [
+    "Khronos Sponza -> LicenseRef-CRYENGINE-Agreement (not CC) -> rejected",
+    "Khronos VirtualCity -> LicenseRef-3DRT-Testing (testing-only) -> rejected",
+    "D:/CitySample/SourcePacks empty; D:/FabLibrary/ReadyAssets empty; D:/AI only BlackSUV; D:/UnrealArchive no models",
+    "PolyPizza API unreachable (301); no Sketchfab token in env; Kenney github org missing",
+    "status: modern-building acquisition BLOCKED by license/source availability - recorded as documented gap",
+    "OPENED: OpenGameArt search type=10 (3D Art) + license=CC0 -> 'Modular Buildings' (Kenney, per-page license chip 'CC0 1.0 creativecommons.org/publicdomain/zero/1.0/') -> downloaded 1.46MB modularBuildings.zip to D:/AI/_Assets/Buildings/ModularBuildings/, License.txt (CC0, Kenney Vleugels) in-tree"
+  ],
+  "engine": "5.8.2",
+  "finished_at": 1788358355.4873176,
+  "entry_command": "export ASSETLIB_PROJECT=ASSET_Showcase2; python assetlib/tools/ue_bridge_acceptance.py  (re-run recreates scene+captures+map; idempotent)",
+  "building": {
+    "id": "modern_building",
+    "license": "CC0 1.0 (Kenney Vleugels, Modular Buildings) \u2014 License.txt in-tree at D:/AI/_Assets/Buildings/ModularBuildings/License.txt",
+    "source_zip": "D:/AI/_Assets/Buildings/ModularBuildings/modularBuildings.zip",
+    "source_parts": "D:/AI/_Assets/Buildings/ModularBuildings/Models (101 OBJ parts)",
+    "composed_fbx": "D:/AI/_Assets/Buildings/ModernBuilding/ModernBuilding.fbx (Blender headless, 9 parts mb_018/021/022/023/028/029/030/035/036)",
+    "ue_import": "/Game/NLR/ModernBuilding \u2014 25 uassets (9 StaticMesh + 16 materials)",
+    "placement": "9 StaticMeshActor (MB_*) at (2400,0,0), uniform scale x2.5",
+    "combined_size_cm": [
+      762.5,
+      250.0,
+      656.2
+    ],
+    "screenshots": {
+      "accept_building.png": {
+        "md5": "52141387",
+        "bytes": 86771
+      },
+      "accept_street_scene.png": {
+        "md5": "acc4403e",
+        "bytes": 87275
+      }
+    },
+    "catalog_state": "6 entries, Buildings populated, problems=0"
+  }
+}

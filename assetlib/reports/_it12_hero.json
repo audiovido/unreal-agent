@@ -1,0 +1,17 @@
+{
+ "png": "assetlib/proof/screens/vd_iteration12_hero.png",
+ "md5": "4e5687872ee3bc864693dadb7feb072a",
+ "pose_verified": true,
+ "raw_readback": {
+  "loc": [
+   600.0,
+   -350.0,
+   170.0
+  ],
+  "rot": [
+   0.0,
+   -3.0,
+   20.0
+  ]
+ }
+}

@@ -1,0 +1,76 @@
+{
+ "phase": "PHASE 2 - VD ITERATION 11 (VFX unblock)",
+ "date": "2026-09-02",
+ "bridge": "127.0.0.1:6766",
+ "project": "ASSET_Showcase2",
+ "source_hunt": {
+  "d_first": "D:/FabLibrary, D:/CitySample, D:/UnrealArchive scanned - no VFX stores on disk; catalog has 6 entries, zero VFX",
+  "chosen": "Engine template content: NS_DustMote from UE_5.8/Templates/TemplateResources/Standard/Variant_Horror (Epic engine EULA - verified shipped with the licensed engine install)",
+  "import": "copied to project Content/VFX_IT11/NS_DustMote.uasset (147,864 bytes), loaded as NiagaraSystem via bridge"
+ },
+ "placement": {
+  "actor": "VD_FX_DustMotes_IT11",
+  "pos": [
+   1750,
+   300,
+   120
+  ],
+  "scale": 25,
+  "auto_activate": true,
+  "asset_bound": true,
+  "saved": true,
+  "pie_down_during_edit": true
+ },
+ "signature_proof": {
+  "method": "IT-6: fresh PIE, 4 timed captures, anchor-patch mean abs delta vs static sky control",
+  "anchor_deltas": [
+   0.00471,
+   0.00462,
+   0.00497
+  ],
+  "control": 0.00047,
+  "noise_floor_empty_default_system": 0.0007,
+  "signature": true,
+  "note": "10x noise floor and 10x control - first loadable Niagara system with a real measurable visual signature"
+ },
+ "hero_frame": {
+  "png": "assetlib/proof/screens/vd_iteration11_hero.png",
+  "md5": "0485fae5ecc5576c8354947d9bb16f36",
+  "pose_verified": true,
+  "raw_readback": {
+   "loc": [
+    600.0,
+    -350.0,
+    170.0
+   ],
+   "rot": [
+    0.0,
+    -3.0,
+    20.0
+   ]
+  },
+  "scorer": {
+   "mean_lum": 0.346,
+   "halves": [
+    0.348,
+    0.344
+   ],
+   "thirds": [
+    0.237,
+    0.342,
+    0.458
+   ],
+   "bright_frac": 0.001,
+   "sky_rgb": [
+    0.132,
+    0.249,
+    0.43
+   ]
+  },
+  "gains_intact": true
+ },
+ "verdict_file": "assetlib/reports/vd_iteration_11_verdict.json (PENDING_HUMAN_EYE - stored-file protocol per 10D timeout lesson)",
+ "honest_math": "VFX 4->8 raises the straight mean 7.45 -> 7.82; materials/character remain metric-proxy 7s; overall >= 8.5 requires the human eye to confirm/raise several categories - no metric inflation",
+ "audio_vido_modified": false,
+ "baselines_touched": "none; no commits"
+}
