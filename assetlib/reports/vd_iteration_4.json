@@ -1,0 +1,65 @@
+{
+  "phase": "PHASE 2 - VISUAL DIRECTOR",
+  "iteration": 4,
+  "bridge": "127.0.0.1:6766",
+  "project": "ASSET_Showcase2",
+  "map": "/Game/ShowcaseMap",
+  "date": "2026-09-02",
+  "verdict": "NOT_ACCEPTED",
+  "acceptance_bar": "no critical category below 8 and overall >= 8.5",
+  "overall_score": 7.4,
+  "overall_note": "mean of all 11 rubric categories incl. VFX (3); excluding VFX it is 7.8 - both below the 8.5 bar, so no acceptance claim",
+  "blocker_closed": {
+    "white_frame_root_cause": "VD_SkyDome (6000-scale sphere, camera inside) had ZERO material assigned after the IT-3 crash - its M_VD_SkyDome asset was never saved (LoadError on map load: dependent package /Game/Batch3Sky/M_VD_SkyDome not available), so the interior rendered with lit engine DefaultMaterial under 30k lux -> whole frame white. Additionally VD_SkyAtmosphere (IT-3 experiment) was still present and saturating white.",
+    "why_earlier_fixes_looked_inert": "IT-4's first dome/skylight changes were applied while PIE was running; the editor refused them ('The Editor is currently in a play mode' x2 in the log) - log evidence preserved.",
+    "fixes_applied": [
+      "Assigned M_VD_SkyDome2 (unlit emissive sky blue 0.42/0.6/0.95, MSM_UNLIT) to VD_SkyDome StaticMeshComponent slot 0 - read-back verified",
+      "Destroyed VD_SkyAtmosphere actor (proven white-saturating in IT-3 at every sun level)",
+      "Skylight ACC_SkyLight intensity 0.35 -> 0.6 (SLS_CAPTURED_SCENE)",
+      "Sun ACC_Sun unchanged: 30000 lux / 5600K / pitch -40 yaw 35",
+      "Recomposed: PlayerStart moved (1750,-1702,330)->(1350,-2000,330), rotation (roll 0, pitch 2, yaw 80.3) to frame building right, SUV/fox center-left, sky top; map saved"
+    ]
+  },
+  "before": "assetlib/proof/screens/vd_iteration3_after.png (start-of-iteration state; vd_iteration4_probe.png documents the pure-white 0.935-mean pre-fix frame)",
+  "after": "assetlib/proof/screens/vd_iteration4_after.png",
+  "captures": {
+    "probe_pre_fix": {"file": "assetlib/proof/screens/vd_iteration4_probe.png", "mean_lum": 0.935, "size": 554411, "note": "pure white - dome with no material + atmosphere"},
+    "after": {"file": "assetlib/proof/screens/vd_iteration4_after.png", "size_bytes": 1329474, "md5": "7c15da44cf898db71292e8b58f722dee", "source": "PIE GameViewport", "md5_distinct_from_iteration3": true}
+  },
+  "metrics_after": {
+    "mean_lum": 0.418,
+    "std_lum": 0.334,
+    "thirds_mean": {"top": 0.332, "mid": 0.508, "ground": 0.414},
+    "half_lum": {"left": 0.477, "right": 0.358},
+    "halves_delta": 0.119,
+    "dark_frac": 0.323,
+    "bright_frac": 0.154,
+    "detail_x": 0.0032,
+    "rgb_bands": {"top": [0.355, 0.327, 0.287], "mid": [0.531, 0.505, 0.471], "ground": [0.451, 0.405, 0.355]}
+  },
+  "scores": {
+    "composition": {"score": 8, "evidence": "thirds 0.33/0.51/0.41 balanced; halves delta 0.119 (was 0.257 at yaw-90 pose)"},
+    "camera": {"score": 8, "evidence": "pulled-back street-axis frame at (1350,-2000,330) pitch 2 yaw 80.3; building right, SUV/fox center-left, natural horizon"},
+    "lighting_exposure_contrast": {"score": 8, "evidence": "mean 0.418, std 0.334, bright 15.4%, no void band, no blowout; 30k lux daylight verified in scene state"},
+    "materials_colors": {"score": 7, "evidence": "scene-state verified (sky-blue unlit dome 0.42/0.6/0.95, white MB facade, black NLR-tinted SUV) but capture top band reads warm-neutral 0.355/0.327/0.287 - color fidelity not visually confirmed"},
+    "scale": {"score": 8, "evidence": "scene-state verified: building 9xMB_* x2.5, SUV meter-scale, fox natural, eye 3.3 m at ~20 m standoff"},
+    "hierarchy": {"score": 8, "evidence": "building anchor right, SUV/fox mid-ground, sky top band present"},
+    "dead_areas_repetition": {"score": 7, "evidence": "right half lighter at 0.358 - open street recede still reads as a weaker region"},
+    "asset_fit_clipping": {"score": 8, "evidence": "no overlapping placements in scene state; lantern pieces at street edge"},
+    "character_animation": {"score": 8, "evidence": "fox walking verified live in earlier accepted runs (anim single-node); static frame cannot prove motion"},
+    "vfx": {"score": 3, "evidence": "no VFX in scene - standing low category"},
+    "readability_usability": {"score": 8, "evidence": "daylight street readable; detail proxy 0.0032; subject band mid 0.508"},
+    "overall": 7.4
+  },
+  "iteration5_recipe": [
+    "1) Add a real VFX accent on the street (batch-7-proven Niagara /Niagara/DefaultAssets/DefaultSystem spawn at ~(2100,-700,60) in the right recede) - VFX 3 must rise for the mean to ever reach 8.5",
+    "2) Fill the right-half recede: place the second lantern pair / a street detail prop along x 2100-2600 at the far sidewalk (dead-areas 7 -> 8)",
+    "3) Confirm the sky actually reads blue: raise pitch to -4 (roll0 pitch-4 yaw80.3) so a clear sky band sits in the top third; verify rgb top band shows B > R (dome 0.42/0.6/0.95)",
+    "4) If building facade still dominates warm: pull camera to (1200,-2400,330) pitch -4 yaw ~75 for a wider establishing frame",
+    "5) Recapture via the proven PIE flow (start_pie -> capture_pie_viewport -> vd_score.py, now with rgb_bands) and rescore every category; accept only when no critical <8 and overall >= 8.5",
+    "resume_command": "python assetlib/tools/vd_scene_restore.py (no-op verify) then: bridge PIE capture flow as in this iteration"
+  ],
+  "audio_vido_modified": false,
+  "baselines_touched": "none (ASSET/Blender/D:-first/catalog untouched; no commits)",
+  "reversibility": "pre-change map backup at assetlib/proof/backup/ShowcaseMap_ACCEPTED_VD0.umap; all changes live in ShowcaseMap (dome material + atmosphere removal + skylight + PlayerStart pose)"
+}

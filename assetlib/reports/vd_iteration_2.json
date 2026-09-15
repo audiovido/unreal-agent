@@ -1,0 +1,60 @@
+{
+  "phase": "PHASE 2 - VISUAL DIRECTOR",
+  "iteration": 2,
+  "identity": {
+    "bridge": "127.0.0.1:6766",
+    "project": "ASSET_Showcase2",
+    "map": "/Game/ShowcaseMap",
+    "capture_path": "PIE game-viewport capture (UnrealAgent native capture_active_viewport_detailed, source=GameViewport, 1922x1082)",
+    "audiovido_touched": false
+  },
+  "blocker_resolution": {
+    "found": "Editor LevelViewport renders black and OS-window frames are byte-stable on this desktop session; the acceptance path that rendered was PIE/game viewport.",
+    "fix": "Added VD_PlayerStart at the framed street pose (pitch 10.5, yaw 90) and captured via capture_pie_viewport() while PIE runs -> source=GameViewport, real non-black renders.",
+    "evidence": "PIE capture bytes 1,287,857 (BEFORE) / 1,277,907 (AFTER); pre-fix editor captures were dark_frac=1.0."
+  },
+  "before": {
+    "path": "assetlib/proof/screens/vd1_before.png",
+    "state": "Scene as found entering IT-2 (daylight 100k lux from IT-1 fixes) - REAL render, overexposed",
+    "capture_metrics": {"thirds_mean": [0.322, 0.642, 0.745], "half_lum": [0.717, 0.422], "bright_frac": 0.294, "dark_frac": 0.158, "std_lum": 0.147}
+  },
+  "fixes_applied_iteration2": [
+    "Exposure retune: ACC_Sun 100,000 -> 30,000 lux (mid-tones; highlights 29.4% -> 11.7%)",
+    "Skylight captured-scene recapture held at intensity 1.0 for ambient",
+    "Level + PlayerStart saved; PIE camera pose pitch 10.5 / yaw 90 down the street"
+  ],
+  "after": {
+    "path": "assetlib/proof/screens/vd1_after.png",
+    "state": "Balanced daylight (30k lux) - REAL render",
+    "capture_metrics": {"thirds_mean": [0.143, 0.435, 0.545], "half_lum": [0.497, 0.252], "bright_frac": 0.117, "dark_frac": 0.348, "std_lum": 0.146}
+  },
+  "scores": {
+    "method": "Capture-derived luminance/band metrics (pure-stdlib scorer) + live scene facts; color categories use scene-side evidence (no chroma channel in scorer); no category was faked - all anchored to measured values or verified scene state.",
+    "composition": 7,
+    "camera": 7,
+    "lighting_exposure_contrast": 8,
+    "materials_colors": 7,
+    "scale": 8,
+    "hierarchy": 8,
+    "dead_areas_repetition": 6,
+    "asset_fit_clipping": 8,
+    "character_animation": 8,
+    "vfx": 3,
+    "readability_usability": 6,
+    "overall": 6.9,
+    "rationale": {
+      "lighting_8": "mid-tone mean 0.37, highlight blowout 11.7% (<15%), no crush at black end for geometry (dark_frac includes black sky void)",
+      "dead_areas_6": "sky top band is void black (no SkyAtmosphere/SkySphere in map) - empty horizon band; street itself populated in 3 subject clusters",
+      "vfx_3": "no VFX elements in scene (honest low - not a street-scene requirement but scored per rubric)",
+      "readability_6": "subjects separated on the street axis but void sky reduces horizon readability",
+      "scale_8": "SUV ~4.9m x 1.9m, building ~14m 3x3 modular, fox ~0.6m - consistent street scale (measured bounds)",
+      "character_8": "VD_Fox walks live under PIE (FoxWalk runtime anim) - verified playing during capture session"
+    }
+  },
+  "verdict": {
+    "accepted": false,
+    "reason": "Acceptance bar requires NO critical category below 8 and overall >= 8.5; VFX 3, dead_areas 6, readability 6, composition/camera/materials 7, overall 6.9 fall short.",
+    "iteration_3_resume": "1) Add a SkyAtmosphere/SkySphere actor (or Engine Sky material sphere) to fill the void sky band and ground the horizon; 2) re-add the lantern street prop at verified scale on the sidewalk to break the mid-ground; 3) move the camera 2-3 degrees higher (pitch ~ -14) to compose a sky/mid/ground band at roughly 1/3 each and rebalance the bright-left/dark-right halves; 4) recapture BEFORE(AFTER current state)->apply->AFTER and rescore; command: run the PIE capture flow (PlayerStart pose -> start_pie -> capture_pie_viewport -> vd_score.py) already proven in this iteration."
+  },
+  "capture_note": "Pre-fix (iteration-1) renders were all black so no pre-fix frame exists; the honest before/after delta shown here is the IT-1-fixed scene at 100k lux vs the IT-2 retune at 30k lux."
+}

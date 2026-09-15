@@ -1,0 +1,6 @@
+{
+  "ok": false,
+  "code": "UNSUPPORTED_FORMAT",
+  "error": "unsupported source format: .dae (supported: ['fbx', 'glb', 'gltf', 'obj'])",
+  "job_id": "p2_error_unsupported_format"
+}

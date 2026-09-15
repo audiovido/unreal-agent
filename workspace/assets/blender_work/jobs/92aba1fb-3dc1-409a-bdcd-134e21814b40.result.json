@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "outputs": {
+    "object_name": "UA_Studio_Podium",
+    "shape": "cylinder",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Studio_Podium.fbx",
+      "format": "fbx",
+      "size_bytes": 16700,
+      "object": "UA_Studio_Podium"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/92aba1fb-3dc1-409a-bdcd-134e21814b40.blend",
+    "proof": {}
+  },
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      190.0,
+      190.0,
+      34.0
+    ],
+    "vertex_count": 64,
+    "poly_count": 34,
+    "materials": {
+      "applied": true,
+      "object": "UA_Studio_Podium",
+      "materials": [
+        "UA_DarkTile"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        189.9999976158142,
+        189.9999976158142,
+        34.00000035762787
+      ],
+      "after_cm": [
+        189.9999976158142,
+        189.9999976158142,
+        34.00000035762787
+      ]
+    },
+    "expected_dimensions_cm": [
+      190.0,
+      190.0,
+      34.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        190.0,
+        190.0,
+        34.0
+      ],
+      "expected_cm": [
+        190.0,
+        190.0,
+        34.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "92aba1fb-3dc1-409a-bdcd-134e21814b40",
+    "exported_at": 1788238129.2083714,
+    "source": "generated:cylinder",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\92aba1fb-3dc1-409a-bdcd-134e21814b40.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Studio_Podium.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      190.0,
+      190.0,
+      34.0
+    ],
+    "materials": [
+      {
+        "name": "UA_DarkTile",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        190.0,
+        190.0,
+        34.0
+      ],
+      "vertex_count": 64,
+      "poly_count": 34,
+      "materials": [
+        {
+          "name": "UA_DarkTile",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Studio_Podium",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "job_id": "92aba1fb-3dc1-409a-bdcd-134e21814b40",
+  "operation": "create_primitive",
+  "finished_at": 1788238129.2134538
+}

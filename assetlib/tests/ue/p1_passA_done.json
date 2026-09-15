@@ -1,0 +1,45 @@
+{
+  "started_at": 1788345324.519337,
+  "steps": [],
+  "imported_paths": [
+    "/Game/Smoke/FBX/P1_TableTop.P1_TableTop",
+    "/Game/Smoke/GLB/P1_TableTop/StaticMeshes/P1_TableTop.P1_TableTop"
+  ],
+  "verified": [
+    {
+      "label": "Mesh0",
+      "asset_path": "/Game/Smoke/FBX/P1_TableTop.P1_TableTop",
+      "class": "StaticMesh",
+      "actor": "ASSET_Mesh0",
+      "size_cm": [
+        170.0,
+        90.0,
+        6.0
+      ],
+      "ok": true
+    },
+    {
+      "label": "Mesh1",
+      "asset_path": "/Game/Smoke/GLB/P1_TableTop/StaticMeshes/P1_TableTop.P1_TableTop",
+      "class": "StaticMesh",
+      "actor": "ASSET_Mesh1",
+      "size_cm": [
+        170.0,
+        90.0,
+        6.0
+      ],
+      "ok": true
+    }
+  ],
+  "content_files": [
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/FBX/P1_TableMat.uasset",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/FBX/P1_TableTop.uasset",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/GLB/P1_TableTop/Materials/P1_TableMat.uasset",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/GLB/P1_TableTop/StaticMeshes/P1_TableTop.uasset",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/SmokeMap.umap"
+  ],
+  "ok_so_far": true,
+  "ok": true,
+  "elapsed_seconds": 32.9,
+  "engine": "5.8.2-56702186+++UE5+Release-5.8"
+}

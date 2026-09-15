@@ -1,0 +1,1 @@
+"""Hermetic tests for AIVIDO Visual RC Acceptance Gate."""

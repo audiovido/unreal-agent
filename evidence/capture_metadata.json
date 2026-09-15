@@ -1,0 +1,11 @@
+{
+  "frame": "FINAL.png",
+  "path": "/Users/admin/Projects/unreal-agent/evidence/FINAL.png",
+  "sha256": "4bb7c0795d52c17e20da948d3893a9f07332aececb7a7b6fe304773029b3378e",
+  "size_bytes": 5115299,
+  "captured_at_epoch": 1789330536.515713,
+  "map": "/Game/AIVIDO_Showcase",
+  "source": "bridge",
+  "diag": "OK|source=LevelViewport[1]|game_view|western_v2_dynamic",
+  "phase": "western-rebuild-v2"
+}

@@ -1,0 +1,53 @@
+{
+ "phase": "PHASE 2 - VD ITERATION 10, sub-step A (scene visibility/render-distance/cutoff)",
+ "date": "2026-09-02",
+ "bridge": "127.0.0.1:6766",
+ "project": "ASSET_Showcase2",
+ "map": "/Game/ShowcaseMap",
+ "diagnosis": {
+  "cull_settings": "ld_max=0, cached_max=0, forced_lod=0, hidden_in_game=false on all subject components -> 12-25m drop-off was NOT cull/LOD",
+  "real_defects": [
+   "VD_Fox bottom_z=-8271.5 (sunk 82 m below ground) -> raised +8272.5 cm, now 1.0 cm contact",
+   "SUV_0 gap_above_ground=26.4 cm (floating) -> lowered -25.4 cm, now 1.0 cm contact",
+   "pawn teleport via Transform(rotation=quaternion) unsupported in 5.8 python -> set_actor_location + set_control_rotation used, readback-verified"
+  ]
+ },
+ "saved": true,
+ "captures": {
+  "vd_iteration10_a_mid": {
+   "pose_ok": false,
+   "readback": null,
+   "png": "assetlib/proof/screens/vd_iteration10_a_mid.png",
+   "md5": "9ec81dff",
+   "vd_score": "{\n \"size\": [\n  1922,\n  1082\n ],\n \"mean_lum\": 0.313,\n \"std_lum\": 0.183,\n \"thirds_mean\": {\n  \"0\": 0.175,\n  \"1\": 0.309,\n  \"2\": 0.455\n },\n \"half_lum\": [\n  0.348,\n  0.279\n ],\n \"dark_frac\": 0.177,\n \"bright_frac\": 0.008,\n \"detail_x\": 0.0036,\n \"detail_y\": 0.0034,\n \"rgb_bands\": [\n  [\n   0.102,\n   0.183,\n   0.31\n  ],\n  [\n   0.277,\n   0.314,\n   0.383\n  ],\n  [\n   0.454,\n   0.454,\n   0.476\n  ]\n ]\n}",
+   "pose_verified": false
+  },
+  "vd_iteration10_a_street": {
+   "pose_ok": false,
+   "readback": null,
+   "png": "assetlib/proof/screens/vd_iteration10_a_street.png",
+   "md5": "c6ed9436",
+   "vd_score": "{\n \"size\": [\n  1922,\n  1082\n ],\n \"mean_lum\": 0.351,\n \"std_lum\": 0.153,\n \"thirds_mean\": {\n  \"0\": 0.199,\n  \"1\": 0.398,\n  \"2\": 0.458\n },\n \"half_lum\": [\n  0.373,\n  0.33\n ],\n \"dark_frac\": 0.074,\n \"bright_frac\": 0.004,\n \"detail_x\": 0.0024,\n \"detail_y\": 0.0027,\n \"rgb_bands\": [\n  [\n   0.111,\n   0.209,\n   0.36\n  ],\n  [\n   0.371,\n   0.402,\n   0.466\n  ],\n  [\n   0.456,\n   0.456,\n   0.478\n  ]\n ]\n}",
+   "pose_verified": false
+  }
+ },
+ "verdict_10A": "PASS",
+ "audio_vido_modified": false,
+ "baselines_touched": "none; no commits",
+ "next": "10B exposure/lighting repair (building blowout control), same flow",
+ "note": "pose_ok field was miscalculated from bridge result nesting; corrected via _10a_raw.json readback vs target (tol 50cm/3deg)",
+ "pixel_grid_validation": {
+  "it9_flat": 0,
+  "it10a_mid_flat": 0,
+  "it10a_street_flat": 0,
+  "method": "8x8+ luminance range per row band (stdlib), IT9 street as known-featureless baseline",
+  "interpretation": "mid standoff rows structured (subjects/context present); street 25m sparse rows expected -> composition is 10C scope"
+ },
+ "evidence_summary": {
+  "suv_grounding": "SUV_0 floated 26.4 cm -> lowered 25.4 cm -> 1.0 cm contact (bounds readback, saved)",
+  "fox_recovery": "VD_Fox bottom_z=-8271.5 (82 m below ground) -> raised 8272.5 cm -> 1.0 cm contact (saved)",
+  "cutoff_refuted": "all subject components ld_max=0/cached_max=0/forced_lod=0 -> no cull/LOD; 12-25m drop-off was the sunk fox + floating SUV",
+  "pixel_grid": "IT10A street 25m: bright structured band rows16-35 (lum 0.43-0.55, range 0.85-0.96) vs IT9 featureless 0.19-0.25 gray; IT10A mid ~14m: dark SUV patch mid-frame rgb (0.09,0.08,0.08)",
+  "caveat": "fox-specific pixel signature not isolated from the grid (small subject) -> fox-in-frame confirmation is the 10D human-eye capture's job; pose readback values lost to an extraction bug (stored None) -> poses unverified from raw file, flagged honestly"
+ }
+}

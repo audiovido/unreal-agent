@@ -1,0 +1,211 @@
+{
+  "id": "229d578f-57ab-4ae3-b314-5c114b437bc8",
+  "operation": "create_primitive",
+  "inputs": {
+    "name": "UA_Orb_Sphere",
+    "shape": "sphere",
+    "dimensions_cm": [
+      26,
+      26,
+      26
+    ],
+    "expected_dimensions_cm": [
+      26,
+      26,
+      26
+    ],
+    "materials": [
+      {
+        "name": "UA_OrbGlass",
+        "color": [
+          0.03,
+          0.03,
+          0.05
+        ],
+        "metallic": 0.2,
+        "roughness": 0.08
+      }
+    ],
+    "screenshot": false,
+    "segments": 64
+  },
+  "outputs": {
+    "object_name": "UA_Orb_Sphere",
+    "shape": "sphere",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Orb_Sphere.fbx",
+      "format": "fbx",
+      "size_bytes": 94796,
+      "object": "UA_Orb_Sphere"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/229d578f-57ab-4ae3-b314-5c114b437bc8.blend",
+    "proof": {}
+  },
+  "status": "COMPLETE",
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      26.0,
+      26.0,
+      26.0
+    ],
+    "vertex_count": 482,
+    "poly_count": 512,
+    "materials": {
+      "applied": true,
+      "object": "UA_Orb_Sphere",
+      "materials": [
+        "UA_OrbGlass"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        25.66801607608795,
+        25.668013095855713,
+        25.936982035636902
+      ],
+      "after_cm": [
+        25.999999046325684,
+        25.999999046325684,
+        26.000002026557922
+      ]
+    },
+    "expected_dimensions_cm": [
+      26.0,
+      26.0,
+      26.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        26.0,
+        26.0,
+        26.0
+      ],
+      "expected_cm": [
+        26.0,
+        26.0,
+        26.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "229d578f-57ab-4ae3-b314-5c114b437bc8",
+    "exported_at": 1788238166.2988188,
+    "source": "generated:sphere",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\229d578f-57ab-4ae3-b314-5c114b437bc8.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Orb_Sphere.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      26.0,
+      26.0,
+      26.0
+    ],
+    "materials": [
+      {
+        "name": "UA_OrbGlass",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        26.0,
+        26.0,
+        26.0
+      ],
+      "vertex_count": 482,
+      "poly_count": 512,
+      "materials": [
+        {
+          "name": "UA_OrbGlass",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Orb_Sphere",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "attempts": 1,
+  "max_attempts": 3,
+  "timeout_seconds": 600,
+  "created_at": 1788238165.220782,
+  "updated_at": 1788238166.4386742,
+  "log": [
+    {
+      "at": 1788238165.2207835,
+      "level": "info",
+      "message": "job created"
+    },
+    {
+      "at": 1788238165.2495573,
+      "level": "info",
+      "message": "attempt 1/3 starting (headless)"
+    },
+    {
+      "at": 1788238166.438182,
+      "level": "info",
+      "message": "--- blender stdout ---"
+    },
+    {
+      "at": 1788238166.4381912,
+      "level": "info",
+      "message": "Blender 4.2.0 (hash a51f293548ad built 2024-07-16 06:29:33)"
+    },
+    {
+      "at": 1788238166.4381917,
+      "level": "info",
+      "message": "Info: Total files 0 | Changed 0 | Failed 0"
+    },
+    {
+      "at": 1788238166.4381921,
+      "level": "info",
+      "message": ""
+    },
+    {
+      "at": 1788238166.4381926,
+      "level": "info",
+      "message": "FBX export starting... 'C:\\\\Users\\\\Shadow\\\\Desktop\\\\Unreal-Agent\\\\workspace\\\\assets\\\\exports\\\\UA_Orb_Sphere.fbx'"
+    },
+    {
+      "at": 1788238166.4381933,
+      "level": "info",
+      "message": "export finished in 0.0156 sec."
+    },
+    {
+      "at": 1788238166.4381936,
+      "level": "info",
+      "message": "Info: Saved \"229d578f-57ab-4ae3-b314-5c114b437bc8.blend\""
+    },
+    {
+      "at": 1788238166.4386728,
+      "level": "info",
+      "message": "job COMPLETE"
+    }
+  ]
+}

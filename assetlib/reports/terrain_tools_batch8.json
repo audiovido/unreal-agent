@@ -1,0 +1,107 @@
+{
+  "batch": 8,
+  "topic": "Landscape / foliage / PCG (final breadth batch)",
+  "bridge": "127.0.0.1:6766 ASSET_Showcase2",
+  "map": "/Game/Batch2Map",
+  "verdict": "PASS",
+  "steps_total": 9,
+  "steps_passed": 9,
+  "steps": [
+    {
+      "step": "00_map_wash",
+      "ok": true,
+      "map": "/Game/Batch2Map",
+      "destroyed": 1
+    },
+    {
+      "step": "01_landscape_surface",
+      "ok": true,
+      "total": 65,
+      "key_classes": {
+        "Landscape": true,
+        "LandscapeComponent": true,
+        "LandscapeProxy": true,
+        "LandscapeGrassTypeFactory": true,
+        "LandscapeEditorSubsystem": false,
+        "LandscapeSubsystem": false
+      },
+      "gap": "landscape creation requires the LandscapeEditor C++ tool - no editor subsystem mirrored to python (verbatim: absent from dir(unreal))"
+    },
+    {
+      "step": "02_scan_empty",
+      "ok": true,
+      "total": 0,
+      "count": 0
+    },
+    {
+      "step": "03_create_foliage_type",
+      "ok": true,
+      "cls": "FoliageType_InstancedStaticMesh",
+      "path": "/Game/Batch8Env/FT_Batch8Grass",
+      "mesh_set": true
+    },
+    {
+      "step": "04_foliage_instances",
+      "ok": true,
+      "actor": "Batch8Foliage",
+      "requested": 4,
+      "error": null
+    },
+    {
+      "step": "05_create_pcg_graph",
+      "ok": true,
+      "cls": "PCGGraph",
+      "path": "/Game/Batch8Env/PCG_Batch8Graph"
+    },
+    {
+      "step": "06_author_pcg_graph",
+      "ok": true,
+      "nodes": [
+        {
+          "cls": "PCGSurfaceSamplerSettings",
+          "node": "SurfaceSampler_0"
+        },
+        {
+          "cls": "PCGStaticMeshSpawnerSettings",
+          "node": "StaticMeshSpawner_0"
+        }
+      ],
+      "edges": [
+        {
+          "edge": "Surface->Spawner",
+          "to": "StaticMeshSpawner_0"
+        },
+        {
+          "edge": "Input->Surface",
+          "to": "SurfaceSampler_0"
+        }
+      ],
+      "edge_errors": [],
+      "total_edges": 1
+    },
+    {
+      "step": "07_scan_after_create",
+      "ok": true,
+      "count": 2,
+      "assets": {
+        "/Game/Batch8Env/FT_Batch8Grass.FT_Batch8Grass": "FoliageType_InstancedStaticMesh",
+        "/Game/Batch8Env/PCG_Batch8Graph.PCG_Batch8Graph": "PCGGraph"
+      }
+    },
+    {
+      "step": "08_reopen_persistence",
+      "ok": true,
+      "foliage": {
+        "ok": true,
+        "class": "FoliageType_InstancedStaticMesh",
+        "path": "/Game/Batch8Env/FT_Batch8Grass"
+      },
+      "pcg": {
+        "ok": true,
+        "class": "PCGGraph",
+        "path": "/Game/Batch8Env/PCG_Batch8Graph"
+      }
+    }
+  ],
+  "note": "Landscape CREATION recorded as an engine gap (no LandscapeEditorSubsystem/LandscapeSubsystem mirror - 65 landscape symbols present but the editor tool is C++-only, same class as IK retarget). Foliage type asset + InstancedFoliageActor instances and PCG graph authoring (2 nodes + edges) live-validated. PCG runtime generation not substantiable (no PCGSubsystem)."
+}

@@ -1,0 +1,278 @@
+{
+  "milestone": "P2 reusable headless Blender automation",
+  "finished_at": 1788345760.9282768,
+  "elapsed_seconds": 12.4,
+  "ok": true,
+  "blender_ops": "assetlib/tools/blender_ops.py (reuses blender_agent importers/geometry/exporters params read-only)",
+  "scale_contract": "metric meters in Blender -> cm (100/unit) via FBX apply_unit_scale + GLB meter conversion",
+  "deferred": {
+    "lods": "flag accepted, structural seam only",
+    "collision": "flag accepted, structural seam only"
+  },
+  "scenarios": [
+    {
+      "id": "fbx_roundtrip",
+      "source": "sample_table.fbx",
+      "passed": true,
+      "fails": [],
+      "ok": true,
+      "code": null,
+      "validation": {
+        "ok": true,
+        "format": "fbx",
+        "meshes": 5,
+        "vertex_total": 264,
+        "polygon_total": 142,
+        "triangle_total": 508,
+        "dimensions_cm": [
+          120.0,
+          70.0,
+          99.0
+        ],
+        "materials": [
+          "P2_Leg",
+          "P2_TableTop"
+        ],
+        "textures": [],
+        "uv_ensured": true,
+        "decimate": {
+          "requested": false
+        },
+        "deferred": {
+          "lods": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          },
+          "collision": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          }
+        },
+        "exports": [
+          "fbx"
+        ]
+      },
+      "elapsed_seconds": 0.7
+    },
+    {
+      "id": "glb_roundtrip",
+      "source": "sample_monkey.glb",
+      "passed": true,
+      "fails": [],
+      "ok": true,
+      "code": null,
+      "validation": {
+        "ok": true,
+        "format": "glb",
+        "meshes": 1,
+        "vertex_total": 505,
+        "polygon_total": 968,
+        "triangle_total": 968,
+        "dimensions_cm": [
+          75.2,
+          46.84,
+          54.14
+        ],
+        "materials": [
+          "P2_Monkey"
+        ],
+        "textures": [],
+        "uv_ensured": true,
+        "decimate": {
+          "requested": false
+        },
+        "deferred": {
+          "lods": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          },
+          "collision": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          }
+        },
+        "exports": [
+          "glb"
+        ]
+      },
+      "elapsed_seconds": 0.6
+    },
+    {
+      "id": "obj_to_both",
+      "source": "sample_cone.obj",
+      "passed": true,
+      "fails": [],
+      "ok": true,
+      "code": null,
+      "validation": {
+        "ok": true,
+        "format": "obj",
+        "meshes": 1,
+        "vertex_total": 33,
+        "polygon_total": 33,
+        "triangle_total": 62,
+        "dimensions_cm": [
+          70.0,
+          70.0,
+          90.0
+        ],
+        "materials": [
+          "P2_Cone"
+        ],
+        "textures": [],
+        "uv_ensured": true,
+        "decimate": {
+          "requested": false
+        },
+        "deferred": {
+          "lods": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          },
+          "collision": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          }
+        },
+        "exports": [
+          "fbx",
+          "glb"
+        ]
+      },
+      "elapsed_seconds": 0.5
+    },
+    {
+      "id": "decimate_optional",
+      "source": "sample_cone.obj",
+      "passed": true,
+      "fails": [],
+      "ok": true,
+      "code": null,
+      "validation": {
+        "ok": true,
+        "format": "obj",
+        "meshes": 1,
+        "vertex_total": 9,
+        "polygon_total": 9,
+        "triangle_total": 14,
+        "dimensions_cm": [
+          68.56,
+          68.56,
+          89.99
+        ],
+        "materials": [
+          "P2_Cone"
+        ],
+        "textures": [],
+        "uv_ensured": true,
+        "decimate": {
+          "requested": true,
+          "ratio": 0.25,
+          "before": {
+            "P2_Cone_Lo": {
+              "polygons": 33
+            }
+          },
+          "after": {
+            "P2_Cone_Lo": {
+              "polygons": 9
+            }
+          }
+        },
+        "deferred": {
+          "lods": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          },
+          "collision": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          }
+        },
+        "exports": [
+          "fbx"
+        ]
+      },
+      "elapsed_seconds": 0.3
+    },
+    {
+      "id": "origin_bottom_and_name",
+      "source": "sample_table.fbx",
+      "passed": true,
+      "fails": [],
+      "ok": true,
+      "code": null,
+      "validation": {
+        "ok": true,
+        "format": "fbx",
+        "meshes": 5,
+        "vertex_total": 264,
+        "polygon_total": 142,
+        "triangle_total": 508,
+        "dimensions_cm": [
+          120.0,
+          70.0,
+          90.0
+        ],
+        "materials": [
+          "P2_Leg",
+          "P2_TableTop"
+        ],
+        "textures": [],
+        "uv_ensured": true,
+        "decimate": {
+          "requested": false
+        },
+        "deferred": {
+          "lods": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          },
+          "collision": {
+            "requested": false,
+            "status": "deferred-not-implemented"
+          }
+        },
+        "exports": [
+          "glb"
+        ]
+      },
+      "elapsed_seconds": 0.6
+    },
+    {
+      "id": "error_missing_source",
+      "source": "does_not_exist.fbx",
+      "passed": true,
+      "fails": [],
+      "ok": false,
+      "code": "SOURCE_NOT_FOUND",
+      "validation": null,
+      "elapsed_seconds": null
+    },
+    {
+      "id": "error_unsupported_format",
+      "source": "bad_format.dae",
+      "passed": true,
+      "fails": [],
+      "ok": false,
+      "code": "UNSUPPORTED_FORMAT",
+      "validation": null,
+      "elapsed_seconds": null
+    }
+  ],
+  "samples": [
+    "sample_cone.mtl",
+    "sample_cone.obj",
+    "sample_monkey.glb",
+    "sample_table.fbx"
+  ],
+  "validation_files": [
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/fbx_roundtrip/result.json",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/glb_roundtrip/result.json",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/obj_to_both/result.json",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/decimate_optional/result.json",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/origin_bottom_and_name/result.json",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/error_missing_source/result.json",
+    "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/blender/p2_out/error_unsupported_format/result.json"
+  ]
+}

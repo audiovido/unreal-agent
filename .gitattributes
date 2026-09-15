@@ -1,0 +1,3 @@
+downloads/blender-4.2.0-windows-x64.zip filter=lfs diff=lfs merge=lfs -text
+vendor/blender/blender-4.2.0-windows-x64/blender.pdb filter=lfs diff=lfs merge=lfs -text
+vendor/blender/blender-4.2.0-windows-x64/cycles_kernel_oneapi_aot.dll filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,245 @@
+{
+  "out": {
+    "stop_pie_clean": {
+      "ok": true,
+      "requested": false,
+      "already_stopped": true
+    },
+    "spawn_floor": {
+      "ok": true,
+      "name": "StaticMeshActor_15",
+      "label": "UA_Env_Floor",
+      "class": "StaticMeshActor"
+    },
+    "spawn_wall": {
+      "ok": true,
+      "name": "StaticMeshActor_16",
+      "label": "UA_Env_Wall",
+      "class": "StaticMeshActor"
+    },
+    "spawn_point": {
+      "ok": true,
+      "name": "PointLight_2",
+      "label": "UA_L_Key",
+      "class": "PointLight"
+    },
+    "spawn_directional": {
+      "ok": true,
+      "name": "DirectionalLight_0",
+      "label": "UA_L_Sun",
+      "class": "DirectionalLight"
+    },
+    "spawn_skylight": {
+      "ok": true,
+      "name": "SkyLight_0",
+      "label": "UA_L_Sky",
+      "class": "SkyLight"
+    },
+    "spawn_avatar": {
+      "ok": true,
+      "code": null,
+      "asset": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+      "mesh": "/Game/Mannequin/Character/Mesh/SK_Mannequin_Female.SK_Mannequin_Female",
+      "class": "SkeletalMeshActor",
+      "actor_label": "UA_Avatar",
+      "actor_name": "UA_Avatar",
+      "location": [
+        0,
+        0,
+        0
+      ],
+      "visible": true,
+      "verified": true,
+      "mesh_on_component": true,
+      "reused": true,
+      "animation": null
+    },
+    "assign_animation": {
+      "ok": true,
+      "code": null,
+      "actor_label": "UA_Avatar",
+      "animation": "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+      "animation_assigned": "/Game/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle",
+      "property_used": "animation_mode",
+      "skeleton_compatible": true,
+      "verified": true
+    },
+    "save_scene": {
+      "ok": true,
+      "map_before": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "map_after": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "requested_asset_path": null,
+      "requested_map": null,
+      "saved_map": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "was_temp_level": false,
+      "package_exists": true,
+      "dirty_before": true,
+      "dirty_after": false,
+      "active_map": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "active_map_identity_correct": true,
+      "verified": true,
+      "save_error": null,
+      "startup_map": "/Game/Maps/AvaLive_Main",
+      "startup_map_persisted": true
+    },
+    "start_pie": {
+      "ok": true,
+      "requested": true,
+      "already_running": false,
+      "message": "PIE begin-play requested"
+    },
+    "widget_title": {
+      "ok": false,
+      "code": "PYTHON_EXECUTION_FAILED",
+      "error_type": "Exception",
+      "message": "TextBlock: Internal Error - ObjectInstance is null!",
+      "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: TextBlock: Internal Error - ObjectInstance is null!\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: TextBlock: Internal Error - ObjectInstance is null!\n",
+      "recoverable": false,
+      "stdout": ""
+    },
+    "widget_status": {
+      "ok": false,
+      "code": "PYTHON_EXECUTION_FAILED",
+      "error_type": "Exception",
+      "message": "TextBlock: Internal Error - ObjectInstance is null!",
+      "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: TextBlock: Internal Error - ObjectInstance is null!\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: TextBlock: Internal Error - ObjectInstance is null!\n",
+      "recoverable": false,
+      "stdout": ""
+    },
+    "widget_history": {
+      "ok": false,
+      "code": "PYTHON_EXECUTION_FAILED",
+      "error_type": "Exception",
+      "message": "ScrollBox: Internal Error - ObjectInstance is null!",
+      "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: ScrollBox: Internal Error - ObjectInstance is null!\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: ScrollBox: Internal Error - ObjectInstance is null!\n",
+      "recoverable": false,
+      "stdout": ""
+    },
+    "widget_input": {
+      "ok": false,
+      "code": "PYTHON_EXECUTION_FAILED",
+      "error_type": "Exception",
+      "message": "EditableTextBox: Internal Error - ObjectInstance is null!",
+      "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: EditableTextBox: Internal Error - ObjectInstance is null!\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: EditableTextBox: Internal Error - ObjectInstance is null!\n",
+      "recoverable": false,
+      "stdout": ""
+    },
+    "widget_send": {
+      "ok": false,
+      "code": "PYTHON_EXECUTION_FAILED",
+      "error_type": "Exception",
+      "message": "Button: Internal Error - ObjectInstance is null!",
+      "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: Button: Internal Error - ObjectInstance is null!\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 101, in <module>\nException: Button: Internal Error - ObjectInstance is null!\n",
+      "recoverable": false,
+      "stdout": ""
+    },
+    "autosize_slots": {
+      "ok": false,
+      "code": "VIEWPORT_ADD_FAILED",
+      "widget": "ChatRoot",
+      "in_viewport": false,
+      "verified": false,
+      "error": "TypeError: GameViewportSubsystem: Failed to convert parameter 'widget' when calling function 'GameViewportSubsystem.AddWidget' on 'GameViewportSubsystem_0'\n  TypeError: NativizeProperty: Cannot nativize 'CanvasPanel' as 'Widget' (ObjectProperty)\n    TypeError: NativizeObject: Cannot nativize 'CanvasPanel' as 'Object' (allowed Class type: 'Widget')\n      Exception: CanvasPanel: Internal Error - ObjectInstance is null!"
+    },
+    "chat_send": {
+      "ok": false,
+      "code": "PYTHON_EXECUTION_FAILED",
+      "error_type": "Exception",
+      "message": "EditableTextBox: Internal Error - ObjectInstance is null!",
+      "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 82, in <module>\nException: EditableTextBox: Internal Error - ObjectInstance is null!\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 82, in <module>\nException: EditableTextBox: Internal Error - ObjectInstance is null!\n",
+      "recoverable": false,
+      "stdout": ""
+    },
+    "user_bubble": {
+      "ok": false,
+      "code": "BUBBLE_APPEND_FAILED",
+      "kind": "user",
+      "text": "Hello Ava. Confirm in one sentence that the live Unreal chat is working.",
+      "bubble_widget": "user_bubble_3",
+      "display_text": "User: Hello Ava. Confirm in one sentence that the live Unreal chat is working.",
+      "bubble_count": 4,
+      "verified": false
+    },
+    "assistant_bubble": {
+      "ok": false,
+      "code": "BUBBLE_APPEND_FAILED",
+      "kind": "assistant",
+      "text": "Yes, the live Unreal chat is working.",
+      "bubble_widget": "assistant_bubble_4",
+      "display_text": "Assistant: Yes, the live Unreal chat is working.",
+      "bubble_count": 5,
+      "verified": false
+    },
+    "state_online": {
+      "ok": false,
+      "code": "PYTHON_EXECUTION_FAILED",
+      "error_type": "Exception",
+      "message": "TextBlock: Internal Error - ObjectInstance is null!",
+      "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 85, in <module>\nException: TextBlock: Internal Error - ObjectInstance is null!\n",
+      "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\tools\\unreal\\ue_listener.py\", line 72, in process_request\n    exec(code, namespace, namespace)\n  File \"<string>\", line 85, in <module>\nException: TextBlock: Internal Error - ObjectInstance is null!\n",
+      "recoverable": false,
+      "stdout": ""
+    },
+    "avatar_react": {
+      "ok": true,
+      "actor_label": "UA_Avatar",
+      "actor_name": "UA_Avatar",
+      "reaction": "bob",
+      "amount": 60.0,
+      "location_before": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "location_after": [
+        0.0,
+        0.0,
+        60.0
+      ],
+      "moved": true,
+      "visible": true,
+      "verified": true
+    },
+    "capture_pie": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/AvaLive/AvaLive/Saved/UnrealAgent/pie_viewport_latest.png",
+      "size": 441051,
+      "world_name": "AvaLive_Main",
+      "diagnostic": "OK|source=GameViewport|width=1912|height=1070|bytes=441051|path=C:/Users/Shadow/Desktop/AvaLive/AvaLive/Saved/UnrealAgent\\pie_viewport_latest.png",
+      "source_is_game_viewport": true,
+      "error": null
+    },
+    "stop_pie": {
+      "ok": true,
+      "requested": true,
+      "already_stopped": false,
+      "previous_world_name": "AvaLive_Main",
+      "message": "PIE end-play requested"
+    },
+    "save_final": {
+      "ok": true,
+      "map_before": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "map_after": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "requested_asset_path": null,
+      "requested_map": null,
+      "saved_map": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "was_temp_level": false,
+      "package_exists": true,
+      "dirty_before": false,
+      "dirty_after": false,
+      "active_map": "/Game/Maps/AvaLive_Main.AvaLive_Main",
+      "active_map_identity_correct": true,
+      "verified": true,
+      "save_error": null,
+      "startup_map": "/Game/Maps/AvaLive_Main",
+      "startup_map_persisted": true
+    }
+  },
+  "vision": "{\n  \"has_character\": false,\n  \"has_chat_ui\": false,\n  \"has_text\": true,\n  \"environment\": \"minimal\",\n  \"summary\": \"A minimal Unreal Engine viewport with a transparent placeholder square in the center and the word 'Preview' repeated in a distorted, upside-down manner across the lower portion of the screen.\"\n}"
+}

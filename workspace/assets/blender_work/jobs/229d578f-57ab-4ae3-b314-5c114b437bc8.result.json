@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "outputs": {
+    "object_name": "UA_Orb_Sphere",
+    "shape": "sphere",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Orb_Sphere.fbx",
+      "format": "fbx",
+      "size_bytes": 94796,
+      "object": "UA_Orb_Sphere"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/229d578f-57ab-4ae3-b314-5c114b437bc8.blend",
+    "proof": {}
+  },
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      26.0,
+      26.0,
+      26.0
+    ],
+    "vertex_count": 482,
+    "poly_count": 512,
+    "materials": {
+      "applied": true,
+      "object": "UA_Orb_Sphere",
+      "materials": [
+        "UA_OrbGlass"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        25.66801607608795,
+        25.668013095855713,
+        25.936982035636902
+      ],
+      "after_cm": [
+        25.999999046325684,
+        25.999999046325684,
+        26.000002026557922
+      ]
+    },
+    "expected_dimensions_cm": [
+      26.0,
+      26.0,
+      26.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        26.0,
+        26.0,
+        26.0
+      ],
+      "expected_cm": [
+        26.0,
+        26.0,
+        26.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "229d578f-57ab-4ae3-b314-5c114b437bc8",
+    "exported_at": 1788238166.2988188,
+    "source": "generated:sphere",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\229d578f-57ab-4ae3-b314-5c114b437bc8.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Orb_Sphere.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      26.0,
+      26.0,
+      26.0
+    ],
+    "materials": [
+      {
+        "name": "UA_OrbGlass",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        26.0,
+        26.0,
+        26.0
+      ],
+      "vertex_count": 482,
+      "poly_count": 512,
+      "materials": [
+        {
+          "name": "UA_OrbGlass",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Orb_Sphere",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "job_id": "229d578f-57ab-4ae3-b314-5c114b437bc8",
+  "operation": "create_primitive",
+  "finished_at": 1788238166.3043392
+}

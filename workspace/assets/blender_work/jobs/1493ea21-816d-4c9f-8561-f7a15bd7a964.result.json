@@ -1,0 +1,127 @@
+{
+  "ok": true,
+  "outputs": {
+    "object_name": "UA_Arch_Ring",
+    "shape": "torus",
+    "export": {
+      "ok": true,
+      "path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Arch_Ring.fbx",
+      "format": "fbx",
+      "size_bytes": 34156,
+      "object": "UA_Arch_Ring"
+    },
+    "blend_file": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/blender_work/1493ea21-816d-4c9f-8561-f7a15bd7a964.blend",
+    "proof": {}
+  },
+  "validation": {
+    "ok": true,
+    "export_file_exists": true,
+    "object_present": true,
+    "dimensions_cm": [
+      300.0,
+      300.0,
+      18.0
+    ],
+    "vertex_count": 576,
+    "poly_count": 576,
+    "materials": {
+      "applied": true,
+      "object": "UA_Arch_Ring",
+      "materials": [
+        "UA_RingMat"
+      ]
+    },
+    "skeleton": null,
+    "animations": [],
+    "scale_info": {
+      "before_cm": [
+        300.0,
+        300.0,
+        18.000000715255737
+      ],
+      "after_cm": [
+        300.0,
+        300.0,
+        17.999999225139618
+      ]
+    },
+    "expected_dimensions_cm": [
+      300.0,
+      300.0,
+      18.0
+    ],
+    "proof": {},
+    "dimension_check": {
+      "ok": true,
+      "measured_cm": [
+        300.0,
+        300.0,
+        18.0
+      ],
+      "expected_cm": [
+        300.0,
+        300.0,
+        18.0
+      ],
+      "ratios": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tolerance": 0.05,
+      "error": null
+    }
+  },
+  "manifest": {
+    "job_id": "1493ea21-816d-4c9f-8561-f7a15bd7a964",
+    "exported_at": 1788238164.1137192,
+    "source": "generated:torus",
+    "blender_file": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\workspace\\assets\\blender_work\\1493ea21-816d-4c9f-8561-f7a15bd7a964.blend",
+    "export_format": "fbx",
+    "output_path": "C:/Users/Shadow/Desktop/Unreal-Agent/workspace/assets/exports/UA_Arch_Ring.fbx",
+    "scale_cm_per_unit": 100.0,
+    "dimensions_cm": [
+      300.0,
+      300.0,
+      18.0
+    ],
+    "materials": [
+      {
+        "name": "UA_RingMat",
+        "nodes": 2
+      }
+    ],
+    "textures": [],
+    "skeleton": null,
+    "animations": [],
+    "validation": {
+      "ok": true,
+      "export_file_exists": true,
+      "object_present": true,
+      "dimensions_cm": [
+        300.0,
+        300.0,
+        18.0
+      ],
+      "vertex_count": 576,
+      "poly_count": 576,
+      "materials": [
+        {
+          "name": "UA_RingMat",
+          "nodes": 2
+        }
+      ],
+      "skeleton": null,
+      "animations": []
+    },
+    "unreal_scale_expected": 1.0,
+    "object_name": "UA_Arch_Ring",
+    "export_options": {
+      "apply_unit_scale": true
+    }
+  },
+  "error": null,
+  "job_id": "1493ea21-816d-4c9f-8561-f7a15bd7a964",
+  "operation": "create_primitive",
+  "finished_at": 1788238164.1187274
+}

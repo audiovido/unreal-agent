@@ -1,0 +1,112 @@
+{
+  "ok": true,
+  "project": {
+    "ok": true,
+    "project_name": "ASSET_P1_Smoke",
+    "project_root": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\ue\\ASSET_P1_Smoke",
+    "uproject_path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\ue\\ASSET_P1_Smoke\\ASSET_P1_Smoke.uproject"
+  },
+  "blender_exports": {
+    "fbx": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\exports\\P1_TableTop.fbx",
+    "glb": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\exports\\P1_TableTop.glb"
+  },
+  "pass_a_cmd_import": {
+    "ok": true,
+    "exe": "D:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe",
+    "use_cmd": true,
+    "marker": {
+      "started_at": 1788345324.519337,
+      "steps": [],
+      "imported_paths": [
+        "/Game/Smoke/FBX/P1_TableTop.P1_TableTop",
+        "/Game/Smoke/GLB/P1_TableTop/StaticMeshes/P1_TableTop.P1_TableTop"
+      ],
+      "verified": [
+        {
+          "label": "Mesh0",
+          "asset_path": "/Game/Smoke/FBX/P1_TableTop.P1_TableTop",
+          "class": "StaticMesh",
+          "actor": "ASSET_Mesh0",
+          "size_cm": [
+            170.0,
+            90.0,
+            6.0
+          ],
+          "ok": true
+        },
+        {
+          "label": "Mesh1",
+          "asset_path": "/Game/Smoke/GLB/P1_TableTop/StaticMeshes/P1_TableTop.P1_TableTop",
+          "class": "StaticMesh",
+          "actor": "ASSET_Mesh1",
+          "size_cm": [
+            170.0,
+            90.0,
+            6.0
+          ],
+          "ok": true
+        }
+      ],
+      "content_files": [
+        "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/FBX/P1_TableMat.uasset",
+        "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/FBX/P1_TableTop.uasset",
+        "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/GLB/P1_TableTop/Materials/P1_TableMat.uasset",
+        "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/GLB/P1_TableTop/StaticMeshes/P1_TableTop.uasset",
+        "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/SmokeMap.umap"
+      ],
+      "ok_so_far": true,
+      "ok": true,
+      "elapsed_seconds": 32.9,
+      "engine": "5.8.2-56702186+++UE5+Release-5.8"
+    },
+    "exited": false,
+    "killed_after_marker": true,
+    "timed_out": false,
+    "elapsed_seconds": 81.4,
+    "log_tail": " 'C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/SmokeMap.umap'\nEditorErrors: Warning: Error saving 'C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/FBX/P1_TableTop.uasset'\nEditorErrors: Warning: Error saving 'C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_P1_Smoke/Content/Smoke/GLB/P1_TableTop/StaticMeshes/P1_TableTop.uasset'\nLogOutputDevice: Error: === Handled ensure: ===\nLogOutputDevice: Error: \nLogOutputDevice: Error: Ensure condition failed: Registrations.Num() == 0  [File:D:\\build\\++UE5\\Sync\\Engine\\Plugins\\Experimental\\LocalizableMessage\\Source\\LocalizableMessage\\Public\\LocalizableMessageProcessor.h] [Line: 24] \nLogOutputDevice: Error: \nLogOutputDevice: Error: Stack: \nLogOutputDevice: Error: [Callstack] 0x000001fcaf79b195 UnrealEditor-LocalizableMessage.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff8920d3a93 ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff8920a042e ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff89209dddd ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x000001fcaf7991e1 UnrealEditor-LocalizableMessage.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x000001fcaf799309 UnrealEditor-LocalizableMessage.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff894d98b5f ntdll.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff894dc1566 ntdll.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff894dc115d ntdll.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff893da7fab KERNEL32.DLL!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff89209bed8 ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff89209c099 ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd562cf0e python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd546a86c python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd5434c2c python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd54360b2 python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd54956bf python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd54970bf python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x000001fc8c3cf678 UnrealEditor-PythonScriptPlugin.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x000001fc8c3fb270 UnrealEditor-PythonScriptPlugin.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x000001fc8c3cfc88 UnrealEditor-PythonScriptPlugin.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x000001fc8c390894 UnrealEditor-PythonScriptPlugin.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff812ef28bb UnrealEditor-UnrealEd.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffe6a40555 UnrealEditor-Engine.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff8134bbe6a UnrealEditor-UnrealEd.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff814027666 UnrealEditor-UnrealEd.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff6df4c2779 UnrealEditor-Cmd.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff6df4ac4ac UnrealEditor-Cmd.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff6df4ac5ba UnrealEditor-Cmd.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff6df4b1256 UnrealEditor-Cmd.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff6df4c5c74 UnrealEditor-Cmd.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff6df4c838a UnrealEditor-Cmd.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff893da257d KERNEL32.DLL!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff894dcaf08 ntdll.dll!UnknownFunction []\nLogOutputDevice: Error: \n",
+    "log_path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\ue\\p1_passA_done.log"
+  },
+  "pass_b_gui_verify": {
+    "ok": true,
+    "exe": "D:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor.exe",
+    "use_cmd": false,
+    "marker": {
+      "started_at": 1788345404.9934876,
+      "level_actors": [
+        {
+          "label": "ASSET_Sun",
+          "class": "DirectionalLight"
+        },
+        {
+          "label": "ASSET_Mesh0",
+          "class": "StaticMeshActor",
+          "mesh": "/Game/Smoke/FBX/P1_TableTop.P1_TableTop"
+        },
+        {
+          "label": "ASSET_Mesh1",
+          "class": "StaticMeshActor",
+          "mesh": "/Game/Smoke/GLB/P1_TableTop/StaticMeshes/P1_TableTop.P1_TableTop"
+        }
+      ],
+      "viewport_ready": true,
+      "ok": true,
+      "elapsed_seconds": 10.4,
+      "engine": "5.8.2-56702186+++UE5+Release-5.8"
+    },
+    "exited": false,
+    "killed_after_marker": true,
+    "timed_out": false,
+    "elapsed_seconds": 57.8,
+    "log_tail": "ry: Display: CleanupOrphanedCacheFiles: 0 total binaries, 0 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)\nLogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 0 .ref files found, 0 referenced binaries\nLogAssetRegistry: Display: CleanupOrphanedCacheFiles: 0 total binaries, 0 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)\nLogOutputDevice: Error: === Handled ensure: ===\nLogOutputDevice: Error: \nLogOutputDevice: Error: Ensure condition failed: Registrations.Num() == 0  [File:D:\\build\\++UE5\\Sync\\Engine\\Plugins\\Experimental\\LocalizableMessage\\Source\\LocalizableMessage\\Public\\LocalizableMessageProcessor.h] [Line: 24] \nLogOutputDevice: Error: \nLogOutputDevice: Error: Stack: \nLogOutputDevice: Error: [Callstack] 0x0000028211ccb195 UnrealEditor-LocalizableMessage.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff8920d3a93 ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff8920a042e ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff89209dddd ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x0000028211cc91e1 UnrealEditor-LocalizableMessage.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x0000028211cc9309 UnrealEditor-LocalizableMessage.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff894d98b5f ntdll.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff894dc1566 ntdll.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff894dc115d ntdll.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff893da7fab KERNEL32.DLL!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff89209bed8 ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff89209c099 ucrtbase.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd562cf0e python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd546a86c python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd5434c2c python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd54360b2 python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd54956bf python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffd54970bf python311.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00000281de8bf678 UnrealEditor-PythonScriptPlugin.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00000281de8eb270 UnrealEditor-PythonScriptPlugin.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00000281de8bfc88 UnrealEditor-PythonScriptPlugin.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00000281de880894 UnrealEditor-PythonScriptPlugin.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff812ef28bb UnrealEditor-UnrealEd.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007fffe6a40555 UnrealEditor-Engine.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff8134bbe6a UnrealEditor-UnrealEd.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff814027666 UnrealEditor-UnrealEd.dll!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff77f6f2779 UnrealEditor.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff77f6dc4ac UnrealEditor.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff77f6dc5ba UnrealEditor.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff77f6e1256 UnrealEditor.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff77f6f5c74 UnrealEditor.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff77f6f902a UnrealEditor.exe!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff893da257d KERNEL32.DLL!UnknownFunction []\nLogOutputDevice: Error: [Callstack] 0x00007ff894dcaf08 ntdll.dll!UnknownFunction []\nLogOutputDevice: Error: \n",
+    "log_path": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\ue\\p1_passB_done.log"
+  },
+  "os_capture": {
+    "ok": true,
+    "path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/proof/screens/ue_smoke_viewport.png",
+    "size_bytes": 60791,
+    "ps_output": [
+      "CAPTURE_RESULT: ok rect=0,0,1234x750 title=ASSET_P1_Smoke - Unreal Editor bytes=60791 file=C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\proof\\screens\\ue_smoke_viewport.png"
+    ]
+  },
+  "elapsed_seconds": 141.6
+}

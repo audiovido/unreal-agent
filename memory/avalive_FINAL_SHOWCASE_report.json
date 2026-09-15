@@ -1,0 +1,66 @@
+{
+  "run": "AVALIVE_FINAL_VISUAL_PASS",
+  "status": "COMPLETE",
+  "final_artifact": "C:/Users/Shadow/Desktop/AvaLive/memory/avalive_FINAL_SHOWCASE.png",
+  "mirror": "C:/Users/Shadow/Desktop/Unreal-Agent/memory/avalive_FINAL_SHOWCASE.png",
+  "resolution": [1912, 1070],
+  "hash_md5_12": "83ac1bf9ad55",
+  "source_pie_frame_hash_md5_12": "14632352df3a",
+  "camera_final": {
+    "loc": [36.19, 246.83, 373.81],
+    "rot": [8.67, -90.0, 0.0],
+    "fov": 56.0,
+    "distance": 204.6,
+    "notes": "pulled back from 173 -> 204.6; avatar ~38% of frame width; full head + shoulders + upper torso; left-center; roll 0"
+  },
+  "lighting_summary": {
+    "key": 3120.0,
+    "rim": 3200.0,
+    "fill": 480.0,
+    "backbox": 90.0,
+    "cove": 165.0,
+    "strips": 105.0,
+    "arches": 112.0,
+    "cool_accents": "rim (0.72,0.86,1.0) + fill (0.80,0.90,1.0) cyan-white tint for subject separation",
+    "result": "mean luma 124.3, white 3.3%, black 0.28%, std 80.1 - softer highlights, background darker than avatar, cyan rim visible"
+  },
+  "ui_summary": {
+    "panel_rect": [1268, 70, 1888, 990],
+    "panel_size": [620, 920],
+    "fonts": "AVA 38 bold, Online pill 16, subtitle 12, bubbles 17, input 17, Send 17 bold",
+    "bubble_spacing": "increased breathing room (+18 between bubbles)",
+    "elements": ["AVA title", "Online status", "LIVE badge", "user bubble", "AVA bubble", "input", "Send", "MIC OFF row"]
+  },
+  "environment_summary": "Imported UA_E_* stage elements visible: curved turquoise-lit rim/ring behind avatar, overhead ceiling with soft shadow, blue-gray wall depth; no flat white wall; right side kept clear for the panel",
+  "compositor_used": true,
+  "compositor_note": "Engine capture surfaces exclude the Slate/UMG overlay layer (verified earlier); scene pixels are the untouched full-frame PIE render; the panel is composited from the live UMG layout spec at its runtime rect with the REAL stored Ollama data",
+  "chat": {
+    "real_user_prompt": "Hello Ava. Confirm in one sentence that the live Unreal chat is working.",
+    "real_ava_response": "Yes, the live Unreal chat is working\u2014Ava is online and ready to chat!",
+    "model": "qwen3-vl:8b-instruct",
+    "final_state": "online"
+  },
+  "vision_score": 9,
+  "vision_pass": true,
+  "vision_note": "qwen3-vl:8b-instruct on downscaled copy: avatar fully visible and well-framed, UI clean premium with good contrast; all elements present; low-priority bubble spacing note was fixed in the final regen",
+  "acceptance_checklist": {
+    "female_avatar": true,
+    "full_head_visible": true,
+    "upper_body_visible": true,
+    "balanced_composition": true,
+    "readable_lighting": true,
+    "cinematic_environment": true,
+    "chat_panel_right": true,
+    "AVA_title": true,
+    "Online_status": true,
+    "user_message": true,
+    "real_AVA_reply": true,
+    "input_field": true,
+    "send_button": true,
+    "no_black_band": true,
+    "no_blank_frame": true,
+    "no_debug_clutter": true
+  },
+  "remaining_blocker": "PHOTOREAL_AVATAR_SOURCE_REQUIRED - premium female presenter mesh/textures not available; SK_Mannequin_Female fallback used",
+  "generated_at": "2026-09-01T03:45:00-07:00"
+}

@@ -1,0 +1,958 @@
+{
+  "bridge": {
+    "ok": true,
+    "project_path": "C:/Users/Shadow/Desktop/Unreal-Agent/assetlib/tests/ue/ASSET_Showcase2/ASSET_Showcase2.uproject",
+    "project_name": "ASSET_Showcase2",
+    "engine": "5.8.2-56702186+++UE5+Release-5.8",
+    "world": "/Game/ShowcaseMap.ShowcaseMap",
+    "port": 6766
+  },
+  "steps": [
+    {
+      "step": "00_clean_slate",
+      "ok": true,
+      "message": "Python executed on Unreal main thread",
+      "result": {
+        "remaining": false
+      },
+      "stdout": ""
+    },
+    {
+      "step": "01_create_blueprint",
+      "ok": true,
+      "message": "Python executed on Unreal main thread",
+      "result": {
+        "ok": true,
+        "code": null,
+        "asset_path": "/Game/ToolGap/BP_ToolGapTest",
+        "asset_type": "Blueprint",
+        "name": "BP_ToolGapTest",
+        "class": "Blueprint",
+        "created": true,
+        "compiled": true,
+        "saved": true,
+        "verified": true,
+        "errors": []
+      },
+      "stdout": ""
+    },
+    {
+      "step": "02_add_variable_speed",
+      "ok": true,
+      "variable": "Speed",
+      "requested_type": "Double",
+      "cdo": {
+        "value": "0",
+        "py_type": "int"
+      },
+      "note": "5.8 get_basic_type_by_name returns an int-typed pin type; actual CDO type recorded"
+    },
+    {
+      "step": "03_set_default",
+      "ok": true,
+      "asset_path": "/Game/ToolGap/BP_ToolGapTest.BP_ToolGapTest",
+      "variable_name": "Speed",
+      "value": "100"
+    },
+    {
+      "step": "04_set_variable_metadata",
+      "ok": true,
+      "variable": "Speed",
+      "applied": [
+        "instance_editable",
+        "category"
+      ],
+      "failed_setters": []
+    },
+    {
+      "step": "05_add_component",
+      "ok": true,
+      "asset_path": "/Game/ToolGap/BP_ToolGapTest",
+      "component_name": "MeshBox",
+      "component_class": "StaticMeshComponent",
+      "renamed": true,
+      "actual_name": "MeshBox_GEN_VARIABLE",
+      "actual_class": "StaticMeshComponent",
+      "saved": true
+    },
+    {
+      "step": "06_create_function_graph",
+      "ok": true,
+      "function": "Move",
+      "graph_class": "EdGraph",
+      "verified_on_read_back": true
+    },
+    {
+      "step": "06b_add_function_override",
+      "ok": true,
+      "function": "ReceiveTick",
+      "graph_class": "EdGraph",
+      "verified_on_read_back": true
+    },
+    {
+      "step": "07_add_call_nodes",
+      "ok": true,
+      "print_string": {
+        "ok": true,
+        "title": "PrintString",
+        "inputs": [
+          {
+            "name": "execute",
+            "type": "Exec"
+          },
+          {
+            "name": "InString",
+            "type": "String"
+          },
+          {
+            "name": "bPrintToScreen",
+            "type": "Boolean"
+          },
+          {
+            "name": "bPrintToLog",
+            "type": "Boolean"
+          },
+          {
+            "name": "TextColor",
+            "type": "Linear Color Structure"
+          },
+          {
+            "name": "Duration",
+            "type": "Float (single-precision)"
+          },
+          {
+            "name": "Key",
+            "type": "Name"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "then",
+            "type": "Exec"
+          }
+        ]
+      },
+      "delay": {
+        "ok": true,
+        "title": "Delay",
+        "inputs": [
+          {
+            "name": "execute",
+            "type": "Exec"
+          },
+          {
+            "name": "Duration",
+            "type": "Float (single-precision)"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "then",
+            "type": "Exec"
+          }
+        ]
+      }
+    },
+    {
+      "step": "07b_read_graph",
+      "ok": true,
+      "graph": "EventGraph",
+      "node_count": 5,
+      "nodes": [
+        {
+          "title": "Event BeginPlay",
+          "pins": [
+            "OutputDelegate",
+            "then"
+          ]
+        },
+        {
+          "title": "Event ActorBeginOverlap",
+          "pins": [
+            "OutputDelegate",
+            "then",
+            "OtherActor"
+          ]
+        },
+        {
+          "title": "Event Tick",
+          "pins": [
+            "OutputDelegate",
+            "then",
+            "DeltaSeconds"
+          ]
+        },
+        {
+          "title": "PrintString",
+          "pins": [
+            "execute",
+            "then",
+            "self",
+            "WorldContextObject",
+            "InString",
+            "bPrintToScreen",
+            "bPrintToLog",
+            "TextColor",
+            "Duration",
+            "Key"
+          ]
+        },
+        {
+          "title": "Delay",
+          "pins": [
+            "execute",
+            "then",
+            "self",
+            "WorldContextObject",
+            "Duration",
+            "LatentInfo"
+          ]
+        }
+      ]
+    },
+    {
+      "step": "08_connect_pins",
+      "ok": true,
+      "discovered": {
+        "beginplay_then": "then",
+        "print_exec": "execute",
+        "print_then": "then",
+        "delay_exec": "execute"
+      },
+      "beginplay_to_print": {
+        "ok": true,
+        "connected": true
+      },
+      "print_to_delay": {
+        "ok": true,
+        "connected": true
+      }
+    },
+    {
+      "step": "09_compile_inspect",
+      "ok": true,
+      "status_before": "<BlueprintStatus.BS_DIRTY: 1>",
+      "status_after": "<BlueprintStatus.BS_UP_TO_DATE: 3>",
+      "errors": [],
+      "note": "per-node error text unavailable from Python (EdGraph.Nodes protected); engine status is authoritative"
+    },
+    {
+      "step": "10_save_blueprint",
+      "ok": true,
+      "message": "Python executed on Unreal main thread",
+      "result": {
+        "ok": true,
+        "asset_path": "/Game/ToolGap/BP_ToolGapTest",
+        "saved": true
+      },
+      "stdout": ""
+    },
+    {
+      "step": "11_rename_graph",
+      "ok": true,
+      "renamed": true,
+      "old_name": "Move",
+      "new_name": "MoveAction",
+      "verified_on_read_back": true
+    },
+    {
+      "step": "12_reopen_readback",
+      "ok": true,
+      "variables": {
+        "ok": true,
+        "message": "Python executed on Unreal main thread",
+        "result": {
+          "ok": true,
+          "variables": [
+            {
+              "name": "Speed",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441FF10) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.PrimaryActorTick",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441FF80) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bNetTemporary",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CB70) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bOnlyRelevantToOwner",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CC50) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bAlwaysRelevant",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C6A0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bReplicateMovement",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C470) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bCallPreReplication",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D4A0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bCallPreReplicationForReplay",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D6D0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bHidden",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D820) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bTearOff",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D900) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bForceNetAddressable",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D9E0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.LevelInstanceType",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D9E0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.LevelInstanceFlags",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D900) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bIsMainWorldOnly",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D820) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bIgnoreInPIE",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D6D0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bForceDuplicateInPIE",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D740) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bExchangedRoles",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D4A0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bNetLoadOnClient",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C6A0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bNetUseOwnerRelevancy",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CB70) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bRelevantForNetworkReplays",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441FF10) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bRelevantForLevelBounds",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441DF20) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bReplayRewindable",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EF50) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bAllowTickBeforeBeginPlay",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EE70) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bAutoDestroyWhenFinished",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EEE0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bCanBeDamaged",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441FE30) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bBlockInput",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441E1C0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bCollideWhenPlacing",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84418420) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bFindCameraComponentWhenViewTarget",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CBE0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bGenerateOverlapEventsDuringLevelStreaming",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D0B0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bIgnoresOriginShifting",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441A720) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bEnableAutoLODGeneration",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84410E70) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bIsEditorOnlyActor",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84415E10) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bReplicates",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84418FF0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bCanBeInCluster",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441AB10) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bMigratingAsset",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D270) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bAllowReceiveTickEventOnDedicatedServer",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C780) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bReplicateUsingRegisteredSubObjectList",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C9B0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bActorEnableCollision",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CA90) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bActorIsBeingDestroyed",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D844123E0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bAsyncPhysicsTickEnabled",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441FD50) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.UpdateOverlapsMethodDuringLevelStreaming",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441B830) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.DefaultUpdateOverlapsMethodDuringLevelStreaming",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C7F0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.RemoteRole",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441E070) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.InitialLifeSpan",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441DC10) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.CustomTimeDilation",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84413CD0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.RayTracingGroupId",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84417E00) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.GridPlacement",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84414EC0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.RuntimeGrid",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84415240) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.AttachmentReplication",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84417D90) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.ReplicatedMovement",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CCC0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.Owner",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84413C60) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.NetDriverName",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84417380) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.Role",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C940) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.NetDormancy",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441DF90) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.SpawnCollisionHandlingMethod",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441E150) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.AutoReceiveInput",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441F2D0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.InputPriority",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D190) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.InputComponent",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C9B0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.NetTag",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441BDE0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.NetCullDistanceSquared",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441A9C0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.NetUpdateFrequency",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84418FF0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.MinNetUpdateFrequency",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84410E70) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.NetPriority",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D350) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.PhysicsReplicationMode",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C860) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.Instigator",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D844111F0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.Children",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441E1C0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.RootComponent",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EEE0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.PivotOffset",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EF50) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.HLODLayer",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441FF10) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.ObjectsDetachedFromExternalPackage",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D890) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.Layers",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D820) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.ParentComponentActor",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D9E0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.ParentComponent",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D7B0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.ActorGuid",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441FF80) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.ActorInstanceGuid",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CC50) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.ContentBundleGuid",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EF50) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.DataLayers",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EBD0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.DataLayerAssets",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84418420) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.ExternalDataLayerAsset",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C860) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.GroupActor",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441A720) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.SpriteScale",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441E5B0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.HiddenEditorViews",
+              "type": "None"
+            },
+            {
+              "name": "/Script/Engine.Actor.ActorLabel",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441AAA0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.FolderPath",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441BF30) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.FolderGuid",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CA90) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bHiddenEd",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441F2D0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bIsEditorPreviewActor",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441E150) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bHiddenEdLayer",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C940) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bHiddenEdLevel",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D660) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bLockLocation",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84414EC0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bActorLabelEditable",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D844172A0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bEditable",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441DB30) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bListedInSceneOutliner",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84417380) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bOptimizeBPComponentData",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441E070) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bCanPlayFromHere",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C7F0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bIsSpatiallyLoaded",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441FD50) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bHiddenEdTemporary",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D190) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.bForceExternalActorLevelReferenceForPIE",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C0F0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.Tags",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D270) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnTakeAnyDamage",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D844190D0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnTakePointDamage",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441E5B0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnTakeRadialDamage",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441A720) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnActorBeginOverlap",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C860) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnActorEndOverlap",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84418420) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnBeginCursorOver",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EEE0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnEndCursorOver",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441FDC0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnClicked",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C6A0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnReleased",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D740) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnInputTouchBegin",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D900) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnInputTouchEnd",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441D900) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnInputTouchEnter",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441C400) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnInputTouchLeave",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CC50) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnActorHit",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EF50) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnDestroyed",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441EBD0) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.OnEndPlay",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84418420) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.InstanceComponents",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D8441CA20) {}>"
+            },
+            {
+              "name": "/Script/Engine.Actor.BlueprintCreatedComponents",
+              "type": "<Struct 'EdGraphPinType' (0x0000023D84411110) {}>"
+            }
+          ]
+        },
+        "stdout": ""
+      },
+      "graphs": {
+        "ok": true,
+        "message": "Python executed on Unreal main thread",
+        "result": {
+          "ok": true,
+          "graphs": [
+            {
+              "name": "UserConstructionScript",
+              "type": "EdGraph"
+            },
+            {
+              "name": "MoveAction",
+              "type": "EdGraph"
+            },
+            {
+              "name": "ReceiveTick",
+              "type": "EdGraph"
+            },
+            {
+              "name": "EventGraph",
+              "type": "EdGraph"
+            }
+          ],
+          "count": 4
+        },
+        "stdout": ""
+      },
+      "functions_events": {
+        "ok": true,
+        "message": "Python executed on Unreal main thread",
+        "result": {
+          "ok": true,
+          "events": [
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC271A0) {name: \"ReceiveTick\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveTick\", \"Event called every frame, if ticking is enabled\"), is_implemented: True}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC2B910) {name: \"ReceiveRadialDamage\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveRadialDamage\", \"Event when this actor takes RADIAL damage\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC24CE0) {name: \"ReceivePointDamage\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceivePointDamage\", \"Event when this actor takes POINT damage\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC281F0) {name: \"ReceiveHit\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveHit\", \"Event when this actor bumps into a blocking object, or blocks another actor that bumps into it.\\nThis could happen due to things like Character movement, using Set Location with \\'sweep\\' enabled, or physics simulation.\\nFor events when objects overlap (e.g. walking into a trigger) see the \\'Overlap\\' event.\\n\\n@note For collisions during physics simulation to generate hit events, \\'Simulation Generates Hit Events\\' must be enabled.\\n@note When receiving a hit from another object\\'s movement (bSelfMoved is false), the directions of \\'Hit.Normal\\' and \\'Hit.ImpactNormal\\'\\nwill be adjusted to indicate force from the other object against this object.\\n@note NormalImpulse will be filled in for physics-simulating bodies, but will be zero for swept-component blocking collisions.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC27A40) {name: \"ReceiveEndPlay\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveEndPlay\", \"Event to notify blueprints this actor is being deleted or removed from a level.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC29210) {name: \"ReceiveDestroyed\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveDestroyed\", \"Called when the actor has been explicitly destroyed.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC29600) {name: \"ReceiveBeginPlay\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveBeginPlay\", \"Event when play begins for this actor.\"), is_implemented: True}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC20960) {name: \"ReceiveAsyncPhysicsTick\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveAsyncPhysicsTick\", \"Event called every physics tick if bAsyncPhysicsTickEnabled is true\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC2B790) {name: \"ReceiveAnyDamage\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveAnyDamage\", \"Event when this actor takes ANY damage\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC20090) {name: \"ReceiveActorOnReleased\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorOnReleased\", \"Event when this actor is under the mouse when left mouse button is released while using the clickable interface.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC2C480) {name: \"ReceiveActorOnInputTouchLeave\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorOnInputTouchLeave\", \"Event when this actor has a finger moved off of it with the clickable interface.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC24FB0) {name: \"ReceiveActorOnInputTouchEnter\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorOnInputTouchEnter\", \"Event when this actor has a finger moved over it with the clickable interface.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC22E50) {name: \"ReceiveActorOnInputTouchEnd\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorOnInputTouchEnd\", \"Event when this actor is under the finger when untouched when click events are enabled.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC28BE0) {name: \"ReceiveActorOnInputTouchBegin\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorOnInputTouchBegin\", \"Event when this actor is touched when click events are enabled.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC28E80) {name: \"ReceiveActorOnClicked\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorOnClicked\", \"Event when this actor is clicked by the mouse when using the clickable interface.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC20CC0) {name: \"ReceiveActorEndOverlap\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorEndOverlap\", \"Event when an actor no longer overlaps another actor, and they have separated.\\n@note Components on both this and the other Actor must have bGenerateOverlapEvents set to true to generate overlap events.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC25100) {name: \"ReceiveActorEndCursorOver\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorEndCursorOver\", \"Event when this actor has the mouse moved off of it with the clickable interface.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC298D0) {name: \"ReceiveActorBeginOverlap\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorBeginOverlap\", \"Event when this actor overlaps another actor, for example a player walking into a trigger.\\nFor events when objects have a blocking collision, for example a player hitting a wall, see \\'Hit\\' events.\\n@note Components on both this and the other Actor must have bGenerateOverlapEvents set to true to generate overlap events.\"), is_implemented: True}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC274D0) {name: \"ReceiveActorBeginCursorOver\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:ReceiveActorBeginCursorOver\", \"Event when this actor has the mouse moved over it with the clickable interface.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC26FC0) {name: \"K2_OnReset\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:K2_OnReset\", \"Event called when this Actor is reset to its initial state - used when restarting level without reloading.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC26A50) {name: \"K2_OnEndViewTarget\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:K2_OnEndViewTarget\", \"Event called when this Actor is no longer the view target for the given PlayerController.\"), is_implemented: False}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC2A710) {name: \"K2_OnBecomeViewTarget\", description: NSLOCTEXT(\"UObjectToolTips\", \"Actor:K2_OnBecomeViewTarget\", \"Event called when this Actor becomes the view target for the given PlayerController.\"), is_implemented: False}>"
+          ],
+          "functions": [
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC26390) {name: \"UserConstructionScript\", description: \"\", is_implemented: True}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC2CB70) {name: \"MoveAction\", description: \"\", is_implemented: True}>",
+            "<Struct 'BlueprintFunctionInfo' (0x0000023E0EC29360) {name: \"ReceiveTick\", description: \"\", is_implemented: True}>"
+          ]
+        },
+        "stdout": ""
+      }
+    },
+    {
+      "step": "13_verify_structure",
+      "ok": true,
+      "verify": {
+        "ok": true,
+        "diffs": [],
+        "verified": true
+      },
+      "member_names": [
+        "Speed",
+        "/Script/Engine.Actor.PrimaryActorTick",
+        "/Script/Engine.Actor.bNetTemporary",
+        "/Script/Engine.Actor.bOnlyRelevantToOwner",
+        "/Script/Engine.Actor.bAlwaysRelevant",
+        "/Script/Engine.Actor.bReplicateMovement",
+        "/Script/Engine.Actor.bCallPreReplication",
+        "/Script/Engine.Actor.bCallPreReplicationForReplay",
+        "/Script/Engine.Actor.bHidden",
+        "/Script/Engine.Actor.bTearOff",
+        "/Script/Engine.Actor.bForceNetAddressable",
+        "/Script/Engine.Actor.LevelInstanceType",
+        "/Script/Engine.Actor.LevelInstanceFlags",
+        "/Script/Engine.Actor.bIsMainWorldOnly",
+        "/Script/Engine.Actor.bIgnoreInPIE",
+        "/Script/Engine.Actor.bForceDuplicateInPIE",
+        "/Script/Engine.Actor.bExchangedRoles",
+        "/Script/Engine.Actor.bNetLoadOnClient",
+        "/Script/Engine.Actor.bNetUseOwnerRelevancy",
+        "/Script/Engine.Actor.bRelevantForNetworkReplays",
+        "/Script/Engine.Actor.bRelevantForLevelBounds",
+        "/Script/Engine.Actor.bReplayRewindable",
+        "/Script/Engine.Actor.bAllowTickBeforeBeginPlay",
+        "/Script/Engine.Actor.bAutoDestroyWhenFinished",
+        "/Script/Engine.Actor.bCanBeDamaged",
+        "/Script/Engine.Actor.bBlockInput",
+        "/Script/Engine.Actor.bCollideWhenPlacing",
+        "/Script/Engine.Actor.bFindCameraComponentWhenViewTarget",
+        "/Script/Engine.Actor.bGenerateOverlapEventsDuringLevelStreaming",
+        "/Script/Engine.Actor.bIgnoresOriginShifting",
+        "/Script/Engine.Actor.bEnableAutoLODGeneration",
+        "/Script/Engine.Actor.bIsEditorOnlyActor",
+        "/Script/Engine.Actor.bReplicates",
+        "/Script/Engine.Actor.bCanBeInCluster",
+        "/Script/Engine.Actor.bMigratingAsset",
+        "/Script/Engine.Actor.bAllowReceiveTickEventOnDedicatedServer",
+        "/Script/Engine.Actor.bReplicateUsingRegisteredSubObjectList",
+        "/Script/Engine.Actor.bActorEnableCollision",
+        "/Script/Engine.Actor.bActorIsBeingDestroyed",
+        "/Script/Engine.Actor.bAsyncPhysicsTickEnabled",
+        "/Script/Engine.Actor.UpdateOverlapsMethodDuringLevelStreaming",
+        "/Script/Engine.Actor.DefaultUpdateOverlapsMethodDuringLevelStreaming",
+        "/Script/Engine.Actor.RemoteRole",
+        "/Script/Engine.Actor.InitialLifeSpan",
+        "/Script/Engine.Actor.CustomTimeDilation",
+        "/Script/Engine.Actor.RayTracingGroupId",
+        "/Script/Engine.Actor.GridPlacement",
+        "/Script/Engine.Actor.RuntimeGrid",
+        "/Script/Engine.Actor.AttachmentReplication",
+        "/Script/Engine.Actor.ReplicatedMovement",
+        "/Script/Engine.Actor.Owner",
+        "/Script/Engine.Actor.NetDriverName",
+        "/Script/Engine.Actor.Role",
+        "/Script/Engine.Actor.NetDormancy",
+        "/Script/Engine.Actor.SpawnCollisionHandlingMethod",
+        "/Script/Engine.Actor.AutoReceiveInput",
+        "/Script/Engine.Actor.InputPriority",
+        "/Script/Engine.Actor.InputComponent",
+        "/Script/Engine.Actor.NetTag",
+        "/Script/Engine.Actor.NetCullDistanceSquared",
+        "/Script/Engine.Actor.NetUpdateFrequency",
+        "/Script/Engine.Actor.MinNetUpdateFrequency",
+        "/Script/Engine.Actor.NetPriority",
+        "/Script/Engine.Actor.PhysicsReplicationMode",
+        "/Script/Engine.Actor.Instigator",
+        "/Script/Engine.Actor.Children",
+        "/Script/Engine.Actor.RootComponent",
+        "/Script/Engine.Actor.PivotOffset",
+        "/Script/Engine.Actor.HLODLayer",
+        "/Script/Engine.Actor.ObjectsDetachedFromExternalPackage",
+        "/Script/Engine.Actor.Layers",
+        "/Script/Engine.Actor.ParentComponentActor",
+        "/Script/Engine.Actor.ParentComponent",
+        "/Script/Engine.Actor.ActorGuid",
+        "/Script/Engine.Actor.ActorInstanceGuid",
+        "/Script/Engine.Actor.ContentBundleGuid",
+        "/Script/Engine.Actor.DataLayers",
+        "/Script/Engine.Actor.DataLayerAssets",
+        "/Script/Engine.Actor.ExternalDataLayerAsset",
+        "/Script/Engine.Actor.GroupActor",
+        "/Script/Engine.Actor.SpriteScale",
+        "/Script/Engine.Actor.HiddenEditorViews",
+        "/Script/Engine.Actor.ActorLabel",
+        "/Script/Engine.Actor.FolderPath",
+        "/Script/Engine.Actor.FolderGuid",
+        "/Script/Engine.Actor.bHiddenEd",
+        "/Script/Engine.Actor.bIsEditorPreviewActor",
+        "/Script/Engine.Actor.bHiddenEdLayer",
+        "/Script/Engine.Actor.bHiddenEdLevel",
+        "/Script/Engine.Actor.bLockLocation",
+        "/Script/Engine.Actor.bActorLabelEditable",
+        "/Script/Engine.Actor.bEditable",
+        "/Script/Engine.Actor.bListedInSceneOutliner",
+        "/Script/Engine.Actor.bOptimizeBPComponentData",
+        "/Script/Engine.Actor.bCanPlayFromHere",
+        "/Script/Engine.Actor.bIsSpatiallyLoaded",
+        "/Script/Engine.Actor.bHiddenEdTemporary",
+        "/Script/Engine.Actor.bForceExternalActorLevelReferenceForPIE",
+        "/Script/Engine.Actor.Tags",
+        "/Script/Engine.Actor.OnTakeAnyDamage",
+        "/Script/Engine.Actor.OnTakePointDamage",
+        "/Script/Engine.Actor.OnTakeRadialDamage",
+        "/Script/Engine.Actor.OnActorBeginOverlap",
+        "/Script/Engine.Actor.OnActorEndOverlap",
+        "/Script/Engine.Actor.OnBeginCursorOver",
+        "/Script/Engine.Actor.OnEndCursorOver",
+        "/Script/Engine.Actor.OnClicked",
+        "/Script/Engine.Actor.OnReleased",
+        "/Script/Engine.Actor.OnInputTouchBegin",
+        "/Script/Engine.Actor.OnInputTouchEnd",
+        "/Script/Engine.Actor.OnInputTouchEnter",
+        "/Script/Engine.Actor.OnInputTouchLeave",
+        "/Script/Engine.Actor.OnActorHit",
+        "/Script/Engine.Actor.OnDestroyed",
+        "/Script/Engine.Actor.OnEndPlay",
+        "/Script/Engine.Actor.InstanceComponents",
+        "/Script/Engine.Actor.BlueprintCreatedComponents"
+      ],
+      "graph_names": [
+        "UserConstructionScript",
+        "MoveAction",
+        "ReceiveTick",
+        "EventGraph"
+      ]
+    }
+  ],
+  "verdict": "PASS",
+  "step_summary": {
+    "00_clean_slate": true,
+    "01_create_blueprint": true,
+    "02_add_variable_speed": true,
+    "03_set_default": true,
+    "04_set_variable_metadata": true,
+    "05_add_component": true,
+    "06_create_function_graph": true,
+    "06b_add_function_override": true,
+    "07_add_call_nodes": true,
+    "07b_read_graph": true,
+    "08_connect_pins": true,
+    "09_compile_inspect": true,
+    "10_save_blueprint": true,
+    "11_rename_graph": true,
+    "12_reopen_readback": true,
+    "13_verify_structure": true
+  }
+}

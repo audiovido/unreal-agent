@@ -1,0 +1,17 @@
+{
+  "id": "p2_obj_to_both",
+  "inputs": {
+    "source": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\samples\\sample_cone.obj",
+    "name": "P2_Cone",
+    "export_formats": [
+      "fbx",
+      "glb"
+    ],
+    "export_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_out\\obj_to_both",
+    "blend_dir": "C:\\Users\\Shadow\\Desktop\\Unreal-Agent\\assetlib\\tests\\blender\\p2_work",
+    "origin_center": "BOUNDS",
+    "decimate_ratio": null,
+    "lods": false,
+    "collision": false
+  }
+}
